@@ -2,49 +2,49 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Assembly on fatwaer</title>
-    <link>https://example.com/tags/assembly/</link>
+    <link>https://fatwaer.github.io/tags/assembly/</link>
     <description>Recent content in Assembly on fatwaer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 22 Nov 2017 22:39:56 +0000</lastBuildDate>
     
-	<atom:link href="https://example.com/tags/assembly/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://fatwaer.github.io/tags/assembly/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>《汇编语言》 Lab11</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</link>
       <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</guid>
       <description>&lt;p&gt;为了循环方便，我们设置&lt;strong&gt;SI&lt;/strong&gt;为&lt;strong&gt;-1&lt;/strong&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>《汇编语言》 Lab10</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</link>
       <pubDate>Tue, 21 Nov 2017 22:41:02 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</guid>
       <description>&lt;p&gt;实验10 一共3个小实验，分别完成三个函数。&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>《汇编语言》 Lab8</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</link>
       <pubDate>Fri, 17 Nov 2017 12:15:41 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</guid>
       <description>assume cs:codesg codesg segment mov ax,4c00h int 21h start: mov ax,0 s: nop nop mov di,offset s mov si,offset s2 mov ax,cs:[si] mov cs:[di],ax s0: jmp short s s1: mov ax,0 int 21h mov ax,0 s2: jmp short s1 nop codesg ends end start  其中
 jmp short s  命令占用两个字节</description>
     </item>
     
     <item>
       <title>DOS实模式的搭建</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</link>
       <pubDate>Fri, 17 Nov 2017 00:17:04 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</guid>
       <description> 前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。
 安装 安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。
 接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。
@@ -66,20 +66,20 @@ jmp short s  命令占用两个字节</description>
     
     <item>
       <title>《汇编语言》 Lab6</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</link>
       <pubDate>Mon, 13 Nov 2017 23:11:53 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</guid>
       <description>datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends  将数据段前四个字母改为大写字母 &amp;amp;nbsp代码如下:
 assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg ends datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends codesg segment start: mov ax,stacksg mov ss,ax mov sp,16 mov ax,datasg mov ds,ax mov cx,4h mov bx,0 s1:	push cx mov cx,4 mov si,0 s2:	mov al,[bx+3+si] and al,11011111b mov [bx+3+si],al inc si loop s2 add bx,16 pop cx loop s1 mov ax,4c00h int 21h codesg ends end start	 </description>
     </item>
     
     <item>
       <title>《汇编语言》 Lab5</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</link>
       <pubDate>Mon, 13 Nov 2017 22:49:40 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</guid>
       <description>根据程序编译连接并用Debug加载、跟踪，然后回答问题。
 (1) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h,0789h,0abch,0defh,0fedh,0cbah,0987h data ends stack segment dw 0,0,0,0,0,0,0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start  CS=0B4A;SS=0B49;DS=0B4B
 (2) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h data ends stack segment dw 0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start  CS=0B4A;SS=0B49;DS=0B48</description>
@@ -87,10 +87,10 @@ assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg
     
     <item>
       <title>《汇编语言》 Lab1</title>
-      <link>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</link>
+      <link>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</link>
       <pubDate>Mon, 13 Nov 2017 22:05:05 +0000</pubDate>
       
-      <guid>https://example.com/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</guid>
+      <guid>https://fatwaer.github.io/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</guid>
       <description>assume cs:codesg codesg segment mov ax,2000 mov ss,ax mov sp,0 add sp,10 pop ax pop bx push ax push bx pop ax pop bx move ax,4c00 int 21 codesg ends end  </description>
     </item>
     

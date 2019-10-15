@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java on fatwaer</title>
-    <link>https://example.com/tags/java/</link>
+    <link>https://fatwaer.github.io/tags/java/</link>
     <description>Recent content in Java on fatwaer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 18 Nov 2018 16:36:16 +0000</lastBuildDate>
     
-	<atom:link href="https://example.com/tags/java/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://fatwaer.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Core Java for DataBase</title>
-      <link>https://example.com/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
+      <link>https://fatwaer.github.io/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
       <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
       
-      <guid>https://example.com/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
+      <guid>https://fatwaer.github.io/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
       <description>前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。
 这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
 基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
