@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,12 @@
 
   
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+   
+   <link rel="shortcut icon" href="/894.jpeg" >
+   
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
+
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="theme-color" content="#ffffff">
 
@@ -521,7 +522,7 @@ outb    %al,$0x60
 </code></pre>
 
 <p>关于这个跳转有一个好的解释如下图。<br />
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y3wahl4yj20nr03njrp.jpg" alt="IMG_3555.PNG" />
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/" alt="IMG_3555.PNG" />
 是保护模式下的跳转方法。</p>
 
 <pre><code>movl    $start, %esp
@@ -674,12 +675,12 @@ outb(0x1F7, 0x20);
 dx存要访问的端口，edi存要存放的内存起始地址。每次传输4字节
 执行前</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y3x45wnaj20jk01hglh.jpg" alt="IMG_3528.PNG" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3528.PNG" alt="IMG_3528.PNG" /></p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y3x460mqj20b2015glh.jpg" alt="IMG_3529.PNG" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3529.PNG" alt="IMG_3529.PNG" /></p>
 
 <p>执行2次<br />
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y3x44ttgj20ka05q3z1.jpg" alt="IMG_3527.PNG" /></p>
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3527.PNG" alt="IMG_3527.PNG" /></p>
 
 <p>直到ecx减为0，继续接下来的执行。这个时候从0x10000~0x100200(512字节)已经加载完成。
 &gt; GDB查看内存信息: x/12xb 0x10000</p>
@@ -836,36 +837,36 @@ align的大小表示是我在用python的时候想起来的，2**n 表示的是 
 <p>关于link address 和load address,我在网上找到这样一个说法:
 load address，表示一个已确定对象的实际加载地址。如C中可执行程序的main函数的地址，在编译完成的时候其地址已经确认（当然在系统中这是一个逻辑地址）
 link address，表示一个未确定对象的应该加载的地址。如你使用C动态库中的printf函数的地址。在编译完成的时候不能确定其地址，因为它的实体是在动态链接库中，只能给它规定一个应该加载的地址，在程序加载的时候才能真正确认是否可以加载在这个地址上（可能出现动态库找不到的情况，这时候就加载错误了）<br />
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xp5nwj20if07rjsb.jpg" alt="obj8.png" /><br />
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj8.png" alt="obj8.png" /><br />
 VMA为link address,程序开始执行的地方；LMA为load address,将会被bootloader读取到的内存地址。</p>
 
 <p>跟着这个<a href="http://www.cnblogs.com/fatsheep9146/p/5220004.html">链接</a>，改变boot/Makefrag的文件内容，原文件内容</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xc030j20mn0anabr.jpg" alt="obj1.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj1.png" alt="obj1.png" /></p>
 
 <p>改-Ttext的参数，从0x7c00改为0x7e00</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xaef5j20io03fgm1.jpg" alt="obj2.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj2.png" alt="obj2.png" /></p>
 
 <p>原boot.asm(make后产生的)变为</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xbjzpj20i207s757.jpg" alt="obj3.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj3.png" alt="obj3.png" /></p>
 
 <p>每个命令在这个asm文件内的地址都发生了变化。</p>
 
 <p>跟踪bootstrap,设置断点在0x7c00,si执行几步。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xbvyjj20b101hmx2.jpg" alt="obj4.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj4.png" alt="obj4.png" /></p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xaf4lj209400y3yd.jpg" alt="obj5.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj5.png" alt="obj5.png" /></p>
 
 <p>lgdtw  0x7e64,本应该加载0x7c64的,但是内存区域内容没有内容</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40x9ubzj20i701nmx3.jpg" alt="obj6.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj6.png" alt="obj6.png" /></p>
 
 <p>ljmp   $0x8,$0x7e32,这是跳转到保护模式程序段的跳转命令，但是跳转失败</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y40xhkuaj20ib06tjrv.jpg" alt="obj7.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj7.png" alt="obj7.png" /></p>
 
 <p>我改变了boot/Makefrag中-Ttext的参数，把boot loader的link地址从0x7c00改成了0x7e00。由make命令从boot.S生成到boot.asm的文件中，命令的地址都发生了变化，但是BIOS默认读取boot到地址0x7c00，但是代码的性质，例如lgdtw加载全局描述符命令，已经发生了改变。代码本应被读到0x7e00执行，实际是在0x7c00执行，到最后一步一步的出错。</p>
 
@@ -898,11 +899,11 @@ ld文件格式：<a href="https://www.math.utah.edu/docs/info/ld_3.html">https:/
 <p>根据练习的引导，将断点设置在mov eax,cr0处，查看0x00100000和0xf0100000的内存空间。
 运行前：</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y4tvb8vwj20ni01lq2y.jpg" alt="next.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/before.png" alt="before.png" /></p>
 
 <p>运行后：</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y4tvbsl8j20nj023jre.jpg" alt="before.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/next.png" alt="next.png" /></p>
 
 <p>地址0xf0100000被映射成功了，与0x00100000地址处内容相同。</p>
 
@@ -914,7 +915,7 @@ ld文件格式：<a href="https://www.math.utah.edu/docs/info/ld_3.html">https:/
 
 <p>程序将会跳转到0xf010002c这个地址去，但是用gdb查看这个地址并没有指令：</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y4ud660rj20lu016wee.jpg" alt="f010002c.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/f010002c.png" alt="f010002c.png" /></p>
 
 <p>程序就会往非预期的方向前进。</p>
 
@@ -1298,7 +1299,7 @@ stabs文档:<a href="http://www.sourceware.org/gdb/onlinedocs/stabs.html#Stab-Se
 
 <p><code>$ make grade</code></p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7xzytb0qfj209x05aaa8.jpg" alt="lab1grade.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/lab1grade.png" alt="lab1grade.png" /></p>
 
 <h2 id="总结">总结</h2>
 

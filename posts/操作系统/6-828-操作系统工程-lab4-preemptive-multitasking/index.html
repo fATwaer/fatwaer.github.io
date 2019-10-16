@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,12 @@
 
   
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+   
+   <link rel="shortcut icon" href="/894.jpeg" >
+   
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
+
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="theme-color" content="#ffffff">
 
@@ -589,7 +590,7 @@ Local APIC主要的作用分成两部分:
 - 接收来自其他LAPIC的中断和外部的I/O APIC中断，或者发送中断。
 - 在MP(multiple processor)系统中，在system bus发送接收处理器间中断IPI。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y547nw12j20pg0akgmd.jpg" alt="figure8-4.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/figure8-4.png" alt="figure8-4.png" /></p>
 
 <p>处理器访问它自己的LAPIC通过MMIO(memory-mapped I/O)，在MMIO中，一部分物理内存直接与IO设备的寄存器相连接，所以类似于load/store的指令通常被用作间接访问外围设备的寄存器。Lab2为IO hole在物理地址0xA0000留了一部分内存空间用作VAG显示缓冲。LAPIC位于内存地址<code>0xFE000000</code>(4GB - 32MB)处，这个地址很高，所以不能直接映射在KERNBASE上(<code>?</code>)。JOS的虚拟内存为MMIOBASE保留了4MB的空间，所以可以用来映射设备的内存。
 接下来的实验中将会介绍更多MMIO的区域，并且为外围设备实现一些基础的内存分配和映射。</p>
@@ -652,7 +653,7 @@ lapic_init():从处理器中获取lapic的相关信息
 env_init_percpu():初始化每个处理器的段寄存器
 trap_init_percpu():读取TSS和IDT
 在最后，xchg()即发送<code>CPU_STARTED</code>信号给boot_aps()，完成一个cpu寄存器的初始化。
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y54njn6xj20nn0r8adc.jpg" alt="figure8-5.png" /></p>
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/figure8-5.png" alt="figure8-5.png" /></p>
 
 <p>前面说过，部分设备的寄存器与内存是直接映射的，这里也是，lapic与内存直接相连，所以在lapic_startup函数中可以看到，向cpu发送命令都是通过在特定内存区域读写。</p>
 
@@ -1502,7 +1503,7 @@ pgfault(struct UTrapframe *utf)
 </ol>
 
 <p><code>thisenv</code>是一个全局(静态)变量，被放在程序的.data域，父环境已经标记这个页为cow状态，所以这个赋值写操作会引发页错误。然后页错误处理程序来为这个页做一个拷贝到该子环境内存空间中。所以当我使用三个系统调用<code>sys_page_alloc</code>,<code>sys_page_map</code>,<code>sys_page_unmap</code>并且传递<code>thisenv-&gt;env_id</code>的时候，是被标记为cow的页发送读请求，结果读到的是父环境的内存内容。父环境已经被销毁了，所以程序在这儿被panic。<br />
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y54wz5x1j209w0ctt9f.jpg" alt="debuginfo.png" /><br />
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/debuginfo.png" alt="debuginfo.png" /><br />
 PS:父环境销毁的时候并不会回收实际页帧，每个页帧都要一个引用计数器，引用计数器的值在fork()的情境下，应该为2，所以不会被会受到free_list中去</p>
 
 <p>PART B done</p>

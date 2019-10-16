@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,12 @@
 
   
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+   
+   <link rel="shortcut icon" href="/894.jpeg" >
+   
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
+
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="theme-color" content="#ffffff">
 
@@ -332,7 +333,7 @@
 <p>扇区和块
 大多数磁盘不支持字节粒度的读写而是通过读写一个扇区单元。JOS中，每个区块都是512字节。文件系统实际上在块的单元分配和使用磁盘存储。注意：sector取决于磁盘硬件，然而block的大小是操作系统使用磁盘的一个大小。所以文件系统的块大小必须是块的整数倍。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y5732w1gj20bs0dnt9a.jpg" alt="disk.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/disk.png" alt="disk.png" /></p>
 
 <p>superblock
 文件系统通常保留一个确定位置(最前面或者最末尾)的磁盘块来保存描述文件系统特性的元数据。任何元数据被要求找到根目录，文件系统上次被增减的时间，上次检查错误的时间等等。在这里的文件系统中将会有一个确定的superblock，它将总是在block1的位置，被定义在<code>stuct Super</code>。Block0通常被用来保存boot loaders和分区表(partition tables)。大多是实际的文件系统维护多个superblock，散布在disk中，所以其中的一个块发生了损毁或者介质错误，其他的superbloock仍能被找到。</p>
@@ -348,7 +349,7 @@
 <p>目录 vs. 普通文件
 文件系统中的<code>File</code>结构体既能表示一个普通文件也能表示一个目录。它们的区别在于结构体的<code>。type</code>，两者的管理方法基本相同，除了目录文件不会解析普通文件的数据块，但是他会解析文件对目录文件的描述和子目录。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y57dqhupj208x09ywex.jpg" alt="file.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/file.png" alt="file.png" /></p>
 
 <p>superblock包含了一个<code>File</code>结构体，<code>Super</code>结构体中的<code>root</code>域保存了系统根目录的元数据。目录文件的内容是一系列<code>File</code>结构体，所有在根目录下的子目录也许会有多个<code>File</code>结构体用来表示次次级目录。</p>
 
@@ -798,7 +799,7 @@ copy_shared_pages(envid_t child)
 
 <p>string_store ~ UTEMP+PGSIZE用来存放参数中的字符串，argv_store ~ string_store存放argv[i]这个二维数组指向各自字符串的指针。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y57ntnsrj210s0i5mxu.jpg" alt="pic.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/pic.png" alt="pic.png" /></p>
 
 <pre><code class="language-C">    if ((r = sys_page_alloc(0, (void*) UTEMP, PTE_P|PTE_U|PTE_W)) &lt; 0)
         return r;
@@ -827,7 +828,7 @@ PS: 这里的数组角标为负数时头次在C中见到，虽然理解不难，
 
 <p>所以最后<code>spawn</code>出来的程序所拥有的栈结构如下：</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y57wl2b0j20pc0hv0tn.jpg" alt="stack.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/stack.png" alt="stack.png" /></p>
 
 <h1 id="键盘接口">键盘接口</h1>
 

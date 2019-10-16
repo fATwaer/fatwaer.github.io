@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,12 @@
 
   
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+   
+   <link rel="shortcut icon" href="/894.jpeg" >
+   
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
+
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="theme-color" content="#ffffff">
 
@@ -351,7 +352,7 @@
 
 <p>寻址过程:</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y501apv7j20j80i675b.jpg" alt="fig5-8.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/fig5-8.png" alt="fig5-8.png" /></p>
 
 <p>段部件输出一个线性地址（Linear address）
 Linear address(LA)</p>
@@ -371,9 +372,10 @@ Linear address(LA)</p>
 </code></pre>
 
 <p>首先取这个地址的高10位作为页目录索引(Page Directory Index),大小 0x000~0xFFF,使用cr3寄存器中的高二十位定位内存中Page Directory位置。<br />
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y50gb074j210206pgm2.jpg" alt="cr3.png" /><br />
-在页目录和页表中，每个单元都是4byte。
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y50tyoqgj217j0dhtb0.jpg" alt="pagedirectory.png" /><br />
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/pagedirectory.png" alt="cr3.png" /></p>
+
+<p>在页目录和页表中，每个单元都是4byte。
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/pagedirectory.png" alt="pagedirectory.png" /><br />
 最后寻址组成</p>
 
 <pre><code class="language-C">+---------------+------------------------------+
@@ -465,7 +467,7 @@ Linear address(LA)</p>
 </code></pre>
 
 <p>在内存被CMOS检测后，根据Page_Init()提示,内存情况如下
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y51cdm3bj20x40g1aa5.jpg" alt="fig5.png" /></p>
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/fig5.png" alt="fig5.png" /></p>
 
 <p><em>完成后的代码</em></p>
 
@@ -526,7 +528,7 @@ page_free():
 </code></pre>
 
 <p>练习一做到<code>check_page_free_list(1);</code>
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y51lglnnj20jd01idfw.jpg" alt="result.png" /></p>
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/result.png" alt="result.png" /></p>
 
 <h2 id="练习2">练习2</h2>
 
@@ -822,7 +824,7 @@ jmp     *%eax
 
 <p>最后KERN~0xFFFFFFFF的mapping也是因为KERN的实际.text段(code)等内容在物理地址0x10000开始处,所以在<strong>虚拟地址KERN+0X10000</strong>能正确引用物理地址0x10000的实际内容，系统内核代码在这可以正确执行。</p>
 
-<p><img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y52cbtlnj20ng0kbtb9.jpg" alt="virtualaddress.png" /></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/virtualaddress.png" alt="virtualaddress.png" /></p>
 
 <h2 id="challenge-2">Challenge 2</h2>
 

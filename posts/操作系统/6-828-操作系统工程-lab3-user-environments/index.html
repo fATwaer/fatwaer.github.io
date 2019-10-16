@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,12 @@
 
   
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  
+   
+   <link rel="shortcut icon" href="/894.jpeg" >
+   
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
+
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="theme-color" content="#ffffff">
 
@@ -840,9 +841,11 @@ TRAPHANDLER_NOEC(syscall_entry, T_SYSCALL);
     call trap
 </code></pre>
 
-<p>根据<code>Trapframe</code>进行压栈，<code>pushal</code>是压入一些普通寄存器<a href="http://www.fermimn.gov.it/linux/quarta/x86/pusha.htm">详情</a>
-<img src="http://ww1.sinaimg.cn/large/8e3a2546gy1g7y53o1s7hj20hi0c374j.jpg" alt="stack.png" /><br />
-根据练习提示，将段寄存器<code>es</code>和<code>ds</code>设置为GDT的kernel数据段，然后将esp压栈，调用trap。</p>
+<p>根据<code>Trapframe</code>进行压栈，<code>pushal</code>是压入一些普通寄存器<a href="http://8e3a2546gy1g7y53o1s7hj20hi0c374j.jpg">详情</a></p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab3/stack.png" alt="stack.png" /></p>
+
+<p>根据练习提示，将段寄存器<code>es</code>和<code>ds</code>设置为GDT的kernel数据段，然后将esp压栈，调用trap。</p>
 
 <p>这里直接调用trap就行，调用函数的参数已经在堆栈中，跳转到函数开始的地方就是一个普通的函数调用。</p>
 
