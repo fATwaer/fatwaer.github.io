@@ -17,8 +17,12 @@
       <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
       
       <guid>https://fatwaer.github.io/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
-      <description> 末尾两个空格换行
-6 organization content 7 front matter 8 archetypes 9 shortcodes 10 taxonomies 11 template basic 12 list template 13 single template 14 homepage template 15 section template 16 base template https://discourse.gohugo.io/t/baseof-html-block-templates-and-list-types-results-in-empty-pages/5612&amp;gt;   </description>
+      <description>Markdown 图床最开始用微博+chrome插件， 后来微博开启了防盗链， 转移到了七牛+picGo。 https://www.cnblogs.com/Dozeer/p/10965508.html
+ hugo markdown格式修正
+  末尾两个空格换行
+ 加载错误，CORS policy跨域访问禁止
+Mixed Content: The page at &#39;https://fatwaer.me/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/&#39; was loaded over HTTPS, but requested an insecure script &#39;http://fatwaer.me/js/back2top.js&#39;. This request has been blocked; the content must be served over HTTPS.  在原来的主题上面加一个回到顶部的按钮
+6 organization content 7 front matter 8 archetypes 9 shortcodes 10 taxonomies 11 template basic 12 list template 13 single template 14 homepage template 15 section template 16 base template https://discourse.</description>
     </item>
     
     <item>
@@ -317,7 +321,7 @@ Bangumi: @fatqaq</description>
       
       <guid>https://fatwaer.github.io/todo/</guid>
       <description>Something in progress:
- 图片上传图床 微博+chrome插件 全部403了 https://www.cnblogs.com/Dozeer/p/10965508.html hugo markdown格式修正 &amp;lt;code&amp;gt;属性的样式 域名fatwaer.me以及cflowerth.com重定向 home页面跳转到post Analytics back to top button CORS policy 加载错误 跨域访问禁止   </description>
+ 图片上传图床 微博+chrome插件 全部403了 https://www.cnblogs.com/Dozeer/p/10965508.html hugo markdown格式修正 &amp;lt;code&amp;gt;属性的样式 域名fatwaer.me以及cflowerth.com重定向 home页面跳转到post Analytics CORS policy 加载错误 跨域访问禁止   </description>
     </item>
     
   </channel>
