@@ -3,17 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://fatwaer.github.io/posts/</loc>
+    <lastmod>2019-11-11T12:34:17+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/</loc>
+    <lastmod>2019-11-11T12:34:17+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://fatwaer.github.io/tags/config/</loc>
     <lastmod>2019-09-18T14:11:14+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://fatwaer.github.io/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</loc>
-    <lastmod>2019-09-18T14:11:14+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://fatwaer.github.io/posts/</loc>
     <lastmod>2019-09-18T14:11:14+08:00</lastmod>
   </url>
   
@@ -103,7 +108,7 @@
   </url>
   
   <url>
-    <loc>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</loc>
+    <loc>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/</loc>
     <lastmod>2018-03-14T21:08:44+00:00</lastmod>
   </url>
   

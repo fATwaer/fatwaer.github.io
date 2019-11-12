@@ -12,6 +12,27 @@
     
     
     <item>
+      <title>Protection Mechanism on 80386</title>
+      <link>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/</link>
+      <pubDate>Mon, 11 Nov 2019 12:34:17 +0800</pubDate>
+      
+      <guid>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/</guid>
+      <description>80386 下的保护模式划为5个部分：
+ 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制  事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。
+段级别的保护 段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。
+ 段描述符格式
+ 上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。
+当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。
+段机制的类型检查 描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。
+ 在数据段的 writable bit 代表正在执行的指令可否写入到该段。 代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。
+一个可读可执行的段可以被两种形式加载：
+ 通过 CS 寄存器，例如 ljmp cs:addr 加载到通用段寄存器中   类型检查会在两种情况下进行：
+ 当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：
+ CS 寄存器只能加载可执行的段 不可读但是可执行的段不能被加载到数据段寄存器中 只有科协的数据段能被加载到SS寄存器  当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：
+ 不能尝试往可执行的段中写入 不能往w位未置位的数据段中写入 不能读取r位未置位的可执行段（数据段默认可读）   段机制的界限检查 故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</description>
+    </item>
+    
+    <item>
       <title>Hugo is comming !</title>
       <link>https://fatwaer.github.io/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
       <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
@@ -147,9 +168,11 @@ inc/env.h Public definitions for user-mode environments trap.h Public definition
       <pubDate>Thu, 12 Apr 2018 19:18:13 +0000</pubDate>
       
       <guid>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</guid>
-      <description>练习1 page-translation open : cr0 和 PG bit page : 4k-byte 连续的内存单元 linear address : DIR | PAGE | OFFSET DIR是page directory的索引，PAGE是page table的索引。
-寻址过程:
-段部件输出一个线性地址（Linear address） Linear address(LA)
+      <description>Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。
+ 地址转换
+ 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。
+线性地址转换过程:
+段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。
 // A linear address &#39;la&#39; has a three-part structure as follows: // // +--------10------+-------10-------+---------12----------+ // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // +----------------+----------------+---------------------+ // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.</description>
     </item>
     
@@ -201,20 +224,21 @@ comments: false
     
     <item>
       <title>6.828-操作系统工程-Lab1:Booting a PC</title>
-      <link>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</link>
+      <link>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/</link>
       <pubDate>Wed, 14 Mar 2018 21:08:44 +0000</pubDate>
       
-      <guid>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</guid>
-      <description>3月14日 - 3月28日
- Exercise 1 熟悉x86汇编和AT&amp;amp;T汇编
-16-bit intel 8088 1MB = 1048576bit 内存地址: 0x00000 ~ 0xFFFFF 640KB(0x00000 ~ 0xA0000) 用户可用 参考资料
-GDB启动过程 首先打开一个终端到目的lab根文件夹
+      <guid>https://fatwaer.github.io/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/</guid>
+      <description>Exercise 1: 内存分布和相关启动信息  memory layout
+ 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：
+physical address = 16 * segment + offset
+intel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low/conventional memory，以上叫extended memory
+因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。
+参考来源：Phil Storrs I/O Ports Description
+Exercise 2: 追踪 BIOS 部分指令 启动两个终端，分别运行：
 $ make qemu-nox-gdb
-再打开一个新的终端窗口执行以下命令进行监听
 $ make gdb
-以及一些常用的gdb命令 b: 0xffff: 在0xffff出下断点 c: continue to breakpoint si: 单步前进 x/5: 0xFFFFF 从0xFFFFF开始的5个命令
-Exercise 2 第一条指令: [f000:fff0] 0xffff0: ljmp $0xf000,$0xe05b 当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。 这个地址与BIOS的结束位置0x100000差16bytes。
-启动后追踪BIOS的部分代码 [f000:e05b] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较 [f000:e062] 0xfe062:	jne 0xfd2e1 ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转 [f000:e066] 0xfe066:	xor %dx,%dx ;dx清0 [f000:e068] 0xfe068:	mov %dx,%ss ;ss置0,AT&amp;amp;T汇编mov指令反向 [f000:e06a] 0xfe06a:	mov $0x7000,%esp ;esp设置为0x7000,实模式引导区位置 [f000:e070] 0xfe070:	mov $0xf3691,%executed ;edx设置为0xf3691 [f000:e076] 0xfe076:	jmp 0xfd165 ;跳转 0xfd165 [f000:d165] 0xfd165:	mov %eax,%ecx [f000:d168] 0xfd168:	cli ;屏蔽中断 [f000:d169] 0xfd169:	cld ;DF设置为0，指在每次传送一次将esi和edi自动+1;std将DF设置为1,传送自减 [f000:d16a] 0xfd16a:	mov $0x8f,%eax [f000:d170] 0xfd170:	out %al,$0x70 ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1 [f000:d172] 0xfd172:	in $0x71,%al ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0 ;A20地址线使能,进入保护模式 [f000:d174] 0xfd174:	in $0x92,%al [f000:d176] 0xfd176:	or $0x2,%al [f000:d178] 0xfd178:	out %al,$0x92 ;加载6个字节 [f000:d17a] 0xfd17a:	lidtw %cs:0x6c38 ;加载中断向量表 -&amp;gt;idt寄存器 [f000:d180] 0xfd180:	lgdtw %cs:0x6bf4 ;加载全局描述符表-&amp;gt;gdt寄存器 ;cr0寄存器置为1，进入保护模式 [f000:d186] 0xfd186:	mov %cr0,%eax [f000:d189] 0xfd189:	or $0x1,%eax [f000:d18d] 0xfd18d:	mov %eax,%cr0 ;重新加载全局描述符GDT 0xfd190:	ljmpl $0x8,$0xfd198 0xfd198:	mov $0x10,%ax 0xfd19b:	add %al,(%bx,%si) 0xfd19d:	mov %ax,%ds 0xfd19f:	mov %ax,%es 0xfd1a1:	mov %ax,%ss 0xfd1a3:	mov %ax,%fs   重新加载的 x86汇编复习 外围设备端口  软盘硬盘 磁盘的最小传输单元(sector)： 512bytes</description>
+BIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。
+跳转到fe05b [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6ac8 [f000:e062] 0xfe062:	jne 0xfd2e1 dx置为0 [f000:e066] 0xfe066:	xor %dx,%dx ss置为0 [f000:e068] 0xfe068:	mov %dx,%ss esp置为0x7000 [f000:e06a] 0xfe06a:	mov $0x7000,%esp edx置为$0xf34c2 [f000:e070] 0xfe070:	mov $0xf34c2,%edx 跳转到0xfd15c [f000:e076] 0xfe076:	jmp 0xfd15c 将eax值保存在ecx中 [f000:d15c] 0xfd15c:	mov %eax,%ecx Clear Interupt [f000:d15f] 0xfd15f:	cli DF(direction flag)esi和edi自动+1； 类似std指令可以将df置为1; [f000:d160] 0xfd160:	cld 0x8F(‭10001111‬)写入IO端口0x70， 根据bochs，bit 7	= 1 NMI disable, 剩下7位为偏移，1111(0xF)对应 shutdown status byte。 [f000:d161] 0xfd161:	mov $0x8f,%eax [f000:d167] 0xfd167:	out %al,$0x70 从0x71中读取shutdown status byte， 其中用gdb指令info reigster可以看到eax值为0， 查看bochs, “normal execution of POST”， 其中POST是指Power-on self-test，代表BIOS自检正常执行。 [f000:d169] 0xfd169:	in $0x71,%al IO端口0x92中的值 |= 0x10，即激活A20地址线 [f000:d16b] 0xfd16b:	in $0x92,%al [f000:d16d] 0xfd16d:	or $0x2,%al [f000:d16f] 0xfd16f:	out %al,$0x92 加载idt和gdt f000:d171] 0xfd171:	lidtw %cs:0x6ab8 [f000:d177] 0xfd177:	lgdtw %cs:0x6a74 cr0寄存器PE(page enable)置位，即代表开启保护模式 [f000:d17d] 0xfd17d:	mov %cr0,%eax [f000:d180] 0xfd180:	or $0x1,%eax [f000:d184] 0xfd184:	mov %eax,%cr0 CS 段选择子切换 CS 寄存器会在执行一些段控制指令时被 隐式地改变，例如CALL，JMP，中断，异常等。 [f000:d187] 0xfd187:	ljmpl $0x8,$0xfd18f 将ds,ss,fs,gs段寄存器设置为0x10 =&amp;gt; 0xfd18f:	mov $0x10,%eax =&amp;gt; 0xfd194:	mov %eax,%ds =&amp;gt; 0xfd198:	mov %eax,%ss =&amp;gt; 0xfd19a:	mov %eax,%fs =&amp;gt; 0xfd19c:	mov %eax,%gs =&amp;gt; 0xfd19e:	mov %ecx,%eax 跳转到寄存器edx中的地址：0xf34c2   in/out 指令</description>
     </item>
     
     <item>
@@ -323,8 +347,8 @@ Bangumi: @fatqaq</description>
       <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
       
       <guid>https://fatwaer.github.io/todo/</guid>
-      <description>Something in progress:
- 图片上传图床 微博+chrome插件 全部403了 https://www.cnblogs.com/Dozeer/p/10965508.html hugo markdown格式修正 &amp;lt;code&amp;gt;属性的样式 域名fatwaer.me以及cflowerth.com重定向 home页面跳转到post Analytics CORS policy 加载错误 跨域访问禁止   </description>
+      <description> Something in progress:
+ 图片上传图床 微博+chrome插件 全部403了 https://www.cnblogs.com/Dozeer/p/10965508.html hugo markdown格式修正 &amp;lt;code&amp;gt;属性的样式 域名fatwaer.me以及cflowerth.com重定向 home页面跳转到post Analytics CORS policy 加载错误 跨域访问禁止   图片 全 挂 了 ！ </description>
     </item>
     
   </channel>

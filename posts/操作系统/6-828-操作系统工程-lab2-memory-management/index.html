@@ -271,8 +271,8 @@
           
           
           
-          <a href="#%e7%bb%83%e4%b9%a01">
-            练习1
+          <a href="#exercise-1-%e5%86%85%e5%ad%98%e5%88%9d%e5%a7%8b%e5%8c%96">
+            Exercise 1: 内存初始化
           </a>
         </li>
       
@@ -321,16 +321,6 @@
           
           
           
-          <a href="#%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86%e6%80%bb%e7%bb%93">
-            内存管理总结
-          </a>
-        </li>
-      
-        <li>
-          
-          
-          
-          
           <a href="#challenge-2">
             Challenge 2
           </a>
@@ -344,21 +334,26 @@
 
     
 
-<h2 id="练习1">练习1</h2>
+<h2 id="exercise-1-内存初始化">Exercise 1: 内存初始化</h2>
 
-<p><code>page-translation open</code> : cr0 和 PG bit
-<code>page</code> : 4k-byte 连续的内存单元
-<code>linear address</code> : DIR | PAGE | OFFSET
-<code>DIR</code>是page directory的索引，<code>PAGE</code>是page table的索引。</p>
+<p>在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。</p>
 
-<p>寻址过程:</p>
+<blockquote>
+<p>地址转换</p>
+</blockquote>
 
-<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/fig5-8.png" alt="fig5-8.png" /></p>
+<p><img src="/images/operating-system/6.828/lab2/address-translation.png" alt="地址转换" /></p>
 
-<p>段部件输出一个线性地址（Linear address）
-Linear address(LA)</p>
+<p>首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。</p>
 
-<pre><code class="language-C">// A linear address 'la' has a three-part structure as follows:
+<p>线性地址转换过程:</p>
+
+<p><img src="/images/operating-system/6.828/lab2/fig5-8.png" alt="fig5-8.png" /></p>
+
+<p>段翻译机制输出一个线性地址（Linear address）
+Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。</p>
+
+<pre><code>// A linear address 'la' has a three-part structure as follows:
 //
 // +--------10------+-------10-------+---------12----------+
 // | Page Directory |   Page Table   | Offset within Page  |
@@ -372,24 +367,24 @@ Linear address(LA)</p>
 // use PGADDR(PDX(la), PTX(la), PGOFF(la)).
 </code></pre>
 
-<p>首先取这个地址的高10位作为页目录索引(Page Directory Index),大小 0x000~0xFFF,使用cr3寄存器中的高二十位定位内存中Page Directory位置。<br />
-<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/pagedirectory.png" alt="cr3.png" /></p>
+<p>首先取线性地址的高10位作为页目录索引(Page Directory Index)，共1024个，从 0 ~ 1023。再使用cr3寄存器中的高二十位定位内存中页目录的基址。</p>
 
-<p>在页目录和页表中，每个单元都是4byte。
-<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/pagedirectory.png" alt="pagedirectory.png" /><br />
-最后寻址组成</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3.png" alt="cr3.png" /></p>
 
-<pre><code class="language-C">+---------------+------------------------------+
-|cr3 high 20bit | Page Directory Index * 4byte |
-+---------------+------------------------------+
-</code></pre>
+<p>在页目录和页表中，每个单元都是4bytes。
+<img src="/images/operating-system/6.828/lab2/pagedirectory.png" alt="pagedirectory.png" /></p>
 
-<p>每个索引只使用高20位进行寻址，因为页操作的最小粒度为4KB。_4KB = 4 * 1024Byte ，1024即 4 * 2^10 -&gt;&gt; 0x3FF * 4 = 0xFFC_。所以只需要4个字节的前面20位进行寻址就行了，剩下的比特可以用作其他安排。
-然后从线性地址中取出中间的10位作为Page Table的索引，再用之前在Page Directory中获取的高20位得到一个32位地址。得到Page Table。</p>
+<p>最后在页目录中的寻址组成为：</p>
 
-<p>Page Table高20位存储的是一个Page的4K对齐的地址，再加上线性地址中的12位(0xFFF)偏移，最后获得一个物理地址。</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3-addressing.png" alt="cr3-addressing.png" /></p>
 
-<p>Memory layout:</p>
+<p>每个索引只使用高20位进行寻址，因为页操作的最小粒度为4KB。只需要4个字节的前面20位进行寻址就行了，剩下的比特可以用作其他标志位。</p>
+
+<p>根据前十位索引获得相应的页目录项后，用其前20位作为一个4KB对齐的地址作为页表（Page Table）的基址。然后从线性地址中取出中间的10位作为的索引，得到相应的页表项（Page Table Entry）。</p>
+
+<p>继续从PTE中取出前20位得到4KB对齐的基址，然后从利用线性地址（LA）最后12位作为在这4K页内的偏移，组合得到32位的地址，即最终的物理地址。</p>
+
+<p>下面是JOS需要完成的内存布局。</p>
 
 <pre><code class="language-C">/*
  * Virtual memory map:                                Permissions
@@ -457,20 +452,41 @@ Linear address(LA)</p>
 
 </code></pre>
 
-<p>练习一的任务是完成内存的初始化</p>
+<p>首先是执行 i386_detect_memory() 探测内存，分别调用了3次读取CMOS寄存器的函数：</p>
 
-<pre><code class="language-C">        i386_detect_memory();                       //  detect memory 
-        kern_pgdir = (pde_t *) boot_alloc(PGSIZE);   // &lt;&lt;-page directory
-        memset(kern_pgdir, 0, PGSIZE);
-        kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P; // kern dir 定向到物理内存UVPT中
-
-        page_init();  // 将未被分配的(free)内存放入linklist中，管理好启动的内存。
+<pre><code>	basemem = nvram_read(NVRAM_BASELO);
+	extmem = nvram_read(NVRAM_EXTLO);
+	ext16mem = nvram_read(NVRAM_EXT16LO) * 64;
 </code></pre>
 
-<p>在内存被CMOS检测后，根据Page_Init()提示,内存情况如下
-<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/fig5.png" alt="fig5.png" /></p>
+<p>追踪到  kclock.h 注释</p>
 
-<p><em>完成后的代码</em></p>
+<pre><code>#define	MC_NVRAM_START	0xe	/* start of NVRAM: offset 14 */
+
+...
+
+/* NVRAM bytes 7 &amp; 8: base memory size */
+#define NVRAM_BASELO	(MC_NVRAM_START + 7)	/* low byte; RTC off. 0x15 */
+#define NVRAM_BASEHI	(MC_NVRAM_START + 8)	/* high byte; RTC off. 0x16 */
+
+/* NVRAM bytes 9 &amp; 10: extended memory size (between 1MB and 16MB) */
+#define NVRAM_EXTLO	(MC_NVRAM_START + 9)	/* low byte; RTC off. 0x17 */
+#define NVRAM_EXTHI	(MC_NVRAM_START + 10)	/* high byte; RTC off. 0x18 */
+
+/* NVRAM bytes 38 and 39: extended memory size (between 16MB and 4G) */
+#define NVRAM_EXT16LO	(MC_NVRAM_START + 38)	/* low byte; RTC off. 0x34 */
+#define NVRAM_EXT16HI	(MC_NVRAM_START + 39)	/* high byte; RTC off. 0x35 */
+</code></pre>
+
+<p>可以看到内存探测可以分为三部分</p>
+
+<ul>
+<li>base memory 0 ~ 1MB</li>
+<li>extended memory 1MB ~ 16MB</li>
+<li>extended memory 16MB ~ 4G</li>
+</ul>
+
+<p>内存的初始化可以完成一部分，引导用的内存页分配函数以及准备为每一个页准备一个 PageInfo 结构体进行管理。</p>
 
 <pre><code class="language-C">boot_alloc():
     // before the page_init(), it's a temple allocater .
@@ -483,78 +499,108 @@ Linear address(LA)</p>
 mem_init():
     //为每一个4K页面准备一个结构体进行管理。
     pages = (struct PageInfo *)boot_alloc(npages * sizeof(struct PageInfo));
-    memset(pages, 0, npages * sizeof(struct PageInfo))
-
-
-page_init():
-    size_t i;
-    size_t allocated_pages = ((uint32_t)boot_alloc(0) - KERNBASE) / PGSIZE;
-    size_t IOhole_pages = (EXTPHYSMEM - IOPHYSMEM) /PGSIZE;
-    for (i = 0; i &lt; npages; i++) {
-            if(i == 0)
-                    pages[i].pp_ref = 1;                           // BIOS 
-            else if (i &gt;= npages_basemem &amp;&amp; i &lt; npages_basemem + allocated_pages + IOhole_pages){
-                    pages[i].pp_ref = 1;                           // see figure 
-            } else {
-                    pages[i].pp_ref = 0;
-                    pages[i].pp_link = page_free_list;             // a linkedlist for 
-                    page_free_list = &amp;pages[i];                    // that the pages is free .
-            }
-    }
-
-page_allocate():
-    if(page_free_list == NULL)
-        return NULL;
-
-    //get a struct :PageInfo
-    struct PageInfo * pagebegin;
-    pagebegin = page_free_list;
-    //pagebegin-&gt;pp_ref = 1;                    &lt;&lt;- needn't
-    page_free_list = page_free_list-&gt;pp_link;
-    pagebegin-&gt;pp_link = NULL;
-
-    if(alloc_flags &amp; ALLOC_ZERO)
-            memset(page2kva(pagebegin), 0, PGSIZE);
-
-    return pagebegin;
-
-page_free():
-    if(pp-&gt;pp_link != NULL || pp-&gt;pp_ref != 0)
-                panic(&quot;cann't free or it's free&quot;);
-        else {
-                pp-&gt;pp_link = page_free_list;
-                page_free_list = pp;
-        }
-
+    memset(pages, 0, npages * sizeof(struct PageInfo));
 </code></pre>
 
-<p>练习一做到<code>check_page_free_list(1);</code>
-<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/result.png" alt="result.png" /></p>
+<p>根据 page_init() 注释，内存未使用情况应该如下图（白色部分）：</p>
+
+<p><img src="/images/operating-system/6.828/lab2/mem-layout.png" alt="mem-layout.png" /></p>
+
+<p>在 boot_alloc() 函数中，内存是从 <strong>end</strong> 这个位置开始分配的：</p>
+
+<pre><code>extern char end[];
+nextfree = ROUNDUP((char *) end, PGSIZE);
+</code></pre>
+
+<p><strong>end</strong> 是由链接器自动产生的符号，指向内核的 .bss 段的结尾，所以 boot_alloc() 分配的内存都是从内核elf的bss段后开始分配的。</p>
+
+<p>以下内存不可以被分配（灰色部分）：</p>
+
+<ol>
+<li>实模式下的 IDT 和 BIOS 数据结构 (page 0)</li>
+<li>IO hole （IOPHYSMEM ~ EXTPHYSMEM）</li>
+<li>之前通过 boot_alloc() 分配掉用于存储页目录和页管理结构体的内存。</li>
+</ol>
+
+<p>于是在初始化的时候，就将不可再分配的页的引用次数计为1。代码中出现的 basemem 实际上指 0 ~ 640K (从CMOS中读取出来的值)，而不是指广义上的 0 ~ 1MB。</p>
+
+<pre><code class="language-C">void
+page_init(void)
+{
+    size_t i;
+    size_t IOhole_pages = (EXTPHYSMEM - IOPHYSMEM) / PGSIZE;
+    size_t allocated_pages = ((uint32_t)boot_alloc(0) - KERNBASE) / PGSIZE;
+    for (i = 0; i &lt; npages; i++) {
+		if (i == 0)
+			pages[i].pp_ref = 1;                            
+		else if (i &gt;= npages_basemem &amp;&amp; 
+				i &lt; npages_basemem + IOhole_pages + allocated_pages) {
+			pages[i].pp_ref = 1;
+		} else {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &amp;pages[i];
+		}
+    }	
+}
+</code></pre>
+
+<p>页的分配和回收实现为单链表插入与删除。</p>
+
+<pre><code class="language-C">struct PageInfo *
+page_alloc(int alloc_flags)
+{
+    if (page_free_list == NULL)
+        return NULL;
+
+    struct PageInfo *newpage = page_free_list;
+    page_free_list = page_free_list-&gt;pp_link;
+    newpage-&gt;pp_link = NULL;
+
+    if (alloc_flags &amp; ALLOC_ZERO)
+    	memset(page2kva(newpage), 0, PGSIZE);
+
+    return newpage;
+}
+
+void
+page_free(struct PageInfo *pp)
+{
+	if(pp-&gt;pp_link != NULL || pp-&gt;pp_ref != 0)
+		panic(&quot;cann't free or it's free&quot;);
+	else {
+		pp-&gt;pp_link = page_free_list;
+		page_free_list = pp;
+	}
+}
+</code></pre>
+
+<p>这部分做到 <code>check_page_free_list(1);</code></p>
+
+<pre><code>$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+</code></pre>
 
 <h2 id="练习2">练习2</h2>
 
-<p>了解x86保护机制segmentation和page translation.
-<a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/toc.htm">Intel 80386 Reference Manual</a>
-<a href="https://blog.csdn.net/yeruby/article/details/39718119">GDT、GDTR、LDT、LDTR的学习</a>
-selector -&gt; GDT(一级描述符) -&gt; LDT(二级描述符) -&gt; base address
-offset + base address  -&gt; linear address -&gt; Page translation</p>
+<p>了解x86保护机制和段页翻译.</p>
+
+<p>参考资料：</p>
+
+<blockquote>
+<ul>
+<li><a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/toc.htm">Intel 80386 Reference Manual: chapters 5 and 6</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></li>
+</ul>
+</blockquote>
+
+<p>保护机制的产生实际上是为了探测和找到程序中可能出现的bug。</p>
 
 <h2 id="练习3">练习3</h2>
-
-<h3 id="虚拟地址-线性地址和物理地址">虚拟地址，线性地址和物理地址</h3>
-
-<pre><code class="language-C">
-           Selector  +--------------+         +-----------+
-          ----------&gt;|              |         |           |
-                     | Segmentation |         |  Paging   |
-Software             |              |--------&gt;|           |----------&gt;  RAM
-            Offset   |  Mechanism   |         | Mechanism |
-          ----------&gt;|              |         |           |
-                     +--------------+         +-----------+
-            Virtual                   Linear                Physical
-</code></pre>
-
-<p>C语言的指针都是指虚拟地址的位移部分(offset)。在boot/boot.S中加载全局描述符(GDT),将段的基地址定在0,上限为0xffffffff,所以Offset就是虚拟地址。</p>
 
 <h3 id="使用qemu和gdb查看内存">使用QEMU和GDB查看内存</h3>
 
@@ -579,253 +625,239 @@ Software             |              |--------&gt;|           |----------&gt;  RA
 
 <p>JOS中定义了两种针对于不同地址的数据类型,<code>uintptr_t</code>代表虚拟地址,<code>physaddr_t</code>表示物理地址,宏定义都为<code>uint32_t</code>。解引用(dereference)都要通过段页机制实现，所以如果对物理地址进行解引用，会有非预期的结果。</p>
 
-<p>问题1：下面的代码中x是哪种类型？</p>
+<p><strong>Question</strong></p>
+
+<ul>
+<li><p>Assuming that the following JOS kernel code is correct, what type should variable x have, uintptr_t or physaddr_t?</p>
 
 <pre><code class="language-C">    mystery_t x;
     char* value = return_a_pointer();
     *value = 10;
     x = (mystery_t) value;
-</code></pre>
+</code></pre></li>
+</ul>
 
 <p>根据上述对类型的描述，因为有解引用操作，x的类型应该为<code>uintptr_t</code>。</p>
 
 <h3 id="引用计数">引用计数</h3>
 
-<p>这个类似与C++中的智能指针，有一个计数器对每一个引用的对象(obj)。防止双重free()和内存泄露的情况出现。</p>
+<p>每一个 struct PageInfo 对应一个4KB物理页，对应一个页，如果计数到达了 0，说明这块内存将不再使用，一般来说，引用计数的值应该等于在 UTOP 以下的页表中出现的次数。因为高于 UTOP 的页表一般被内核所使用，不应该释放。</p>
 
 <h3 id="page-table-management">Page Table Management</h3>
 
-<p>几个要用的函数记录一下：
-<code>PADDR(va)</code> : virtual address -&gt; physical address
-<code>KADDR(pa)</code> : physical address -&gt; virtual address
-<code>page2kva(struct PageInfo *)</code> : struct PageInfo pointer -&gt; virtual address
-<code>PDX(va)</code> ： linear -&gt; page directory index</p>
+<p>因为此时内核已经开启了页机制，所以不可能绕过这个机制，所使用的地址必须映射在页目录中的地址。</p>
 
-<blockquote>
-<p>练习中突然出现的TLB没有弄清楚作用</p>
-</blockquote>
+<p><strong>PADDR(va)</strong> : virtual address - KERNELBASE， va 如果小于 KERNELBASE 则 panic。</p>
 
-<p><code>tlb_invalidate</code>：<a href="https://blog.csdn.net/cinmyheart/article/details/39994769">https://blog.csdn.net/cinmyheart/article/details/39994769</a></p>
+<p><strong>KADDR(pa)</strong> : physical address + KERNELBASE，pa 如果超出实际内存大小 则 panic。</p>
+
+<p><strong>page2kva(struct PageInfo *)</strong> : struct PageInfo pointer -&gt; virtual address</p>
 
 <pre><code class="language-C">
 pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
-        // Fill this function in
-        size_t pgdir_index = PDX(va);
-        pte_t page_table_entry = pgdir[pgdir_index];
-        size_t page_offset = PTX(va);           //page table offset
-        // page_table_entry is an virtual address of page table .
-        if(!(page_table_entry &amp; PTE_P)){ // this table is present ?
-                // then get page table address which a pointer point to .
-                if(create){
-                        struct PageInfo *allocated_page = page_alloc(ALLOC_ZERO);
-                        if(allocated_page == NULL) return NULL;
-                        allocated_page-&gt;pp_ref++;       //reference increment
-                        physaddr_t pg_phyaddr = page2pa(allocated_page) ; // get page's address
-                        pgdir[pgdir_index] = pg_phyaddr | PTE_P | PTE_W | PTE_U; // permission
+    size_t pgdir_index = PDX(va);
+    size_t page_offset = PTX(va);
+    pde_t dir_entry = pgdir[pgdir_index];
 
-                } else
-                        return NULL;
-        }
-        pte_t *pt_base = KADDR(PTE_ADDR(pgdir[pgdir_index])); // page table pointer
-        return &amp;pt_base[page_offset];
+	if (!(dir_entry &amp; PTE_P)) {
+        // get page table address which a pointer point to .
+        if(create){
+            struct PageInfo *allocated_page = page_alloc(ALLOC_ZERO);
+		   	if(allocated_page == NULL) return NULL;
+			// increment reference count
+            allocated_page-&gt;pp_ref++;       
+            // the page physical address
+			physaddr_t pg_phyaddr = page2pa(allocated_page) ; 
+			// fill page table entry
+            pgdir[pgdir_index] = pg_phyaddr | PTE_P | PTE_W | PTE_U; 
+		} else {
+           return NULL;
+		}
+    }
+
+	// point to a page table
+    pte_t *pt_base = KADDR(PTE_ADDR(pgdir[pgdir_index]));
+    return &amp;(pt_base[page_offset]);	
 }
-
 
 static void
-boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+boot_map_region(pde_t *pgdir, uintptr_t va, 
+                  size_t size, physaddr_t pa, int perm)
 {
-        // Fill this function in
-        // get the nearest number of page
-        pte_t *pt_entry;
-        size_t page_num = size / PGSIZE; // Size is a multiple of PGSIZE
-        uint32_t i;
+    pte_t *pte;
+	// 'size' is a multiple of PGSIZE. 
+    size_t page_num = size / PGSIZE;
+    uint32_t i;
 
-        for(i = 0; i &lt; page_num; i++)
-        {
-                pt_entry = pgdir_walk(pgdir, (void *)va, true);
-                assert(pt_entry != NULL);
-                *pt_entry = pa | perm | PTE_P;
-                pa += PGSIZE;
-                va += PGSIZE;
-        }
+    for(i = 0; i &lt; page_num; i++)
+    {
+        pte = pgdir_walk(pgdir, (void *)va, true);
+        if (pte == NULL) return;
+		*pte = pa | perm | PTE_P;
+        pa += PGSIZE;
+        va += PGSIZE;
+    }			
 }
-
 
 struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
-        // Fill this function in
-        struct PageInfo *ret;
-        pte_t *pt_entry = pgdir_walk(pgdir, va, false);
-        if(pt_entry == NULL)
-                return NULL;
-        if((*pt_entry &amp; PTE_P) == 0)
-                return NULL;
+    struct PageInfo *ret = NULL;
+    pte_t *pte = pgdir_walk(pgdir, va, false);
+    if(pte == NULL)
+    	return NULL;
+    if((*pte &amp; PTE_P) == 0)
+    	return NULL;
 
-        ret = pa2page(PTE_ADDR(*pt_entry));
-        if(pte_store != NULL)
-        {
-                *pte_store = pt_entry;
-        }
-        return ret;
+    ret = pa2page(PTE_ADDR(*pte));
+    if(pte_store != NULL)
+    {
+    	*pte_store = pte;
+    }
+    return ret;
 }
 
-// delete a page 
 void
 page_remove(pde_t *pgdir, void *va)
 {
-        // Fill this function in
-        // get page table entry and data structure of the page.
-        pte_t *pt_entry = NULL;
-        struct PageInfo* upage = page_lookup(pgdir, va, &amp;pt_entry);
+	// get page table entry and PageInfo.
+	pte_t *pte = NULL;
+	struct PageInfo* upage = page_lookup(pgdir, va, &amp;pte);
 
-        if(upage == NULL) return;
+	if(upage == NULL) return;
 
-        page_decref(upage); //modify data structure 
+	// decrement reference count
+    // freeing it if there are no more refs
+	page_decref(upage);
 
-        tlb_invalidate(pgdir, va);      // ?
-        *pt_entry = 0 ;                 // pg table entry is set to zero.
+	// flush page-translation cache about this page
+	tlb_invalidate(pgdir, va);
 
+	// clean pte
+	*pte = 0 ;                 	
 }
 
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
-        // Fill this function in
-        pte_t *entry = pgdir_walk(pgdir, va, true);
-        if (entry == NULL) return -E_NO_MEM; // null pointer
-        if (*entry &amp; PTE_P ) {  //  this virtual address has been used 
-                page_remove(pgdir, va); // decrement and free
-        //      tlb_invalidate(pgdir, va);      
-        }
-        physaddr_t pg_physaddr = page2pa(pp);
-        *entry = pg_physaddr | perm | PTE_P;
-        pp-&gt;pp_ref++;
+	// modify pde
+	pte_t *entry = pgdir_walk(pgdir, va, true);
+	if (entry == NULL) 
+		return -E_NO_MEM;
 
-        pgdir[PDX(va)] = pgdir[PDX(va)] | perm;
-        return 0;
+	// page colides	
+	pp-&gt;pp_ref++;
+	if (*entry &amp; PTE_P) {
+		// decrement and free
+		// page invalidate in page_remove()
+		page_remove(pgdir, va); 
+	}
+
+	// modify pte
+	*entry = page2pa(pp) | perm | PTE_P;
+	
+	return 0;
 }
-
 </code></pre>
 
-<p>这次练习基本上让我对Page Translation机制有了个深的印象，在完成最开始的pgdir_walk()函数的时候，直接解引用到了page的物理地址,最后翻了很多博客才找出原因。
-练习4到此完成。</p>
+<p>Intel TLB 无效技术有两种方法：</p>
+
+<ul>
+<li>向CR3寄存器写入值时，所有处理器自动刷新相对于非全局TLB表项</li>
+<li>在Pentium Pro及以后的处理器中，invlpg 指令能使映射指定线性地址的单个TLB表项无效</li>
+</ul>
+
+<p>练习4到此完成。</p>
 
 <h2 id="练习5">练习5</h2>
 
-<p><code>Kernal Address Space</code>
-JOS把线性地址分为两部分，低地址的用户环境(User enviroment - Processes)和高地址的内核，用户部分在Lab3中加载使用。内存分给内核从<code>KERNBASE</code>开始到内存结束共大约256MB。</p>
+<p><code>Kernal Address Space</code></p>
 
-<h3 id="permissions-and-fault-isolation-权限和错误隔离">Permissions and Fault Isolation 权限和错误隔离</h3>
+<p>JOS把线性地址分为两部分，低地址的用户环境(User enviroment - Processes)和高地址的内核，用户部分在Lab3中加载使用。内存分给内核从<code>KERNBASE</code>开始到内存结束共大约256MB。</p>
 
-<p>对于User来说大于ULIM的是不允许访问的，属于内核的空间。内存地址[UTOP,ULIM)是用来存储PAGE，ENVI等内容的，User和Kernal都是可读权限。</p>
+<h3 id="权限和错误隔离">权限和错误隔离</h3>
 
-<pre><code class="language-C">        //////////////////////////////////////////////////////////////////////
-        // Now we set up virtual memory
+<p>为了防止用户代码的bug覆盖写内核数据或者代码导致崩溃，使用权限bit位限制用户代码的权限，使其只能访问其内存空间。对于用户级代码来说大于ULIM的是不允许访问的，属于内核的空间。内存地址[UTOP,ULIM) 对于User和Kernal都是只读的，用于内核暴露一部分只读数据结构给用户。</p>
 
-        //////////////////////////////////////////////////////////////////////
-        // Map 'pages' read-only by the user at linear address UPAGES
-        // Permissions:
-        //    - the new image at UPAGES -- kernel R, user R
-        //      (ie. perm = PTE_U | PTE_P)
-        //    - pages itself -- kernel RW, user NONE
-        // Your code goes here:
-        boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U | PTE_P);
-        //////////////////////////////////////////////////////////////////////
-        // Use the physical memory that 'bootstack' refers to as the kernel
-        // stack.  The kernel stack grows down from virtual address KSTACKTOP.
-        // We consider the entire range from [KSTACKTOP-PTSIZE, KSTACKTOP)
-        // to be the kernel stack, but break this into two pieces:
-        //     * [KSTACKTOP-KSTKSIZE, KSTACKTOP) -- backed by physical memory
-        //     * [KSTACKTOP-PTSIZE, KSTACKTOP-KSTKSIZE) -- not backed; so if
-        //       the kernel overflows its stack, it will fault rather than
-        //       overwrite memory.  Known as a &quot;guard page&quot;.
-        //     Permissions: kernel RW, user NONE
-        // Your code goes here:
-        boot_map_region(kern_pgdir, (KSTACKTOP-KSTKSIZE), KSTKSIZE, PADDR(bootstack), PTE_W | PTE_P);
-        //////////////////////////////////////////////////////////////////////
-        // Map all of physical memory at KERNBASE.
-        // Ie.  the VA range [KERNBASE, 2^32) should map to
-        //      the PA range [0, 2^32 - KERNBASE)
-        // We might not have 2^32 - KERNBASE bytes of physical memory, but
-        // we just set up the mapping anyway.
-        // Permissions: kernel RW, user NONE
-        // Your code goes here:
-        boot_map_region(kern_pgdir, KERNBASE, 0xFFFFFFF, 0, PTE_W | PTE_P);
+<p>完成 mem_init() 剩余的代码：</p>
+
+<pre><code class="language-C">// Map 'pages' read-only by the user at linear address UPAGES
+boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U | PTE_P);
+
+// Use the physical memory that 'bootstack' refers to as the kernel
+boot_map_region(kern_pgdir, (KSTACKTOP-KSTKSIZE), KSTKSIZE, PADDR(bootstack), PTE_W | PTE_P);
+
+// Map all of physical memory at KERNBASE.
+boot_map_region(kern_pgdir, KERNBASE, 0xFFFFFFF, 0, PTE_W | PTE_P);
 
 </code></pre>
 
-<h3 id="question">Question</h3>
+<p>通过剩下几个测试</p>
+
+<pre><code>$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+check_page() succeeded!
+check_kern_pgdir() succeeded!
+check_page_free_list() succeeded!
+check_page_installed_pgdir() succeeded!
+</code></pre>
+
+<p>然后将新填写的页目录地址重新加载到CR3寄存器内，在开启剩余一些CR0寄存器位。</p>
+
+<pre><code>lcr3(PADDR(kern_pgdir));
+cr0 = rcr0();
+cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
+cr0 &amp;= ~(CR0_TS|CR0_EM);
+lcr0(cr0);
+</code></pre>
+
+<p>|PE|</p>
 
 <hr />
 
-<p>答案参考:<a href="https://github.com/Clann24/jos/tree/master/lab2">https://github.com/Clann24/jos/tree/master/lab2</a></p>
+<h3 id="question">Question</h3>
+
+<ul>
+<li>Q2:What entries (rows) in the page directory have been filled in at this point? What addresses do they map and where do they point?</li>
+</ul>
+
+<p><img src="/images/operating-system/6.828/lab2/virtualaddress.jpg" alt="virtualaddress.png" /></p>
+
+<ul>
+<li><p>Q3:We have placed the kernel and user environment in the same address space. Why will user programs not be able to read or write the kernel&rsquo;s memory? What specific mechanisms protect the kernel memory?</p>
+
+<p>与页目录和页表中的 User/supervisor flag 和 Read/write flag 有关</p>
 
 <blockquote>
-<p>Q2:What entries (rows) in the page directory have been filled in at this point? What addresses do they map and where do they point?</p>
+<p>“ When the processor is in user mode, it can write only to usermode pages that are read/write accessible. User-mode pages which are read/write or read-only are readable; supervisor-mode pages are neither readable nor writable from user mode. ”</p>
+
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></p>
+
+<p><strong>4.11.3</strong> Page Type</p>
 </blockquote>
 
-<p>![]()</p>
+<p>可以看到 jos 只有 UPAGES 以上 PTSIZE 的内存设置了 PTE_U，除了这个部分对于用户级别可以读，其他的部分都是不可读或写的。</p></li>
 
-<blockquote>
-<p>Q4:How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory? How is this overhead broken down?</p>
-</blockquote>
+<li><p>Q5:How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory? How is this overhead broken down?</p>
 
-<p>PS: 如果只是管理2G内存的话，对于Page Table的开销也只需要2MB</p>
+<p>2G</p></li>
 
-<blockquote>
-<p>Q5: Revisit the page table setup in kern/entry.S and kern/entrypgdir.c. Immediately after we turn on paging, EIP is still a low number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE? Why is this transition necessary?</p>
-</blockquote>
+<li><p>Q6: Revisit the page table setup in kern/entry.S and kern/entrypgdir.c. Immediately after we turn on paging, EIP is still a low number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE? Why is this transition necessary?</p>
 
 <pre><code>mov     $relocated, %eax
 jmp     *%eax
 </code></pre>
 
-<h2 id="内存管理总结">内存管理总结</h2>
+<p>jmp 完后就到了高地址，在临时的内核页目录中，同时将虚拟地址 [0 ~ 4MB) 和 [KERNELBASE ~ KERNELBASE+4MB) 映射了物理内存 [0 ~ 4MB)，所以即使 PE 置位后仍然能正常执行。在 lab2 中重新加载了新映射的 kern_pgdir，里面并没有映射 [0 ~ 4MB) 这一部分，继续在低地址执行但是页表里面并没有相应的项。</p></li>
+</ul>
 
-<hr />
-
-<p>想了几天算是理清楚了这个内存管理机制。
-首先使用<code>i386_detect_memory</code>函数通过CMOS设备获取内存的大小。</p>
-
-<p>启动时，JOS会打印出来内存大小<strong>Physical memory: 131072K available, base = 640K, extended = 130432K</strong>，</p>
-
-<p>然后表达式<strong>kern_pgdir = (pde_t *) boot_alloc(PGSIZE)</strong>在内核之后的内存块中分配一个PGSIZE(4KB)大小的内存空间，这样就先完成了Page Directory Table的建立。</p>
-
-<p><strong>kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P</strong>这个是用来寻找页表自己使用的entry。</p>
-
-<p>跟在Page Directory Table是对所有内存管理的结构体<code>PageInfo</code>,语句<strong>pages = (struct PageInfo *)boot_alloc(npages * sizeof(struct PageInfo))</strong>是在Page Directory Table后面分配<strong>npages * 8 bytes</strong>的内存空间。</p>
-
-<p>这时候内存情况变为</p>
-
-<pre><code>| KERN | Page Directory Table | struct PageInfo |
-</code></pre>
-
-<p>然是是<code>page_init()</code>，这个函数的作用就是在结构体中标记所有已经在使用的内存页，再将所有未使用的内存页放到<code>Struct PageInfo *pag_free_list</code>为表头的单向链表中。</p>
-
-<p>接下来是三个<code>boot_map_region()</code>函数，分别将<strong>UPAGE(virturl address:0xef000000)</strong>引用到之前分配的<code>struct PageInfo</code>, bootstarp的虚拟地址引用到<code>CPU0's Kernel Stack</code>, <strong>KERN~0xFFFFFFFF</strong>引用到物理地址<strong>0x00000000~0xFFFFFFF</strong>。</p>
-
-<p>引用的过程中会涉及到之前填写的函数，而且在这里要注意的是虚拟地址和物理地址两个概念。
-<strong>虚拟地址</strong>是指OFFSET+SELECTOR得到的地址，在JOS中，SELECTOR = 0，虚拟地址就是OFFSET，也就是指针自己本身的值，在lec5中提到<strong>virtual memory == address space / translation</strong>；
-而<strong>物理地址</strong>是指CPU通过总线发送给内存进行读写的一个值。</p>
-
-<p>虚拟地址是由<code>KERN_pgdir</code>进行管理，比如，当UPAGE作为实参进入到boot_map_region()函数中的时候，先取UPAGE的前十位作为pgdir的偏移获取一个<strong>page table entry</strong>。</p>
-
-<p>如果这个entry的值是<strong>NULL</strong>，就是table不存在的情况下，就会调用<code>boot_alloc()</code>函数，从<strong>page_free_list链表</strong>中获取一个空内存页(4KB)来新建一个<strong>Page Table</strong>，</p>
-
-<p>这个Table的实际物理地址可能在内存最后，因为pag_free_list是从前往后添加的，所以此时链表头应该是指向内存的尾部。</p>
-
-<p>分配完内存页后，通过<code>Page Translation</code>这个机制取中间10位获得这个表的索引，得到Page entry ，然后再把调用boot_map_region()时一起传进来的<code>(PADDR(pages))</code>这个物理地址填到这个entry中(1bytes)。</p>
-
-<p>寻址的时候本来还要加上最后的页偏移，但是UPAGE是4K对齐的，所以entry指的就是这个物理地址的页开头。pages的物理内存地址是pages这个指针减去KERNBASE的值。</p>
-
-<p>因为在JOS启动的时候，<strong>entry.S</strong>就把物理地址0~4MB安装到虚拟地址的[KERNBASE, KERNBASE+4MB]，pages跟在KERN的后面。</p>
-
-<p>最后KERN~0xFFFFFFFF的mapping也是因为KERN的实际.text段(code)等内容在物理地址0x10000开始处,所以在<strong>虚拟地址KERN+0X10000</strong>能正确引用物理地址0x10000的实际内容，系统内核代码在这可以正确执行。</p>
-
-<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab2/virtualaddress.png" alt="virtualaddress.png" /></p>
+<p>答案参考: <a href="https://github.com/Clann24/jos/tree/master/lab2">https://github.com/Clann24/jos/tree/master/lab2</a></p>
 
 <h2 id="challenge-2">Challenge 2</h2>
 
