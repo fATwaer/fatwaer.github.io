@@ -1,7 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
     
-  <head>
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?6094707d9ff989cb034cc1b37eb82c09";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-128341325-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-128341325-2');
+</script>
+
+
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -276,8 +296,8 @@
           
           
           
-          <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%ae%bf%e9%97%ae%e9%99%90%e5%88%b6">
-            数据的访问限制
+          <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e6%95%b0%e6%8d%ae%e7%9a%84%e8%ae%bf%e9%97%ae%e9%99%90%e5%88%b6">
+            段机制的数据的访问限制
           </a>
         </li>
       
@@ -286,8 +306,8 @@
           
           
           
-          <a href="#%e6%8e%a7%e5%88%b6%e8%bd%ac%e7%a7%bb%e9%99%90%e5%88%b6">
-            控制转移限制
+          <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e6%8e%a7%e5%88%b6%e8%bd%ac%e7%a7%bb%e9%99%90%e5%88%b6">
+            段机制的控制转移限制
           </a>
         </li>
       
@@ -296,8 +316,8 @@
           
           
           
-          <a href="#%e9%97%a8%e9%99%90%e6%8f%8f%e8%bf%b0%e7%ac%a6%e5%af%b9%e8%bf%87%e7%a8%8b%e8%b0%83%e7%94%a8%e7%9a%84%e4%bf%9d%e6%8a%a4">
-            门限描述符对过程调用的保护
+          <a href="#%e6%8c%87%e4%bb%a4%e9%9b%86%e7%9a%84%e9%99%90%e5%88%b6">
+            指令集的限制
           </a>
         </li>
       
@@ -306,8 +326,8 @@
           
           
           
-          <a href="#%e6%a0%88%e5%88%87%e6%8d%a2">
-            栈切换
+          <a href="#%e9%a1%b5%e6%9c%ba%e5%88%b6%e4%b8%ad%e7%9a%84%e5%af%bb%e5%9d%80%e9%99%90%e5%88%b6">
+            页机制中的寻址限制
           </a>
         </li>
       
@@ -316,8 +336,8 @@
           
           
           
-          <a href="#%e4%bb%8e%e8%bf%87%e7%a8%8b%e8%b0%83%e7%94%a8%e4%b8%ad%e8%bf%94%e5%9b%9e-ret">
-            从过程调用中返回（ret）
+          <a href="#%e9%a1%b5%e6%9c%ba%e5%88%b6%e4%b8%ad%e7%9a%84%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5">
+            页机制中的类型检查
           </a>
         </li>
       
@@ -454,7 +474,7 @@
 <p>该部分后面还有一种情况，通过门调用时，由于应用程序可以修改栈上的段选择器中的 RPL 值（对应图中数据段D2），这会导致保护机制被破坏，于是有了 ARPL 指令对栈上的 RPL 和调用此操作系统过程的程序的 CPL 进行比较。</p></li>
 </ul>
 
-<h2 id="数据的访问限制">数据的访问限制</h2>
+<h2 id="段机制的数据的访问限制">段机制的数据的访问限制</h2>
 
 <p>为了访问到在内存中的操作数，程序必须将数据段加载到数据段(DS, ES, FS, GS, SS)寄存器中。处理器会在访问数据段时自动比较特权等级。</p>
 
@@ -462,7 +482,7 @@
 
 <p>数据段寄存器能加载一个数据段的前提是DPL大于RPL和CPL。</p>
 
-<h2 id="控制转移限制">控制转移限制</h2>
+<h2 id="段机制的控制转移限制">段机制的控制转移限制</h2>
 
 <p>控制转移往往伴随着JMP, CALL, RET, INT, IRET指令以及中断和异常机制。在同一个代码段的JMP, CALL, RET仅仅只有段界限检查。远距离的调用或者跳转会引用到其他段，因此，处理器会进行特权检查。</p>
 
@@ -483,7 +503,7 @@
 
 <p><img src="/images/operating-system/6.828/protection/fig6-4.gif" alt="fig6-4.gif" /></p>
 
-<h2 id="门限描述符对过程调用的保护">门限描述符对过程调用的保护</h2>
+<h3 id="门限描述符对过程调用的保护">门限描述符对过程调用的保护</h3>
 
 <p>一共有4中描述符用于在不同特权等级间进行跳转：</p>
 
@@ -524,7 +544,7 @@ target segment DPL = CPL
 target segment DPL &lt;= CPL
 </code></pre>
 
-<h2 id="栈切换">栈切换</h2>
+<h3 id="栈切换">栈切换</h3>
 
 <p>为了维护系统的整体性，任意特权等级拥有各自独立的栈，处理器通过TSS（task state segment）定位这些不同特权等级的栈。比如通过call gate切换特权等级时，新的栈指针将会从tss中读取出来。</p>
 
@@ -552,7 +572,7 @@ target segment DPL &lt;= CPL
 <li>将新的 SS:ESP 指向新栈栈顶</li>
 </ol>
 
-<h2 id="从过程调用中返回-ret">从过程调用中返回（ret）</h2>
+<h3 id="从过程调用中返回-ret">从过程调用中返回（ret）</h3>
 
 <p>和 call 指令类似，同一个代码段之间的 ret 只有界限检查。对于段间的 ret，首先会弹出由 call 压入的返回地址，通常情况下时合法的，但是也有可能由于调用过程替换掉了这个地址或者没有很好地维护栈，这个返回地址也是不可信的，所以权限检查还是会有的。</p>
 
@@ -595,6 +615,56 @@ Saved SS selector RPL = Saved SS
 segment DPL                                  GP          Return SS
 </code></pre></li>
 </ol>
+
+<h2 id="指令集的限制">指令集的限制</h2>
+
+<p>影响到保护机制的指令分为两类，特权指令，通常被用于系统控制；敏感指令，通常被用作 IO或者 IO相关的操作。</p>
+
+<p>特权指令如下：</p>
+
+<pre><code>CLTS -- Clear Task-Switched Flag
+HLT -- Halt Processor
+LGDT -- Load GDL Register
+LIDT -- Load IDT Register
+LLDT -- Load LDT Register
+LMSW -- Load Machine Status Word
+LTR -- Load Task Register
+MOV to/from CRn -- Move to Control Register n
+MOV to /from DRn -- Move to Debug Register n
+MOV to/from TRn -- Move to Test Register n
+</code></pre>
+
+<h1 id="页级别保护">页级别保护</h1>
+
+<p>页级别的保护较为简单，分成有两种：</p>
+
+<ol>
+<li>对可寻址的内存进行限制</li>
+<li>类型检查</li>
+</ol>
+
+<h2 id="页机制中的寻址限制">页机制中的寻址限制</h2>
+
+<blockquote>
+<p>PDE/PTE</p>
+</blockquote>
+
+<p><img src="/images/operating-system/6.828/protection/fig6-10.gif" alt="fig6-10.gif" /></p>
+
+<p>在页机制中，特权等级被分为了两级：</p>
+
+<ol>
+<li>Supervisor level (U/S=0) ：对应操作系统的软件和相关数据</li>
+<li>User level (U/S=1)：对于应用程序级别的过程和数据</li>
+</ol>
+
+<p>页机制中的特权等级和段机制中的 CPL 相关联，CPL 处于 ring 0,1,2 代表处理器执行在 supervisor level， CPL 处于 ring 3 代表执行在 user level。</p>
+
+<p>当处理器执行在 user level ，只能寻址那些属于用户级别的页，如果处于  supervisor level ，那么处理器能够寻址所有的页。</p>
+
+<h2 id="页机制中的类型检查">页机制中的类型检查</h2>
+
+<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论，并且处于 user 级别，supervisor 所有的页都是不可读写的。</p>
 
     
     <div>
