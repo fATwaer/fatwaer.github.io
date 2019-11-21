@@ -24,6 +24,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="baidu-site-verification" content="xwOGoQKLDJ" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="baidu-site-verification" content="WZVyBgdQR2" />
   
@@ -664,7 +665,13 @@ MOV to/from TRn -- Move to Test Register n
 
 <h2 id="页机制中的类型检查">页机制中的类型检查</h2>
 
-<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论，并且处于 user 级别，supervisor 所有的页都是不可读写的。</p>
+<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论。处于 user 级别时，对于supervisor 的所有的页都是不可读写的。</p>
+
+<p><strong>参考资料</strong>：</p>
+
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-1.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</a></p>
+
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/c06.htm">6.828 readings, Protection</a></p>
 
     
     <div>
