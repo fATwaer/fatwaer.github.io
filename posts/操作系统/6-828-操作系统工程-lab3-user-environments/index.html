@@ -473,7 +473,7 @@ user/   *   Various test programs to check kernel lab 3 code
 <pre><code>__asm__(汇编语句模板: 输出部分: 输入部分: 破坏描述部分)
 </code></pre>
 
-<p><a href="https://blog.csdn.net/pbymw8iwm/article/details/8227839">具体详情</a></p>
+<p><a href="http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html">具体详情</a></p>
 
 <h1 id="文件概述">文件概述</h1>
 
@@ -528,10 +528,13 @@ static struct Env *env_free_list;   // Free environment list
 
 <hr />
 
-<pre><code class="language-C">    envs = (struct Env *)boot_alloc(NENV * sizeof(struct Env));
-    memset(envs, 0, NENV * sizeof(struct Env));
+<pre><code class="language-C">// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
+envs = (struct Env *)boot_alloc(NENV * sizeof(struct Env));
+memset(envs, 0, NENV * sizeof(struct Env));
 
-    boot_map_region(kern_pgdir, UENVS, PTSIZE, PADDR(envs), PTE_U | PTE_P);
+// Map the 'envs' array read-only by the user at linear address UENVS
+// (ie. perm = PTE_U | PTE_P).
+boot_map_region(kern_pgdir, UENVS, PTSIZE, PADDR(envs), PTE_U | PTE_P);
 </code></pre>
 
 <h1 id="练习2">练习2</h1>
@@ -579,13 +582,13 @@ env_init(void)
 {
     // Set up envs array
     // LAB 3: Your code here.
-    int iter;
+    int i;
 
-    for (iter = NENV - 1; iter &gt;= 0; iter--) { // reversal order
-        envs[iter].env_id = 0;
-        envs[iter].env_status = ENV_FREE;
-        envs[iter].env_link = env_free_list;
-        env_free_list = &amp;envs[iter];
+    for (i = NENV - 1; i &gt;= 0; i--) { // reversal order
+        envs[i].env_id = 0;
+        envs[i].env_status = ENV_FREE;
+        envs[i].env_link = env_free_list;
+        env_free_list = &amp;envs[i];
     }
 
     // Per-CPU part of the initialization
@@ -593,8 +596,6 @@ env_init(void)
 
 }
 </code></pre>
-
-<p><strong>BUG:这里迭代变量iter是自减，自己之前在这里习惯性的写的自增</strong></p>
 
 <h2 id="env-setup-vm">env_setup_vm()</h2>
 
@@ -638,14 +639,14 @@ region_alloc(struct Env *e, void *va, size_t len)
     //   (Watch out for corner-cases!)
     uintptr_t va_beg = ROUNDDOWN((uint32_t)va, PGSIZE);
     uintptr_t va_end = ROUNDUP((uint32_t)(va+len), PGSIZE);
-    uintptr_t iter;
+    uintptr_t i;
     
-    for (iter = va_beg; iter &lt; va_end; iter += PGSIZE) {  /* maps each page to pa */    
+    for (i = va_beg; i &lt; va_end; i += PGSIZE) {  /* maps each page to pa */    
         struct PageInfo *p;
         if (!(p = page_alloc(ALLOC_ZERO))) 
             panic(&quot;lack of free pages&quot;);
 
-        if ((page_insert(e-&gt;env_pgdir, p, (void *)iter, PTE_P | PTE_U | PTE_W)) == -E_NO_MEM)
+        if ((page_insert(e-&gt;env_pgdir, p, (void *)i, PTE_P | PTE_U | PTE_W)) == -E_NO_MEM)
             panic(&quot;lack memmory&quot;);
     
     }
@@ -653,8 +654,6 @@ region_alloc(struct Env *e, void *va, size_t len)
 }
 
 </code></pre>
-
-<p><strong>BUG:在这设置permission的时候，笔误将PTE_P | PTE_U | PTE_W 写成 PTE_P | PTE_P | PTE_W 。导致在env_pop_tf()执行汇编指令iret的时候，无法进入用户模式，系统重启</strong></p>
 
 <h2 id="load-icode">load_icode()</h2>
 
@@ -685,7 +684,6 @@ load_icode(struct Env *e, uint8_t *binary)
         region_alloc(e, (void *)(ph-&gt;p_va), ph-&gt;p_memsz);
         
         memcpy((void *)ph-&gt;p_va, (void *)binary + ph-&gt;p_offset, (size_t)(ph-&gt;p_filesz));
-    //  memset((void *)ph-&gt;p_va + ph-&gt;p_filesz, 0, ph-&gt;p_memsz - ph-&gt;p_filesz);
         }
     }
     
@@ -863,9 +861,7 @@ TRAPHANDLER_NOEC(syscall_entry, T_SYSCALL);
     call trap
 </code></pre>
 
-<p>根据<code>Trapframe</code>进行压栈，<code>pushal</code>是压入一些普通寄存器<a href="http://8e3a2546gy1g7y53o1s7hj20hi0c374j.jpg">详情</a></p>
-
-<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab3/stack.png" alt="stack.png" /></p>
+<p><img src="/images/operating-system/6.828/lab3/stack.png" alt="stack.png" /></p>
 
 <p>根据练习提示，将段寄存器<code>es</code>和<code>ds</code>设置为GDT的kernel数据段，然后将esp压栈，调用trap。</p>
 
@@ -1266,12 +1262,6 @@ Score: 80/80
 </code></pre>
 
 <p>This completes the lab.</p>
-
-<h1 id="总结">总结</h1>
-
-<p>这一个lab完成的用户程序空间的创建并且运行，实现系统中断，异常的处理方法。
-1. 两个有意思的challenge做不出来：单步中断和解决重复编写相同代码
-2. IDT, TSS, CR2, 段选择子等概念模糊。</p>
 
     
     <div>
