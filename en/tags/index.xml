@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Blog | fatwaer</title>
-    <link>/en/tags/</link>
+    <link>fatwaer.me/en/tags/</link>
     <description>Recent content in Tags on Blog | fatwaer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
@@ -11,53 +11,53 @@
     <copyright>©{year}, All Rights Reserved</copyright>
     <lastBuildDate>Sun, 02 Feb 2020 11:12:14 +0800</lastBuildDate>
     
-        <atom:link href="/en/tags/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="fatwaer.me/en/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     
       
       <item>
         <title>config</title>
-        <link>/en/tags/config/</link>
+        <link>fatwaer.me/en/tags/config/</link>
         <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/config/</guid>
+        <guid>fatwaer.me/en/tags/config/</guid>
         <description></description>
       </item>
       
       <item>
         <title>distributed system</title>
-        <link>/en/tags/distributed-system/</link>
+        <link>fatwaer.me/en/tags/distributed-system/</link>
         <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/distributed-system/</guid>
+        <guid>fatwaer.me/en/tags/distributed-system/</guid>
         <description></description>
       </item>
       
       <item>
         <title>Java</title>
-        <link>/en/tags/java/</link>
+        <link>fatwaer.me/en/tags/java/</link>
         <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/java/</guid>
+        <guid>fatwaer.me/en/tags/java/</guid>
         <description></description>
       </item>
       
       <item>
         <title>OS</title>
-        <link>/en/tags/os/</link>
+        <link>fatwaer.me/en/tags/os/</link>
         <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/os/</guid>
+        <guid>fatwaer.me/en/tags/os/</guid>
         <description></description>
       </item>
       
       <item>
         <title>Assembly</title>
-        <link>/en/tags/assembly/</link>
+        <link>fatwaer.me/en/tags/assembly/</link>
         <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/assembly/</guid>
+        <guid>fatwaer.me/en/tags/assembly/</guid>
         <description></description>
       </item>
       

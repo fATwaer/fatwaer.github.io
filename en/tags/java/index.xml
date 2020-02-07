@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java on Blog | fatwaer</title>
-    <link>/en/tags/java/</link>
+    <link>fatwaer.me/en/tags/java/</link>
     <description>Recent content in Java on Blog | fatwaer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
@@ -11,17 +11,17 @@
     <copyright>©{year}, All Rights Reserved</copyright>
     <lastBuildDate>Sun, 18 Nov 2018 16:36:16 +0000</lastBuildDate>
     
-        <atom:link href="/en/tags/java/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="fatwaer.me/en/tags/java/index.xml" rel="self" type="application/rss+xml" />
     
     
     
       
       <item>
         <title>Core Java for DataBase</title>
-        <link>/en/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
+        <link>fatwaer.me/en/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
         <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
+        <guid>fatwaer.me/en/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
         <description>前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比</description>
       </item>
       
