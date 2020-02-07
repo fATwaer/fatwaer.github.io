@@ -3,58 +3,58 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://fatwaer.me/ko/categories/</loc>
+    <loc>fatwaer.github.io/ko/categories/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://fatwaer.me/en/categories/"
+                href="fatwaer.github.io/en/categories/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="http://fatwaer.me/ko/categories/"
+                href="fatwaer.github.io/ko/categories/"
                 />
   </url>
   
   <url>
-    <loc>http://fatwaer.me/ko/</loc>
+    <loc>fatwaer.github.io/ko/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://fatwaer.me/en/"
+                href="fatwaer.github.io/en/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="http://fatwaer.me/ko/"
+                href="fatwaer.github.io/ko/"
                 />
   </url>
   
   <url>
-    <loc>http://fatwaer.me/ko/series/</loc>
+    <loc>fatwaer.github.io/ko/series/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://fatwaer.me/en/series/"
+                href="fatwaer.github.io/en/series/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="http://fatwaer.me/ko/series/"
+                href="fatwaer.github.io/ko/series/"
                 />
   </url>
   
   <url>
-    <loc>http://fatwaer.me/ko/tags/</loc>
+    <loc>fatwaer.github.io/ko/tags/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="http://fatwaer.me/en/tags/"
+                href="fatwaer.github.io/en/tags/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="http://fatwaer.me/ko/tags/"
+                href="fatwaer.github.io/ko/tags/"
                 />
   </url>
   

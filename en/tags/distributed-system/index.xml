@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>distributed system on Blog | </title>
-    <link>http://fatwaer.me/en/tags/distributed-system/</link>
+    <link>fatwaer.github.io/en/tags/distributed-system/</link>
     <description>Recent content in distributed system on Blog | </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
@@ -11,35 +11,35 @@
     <copyright>©{year}, All Rights Reserved</copyright>
     <lastBuildDate>Tue, 15 Jan 2019 15:49:46 +0000</lastBuildDate>
     
-        <atom:link href="http://fatwaer.me/en/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="fatwaer.github.io/en/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
     
     
     
       
       <item>
         <title>6.824 distributed system notes</title>
-        <link>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</link>
+        <link>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</link>
         <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</guid>
+        <guid>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</guid>
         <description>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。 分布</description>
       </item>
       
       <item>
         <title>Data-Intensive System</title>
-        <link>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</link>
+        <link>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</link>
         <pubDate>Fri, 11 Jan 2019 11:57:29 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</guid>
+        <guid>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</guid>
         <description>数据组件 消息队列 Redis: https://github.com/antirez/redis Apache Kafka 主数据库 //todo 全文索引 Elasticsearch: https://github.com/elastic/elasticsearch Apache Solr 内存缓存 Memcached: https://github.com/memcached/memcached</description>
       </item>
       
       <item>
         <title>Effective Go</title>
-        <link>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</link>
+        <link>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</link>
         <pubDate>Thu, 10 Jan 2019 12:48:14 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>http://fatwaer.me/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</guid>
+        <guid>fatwaer.github.io/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</guid>
         <description>goroutine部分 goroutine的一些tricks，比如 func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 } 直接在go关键字后面接</description>
       </item>
       
