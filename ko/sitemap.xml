@@ -3,58 +3,58 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>fatwaer.github.io/ko/categories/</loc>
+    <loc>/ko/categories/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.github.io/en/categories/"
+                href="/en/categories/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.github.io/ko/categories/"
+                href="/ko/categories/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.github.io/ko/</loc>
+    <loc>/ko/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.github.io/en/"
+                href="/en/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.github.io/ko/"
+                href="/ko/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.github.io/ko/series/</loc>
+    <loc>/ko/series/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.github.io/en/series/"
+                href="/en/series/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.github.io/ko/series/"
+                href="/ko/series/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.github.io/ko/tags/</loc>
+    <loc>/ko/tags/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.github.io/en/tags/"
+                href="/en/tags/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.github.io/ko/tags/"
+                href="/ko/tags/"
                 />
   </url>
   

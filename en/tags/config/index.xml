@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>config on Blog | </title>
-    <link>fatwaer.github.io/en/tags/config/</link>
-    <description>Recent content in config on Blog | </description>
+    <title>config on Blog | fatwaer</title>
+    <link>/en/tags/config/</link>
+    <description>Recent content in config on Blog | fatwaer</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
@@ -11,26 +11,26 @@
     <copyright>©{year}, All Rights Reserved</copyright>
     <lastBuildDate>Wed, 18 Sep 2019 14:11:14 +0800</lastBuildDate>
     
-        <atom:link href="fatwaer.github.io/en/tags/config/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/en/tags/config/index.xml" rel="self" type="application/rss+xml" />
     
     
     
       
       <item>
         <title>Hugo is comming !</title>
-        <link>fatwaer.github.io/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
+        <link>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>fatwaer.github.io/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
+        <guid>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
         <description>博客从 hexo 迁到了 hugo，主要是 hexo 随着文文章增多，我build一次大概需要花到5s左右，某种程度上算是很慢了，另外个人感觉 hexo 主题社区在慢慢衰落</description>
       </item>
       
       <item>
         <title>hexo 配置</title>
-        <link>fatwaer.github.io/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</link>
+        <link>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Thu, 05 Apr 2018 15:17:47 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>fatwaer.github.io/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</guid>
+        <guid>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。&lt;/p&gt;
 &lt;h2 id=&#34;categories和tags&#34;&gt;categories和tags&lt;/h2&gt;
 &lt;p&gt;themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。&lt;/p&gt;
