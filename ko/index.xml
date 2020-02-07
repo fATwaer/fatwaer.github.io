@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hugo Zzo Theme</title>
+    <link>http://fatwaer.me/ko/</link>
+    <description>Recent content on Hugo Zzo Theme</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ko</language>
+    <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
+    <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
+    <copyright>©{year}, All Rights Reserved</copyright>
+    
+        <atom:link href="http://fatwaer.me/ko/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+      
+    
+  </channel>
+</rss>

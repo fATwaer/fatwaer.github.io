@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head prefix="og: http://ogp.me/ns#">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Protection Mechanism on 80386 – Blog | </title>
+    
+
+
+<script src="/js/enquire.min.aa37bdcb743826eecdae5c5d177fc7d6552340f1b4378ffaa9c82b2c6111400b.js"></script>
+
+<script defer src="/js/lazysizes.min.5e11d056075a05065b9c0bfec44084a113fc2976c2952ec804dedb61c7662db9.js"></script>
+
+<script defer src="/js/fuse.min.c4bee9a8d44273d6154fe86006923d4131eb2e8069d8897687137c6f37f553e3.js"></script>
+
+<script defer src="/js/helper/getParents.min.1618c696be7c98933f9a92677f518b512a74e55bdbb976b09936b4182e93181b.js"></script>
+
+<script defer src="/js/helper/fadeinout.min.93a331f96194789a542f33690bbe4f0c102c7e78ffc018217f5a1c33010bad91.js"></script>
+
+<script defer src="/js/helper/closest.min.js"></script>
+  
+<script>
+  "use strict";
+
+  
+  
+  if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
+  }
+
+  
+  if (!String.prototype.includes) {
+    String.prototype.includes = function (search, start) {
+      'use strict';
+
+      if (search instanceof RegExp) {
+        throw TypeError('first argument must not be a RegExp');
+      }
+      if (start === undefined) { start = 0; }
+      return this.indexOf(search, start) !== -1;
+    };
+  }
+
+  
+  Document.prototype.append = Element.prototype.append = function append() {
+    this.appendChild(_mutation(arguments));
+  };
+  function _mutation(nodes) {
+    if (!nodes.length) {
+      throw new Error('DOM Exception 8');
+    } else if (nodes.length === 1) {
+      return typeof nodes[0] === 'string' ? document.createTextNode(nodes[0]) : nodes[0];
+    } else {
+      var
+      fragment = document.createDocumentFragment(),
+      length = nodes.length,
+      index = -1,
+      node;
+
+      while (++index < length) {
+        node = nodes[index];
+
+        fragment.appendChild(typeof node === 'string' ? document.createTextNode(node) : node);
+      }
+
+      return fragment;
+    }
+  }
+
+  
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+      position = position || 0;
+      return this.indexOf(searchString, position) === position;
+    };
+  }
+  
+
+  document.addEventListener('DOMContentLoaded', function () {
+    
+    var summaryContainer = document.querySelector('.summary__container');
+    var searchResult = document.querySelector('.search-result');
+    var searchResultCloseBtn = document.querySelector('.search-result__close');
+    searchResultCloseBtn ? searchResultCloseBtn.addEventListener('click', function (e) {
+      searchResult.setAttribute('data-display', 'none');
+      summaryContainer.setAttribute('data-display', 'block');
+    }) : null;
+    
+
+
+    
+    document.querySelectorAll('.tab') ? 
+    document.querySelectorAll('.tab').forEach(function(elem, idx) {
+      var containerId = elem.getAttribute('id');
+      var containerElem = elem;
+      var tabLinks = elem.querySelectorAll('.tab__link');
+      var tabContents = elem.querySelectorAll('.tab__content');
+      var ids = [];
+
+      tabLinks && tabLinks.length > 0 ?
+      tabLinks.forEach(function(link, index, self) {
+        link.onclick = function(e) {
+          for (var i = 0; i < self.length; i++) {
+            if (index === parseInt(i, 10)) {
+              if (!self[i].classList.contains('active')) {
+                self[i].classList.add('active');
+                tabContents[i].style.display = 'block';
+              }
+            } else {
+              self[i].classList.remove('active');
+              tabContents[i].style.display = 'none';
+            }
+          }
+        }
+      }) : null;
+    }) : null;
+    
+
+
+    
+    document.querySelectorAll('.codetab') ? 
+    document.querySelectorAll('.codetab').forEach(function(elem, idx) {
+      var containerId = elem.getAttribute('id');
+      var containerElem = elem;
+      var codetabLinks = elem.querySelectorAll('.codetab__link');
+      var codetabContents = elem.querySelectorAll('.codetab__content');
+      var ids = [];
+
+      codetabLinks && codetabLinks.length > 0 ?
+      codetabLinks.forEach(function(link, index, self) {
+        link.onclick = function(e) {
+          for (var i = 0; i < self.length; i++) {
+            if (index === parseInt(i, 10)) {
+              if (!self[i].classList.contains('active')) {
+                self[i].classList.add('active');
+                codetabContents[i].style.display = 'block';
+              }
+            } else {
+              self[i].classList.remove('active');
+              codetabContents[i].style.display = 'none';
+            }
+          }
+        }
+      }) : null;
+    }) : null;
+    
+
+
+    
+    var gttBtn = document.getElementById("gtt");
+    gttBtn.style.display = "none";
+    gttBtn.addEventListener('click', function () {
+      if (window.document.documentMode) {
+        document.documentElement.scrollTop = 0;
+      } else {
+        scrollToTop(250);
+      }
+    });
+
+    function scrollToTop(scrollDuration) {
+      var scrollStep = -window.scrollY / (scrollDuration / 15);
+      var scrollInterval = setInterval(function () {
+        if (window.scrollY != 0) {
+          window.scrollBy(0, scrollStep);
+        }
+        else clearInterval(scrollInterval);
+      }, 15);
+    }
+
+    var scrollFunction = function () {
+      if (document.body.scrollTop > 250 || document.documentElement.scrollTop > 250) {
+        gttBtn.style.display = "block";
+      } else {
+        gttBtn.style.display = "none";
+      }
+    }
+    
+
+
+    
+    var expandBtn = document.querySelectorAll('.expand__button');
+
+    for (let i = 0; i < expandBtn.length; i++) {
+      expandBtn[i].addEventListener("click", function () {
+        var content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          this.querySelector('svg').classList.add('expand-icon__right');
+          this.querySelector('svg').classList.remove('expand-icon__down');
+        } else {
+          content.style.maxHeight = content.scrollHeight + "px";
+          this.querySelector('svg').classList.remove('expand-icon__right');
+          this.querySelector('svg').classList.add('expand-icon__down');
+        }
+      });
+    }
+    
+
+
+    
+    var lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var tocElem = document.querySelector('.toc');
+    var tableOfContentsElem = tocElem ? tocElem.querySelector('#TableOfContents') : null;
+    var toggleTocElem = document.getElementById('toggle-toc');
+    var singleContentsElem = document.querySelector('.single__contents');
+    var navbar = document.querySelector('.navbar');
+    var tocFlexbox = document.querySelector('.toc__flexbox');
+    var tocFlexboxOuter = document.querySelector('.toc__flexbox--outer');
+    var expandContents = document.querySelectorAll('.expand__content');
+    var boxContents = document.querySelectorAll('.box');
+    var notAllowedTitleIds = null;
+
+    
+    var tocFolding = JSON.parse("false");
+
+    
+    singleContentsElem && singleContentsElem.querySelectorAll(".tab") ?
+    singleContentsElem.querySelectorAll(".tab").forEach(function (elem) {
+      elem.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (element) {
+        notAllowedTitleIds = Array.isArray(notAllowedTitleIds) ?
+          notAllowedTitleIds.concat(element.getAttribute('id')) :
+          [element.getAttribute('id')];
+      });
+    }) : null;
+
+    
+    expandContents ? expandContents.forEach(function(elem) {
+      elem.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (element) {
+        notAllowedTitleIds = Array.isArray(notAllowedTitleIds) ?
+          notAllowedTitleIds.concat(element.getAttribute('id')) :
+          [element.getAttribute('id')];
+      });
+    }) : null;
+
+    
+    boxContents ? boxContents.forEach(function(elem) {
+      elem.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (element) {
+        notAllowedTitleIds = Array.isArray(notAllowedTitleIds) ?
+          notAllowedTitleIds.concat(element.getAttribute('id')) :
+          [element.getAttribute('id')];
+      });
+    }) : null;
+
+    
+    window.onscroll = function () {
+      scrollFunction();
+      
+      var st = window.pageYOffset || document.documentElement.scrollTop;
+      if (st > lastScrollTop) { 
+        if (st < 250) {
+          gttBtn.style.display = "none";
+        } else {
+          gttBtn.style.display = "block";
+        }
+
+        if (st < 45) {
+          return null;
+        }
+        
+        if (!navbar.classList.contains('navbar--hide')) {
+          navbar.classList.add('navbar--hide');
+        } else if (navbar.classList.contains('navbar--show')) {
+          navbar.classList.remove('navbar--show');
+        }
+
+        if (singleContentsElem) {
+          if (singleContentsElem.querySelectorAll("h1, h2, h3, h4, h5, h6").length > 0) {
+            singleContentsElem.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (elem) {
+              if (toggleTocElem && !toggleTocElem.checked) {
+                return null;
+              }
+
+              if (notAllowedTitleIds && notAllowedTitleIds.includes(elem.getAttribute('id'))) {
+                return null;
+              }
+              
+              if (document.documentElement.scrollTop >= elem.offsetTop) {
+                if (tableOfContentsElem) {
+                  var id = elem.getAttribute('id');
+                  tocElem.querySelectorAll('a').forEach(function (elem) {
+                    elem.classList.remove('active');
+                  });
+                  tocElem.querySelector('a[href="#' + id + '"]') ?
+                    tocElem.querySelector('a[href="#' + id + '"]').classList.add('active') : null;
+
+                  if (false === tocFolding) {
+                    
+                  } else {
+                    tableOfContentsElem.querySelectorAll('ul') ?
+                      tableOfContentsElem.querySelectorAll('ul').forEach(function (rootUl) {
+                        rootUl.querySelectorAll('li').forEach(function (liElem) {
+                          liElem.querySelectorAll('ul').forEach(function (ulElem) {
+                            ulElem.style.display = 'none';
+                          });
+                        });
+                      }) : null;
+                  }
+
+                  var curElem = tableOfContentsElem.querySelector("[href='#" + id + "']");
+                  if (curElem && curElem.nextElementSibling) {
+                    curElem.nextElementSibling.style.display = 'block';
+                  }
+                  getParents(curElem, 'ul') ?
+                    getParents(curElem, 'ul').forEach(function (elem) {
+                      elem.style.display = 'block';
+                    }) : null;
+                }
+              }
+            });
+          } else {
+            if (tocFlexbox) {
+              tocFlexbox.setAttribute('data-position', '');
+              if (!tocFlexbox.classList.contains('hide')) {
+                tocFlexbox.classList.add('hide');
+              }
+            }
+            if (tocFlexboxOuter) {
+              tocFlexboxOuter.setAttribute('data-position', '');
+              if (!tocFlexboxOuter.classList.contains('hide')) {
+                tocFlexboxOuter.classList.add('hide');
+              }
+            }
+          }
+        }
+      } else { 
+        if (st < 250) {
+          gttBtn.style.display = "none";
+        }
+
+        if (navbar.classList.contains('navbar--hide')) {
+          navbar.classList.remove('navbar--hide');
+        } else if (!navbar.classList.contains('navbar--show')) {
+          navbar.classList.add('navbar--show');
+        }
+
+        if (singleContentsElem) {
+          if (singleContentsElem.querySelectorAll("h1, h2, h3, h4, h5, h6").length > 0) {
+            singleContentsElem.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (elem) {
+              if (toggleTocElem && !toggleTocElem.checked) {
+                return null;
+              }
+              
+              if (notAllowedTitleIds && notAllowedTitleIds.includes(elem.getAttribute('id'))) {
+                return null;
+              }
+
+              if (document.documentElement.scrollTop >= elem.offsetTop) {
+                if (tableOfContentsElem) {
+                  var id = elem.getAttribute('id');
+                  tocElem.querySelectorAll('a').forEach(function (elem) {
+                    elem.classList.remove('active');
+                  });
+                  tocElem.querySelector('a[href="#' + id + '"]') ?
+                    tocElem.querySelector('a[href="#' + id + '"]').classList.add('active') : null;
+
+                  if (false === tocFolding) {
+                    
+                  } else {
+                    tableOfContentsElem.querySelectorAll('ul') ?
+                      tableOfContentsElem.querySelectorAll('ul').forEach(function (rootUl) {
+                        rootUl.querySelectorAll('li').forEach(function (liElem) {
+                          liElem.querySelectorAll('ul').forEach(function (ulElem) {
+                            ulElem.style.display = 'none';
+                          });
+                        });
+                      }) : null;
+                  }
+
+                  var curElem = tableOfContentsElem.querySelector("[href='#" + id + "']");
+                  if (curElem && curElem.nextElementSibling) {
+                    curElem.nextElementSibling.style.display = 'block';
+                  }
+                  getParents(curElem, 'ul') ?
+                    getParents(curElem, 'ul').forEach(function (elem) {
+                      elem.style.display = 'block';
+                    }) : null;
+                }
+              }
+            });
+          } else {
+            if (tocFlexbox && !tocFlexbox.classList.contains('hide')) {
+              tocFlexbox.classList.add('hide');
+            }
+            if (tocFlexboxOuter && !tocFlexboxOuter.classList.contains('hide')) {
+              tocFlexboxOuter.classList.add('hide');
+            }
+          }
+          
+        }
+
+        if (tableOfContentsElem && document.documentElement.scrollTop < 250) {
+          if (false === tocFolding) {
+
+          } else {
+            tableOfContentsElem.querySelector('ul') ?
+              tableOfContentsElem.querySelector('ul').querySelectorAll('li').forEach(function (liElem) {
+                liElem.querySelectorAll('ul').forEach(function (ulElem) {
+                  ulElem.style.display = 'none';
+                });
+              }) : null;
+          }
+        }
+      }
+      lastScrollTop = st <= 0 ? 0 : st;
+    };
+  
+
+
+  
+    var navbarBurgerElem = document.querySelector('.navbar__burger');
+    var navbarMenuElem = document.querySelector('.navbar__menu');
+    navbarBurgerElem ?
+    navbarBurgerElem.addEventListener('click', function () {
+      if (navbarBurgerElem.classList.contains('is-active')) {
+        navbarBurgerElem.classList.remove('is-active');
+        navbarMenuElem.classList.remove('is-active');
+      } else {
+        navbarBurgerElem.classList.add('is-active');
+        navbarMenuElem.classList.add('is-active');
+      }
+    }) : null;
+  
+
+
+  
+    var localTheme = localStorage.getItem('theme');
+    var rootEleme = document.getElementById('root');
+    var selectThemeElem = document.querySelectorAll('.select-theme');
+    var selectThemeItemElem = document.querySelectorAll('.select-theme__item');
+    
+    if (localTheme) {
+      selectThemeItemElem ? 
+      selectThemeItemElem.forEach(function (elem) {
+        if (elem.text.trim() === localTheme) {
+          elem.classList.add('is-active');
+        } else {
+          elem.classList.remove('is-active');
+        }
+      }) : null;
+    }
+
+    selectThemeItemElem ? 
+    selectThemeItemElem.forEach(function (v, i) {
+      v.addEventListener('click', function (e) {
+        var selectedThemeVariant = e.target.text.trim();
+        localStorage.setItem('theme', selectedThemeVariant);
+
+        rootEleme.removeAttribute('class');
+        rootEleme.classList.add('theme__' + selectedThemeVariant);
+        selectThemeElem.forEach(function(rootElem) {
+          rootElem.querySelectorAll('a').forEach(function (elem) {
+            if (elem.classList) {
+              if (elem.text.trim() === selectedThemeVariant) {
+                if (!elem.classList.contains('is-active')) {
+                  elem.classList.add('is-active');
+                }
+              } else {
+                if (elem.classList.contains('is-active')) {
+                  elem.classList.remove('is-active');
+                }
+              }
+            }
+          });
+        });
+
+        if (window.mermaid) {
+          if (selectedThemeVariant === "dark" || selectedThemeVariant === "hacker") {
+            mermaid.initialize({ theme: 'dark' });
+            location.reload();
+          } else {
+            mermaid.initialize({ theme: 'default' });
+            location.reload();
+          }
+        }
+
+        var utterances = document.querySelector('iframe');
+        if (utterances) {
+          utterances.contentWindow.postMessage({
+            type: 'set-theme',
+            theme: selectedThemeVariant === "dark" || selectedThemeVariant === "hacker" ? 'photon-dark' : selectedThemeVariant === 'kimbie' ? 'github-dark-orange' : 'github-light',
+          }, 'https://utteranc.es');
+        }
+      });
+    }) : null;
+  
+
+
+  
+    
+    var permalink = JSON.parse("\"http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/\"");
+    var searchResults = null;
+    var searchMenu = null;
+    var searchText = null;
+    
+    
+    var enableSearchHighlight = JSON.parse("true");
+    
+    var searchResultPosition = JSON.parse("null");
+
+    var fuse = null;
+
+    function initFuse() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', permalink + "index.json");
+      xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          fuse = new Fuse(JSON.parse(xhr.response.toString('utf-8')), {
+            keys: ['title', 'description', 'content'],
+            includeMatches: enableSearchHighlight,
+            shouldSort: true,
+            threshold: 0.4,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+          });
+        }
+        else {
+          console.error('[' + xhr.status + ']Error:', xhr.statusText);
+        }
+      };
+      xhr.send();
+    }
+
+    function makeLi(ulElem, obj) {
+      var li = document.createElement('li');
+      li.className = 'search-result__item';
+      
+      var a = document.createElement('a');
+      a.innerHTML = obj.title;
+      a.setAttribute('class', 'search-result__item--title');
+      a.setAttribute('href', obj.permalink);
+
+      var descDiv = document.createElement('div');
+      descDiv.setAttribute('class', 'search-result__item--desc');
+      if (obj.description) {
+        descDiv.innerHTML = obj.description;
+      } else if (obj.content) {
+        descDiv.innerHTML = obj.content.substring(0, 225);
+      }
+      
+      li.appendChild(a);
+      li.appendChild(descDiv);
+      ulElem.appendChild(li);
+    }
+
+    function makeHighlightLi(ulElem, obj) {
+      var li = document.createElement('li');
+      li.className = 'search-result__item';
+      var descDiv = null;
+
+      var a = document.createElement('a');
+      a.innerHTML = obj.item.title;
+      a.setAttribute('class', 'search-result__item--title');
+      a.setAttribute('href', obj.item.uri);
+
+      if (obj.matches && obj.matches.length) {
+        for (var i = 0; i < obj.matches.length; i++) {
+          if ('title' === obj.matches[i].key) {
+            a = document.createElement('a');
+            a.innerHTML = generateHighlightedText(obj.matches[i].value, obj.matches[i].indices);
+            a.setAttribute('class', 'search-result__item--title');
+            a.setAttribute('href', obj.item.uri);
+          }
+          
+          if ('description' === obj.matches[i].key) {
+            descDiv = document.createElement('div');
+            descDiv.setAttribute('class', 'search-result__item--desc');
+            descDiv.innerHTML = generateHighlightedText(obj.item.description, obj.matches[i].indices);
+          } else if ('content' === obj.matches[i].key) {
+            if (!descDiv) {
+              descDiv = document.createElement('div');
+              descDiv.setAttribute('class', 'search-result__item--desc');
+              descDiv.innerHTML = generateHighlightedText(obj.item.content.substring(0, 150), obj.matches[i].indices);
+            }
+          } else {
+            if (obj.item.description) {
+              descDiv = document.createElement('div');
+              descDiv.setAttribute('class', 'search-result__item--desc');
+              descDiv.innerHTML = obj.item.description;
+            } else {
+              descDiv = document.createElement('div');
+              descDiv.setAttribute('class', 'search-result__item--desc');
+              descDiv.innerHTML = obj.item.content.substring(0, 150);
+            }
+          }
+        }
+
+        li.appendChild(a);
+        if (descDiv) {
+          li.appendChild(descDiv);
+        }
+        if (li) {
+          ulElem.appendChild(li);
+        }
+      }
+    }
+
+    function renderSearchResultsSide(searchText, results) {
+      searchResults = document.getElementById('search-results');
+      searchMenu = document.getElementById('search-menu');
+      searchResults.setAttribute('class', 'dropdown is-active');
+      
+      var ul = document.createElement('ul');
+      ul.setAttribute('class', 'dropdown-content search-content');
+
+      if (results.length) {
+        results.forEach(function (result) {
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          a.setAttribute('href', result.uri);
+          a.setAttribute('class', 'dropdown-item');
+          a.appendChild(li);
+
+          var titleDiv = document.createElement('div');
+          titleDiv.innerHTML = result.title;
+          titleDiv.setAttribute('class', 'menu-item__title');
+
+          var descDiv = document.createElement('div');
+          descDiv.setAttribute('class', 'menu-item__desc');
+          if (result.description) {
+            descDiv.innerHTML = result.description;
+          } else if (result.content) {
+            descDiv.innerHTML = result.content.substring(0, 150);
+          }
+
+          li.appendChild(titleDiv);
+          li.appendChild(descDiv);
+          ul.appendChild(a);
+        });
+      } else {
+        var li = document.createElement('li');
+        li.setAttribute('class', 'dropdown-item');
+        li.innerText = 'No results found';
+        ul.appendChild(li);
+      }
+
+      while (searchMenu.hasChildNodes()) {
+        searchMenu.removeChild(
+          searchMenu.lastChild
+        );
+      }
+      
+      searchMenu.appendChild(ul);
+    }
+
+    function renderSearchHighlightResultsSide(searchText, results) {
+      searchResults = document.getElementById('search-results');
+      searchMenu = document.getElementById('search-menu');
+      searchResults.setAttribute('class', 'dropdown is-active');
+
+      var ul = document.createElement('ul');
+      ul.setAttribute('class', 'dropdown-content search-content');
+
+      if (results.length) {
+        results.forEach(function (result) {
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          var descDiv = null;
+
+          a.setAttribute('href', result.item.uri);
+          a.setAttribute('class', 'dropdown-item');
+          a.appendChild(li);
+
+          var titleDiv = document.createElement('div');
+          titleDiv.innerHTML = result.item.title;
+          titleDiv.setAttribute('class', 'menu-item__title');
+          
+          if (result.matches && result.matches.length) {
+            for (var i = 0; i < result.matches.length; i++) {
+              if ('title' === result.matches[i].key) {
+                titleDiv.innerHTML = generateHighlightedText(result.matches[i].value, result.matches[i].indices);
+              }
+
+              if ('description' === result.matches[i].key) {
+                descDiv = document.createElement('div');
+                descDiv.setAttribute('class', 'menu-item__desc');
+                descDiv.innerHTML = generateHighlightedText(result.item.description, result.matches[i].indices);
+              } else if ('content' === result.matches[i].key) {
+                if (!descDiv) {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'menu-item__desc');
+                  descDiv.innerHTML = generateHighlightedText(result.item.content.substring(0, 150), result.matches[i].indices);
+                }
+              } else {
+                if (result.item.description) {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'menu-item__desc');
+                  descDiv.innerHTML = result.item.description;
+                } else {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'menu-item__desc');
+                  descDiv.innerHTML = result.item.content.substring(0, 150);
+                }
+              }
+            }
+            
+            li.appendChild(titleDiv);
+            if (descDiv) {
+              li.appendChild(descDiv);
+            }
+            ul.appendChild(a);
+          }
+        });
+      } else {
+        var li = document.createElement('li');
+        li.setAttribute('class', 'dropdown-item');
+        li.innerText = 'No results found';
+        ul.appendChild(li);
+      }
+
+      while (searchMenu.hasChildNodes()) {
+        searchMenu.removeChild(
+          searchMenu.lastChild
+        );
+      }
+      searchMenu.appendChild(ul);
+    }
+
+    function renderSearchResultsMobile(searchText, results) {
+      searchResults = document.getElementById('search-mobile-results');
+
+      var content = document.createElement('div');
+      content.setAttribute('class', 'mobile-search__content');
+
+      if (results.length > 0) {
+        results.forEach(function (result) {
+          var item = document.createElement('a');
+          item.setAttribute('href', result.uri);
+          item.innerHTML = '<div class="mobile-search__item"><div class="mobile-search__item--title">📄 ' + result.title + '</div><div class="mobile-search__item--desc">' + (result.description ? result.description : result.content) + '</div></div>';
+          content.appendChild(item);
+        });
+      } else {
+        var item = document.createElement('span');
+        content.appendChild(item);
+      }
+
+      let wrap = document.getElementById('search-mobile-results');
+      while (wrap.firstChild) {
+        wrap.removeChild(wrap.firstChild)
+      }
+      searchResults.appendChild(content);      
+    }
+
+    function renderSearchHighlightResultsMobile(searchText, results) {
+      searchResults = document.getElementById('search-mobile-results');
+
+      var ul = document.createElement('div');
+      ul.setAttribute('class', 'mobile-search__content');
+
+      if (results.length) {
+        results.forEach(function (result) {
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          var descDiv = null;
+
+          a.setAttribute('href', result.item.uri);
+          a.appendChild(li);
+          li.setAttribute('class', 'mobile-search__item');
+
+          var titleDiv = document.createElement('div');
+          titleDiv.innerHTML = result.item.title;
+          titleDiv.setAttribute('class', 'mobile-search__item--title');
+          
+          if (result.matches && result.matches.length) {
+            for (var i = 0; i < result.matches.length; i++) {
+              if ('title' === result.matches[i].key) {
+                titleDiv.innerHTML = generateHighlightedText(result.matches[i].value, result.matches[i].indices);
+              }
+
+              if ('description' === result.matches[i].key) {
+                descDiv = document.createElement('div');
+                descDiv.setAttribute('class', 'mobile-search__item--desc');
+                descDiv.innerHTML = generateHighlightedText(result.item.description, result.matches[i].indices);
+              } else if ('content' === result.matches[i].key) {
+                if (!descDiv) {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'mobile-search__item--desc');
+                  descDiv.innerHTML = generateHighlightedText(result.item.content.substring(0, 150), result.matches[i].indices);
+                }
+              } else {
+                if (result.item.description) {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'mobile-search__item--desc');
+                  descDiv.innerHTML = result.item.description;
+                } else {
+                  descDiv = document.createElement('div');
+                  descDiv.setAttribute('class', 'mobile-search__item--desc');
+                  descDiv.innerHTML = result.item.content.substring(0, 150);
+                }
+              }
+            }
+            
+            li.appendChild(titleDiv);
+            if (descDiv) {
+              li.appendChild(descDiv);
+            }
+            ul.appendChild(a);
+          }
+        });
+      } else {
+        var item = document.createElement('span');
+        ul.appendChild(item);
+      }
+
+      let wrap = document.getElementById('search-mobile-results');
+      while (wrap.firstChild) {
+        wrap.removeChild(wrap.firstChild)
+      }
+      searchResults.appendChild(ul);
+    }
+
+    function generateHighlightedText(text, regions) {
+      if (!regions) {
+        return text;
+      }
+
+      var content = '', nextUnhighlightedRegionStartingIndex = 0;
+
+      regions.forEach(function(region) {
+        if (region[0] === region[1]) {
+          return null;
+        }
+        
+        content += '' +
+          text.substring(nextUnhighlightedRegionStartingIndex, region[0]) +
+          '<span class="search__highlight">' +
+            text.substring(region[0], region[1] + 1) +
+          '</span>' +
+        '';
+        nextUnhighlightedRegionStartingIndex = region[1] + 1;
+      });
+
+      content += text.substring(nextUnhighlightedRegionStartingIndex);
+
+      return content;
+    };
+
+    initFuse();
+
+    var searchElem = document.getElementById('search');
+    var searchMobile = document.getElementById('search-mobile');
+
+    searchElem ? 
+    searchElem.addEventListener('input', function(e) {
+      if (!e.target.value) {
+        document.getElementById('search-results').setAttribute('class', 'dropdown');
+        searchResult ? searchResult.setAttribute('data-display', 'none') : null;
+        summaryContainer ? summaryContainer.setAttribute('data-display', 'block') : null;
+        return null;
+      }
+
+      if (window.innerWidth < 770) {
+        return null;
+      }
+
+      searchText = e.target.value;
+      var results = fuse.search(e.target.value);
+
+      if (searchResultPosition === "main") {
+        if (enableSearchHighlight) {
+          renderSearchHighlightResultsMain(searchText, results);
+        } else {
+          renderSearchResultsMain(searchText, results);
+        }
+      } else {
+        if (enableSearchHighlight) {
+          renderSearchHighlightResultsSide(searchText, results);
+        } else {
+          renderSearchResultsSide(searchText, results);
+        }
+      }
+    }) : null;
+
+    searchElem ? 
+    searchElem.addEventListener('blur', function() {
+      if (window.innerWidth < 770) {
+        return null;
+      }
+      setTimeout(function () {
+        document.getElementById('search-results').setAttribute('class', 'dropdown');
+      }, 100);
+    }) : null;
+
+    searchElem ? 
+    searchElem.addEventListener('click', function(e) {
+      if (window.innerWidth < 770) {
+        return null;
+      }
+      if (!e.target.value) {
+        document.getElementById('search-results').setAttribute('class', 'dropdown');
+        return null;
+      }
+
+      searchText = e.target.value;
+      var results = fuse.search(e.target.value);
+
+      if (searchResultPosition === "main") {
+        if (enableSearchHighlight) {
+          renderSearchHighlightResultsMain(searchText, results);
+        } else {
+          renderSearchResultsMain(searchText, results);
+        }
+      } else{
+        if (enableSearchHighlight) {
+          renderSearchHighlightResultsSide(searchText, results);
+        } else {
+          renderSearchResultsSide(searchText, results);
+        }
+      }
+    }) : null;
+    
+    function indexInParent(node) {
+      var children = node.parentNode.childNodes;
+      var num = 0;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i] == node) return num;
+        if (children[i].nodeType == 1) num++;
+      }
+      return -1;
+    }
+
+    var searchMenuElem = document.getElementById("search-menu");
+    var activeItem = document.querySelector('#search-menu .dropdown-item.is-active');
+    var activeIndex = null;
+    var items = null;
+    var searchContainerMaxHeight = 350;
+
+    searchElem ? 
+    searchElem.addEventListener('keydown', function(e) {
+      if (window.innerWidth < 770) {
+        return null;
+      }
+
+      if (e.key === 'Escape') {
+        searchResult ? searchResult.setAttribute('data-display', 'none') : null;
+        summaryContainer ? summaryContainer.setAttribute('data-display', 'block') : null;
+      }
+
+      var items = document.querySelectorAll('#search-menu .dropdown-item');
+      var keyCode = e.which || e.keyCode;
+
+      if (!items || !items.length) {
+        return null;
+      }
+      
+      if (e.key === 'ArrowDown' || keyCode === 40) {
+        if (activeIndex === null) {
+          activeIndex = 0;
+          items[activeIndex].classList.remove('is-active');
+        } else {
+          items[activeIndex].classList.remove('is-active');
+          activeIndex = activeIndex === items.length - 1 ? 0 : activeIndex + 1;
+        }
+        items[activeIndex].classList.add('is-active');
+
+        let overflowedPixel = items[activeIndex].offsetTop + items[activeIndex].clientHeight - searchContainerMaxHeight;
+        if (overflowedPixel > 0) {
+          document.querySelector(".search-content").scrollTop += items[activeIndex].getBoundingClientRect().height;
+        } else if (activeIndex === 0) {
+          document.querySelector(".search-content").scrollTop = 0;
+        }
+      } else if (e.key === 'ArrowUp' || keyCode === 38) {
+        if (activeIndex === null) {
+          activeIndex = items.length - 1;
+          items[activeIndex].classList.remove('is-active');
+        } else {
+          items[activeIndex].classList.remove('is-active');
+          activeIndex = activeIndex === 0 ? items.length - 1 : activeIndex - 1;
+        }
+        items[activeIndex].classList.add('is-active');
+        
+        let overflowedPixel = items[activeIndex].offsetTop + items[activeIndex].clientHeight - searchContainerMaxHeight;
+        if (overflowedPixel < 0) {
+          document.querySelector(".search-content").scrollTop -= items[activeIndex].getBoundingClientRect().height;
+        } else {
+          document.querySelector(".search-content").scrollTop = overflowedPixel + items[activeIndex].getBoundingClientRect().height;
+        }
+      } else if (e.key === 'Enter' || keyCode === 13) {
+        if (items[activeIndex] && items[activeIndex].getAttribute('href')) {
+          location.href = items[activeIndex].getAttribute('href');
+        }
+      } else if (e.key === 'Escape' || keyCode === 27) {
+        e.target.value = null;
+        if (searchResults) {
+          searchResults.classList.remove('is-active');
+        }
+      }
+    }) : null;
+
+    searchMobile ? 
+    searchMobile.addEventListener('input', function(e) {
+      if (!e.target.value) {
+        let wrap = document.getElementById('search-mobile-results');
+        while (wrap.firstChild) {
+          wrap.removeChild(wrap.firstChild);
+        }
+        return null;
+      }
+
+      searchText = e.target.value;
+      var results = fuse.search(e.target.value);
+      renderSearchResultsMobile(searchText, results);
+      if (enableSearchHighlight) {
+        renderSearchHighlightResultsMobile(searchText, results);
+      } else {
+        renderSearchResultsMobile(searchText, results);
+      }
+    }) : null;
+  
+
+
+  
+    var mobileSearchInputElem = document.querySelector('#search-mobile');
+    var mobileSearchClassElem = document.querySelector('.mobile-search');
+    var mobileSearchBtnElem = document.querySelector('#mobileSearchBtn');
+    var mobileSearchCloseBtnElem = document.querySelector('#search-mobile-close');
+    var mobileSearchContainer = document.querySelector('#search-mobile-container');
+    var mobileSearchResultsElem = document.querySelector('#search-mobile-results');
+    var htmlElem = document.querySelector('html');
+
+    if (mobileSearchClassElem) {
+      mobileSearchClassElem.style.display = 'none';
+    }
+
+    mobileSearchBtnElem ? 
+    mobileSearchBtnElem.addEventListener('click', function () {
+      if (mobileSearchContainer) {
+        mobileSearchContainer.style.display = 'block';
+      }
+
+      if (mobileSearchInputElem) {
+        mobileSearchInputElem.focus();
+      }
+
+      if (htmlElem) {
+        htmlElem.style.overflowY = 'hidden';
+      }
+    }) : null;
+
+    mobileSearchCloseBtnElem ? 
+    mobileSearchCloseBtnElem.addEventListener('click', function() {
+      if (mobileSearchContainer) {
+        mobileSearchContainer.style.display = 'none';
+      }
+
+      if (mobileSearchInputElem) {
+        mobileSearchInputElem.value = '';
+      }
+      
+      if (mobileSearchResultsElem) {
+        while (mobileSearchResultsElem.firstChild) {
+          mobileSearchResultsElem.removeChild(mobileSearchResultsElem.firstChild);
+        }
+      }
+
+      if (htmlElem) {
+        htmlElem.style.overflowY = 'visible';
+      }
+    }) : null;
+
+    mobileSearchInputElem ?
+    mobileSearchInputElem.addEventListener('keydown', function(e) {
+      var keyCode = e.which || e.keyCode;
+      if (e.key === 'Escape' || keyCode === 27) {
+        if (mobileSearchContainer) {
+          mobileSearchContainer.style.display = 'none';
+        }
+        
+        if (mobileSearchInputElem) {
+          mobileSearchInputElem.value = '';
+        }
+
+        if (mobileSearchResultsElem) {
+          while (mobileSearchResultsElem.firstChild) {
+            mobileSearchResultsElem.removeChild(mobileSearchResultsElem.firstChild);
+          }
+        }
+        if (htmlElem) {
+          htmlElem.style.overflowY = 'visible';
+        }
+      }
+    }) : null;
+  
+
+
+  
+    function renderSearchResultsMain(searchText, results) {
+      var searchBody = document.querySelector('.search-result__body');
+      var originUl = searchBody.querySelector('ul');
+      var ul = document.createElement('ul');
+      
+      if (!searchText) {
+        searchResult.setAttribute('data-display', 'none');
+        summaryContainer.setAttribute('data-display', 'block');
+      } else if (results) {
+        if (results && results.length) {
+          results.forEach(function (result) {
+            makeLi(ul, result);
+          });
+
+          searchResult.setAttribute('data-display', 'block');
+          summaryContainer.setAttribute('data-display', 'none');
+        }
+      }
+
+      originUl.parentNode.replaceChild(ul, originUl);
+    }
+
+    function renderSearchHighlightResultsMain(searchText, results) {
+      var searchBody = document.querySelector('.search-result__body');
+      var originUl = searchBody.querySelector('ul');
+      var ul = document.createElement('ul');
+
+      if (!searchText) {
+        searchResult.setAttribute('data-display', 'none');
+        summaryContainer.setAttribute('data-display', 'block');
+      } else if (results) {
+        if (results && results.length) {
+          results.forEach(function (result) {
+            makeHighlightLi(ul, result);
+          });
+
+          searchResult.setAttribute('data-display', 'block');
+          summaryContainer.setAttribute('data-display', 'none');
+        }
+      }
+
+      originUl.parentNode.replaceChild(ul, originUl);
+    }
+  
+  });
+</script>    
+    
+
+
+<link rel="stylesheet" href="/css/main.min.css">
+
+
+    
+<meta name="description" content="fatwaer&#39;s blog about operating system and distributed system" />
+<meta name="keywords" content="">
+<meta name="created" content="2019-11-11T12:34:17&#43;0800">
+<meta name="modified" content="2019-11-11T12:34:17&#43;0800">
+<meta property="article:published_time" content="2019-11-11T12:34:17&#43;0800">
+
+<meta name="author" content="fatwaer">
+
+
+<meta property="og:site_name" content="Blog | ">
+<meta property="og:title" content="Protection Mechanism on 80386">
+<meta property="og:url" content="http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/">
+<meta property="og:type" content="article">
+<meta property="og:description" content="fatwaer&#39;s blog about operating system and distributed system">
+
+<meta name="generator" content="Hugo 0.63.2" />
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/">
+<link rel="manifest" href="/manifest.json">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-512x512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "headline": "Protection Mechanism on 80386",
+    "datePublished": "2019-11-11T12:34:17+08:00",
+    "dateModified": "2019-11-11T12:34:17+08:00",
+    "url" : "http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/",
+    "description": "80386 下的保护模式划为5个部分： 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制 事实上按照段页机制又需要分为段机制下的保护和页机制下的保",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "http://fatwaer.me/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Blog | ",
+      "url": "http://fatwaer.me/"
+    }
+  }
+</script>
+
+    
+
+
+
+
+
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    
+</head>
+
+<body id="root" class="theme__dark">
+    <script>
+        var localTheme = localStorage.getItem('theme');
+        if (localTheme) {
+            document.getElementById('root').className = 'theme__' + localTheme;
+        }        
+    </script>
+    
+    <div id="container">
+        
+        <div class="wrapper" data-type="posts" data-kind="page">
+            <nav class="navbar" role="navigation" aria-label="main navigation" data-dir="ltr">
+  <div class="navbar__brand">
+    
+    <a href="/en/" title="Home" rel="home" class="navbar__logo-link">
+      <img src="/logo.png" alt="Home" class="navbar__logo">
+    </a>
+    
+    
+      <a href="/en/" title="Home" rel="home" class="navbar__title-link">
+        <h6 class="navbar__title">Home</h6>
+      </a>
+    
+  </div>
+  
+  
+<div class="theme-mobile">
+  <div class="dropdown">
+    <button class="dropdown-trigger navbar__slide-down" aria-label="Select Theme Button" style="">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="none" d="M24 0H0v24h24V0z"/><path fill="currentColor" d="M6.34 7.93c-3.12 3.12-3.12 8.19 0 11.31C7.9 20.8 9.95 21.58 12 21.58s4.1-.78 5.66-2.34c3.12-3.12 3.12-8.19 0-11.31l-4.95-4.95c-.39-.39-1.02-.39-1.41 0L6.34 7.93zM12 19.59c-1.6 0-3.11-.62-4.24-1.76C6.62 16.69 6 15.19 6 13.59s.62-3.11 1.76-4.24L12 5.1v14.49z"/></svg>      
+    </button>
+    <div class="dropdown-content select-theme">
+      
+        
+        <a href="#" class="dropdown-item select-theme__item is-active">
+          dark
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          light
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          hacker
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          solarized
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          kimbie
+        </a>
+        
+      
+    </div>
+  </div>
+</div>
+
+  
+<div id="mobileSearchBtn" class="mobile-search__btn">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M15.5 14h-.79l-.28-.27c1.2-1.4 1.82-3.31 1.48-5.34-.47-2.78-2.79-5-5.59-5.34-4.23-.52-7.79 3.04-7.27 7.27.34 2.8 2.56 5.12 5.34 5.59 2.03.34 3.94-.28 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+</div>
+
+<div id="search-mobile-container" class="mobile-search hide" data-dir="ltr">
+  <div class="mobile-search__top">
+    <input id="search-mobile" type="text" aria-label="Mobile Search" placeholder="Search" class="mobile-search__top--input"/>
+    <div id="search-mobile-close" class="mobile-search__top--icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path opacity=".87" fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.59-13L12 10.59 8.41 7 7 8.41 10.59 12 7 15.59 8.41 17 12 13.41 15.59 17 17 15.59 13.41 12 17 8.41z"/></svg>
+    </div>
+  </div>
+  <div id="search-mobile-results" class="mobile-search__body">
+    
+  </div>
+</div>
+
+  
+  <a role="button" class="navbar__burger" aria-label="menu" aria-expanded="false">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </a>  
+
+  <div class="navbar__menu">
+    
+<div class="theme">
+  <div class="dropdown">
+    <button class="dropdown-trigger navbar__slide-down" aria-label="Select Theme Button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="none" d="M24 0H0v24h24V0z"/><path fill="currentColor" d="M6.34 7.93c-3.12 3.12-3.12 8.19 0 11.31C7.9 20.8 9.95 21.58 12 21.58s4.1-.78 5.66-2.34c3.12-3.12 3.12-8.19 0-11.31l-4.95-4.95c-.39-.39-1.02-.39-1.41 0L6.34 7.93zM12 19.59c-1.6 0-3.11-.62-4.24-1.76C6.62 16.69 6 15.19 6 13.59s.62-3.11 1.76-4.24L12 5.1v14.49z"/></svg>      
+    </button>
+    <div class="dropdown-content select-theme">
+      
+        
+        <a href="#" class="dropdown-item select-theme__item is-active">
+          dark
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          light
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          hacker
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          solarized
+        </a>
+        
+        <a href="#" class="dropdown-item select-theme__item ">
+          kimbie
+        </a>
+        
+      
+    </div>
+  </div>
+</div>
+
+    
+    
+      
+      
+      
+      
+      
+        <a href="/en/about" class="navbar__menu-item navbar__slide-down " dir="ltr">about</a>
+      
+    
+      
+      
+      
+      
+      
+        <a href="/en/archive" class="navbar__menu-item navbar__slide-down " dir="ltr">archive</a>
+      
+    
+      
+      
+      
+      
+      
+        <a href="/en/gallery" class="navbar__menu-item navbar__slide-down " dir="ltr">gallery</a>
+      
+    
+      
+      
+      
+      
+      
+        <a href="/en/posts" class="navbar__menu-item navbar__slide-down active" dir="ltr">posts</a>
+      
+    
+      
+      
+      
+      
+      
+        <a href="/en/notes" class="navbar__menu-item navbar__slide-down " dir="ltr">notes</a>
+      
+    
+  </div>
+</nav>
+            
+            
+
+<main class="single__main main">
+  
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+  <ol>
+    
+  
+  
+  
+  
+  
+  <li >
+    
+      <a href="http://fatwaer.me/en/" class="capitalize">Blog | </a>
+    
+  </li>
+  
+  
+  <li >
+    
+      <a href="http://fatwaer.me/en/posts/" class="capitalize">Posts</a>
+    
+  </li>
+  
+  
+  <li  class="is-active" >
+    
+      <span>Protection Mechanism on 80386</span>
+    
+  </li>
+  
+  </ol>
+  
+</nav>
+  
+  <div class="single">
+    <h2 class="single__title">Protection Mechanism on 80386</h2>
+    <div class="single__meta">
+      
+<div class="single__infos">
+  <time class="single__info" title="Written At">📅&nbsp;Nov 11, 2019 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 10 min read </span>
+  <span class="single__info">
+     &middot; 👀<span id="busuanzi_value_page_pv">...</span> views
+  </span>
+</div>
+      <div class="single__tags caption">
+
+</div>
+    </div>    
+    <article class="single__contents" data-dir="ltr">
+      
+      <p>80386 下的保护模式划为5个部分：</p>
+<ol>
+<li>类型检查</li>
+<li>界限检查</li>
+<li>可寻址域的限制</li>
+<li>过程调用的限制</li>
+<li>指令集的限制</li>
+</ol>
+<p>事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。</p>
+<h1 id="段级别的保护">段级别的保护</h1>
+<p>段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。</p>
+<blockquote>
+<p>段描述符格式</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-1.gif" alt="fig6-1.gif" /></p>
+<p>上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。</p>
+<p>当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register.png" alt="segment-register.png" /></p>
+<h2 id="段机制的类型检查">段机制的类型检查</h2>
+<p>描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。</p>
+<ul>
+<li>
+<p>在数据段的 writable bit 代表正在执行的指令可否写入到该段。</p>
+</li>
+<li>
+<p>代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。</p>
+<p>一个可读可执行的段可以被两种形式加载：</p>
+<ol>
+<li>通过 CS 寄存器，例如 ljmp cs:addr</li>
+<li>加载到通用段寄存器中</li>
+</ol>
+</li>
+</ul>
+<p>类型检查会在两种情况下进行：</p>
+<ol>
+<li>
+<p>当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：</p>
+<ul>
+<li>CS 寄存器只能加载可执行的段</li>
+<li>不可读但是可执行的段不能被加载到数据段寄存器中</li>
+<li>只有科协的数据段能被加载到SS寄存器</li>
+</ul>
+</li>
+<li>
+<p>当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：</p>
+<ul>
+<li>不能尝试往可执行的段中写入</li>
+<li>不能往w位未置位的数据段中写入</li>
+<li>不能读取r位未置位的可执行段（数据段默认可读）</li>
+</ul>
+</li>
+</ol>
+<h2 id="段机制的界限检查">段机制的界限检查</h2>
+<p>故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</p>
+<blockquote>
+<p>bit 组合</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/table6-2.png" alt="table6-2.png" /></p>
+<p>除去 expand-down 类型的数据段，下列这些情况会产生一般保护错误（general-protection exception）：</p>
+<ol>
+<li>尝试访问1字节的地址，地址大于界限</li>
+<li>尝试访问1字的地址，地址大于等于界限</li>
+<li>尝试访问2字的地址，地址大于等于界限值-2</li>
+</ol>
+<p>界限的检查能捕获一些程序的运行错误例如非法的指针计算。这些错误会在刚刚发生时被检测到，所以检测这些错误更加简单，如果没有这个机制，这些错误可能会影响到其他的部件，到那时候再去追踪就难多了。</p>
+<h3 id="特权等级">特权等级</h3>
+<p>特权等级分为四级，但是基本只会用到两级，最高特权级别 ring 0和最低的特权级别 ring 3。</p>
+<p><img src="/images/operating-system/6.828/protection/ring.png" alt="ring.png" /></p>
+<p>特权等级在以下这些地方展现：</p>
+<ul>
+<li>
+<p>CPL(Current privilege level): CPL 代表当前正在运行的程序或者任务的权限等级，存储在CS或者SS段寄存器的第0和1位。通常CPL和当前运行的代码段的等级相同，当CPL发生改变时，代表程序在不同特权等级之间的控制转移。</p>
+<p>但是当代码段描述符的 conforming 位置位时，情况有所不同，conforming 置位的代码段能被特权等级与其相等或者更低权限的任务所访问，并且，在执行 conforming 置位的代码时，CPL不会发生改变，所以通常 conforming 代码段用于低权限任务需要执行数学函数或者异常处理函数等情况。</p>
+</li>
+<li>
+<p>DPL(descriptor privilege level): 在段描述符或者门描述符中存在一个域用于表明这个描述符的特权等级，当正在执行的代码段尝试去访问一个段或者门时，CPL和RPL就会与DPL进行比较，DPL根据段或门的类型不同会有不同的解释方法：</p>
+<ul>
+<li>数据段：DPL代表可以访问该段的最低权限，比如数据段的DPL位1，仅只有程序运行在CPL为0或1时才能访问该段。</li>
+<li>非 conforming 的代码段（不使用 call gate）：DPL代表程序必须运行在的特权等级（即使特权等级大于DPL也不行）</li>
+<li>Call gate：DPL代表可以访问该段的最低权限，同数据段</li>
+<li>使用call gate 访问代码段：DPL代表可以访问该段的最高权限，比如某个代码段的DPL为2，运行在特权等级 0 或者 1 的程序无法访问。</li>
+<li>TSS：DPL代表可以访问该段的最低权限，同数据段</li>
+</ul>
+</li>
+<li>
+<p>RPL(Requested privilege level): RPL 是存储在段选择子第0 和 1 位，处理器在检查特权等级时会同时检查 CPL 和 RPL。即使程序运行的特权等级 (CPL) 已经满足了相应段的特权等级 (DPL)，如果 RPL 不能满足 DPL 的话，访问段的操作仍然会被拒绝。这意味着，如果 RPL 树枝上大于 CPL，那么RPL将会作为尝试去访问相应段的特权等级，反之亦然。RPL 可以被保证 特权代码不会代表应用程序去访问一个该应用程序并没有权限的段。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register-format.png" alt="segment-register-format.png" /></p>
+<p>关于 RPL 的作用在  Intel® 64 Developer’s Manual : <strong>4.10.4 Checking Caller Access Privileges (ARPL Instruction)</strong> 里面有几个例子进行说明。</p>
+<p>当一个应用程序过程(the calling procedure)调用操作系统 的一个过程(the called procedure)时，在执行操作系统过程中会将特权等级设置为应用程序的段选择子的 RPL。当操作系统尝试去访问相关的段时，处理器会对 RPL 而不是特权等级值更低的 CPL（此时为0）进行特权等级检查。</p>
+<p><img src="/images/operating-system/6.828/protection/rpl.png" alt="rpl.png" /></p>
+<p>在上图中，应用程序正运行在代码段A中，处理数据段D1中的数据，此时在数据段D1中指向了一个特权数据结构（在数据段D中的操作系统数据结构，数据段的 DPL 为0）。因为 CPL 的值大于特权等级值，权限不足以访问。</p>
+<p>为了访问到数据段 D，应用程序执行了一个调用，并且通过栈传递了段选择子 D1（存在RPL） 到操作系统。在传递段选择子前，应用程序会将段选择子设置为当前的 CPL （SS或者CS中）。当通过门 C （运行在特权等级0）利用段选择子 D1 （栈上的值）访问数据段 D时，由于D1的RPL要大于DPL，访问数据段 D 的操作被拒绝。</p>
+<p>该部分后面还有一种情况，通过门调用时，由于应用程序可以修改栈上的段选择器中的 RPL 值（对应图中数据段D2），这会导致保护机制被破坏，于是有了 ARPL 指令对栈上的 RPL 和调用此操作系统过程的程序的 CPL 进行比较。</p>
+</li>
+</ul>
+<h2 id="段机制的数据的访问限制">段机制的数据的访问限制</h2>
+<p>为了访问到在内存中的操作数，程序必须将数据段加载到数据段(DS, ES, FS, GS, SS)寄存器中。处理器会在访问数据段时自动比较特权等级。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-3.gif" alt="fig6-3.gif" /></p>
+<p>数据段寄存器能加载一个数据段的前提是DPL大于RPL和CPL。</p>
+<h2 id="段机制的控制转移限制">段机制的控制转移限制</h2>
+<p>控制转移往往伴随着JMP, CALL, RET, INT, IRET指令以及中断和异常机制。在同一个代码段的JMP, CALL, RET仅仅只有段界限检查。远距离的调用或者跳转会引用到其他段，因此，处理器会进行特权检查。</p>
+<p>例如：ljmp   $0x8,$0x7c32，$0x8为段寄存器值。</p>
+<p>JMP 或者 CALL 会通过两种方式引用另外一个段：</p>
+<ol>
+<li>操作数中存在另一个可执行的代码段描述符</li>
+<li>操作数中有一个调用门描述符</li>
+</ol>
+<p>一般情况下，处理器正在运行的代码段的 DPL 和 CPL 相等，但是如果代码段的 conforming 位置位时，CPL 可能大于 DPL。所以只有当 DPL 和 CPL 相等时或者代码段的conforming 位置位并且 DPL 小于等于 CPL 时，JMP和CALL能够直接从原先的代码段跳转到另一个代码段。</p>
+<blockquote>
+<p>代码段的检查</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-4.gif" alt="fig6-4.gif" /></p>
+<h3 id="门限描述符对过程调用的保护">门限描述符对过程调用的保护</h3>
+<p>一共有4中描述符用于在不同特权等级间进行跳转：</p>
+<ul>
+<li>call gate</li>
+<li>Trap gates</li>
+<li>Interrupt gates</li>
+<li>Task gates</li>
+</ul>
+<p>call gate 和普通描述符一样，定义在GDT或者LDT中，它定义了一个过程调用的入口和调用该过程所需要的特权等级。call gate描述符对于jmp和call指令来说和代码段的处理方式一样。</p>
+<blockquote>
+<p>call gate</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-5.gif" alt="fig6-5.gif" /></p>
+<p>selector 和 offset 域能形成一个到调用过程入口的指针，call gate 保证能跳转到另一个段的合法地址，而不是跳转到一个过程调用的中间或者&hellip;.一条指令的中间。一条指令的控制转移的偏移地址不会在call gate跳转中使用（前面那种跳转到中途的情况）。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-6.gif" alt="fig6-6.gif" /></p>
+<p>执行指令时，首先通过操作数中的段选择器得到门限描述符的偏移，在门限描述符中的 selector 字段获得目标调用过程的代码段描述符，执行过程调用，在这过程中，一共涉及到4个特权等级，CPL，RPL，门限的 DPL 和目标代码段的 DPL。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-7.gif" alt="fig6-7.gif" /></p>
+<p>通过 gate 可以实现不同特权等级的转移，但是只有通过 call 指令能切换到更低的特权等级上，而 jmp 指令只能在同特权等级之间跳转（不考虑comforming 代码段）。</p>
+<p>对于 jmp 指令，要求：</p>
+<pre><code>MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL = CPL
+</code></pre><p>对于 call 指令或者 jmp 目的代码段为 comforming：</p>
+<pre><code>MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL &lt;= CPL
+</code></pre><h3 id="栈切换">栈切换</h3>
+<p>为了维护系统的整体性，任意特权等级拥有各自独立的栈，处理器通过TSS（task state segment）定位这些不同特权等级的栈。比如通过call gate切换特权等级时，新的栈指针将会从tss中读取出来。</p>
+<blockquote>
+<p>TSS</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-8.gif" alt="fig6-8.gif" /></p>
+<p>处理器会利用目标代码段的DPL找到对应特权等级（PL 0，1，2）的栈，并且 DPL 必须与 CPL 相等。TSS 中没有对应特权等级为3的栈，因为特权等级3的过程不能被其他任意低于其特权等级的过程调用。每个栈都必须有足够的空间去存储 ss:esp，返回地址，参数等。</p>
+<p>为了在不同特权等级之间调用过程，处理器必须将调用者的参数从旧的栈帧中拷贝到新特权等级的栈帧中去。call gate 描述符中的 count 字段代表多少双字（doublewords）需要拷贝，如果count为0，拷贝就不会发生。</p>
+<blockquote>
+<p>切换特权等级的栈切换：</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-9.gif" alt="fig6-9.gif" /></p>
+<ol>
+<li>新栈检查是否有足够的空间容纳参数等，否则产生一个栈错误，错误代码设置为0.</li>
+<li>将旧栈SS:ESP压入新栈（占用两个双字）</li>
+<li>复制剩下的参数</li>
+<li>调用者的call的下一条指令地址以 CS:EIP 压入新栈</li>
+<li>将新的 SS:ESP 指向新栈栈顶</li>
+</ol>
+<h3 id="从过程调用中返回ret">从过程调用中返回（ret）</h3>
+<p>和 call 指令类似，同一个代码段之间的 ret 只有界限检查。对于段间的 ret，首先会弹出由 call 压入的返回地址，通常情况下时合法的，但是也有可能由于调用过程替换掉了这个地址或者没有很好地维护栈，这个返回地址也是不可信的，所以权限检查还是会有的。</p>
+<p>段之间的 ret 只能返回到与其相等或者更高特权值的等级去，当栈上保存的 CS 中的 RPL 大于当前的 CPL 时，特权等级间的控制转移就会发生：</p>
+<ol>
+<li>检查下表中的内容，加载栈上的 CS:EIP 和 SS:ESP 到相应寄存器。</li>
+<li>原先的栈指针会被 ret 指令做相应的调整，此时 esp 的值不会进行界限检查，如果 esp 实在超出了界限，那么下次对栈的操作将会产生错误。</li>
+<li>基础段寄存器的特权值将会被检查，如果这些段寄存器引用了那些 DPL 大于新 CPL（栈上保存的CS得到） 的段，那么段寄存器就会加载 null selector，即 GDT 中的一个 null 描述符（INDEX = 0, TI = 0）。并且，此时不会产生异常，直到下次操作相应段内存时产生一般保护异常。</li>
+</ol>
+<pre><code>SF = Stack Fault
+GP = General Protection Exception
+NP = Segment-Not-Present Exception
+
+Type of Check                                  Exception   Error Code
+
+ESP is within current SS segment               SF          0
+ESP + 7 is within current SS segment           SF          0
+RPL of return CS is greater than CPL           GP          Return CS
+Return CS selector is not null                 GP          Return CS
+Return CS segment is within descriptor
+  table limit                                  GP          Return CS
+Return CS descriptor is a code segment         GP          Return CS
+Return CS segment is present                   NP          Return CS
+DPL of return nonconforming code
+  segment = RPL of return CS, or DPL of
+  return conforming code segment &lt;= RPL
+  of return CS                                 GP          Return CS
+ESP + N + 15 is within SS segment
+N   Immediate Operand of RET N Instruction     SF          Return SS
+SS selector at ESP + N + 12 is not null        GP          Return SS
+SS selector at ESP + N + 12 is within
+  descriptor table limit                       GP          Return SS
+SS descriptor is writable data segment         GP          Return SS
+SS segment is present                          SF          Return SS
+Saved SS segment DPL = RPL of saved
+  CS                                           GP          Return SS
+Saved SS selector RPL = Saved SS
+  segment DPL                                  GP          Return SS
+</code></pre><h2 id="指令集的限制">指令集的限制</h2>
+<p>影响到保护机制的指令分为两类，特权指令，通常被用于系统控制；敏感指令，通常被用作 IO或者 IO相关的操作。</p>
+<p>特权指令如下：</p>
+<pre><code>CLTS -- Clear Task-Switched Flag
+HLT -- Halt Processor
+LGDT -- Load GDL Register
+LIDT -- Load IDT Register
+LLDT -- Load LDT Register
+LMSW -- Load Machine Status Word
+LTR -- Load Task Register
+MOV to/from CRn -- Move to Control Register n
+MOV to /from DRn -- Move to Debug Register n
+MOV to/from TRn -- Move to Test Register n
+</code></pre><h1 id="页级别保护">页级别保护</h1>
+<p>页级别的保护较为简单，分成有两种：</p>
+<ol>
+<li>对可寻址的内存进行限制</li>
+<li>类型检查</li>
+</ol>
+<h2 id="页机制中的寻址限制">页机制中的寻址限制</h2>
+<blockquote>
+<p>PDE/PTE</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-10.gif" alt="fig6-10.gif" /></p>
+<p>在页机制中，特权等级被分为了两级：</p>
+<ol>
+<li>Supervisor level (U/S=0) ：对应操作系统的软件和相关数据</li>
+<li>User level (U/S=1)：对于应用程序级别的过程和数据</li>
+</ol>
+<p>页机制中的特权等级和段机制中的 CPL 相关联，CPL 处于 ring 0,1,2 代表处理器执行在 supervisor level， CPL 处于 ring 3 代表执行在 user level。</p>
+<p>当处理器执行在 user level ，只能寻址那些属于用户级别的页，如果处于  supervisor level ，那么处理器能够寻址所有的页。</p>
+<h2 id="页机制中的类型检查">页机制中的类型检查</h2>
+<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论。处于 user 级别时，对于supervisor 的所有的页都是不可读写的。</p>
+<p><strong>参考资料</strong>：</p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-1.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</a></p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/c06.htm">6.828 readings, Protection</a></p>
+
+    </article>
+    
+<div class="donation">
+  <div class="donation__message">
+    Share on
+  </div>
+  <div class="donation__icons">
+    
+    
+    
+      
+        <a href="https://www.facebook.com/sharer/sharer.php?u=http%3a%2f%2ffatwaer.me%2fen%2fposts%2f%25E6%2593%258D%25E4%25BD%259C%25E7%25B3%25BB%25E7%25BB%259F%2fprotection%2f" title="Facebook" aria-label="Facebook Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+          <svg data-name="facebook" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m15.997 3.985h2.191v-3.816c-.378-.052-1.678-.169-3.192-.169-3.159 0-5.323 1.987-5.323 5.639v3.361h-3.486v4.266h3.486v10.734h4.274v-10.733h3.345l.531-4.266h-3.877v-2.939c.001-1.233.333-2.077 2.051-2.077z"/></svg>
+        </a>
+      
+    
+      
+        <a href="https://twitter.com/intent/tweet?text=Protection%20Mechanism%20on%2080386&url=http%3a%2f%2ffatwaer.me%2fen%2fposts%2f%25E6%2593%258D%25E4%25BD%259C%25E7%25B3%25BB%25E7%25BB%259F%2fprotection%2f&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+          <svg data-name="twitter" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m21.534 7.113c.976-.693 1.797-1.558 2.466-2.554v-.001c-.893.391-1.843.651-2.835.777 1.02-.609 1.799-1.566 2.165-2.719-.951.567-2.001.967-3.12 1.191-.903-.962-2.19-1.557-3.594-1.557-2.724 0-4.917 2.211-4.917 4.921 0 .39.033.765.114 1.122-4.09-.2-7.71-2.16-10.142-5.147-.424.737-.674 1.58-.674 2.487 0 1.704.877 3.214 2.186 4.089-.791-.015-1.566-.245-2.223-.606v.054c0 2.391 1.705 4.377 3.942 4.835-.401.11-.837.162-1.29.162-.315 0-.633-.018-.931-.084.637 1.948 2.447 3.381 4.597 3.428-1.674 1.309-3.8 2.098-6.101 2.098-.403 0-.79-.018-1.177-.067 2.18 1.405 4.762 2.208 7.548 2.208 8.683 0 14.342-7.244 13.986-14.637z"/></svg>
+        </a>
+      
+    
+  </div>
+</div>
+
+    
+    
+<div class="whoami__gutter"></div>
+<hr class="hr-slash whoami-hr"/>
+<section class="whoami">
+  <div class="whoami__image-wrapper">
+    
+    
+      
+        <img data-src="/images/whoami/avatar.jpg" src="data:image/svg+xml,%0A%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='none' d='M0 0h24v24H0V0z'/%3E%3Cpath fill='%23aaa' d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1zm-4.44-6.19l-2.35 3.02-1.56-1.88c-.2-.25-.58-.24-.78.01l-1.74 2.23c-.26.33-.02.81.39.81h8.98c.41 0 .65-.47.4-.8l-2.55-3.39c-.19-.26-.59-.26-.79 0z'/%3E%3C/svg%3E" alt="fatwaer" class="lazyload whoami__image"/>
+      
+    
+  </div>
+  <div class="whoami__contents">
+    <div class="whoami__written-by">
+      WRITTEN BY
+    </div>
+    <div class="whoami__title">
+      
+        fatwaer
+      
+    </div>
+    <div class="whoami__desc">
+      
+        Software Engineer
+      
+    </div>
+    <div class="whoami__social">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </div>
+  </div>
+</section>
+<hr class="hr-slash whoami-hr" />
+
+
+    <section class="related">
+    
+    
+  </section>
+    <div class="grow"></div>
+<nav class="pagination-single">
+  
+    
+      <a href="http://fatwaer.me/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/" class="pagination-single__left">
+        <div class="pagination-single__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
+        </div>
+        <div class="pagination-single__left-title">Hugo is comming !</div>      
+      </a>
+    
+    <div class="grow"></div>
+    
+  
+</nav>
+    
+  
+
+    <div class="modal micromodal-slide" id="modal" aria-hidden="true">
+  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      
+      <div class="modal__content" id="modal-content">
+        <div id="mySwipe" class="swipe">
+          <div class="swipe-wrap">
+          </div>
+        </div>
+      </div>
+
+      <span class="modal__items">
+        
+        <span class="modal__header">
+          <div class="modal__paging" title="Page Info" aria-label="Current Page">
+          </div>
+          <div class="modal__icon modal__toolbar modal__toolbar--close" title="Close" aria-label="Close Button" data-micromodal-close>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="25" height="25"><path fill="currentColor" d="M 21.734375 19.640625 L 19.636719 21.734375 C 19.253906 22.121094 18.628906 22.121094 18.242188 21.734375 L 13 16.496094 L 7.761719 21.734375 C 7.375 22.121094 6.746094 22.121094 6.363281 21.734375 L 4.265625 19.640625 C 3.878906 19.253906 3.878906 18.628906 4.265625 18.242188 L 9.503906 13 L 4.265625 7.761719 C 3.882813 7.371094 3.882813 6.742188 4.265625 6.363281 L 6.363281 4.265625 C 6.746094 3.878906 7.375 3.878906 7.761719 4.265625 L 13 9.507813 L 18.242188 4.265625 C 18.628906 3.878906 19.257813 3.878906 19.636719 4.265625 L 21.734375 6.359375 C 22.121094 6.746094 22.121094 7.375 21.738281 7.761719 L 16.496094 13 L 21.734375 18.242188 C 22.121094 18.628906 22.121094 19.253906 21.734375 19.640625 Z"/></svg>
+          </div>
+          <div class="modal__icon modal__toolbar modal__toolbar--full" title="Full Screen" aria-label="Full Screen Button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="25"><path fill="currentColor" d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 8 A 1.0001 1.0001 0 1 0 5 8 L 5 5 L 8 5 A 1.0001 1.0001 0 1 0 8 3 L 5 3 z M 16 3 A 1.0001 1.0001 0 1 0 16 5 L 19 5 L 19 8 A 1.0001 1.0001 0 1 0 21 8 L 21 5 C 21 3.9069372 20.093063 3 19 3 L 16 3 z M 3.984375 14.986328 A 1.0001 1.0001 0 0 0 3 16 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 8 21 A 1.0001 1.0001 0 1 0 8 19 L 5 19 L 5 16 A 1.0001 1.0001 0 0 0 3.984375 14.986328 z M 19.984375 14.986328 A 1.0001 1.0001 0 0 0 19 16 L 19 19 L 16 19 A 1.0001 1.0001 0 1 0 16 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 16 A 1.0001 1.0001 0 0 0 19.984375 14.986328 z"/></svg>
+          </div>
+          <div class="modal__icon modal__toolbar modal__toolbar--normal" title="Normal Screen" aria-label="Normal Screen Button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="25" height="25"><path fill="currentColor" d="M 16.96875 4.972656 C 15.867188 4.988281 14.984375 5.894531 15 7 L 15 15 L 7 15 C 6.277344 14.988281 5.609375 15.367188 5.246094 15.992188 C 4.878906 16.613281 4.878906 17.386719 5.246094 18.007813 C 5.609375 18.632813 6.277344 19.011719 7 19 L 19 19 L 19 7 C 19.007813 6.460938 18.796875 5.941406 18.414063 5.558594 C 18.03125 5.175781 17.511719 4.964844 16.96875 4.972656 Z M 32.96875 4.972656 C 31.921875 4.988281 31.0625 5.8125 31.003906 6.859375 C 31 6.90625 31 6.953125 31 7 L 31 19 L 43 19 C 43.066406 19 43.132813 19 43.199219 18.992188 C 44.269531 18.894531 45.070313 17.972656 45.015625 16.902344 C 44.964844 15.828125 44.074219 14.988281 43 15 L 35 15 L 35 7 C 35.007813 6.460938 34.796875 5.941406 34.414063 5.558594 C 34.03125 5.175781 33.511719 4.964844 32.96875 4.972656 Z M 7 31 C 6.277344 30.988281 5.609375 31.367188 5.246094 31.992188 C 4.878906 32.613281 4.878906 33.386719 5.246094 34.007813 C 5.609375 34.632813 6.277344 35.011719 7 35 L 15 35 L 15 43 C 14.988281 43.722656 15.367188 44.390625 15.992188 44.753906 C 16.613281 45.121094 17.386719 45.121094 18.007813 44.753906 C 18.632813 44.390625 19.011719 43.722656 19 43 L 19 31 Z M 31 31 L 31 43 C 30.988281 43.722656 31.367188 44.390625 31.992188 44.753906 C 32.613281 45.121094 33.386719 45.121094 34.007813 44.753906 C 34.632813 44.390625 35.011719 43.722656 35 43 L 35 35 L 43 35 C 43.722656 35.011719 44.390625 34.632813 44.753906 34.007813 C 45.121094 33.386719 45.121094 32.613281 44.753906 31.992188 C 44.390625 31.367188 43.722656 30.988281 43 31 Z"/></svg>
+          </div>
+        </span>
+        
+        <div class="modal__icon modal__arrow modal__arrow--left" title="Arrow Left" aria-label="Arrow Left Button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="28" height="28"><path fill="currentColor" d="M 23.28125 11 L 10 10 L 10 6.851563 C 10 6.523438 9.839844 6.277344 9.519531 6.03125 C 9.199219 5.949219 8.878906 5.949219 8.640625 6.113281 C 5.359375 8.410156 2.238281 12.257813 2.160156 12.421875 C 2.082031 12.578125 2.007813 12.8125 2.003906 12.976563 C 2.003906 12.980469 2 12.988281 2 12.992188 C 2 13.15625 2.078125 13.402344 2.160156 13.484375 C 2.238281 13.648438 5.28125 17.507813 8.640625 19.804688 C 8.960938 19.96875 9.28125 20.050781 9.519531 19.886719 C 9.839844 19.722656 10 19.476563 10 19.148438 L 10 16 L 23.28125 15 C 23.679688 14.679688 24 13.875 24 12.992188 C 24 12.195313 23.761719 11.320313 23.28125 11 Z"/></svg>
+        </div>
+        
+        <div class="modal__icon modal__arrow modal__arrow--right" title="Arrow Right" aria-label="Arrow Right Button">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="28" height="28"><path fill="currentColor" d="M 2.71875 11.023438 L 16 10.023438 L 16 6.875 C 16 6.546875 16.160156 6.300781 16.480469 6.054688 C 16.800781 5.972656 17.121094 5.972656 17.359375 6.136719 C 20.640625 8.433594 23.761719 12.28125 23.839844 12.445313 C 23.917969 12.601563 23.992188 12.835938 23.996094 13 C 23.996094 13.003906 24 13.011719 24 13.015625 C 24 13.179688 23.921875 13.425781 23.839844 13.507813 C 23.761719 13.671875 20.71875 17.53125 17.359375 19.828125 C 17.039063 19.992188 16.71875 20.074219 16.480469 19.910156 C 16.160156 19.746094 16 19.5 16 19.171875 L 16 16.023438 L 2.71875 15.023438 C 2.320313 14.703125 2 13.898438 2 13.015625 C 2 12.21875 2.238281 11.34375 2.71875 11.023438 Z"/></svg>
+        </div>
+
+        <div class="modal__caption">
+          <div class="modal__caption--text">
+          </div>
+        </div>
+
+      </span>
+    </div>
+  </div>
+</div>
+
+
+<script defer src="/js/swipe.min.08ff2be1b74347bad9e267f732f1388d271b2f9d97b6a8a87bd6a510f17c5ad2.js"></script>
+
+<script defer src="/js/micromodal.min.de01b44b2f383056bbcaf6ee921fd385d79108ec1129afd0eb2f3f5a07e11f45.js"></script>
+
+<script defer src="/js/helper/fadeinout.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  
+   
+  var docElem = document.documentElement;
+
+   
+  function openFullscreen() {
+    if (docElem.requestFullscreen) {
+      docElem.requestFullscreen();
+    } else if (docElem.mozRequestFullScreen) {  
+      docElem.mozRequestFullScreen();
+    } else if (docElem.webkitRequestFullscreen) {  
+      docElem.webkitRequestFullscreen();
+    } else if (docElem.msRequestFullscreen) {  
+      docElem.msRequestFullscreen();
+    }
+  }
+
+   
+  function closeFullscreen() {
+    if (document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {  
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {  
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {  
+        document.msExitFullscreen();
+      }
+    }
+  }
+
+  var modal = document.getElementById('modal');
+  var galleryContainerElem = document.querySelector('.gallery__container');
+  var swipeWrapElem = document.querySelector('.swipe-wrap');
+  var mySwipeElem = document.getElementById('mySwipe');
+  var arrowLeftElem = document.querySelector('.modal__arrow--left');
+  var arrowRightElem = document.querySelector('.modal__arrow--right');
+  var closeElem = document.querySelector('.modal__toolbar--close');
+  var fullElem = document.querySelector('.modal__toolbar--full');
+  var normalElem = document.querySelector('.modal__toolbar--normal');
+  var captionElem = document.querySelector('.modal__caption');
+  var pagingElem = document.querySelector('.modal__paging');
+  var itemsElem = document.querySelector('.modal__items');
+  var imgTotalNum = null;
+  var myFadeTimeout = null;
+  var mySwipe = null;
+  var keydownFunction = function (e) {
+    if (e.key === 'ArrowRight') {
+      if (modal && modal.classList.contains('is-open')) {
+        mySwipe.next();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (modal && modal.classList.contains('is-open')) {
+        mySwipe.prev();
+      }
+    }
+  }
+
+  if (galleryContainerElem) {
+    imgTotalNum = galleryContainerElem.querySelectorAll('img').length;
+  } else {
+    galleryContainerElem = document.querySelector('.single__contents');
+    imgTotalNum = galleryContainerElem.querySelectorAll('img').length;
+  }
+
+  MicroModal.init({
+    onClose: function () {
+      if (mySwipe) {
+        mySwipe.kill();
+        mySwipe = null;
+        closeFullscreen();
+      }
+      window.removeEventListener('keydown', keydownFunction);
+    },
+    disableScroll: true,
+    disableFocus: true,
+    awaitOpenAnimation: false,
+    awaitCloseAnimation: false,
+    debugMode: false,
+  });
+
+  var imageLoad = function(src) {
+    return new Promise(function(resolve, reject) {
+      var newImg = new Image;
+      newImg.onload = function() {
+        resolve(newImg);
+      }
+      newImg.onerror = reject;
+      newImg.src = src;
+    });
+  }
+
+  galleryContainerElem.querySelectorAll('img').forEach(function (elem, idx) {
+    elem.style.cursor = 'pointer';
+
+    var clonedElem = elem.cloneNode(true);
+    clonedElem.style.maxHeight = '100%';
+    clonedElem.style.maxWidth = '100%';
+    clonedElem.onclick = function (e) {
+      e.stopPropagation();
+    }
+
+    var wrapper = document.createElement('div');
+    wrapper.style.width = '100%';
+    wrapper.style.height = '100vh';
+    wrapper.setAttribute('data-micromodal-close', '');
+    wrapper.onclick = function () {
+      if (mySwipe) {
+        mySwipe.kill();
+        mySwipe = null;
+      }
+    }
+    wrapper.onmouseenter = function () {
+      clearTimeout(myFadeTimeout);
+      fadeIn(itemsElem, 200);
+    };
+    wrapper.onmouseleave = function () {
+      myFadeTimeout = setTimeout(function () {
+        fadeOut(itemsElem, 200);
+      }, 2500);
+    }
+    wrapper.ontouchstart = function() {
+      fadeIn(itemsElem, 200);
+    }
+    wrapper.append(clonedElem);
+    swipeWrapElem.append(wrapper);
+
+    elem.addEventListener('click', async function (e) {
+      MicroModal.show('modal');
+      if (mySwipe) {
+        mySwipe.kill();
+        mySwipe = null;
+      }
+
+      var imgSrc = e.target.getAttribute('data-src') || e.target.getAttribute('src');
+      var img = await imageLoad(imgSrc);
+      clonedElem.style.width = img.width + 'px';
+      clonedElem.style.height = img.height + 'px';
+      
+      
+      mySwipe = new Swipe(mySwipeElem, {
+        startSlide: idx,
+        draggable: true,
+        autoRestart: false,
+        continuous: false,
+        disableScroll: true,
+        stopPropagation: true,
+        callback: async function (index, element) {
+          
+          var imgElem = element.querySelector('img');
+          var imgSrc = imgElem.getAttribute('data-src') || imgElem.getAttribute('src');
+          var img = await imageLoad(imgSrc);
+          imgElem.style.width = img.width + 'px';
+          imgElem.style.height = img.height + 'px';
+
+          
+          if (captionElem && imgElem) {
+            var caption = null;
+            if (imgElem.getAttribute('data-caption')) {
+              caption = imgElem.getAttribute('data-caption');
+            } else if (imgElem.getAttribute('title')) {
+              caption = imgElem.getAttribute('title');
+            } else if (imgElem.getAttribute('alt')) {
+              caption = imgElem.getAttribute('alt');
+            } else {
+              caption = imgElem.getAttribute('src');
+            }
+
+            captionElem.querySelector('.modal__caption--text').innerText = caption;
+            pagingElem.innerText = (index + 1) + ' / ' + imgTotalNum;
+
+            clearTimeout(myFadeTimeout);
+            fadeIn(itemsElem, 200);
+          }
+        },
+      });
+
+      fadeIn(itemsElem);
+
+      
+      if (captionElem) {
+        var caption = null;
+        if (e.target.getAttribute('data-caption')) {
+          caption = e.target.getAttribute('data-caption');
+        } else if (e.target.getAttribute('title')) {
+          caption = e.target.getAttribute('title');
+        } else if (e.target.getAttribute('alt')) {
+          caption = e.target.getAttribute('alt');
+        } else {
+          caption = e.target.getAttribute('src');
+        }
+
+        captionElem.querySelector('.modal__caption--text').innerText = caption;
+        pagingElem.innerText = (idx + 1) + ' / ' + imgTotalNum;
+      }
+
+      if (normalElem && fullElem) {
+        normalElem.style.zIndex = -1;
+        normalElem.style.opacity = 0;
+        fullElem.style.zIndex = 25;
+        fullElem.style.opacity = 1;
+      }
+    });
+
+    window.addEventListener('keydown', keydownFunction);
+  });
+
+  arrowLeftElem ?
+    arrowLeftElem.addEventListener('click', function (e) {
+      if (mySwipe) {
+        mySwipe.prev();
+      }
+    }) : null;
+  arrowRightElem ?
+    arrowRightElem.addEventListener('click', function (e) {
+      if (mySwipe) {
+        mySwipe.next();
+      }
+    }) : null;
+
+  closeElem ?
+    closeElem.addEventListener('click', function () {
+      if (mySwipe) {
+        mySwipe.kill();
+        mySwipe = null;
+      }
+      closeFullscreen();
+      MicroModal.close('modal');
+    }) : null;
+
+  fullElem ?
+    fullElem.addEventListener('click', function (e) {
+      openFullscreen();
+      if (normalElem) {
+        normalElem.style.zIndex = 25;
+        normalElem.style.opacity = 1;
+        fullElem.style.zIndex = -1;
+        fullElem.style.opacity = 0;
+      }
+    }) : null;
+
+  normalElem ?
+    normalElem.addEventListener('click', function (e) {
+      closeFullscreen();
+      if (fullElem) {
+        fullElem.style.zIndex = 25;
+        fullElem.style.opacity = 1;
+        normalElem.style.zIndex = -1;
+        normalElem.style.opacity = 0;
+      }
+    }) : null;
+  
+});
+</script>
+
+    <div class="hide">
+      
+
+<div class="search">
+  <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M15.5 14h-.79l-.28-.27c1.2-1.4 1.82-3.31 1.48-5.34-.47-2.78-2.79-5-5.59-5.34-4.23-.52-7.79 3.04-7.27 7.27.34 2.8 2.56 5.12 5.34 5.59 2.03.34 3.94-.28 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+  </span>
+  <input id="search" aria-label="Site Search" class="input" type="text" placeholder="Search" autocomplete="off">
+  <div id="search-results" class="dropdown">
+    <div id="search-menu" class="dropdown-menu" role="menu">
+    </div>
+  </div>
+</div>
+
+
+    </div>
+  </div>
+</main>
+
+
+<script>
+  
+  
+  
+
+  var enableToc = JSON.parse("true");
+  var toc = JSON.parse("null");
+  var tocPosition = JSON.parse("\"outer\"");
+  
+  var singleMainElem = document.querySelector('.single__main');
+  var singleSideElem = document.querySelector('.single__side');
+
+  enquire.register("screen and (max-width: 769px)", {
+    match: function () {
+      if ((enableToc || toc) && tocPosition !== "outer") {
+        if (singleMainElem && singleSideElem) {
+          singleMainElem.classList.remove('main-main');
+          singleMainElem.classList.add('main');
+          singleSideElem.classList.remove('main-side');
+          singleSideElem.classList.add('hide');
+        }
+      } else if (tocPosition === "outer") {
+        if (singleMainElem && !singleMainElem.classList.contains('main-main')) {
+          singleMainElem.classList.remove('main-main');
+          singleMainElem.classList.add('main');
+        }
+        if (singleSideElem && !singleSideElem.classList.contains('hide')) {
+          singleSideElem.classList.add('hide');
+        }
+      }
+    },
+    unmatch: function () {
+      if ((enableToc || toc) && tocPosition !== "outer") {
+        singleMainElem.classList.remove('main');
+        singleMainElem.classList.add('main-main');
+        singleSideElem.classList.remove('hide');
+        singleSideElem.classList.add('main-side');
+      } else if (tocPosition === "outer") {
+        if (singleMainElem && !singleMainElem.classList.contains('main-main')) {
+          singleMainElem.classList.remove('main-main');
+          singleMainElem.classList.add('main');
+        }
+        if (singleSideElem && !singleSideElem.classList.contains('hide')) {
+          singleSideElem.classList.add('hide');
+        }
+      }
+
+      document.getElementsByClassName('navbar__burger')[0].classList.remove('is-active');
+      document.getElementsByClassName('navbar__menu')[0].classList.remove('is-active');
+      document.getElementsByClassName('mobile-search')[0].classList.add('hide');
+    },
+    setup: function () { },
+    deferSetup: true,
+    destroy: function () { },
+  });
+</script>
+
+
+
+
+<script defer src="/js/clipboard.min.c168d3a04c45a631be76437054619a4a3b30107960cb9730be96012fef5762b0.js"></script>
+
+<script defer src="/js/helper/getParents.min.js"></script>
+
+<script defer src="/js/helper/closest.min.js"></script>
+
+<script defer src="/js/helper/prev.min.js"></script>
+
+<script defer src="/js/helper/prop.min.js"></script>
+
+<script defer src="/js/helper/fadeinout.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  'use strict';
+
+  window.onload = function() {
+    var navbar = document.querySelector('.navbar');
+    var singleContentsElem = document.querySelector('.single__contents');
+
+    
+    function wrap(el, wrapper) {
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+    }
+
+    (function () {
+      singleContentsElem.querySelectorAll('pre > code').forEach(function(elem) {
+        var dataLang = elem.getAttribute('data-lang');
+        if (!dataLang) {
+          var dataLangWrapper = document.createElement('div');
+          dataLangWrapper.setAttribute('data-lang', 'Code');
+          dataLangWrapper.className = 'language-code';
+          wrap(elem.parentNode, dataLangWrapper);
+        }
+      });
+    })();
+
+    var langCodeElem = document.querySelectorAll('.language-code');
+    langCodeElem ? langCodeElem.forEach(function (elem) {
+      var newElem = document.createElement('span');
+      newElem.className = 'copy-to-clipboard';
+      newElem.setAttribute('title', 'Copy to clipboard');
+      elem.append(newElem);
+    }) : null;
+    
+
+
+    
+    
+    
+    var enableBusuanzi = JSON.parse("true");
+    var busuanziPagePV = JSON.parse("true");
+    
+    if (enableBusuanzi && busuanziPagePV) {
+      var pagePvElem = document.querySelector('#busuanzi_value_page_pv');
+      pagePvElem.textContent = pagePvElem.textContent.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+    }    
+    
+
+
+    
+    
+    
+    
+    
+    
+    var enableToc = JSON.parse("true");
+    var toc = JSON.parse("null");
+    var hideToc = JSON.parse("false");
+    var tocFlexbox = document.querySelector('.toc__flexbox');
+    var tocFlexboxOuter = document.querySelector('.toc__flexbox--outer');
+    var tocFolding = JSON.parse("false");
+    
+    if ((enableToc || toc) && document.querySelector('.toc')) {
+      var tableOfContentsElem = document.querySelector('.toc').querySelector('#TableOfContents');
+
+      if (false === tocFolding) {
+
+      } else {
+        tableOfContentsElem.querySelectorAll('ul') ?
+          tableOfContentsElem.querySelectorAll('ul').forEach(function (rootUl) {
+            rootUl.querySelectorAll('li').forEach(function (liElem) {
+              liElem.querySelectorAll('ul').forEach(function (ulElem) {
+                ulElem.style.display = 'none';
+              });
+            });
+          }) : null;
+      }
+
+      if (tableOfContentsElem) {
+        if (tableOfContentsElem.querySelectorAll('a').length > 0) {
+          tableOfContentsElem.querySelectorAll('a').forEach(function (elem) {
+            elem.addEventListener('click', function () {
+              var id = elem.getAttribute('id');
+              navbar.classList.remove('navbar--show');
+              navbar.classList.remove('navbar--hide');
+              navbar.classList.add('navbar--hide');
+
+              document.querySelector('.toc').querySelectorAll('a').forEach(function (elem) {
+                elem.classList.remove('active');
+              });
+              elem.classList.add('active');
+
+              var curElem = tableOfContentsElem.querySelector('[href="#' + id + '"]');
+              if (curElem && curElem.nextElementSibling) {
+                curElem.nextElementSibling.style.display = 'block';
+              }
+              if (curElem) {
+                getParents(curElem, 'ul') ?
+                  getParents(curElem, 'ul').forEach(function (elem) {
+                    elem.style.display = 'block';
+                  }) : null;
+              }
+            });
+          });
+        } else {
+          if (tocFlexbox) {
+            tocFlexbox.setAttribute('data-position', '');
+            if (!tocFlexbox.classList.contains('hide')) {
+              tocFlexbox.classList.add('hide');
+            }
+          }
+          if (tocFlexboxOuter) {
+            tocFlexboxOuter.setAttribute('data-position', '');
+            if (!tocFlexboxOuter.classList.contains('hide')) {
+              tocFlexboxOuter.classList.add('hide');
+            }
+          }
+        }
+      }
+
+      
+      var toggleTocElem = document.getElementById("toggle-toc");
+      var visibleTocElem = document.getElementById('visible-toc');
+      var tocElem = document.querySelector('.toc');
+      var mainElem = document.querySelector('main');
+      var sideElem = document.querySelector('side');
+      var tocFlexboxElem = document.querySelector('.toc__flexbox');
+
+      toggleTocElem ? 
+      toggleTocElem.addEventListener('change', function(e) {
+        if (e.target.checked) {
+          if (tocElem) {
+            fadeIn(tocElem, 200);
+          }
+          if (tocFlexboxElem) {
+            tocFlexboxElem.setAttribute('data-position', 'fixed');
+          }
+
+          if (mainElem) {
+            mainElem.classList.remove('main-main');
+            mainElem.classList.remove('main');
+            mainElem.classList.add('main-main');
+          }
+          if (sideElem) {
+            sideElem.classList.remove('main-side');
+          }
+        } else {
+          if (tocElem) {
+            fadeOut(tocElem, 200);
+          }
+          if (tocFlexboxElem) {
+            tocFlexboxElem.setAttribute('data-position', 'absolute');
+          }
+
+          if (mainElem) {
+            mainElem.classList.remove('main-main');
+            mainElem.classList.remove('main');
+            mainElem.classList.add('main');
+          }
+          if (sideElem) {
+            sideElem.classList.remove('main-side');
+          }
+        }
+      }) : null;
+
+      visibleTocElem ?
+      visibleTocElem.addEventListener('change', function(e) {
+        if (e.target.checked) {
+          if (tocElem) {
+            fadeIn(tocElem, 200);
+          }
+        } else {
+          if (tocElem) {
+            fadeOut(tocElem, 200);
+          }
+        }
+      }) : null;
+    }
+    
+
+
+    
+    var tables = document.querySelectorAll('.single__contents > table');
+    for (let i = 0; i < tables.length; i++) {
+      var table = tables[i];
+      var wrapper = document.createElement('div');
+      wrapper.className = 'table-wrapper';
+      table.parentElement.replaceChild(wrapper, table);
+      wrapper.appendChild(table);
+    }
+    
+
+
+    
+    var text, clip = new ClipboardJS('.anchor');
+    var headers = singleContentsElem.querySelectorAll("h1, h2, h3, h4");
+
+    
+    var languagedir = JSON.parse("\"ltr\"");
+
+    headers ? 
+    headers.forEach(function (elem) {
+      var url = encodeURI(document.location.origin + document.location.pathname);
+      var link = url + "#" + elem.getAttribute('id');
+      var newElemOuter = document.createElement('span');
+      newElemOuter.classList.add('anchor');
+      newElemOuter.classList.add('hide');
+      newElemOuter.setAttribute('data-clipboard-text', link);
+      newElemOuter.style.position = 'relative';
+
+      var newElemInner = document.createElement('span');
+      newElemInner.style.fontSize = '1rem';
+      newElemInner.style.position = 'absolute';
+      newElemInner.style.top = '50%';
+      newElemInner.style.transform = 'translateY(-50%)';
+      newElemInner.innerText = "🔗";
+
+      if (languagedir === "rtl") {
+        newElemInner.style.left = '-2rem';
+      } else {
+        newElemInner.style.right = '-2rem';
+      }
+
+      newElemOuter.append(newElemInner);
+      elem.append(newElemOuter);
+
+      elem.addEventListener('mouseenter', function() {
+        this.querySelector('.anchor').classList.remove('hide');
+      });
+      elem.addEventListener('mouseleave', function () {
+        this.querySelector('.anchor').classList.add('hide');
+      });
+    }) : null;
+
+    document.querySelectorAll('.anchor').forEach(function(elem) {
+      elem.addEventListener('mouseleave', function() {
+        elem.setAttribute('aria-label', null);
+        elem.classList.remove('tooltipped');
+        elem.classList.remove('tooltipped-s');
+        elem.classList.remove('tooltipped-w');
+      });
+    });
+
+    clip.on('success', function (e) {
+      e.clearSelection();
+      e.trigger.setAttribute('aria-label', 'Link copied to clipboard!');
+      e.trigger.classList.add('tooltipped');
+      e.trigger.classList.add('tooltipped-s');
+    });
+    
+
+
+    
+    var clipInit = false;
+    var preChromaElem = document.querySelectorAll('pre.chroma');
+    var langCodeElem = document.querySelectorAll('.language-code');
+    var makeClipboard = function(elem) {
+      var code = elem,
+        text = elem.textContent;
+        
+      if (text.length > 15) {
+        if (!clipInit) {
+          var text, clip = new ClipboardJS('.copy-to-clipboard', {
+            text: function (trigger) {
+              var codeElem = prev(trigger).querySelectorAll('code');
+              if (codeElem.length > 1) {
+                text = prev(trigger).querySelector('code[class^="language-"]').textContent;
+              } else {
+                text = prev(trigger).querySelector('code').textContent;
+              }
+
+              return text.replace(/^\$\s/gm, '');
+            }
+          });
+
+          var inPre;
+          clip.on('success', function (e) {
+            e.clearSelection();
+            inPre = prop(e.trigger.parentNode, 'tagName') == 'PRE';
+            e.trigger.setAttribute('aria-label', 'Copied to clipboard!');
+            e.trigger.classList.add('tooltipped');
+            e.trigger.classList.add('tooltipped-w');
+          });
+
+          clip.on('error', function (e) {
+            inPre = prop(e.trigger.parentNode, 'tagName') == 'PRE';
+            e.trigger.setAttribute('aria-label', e.action.toString());
+            e.trigger.classList.add('tooltipped');
+            e.trigger.classList.add('tooltipped-w');
+          });
+
+          clipInit = true;
+        }
+
+        var notAllowedClass = ['language-mermaid', 'language-viz', 'language-wave', 'language-chart', 'language-msc', 'language-flowchart'];
+        var isNotAllowedIncluded = false;
+        var curClassName = code.getAttribute('class');
+
+        for (var i = 0; i < notAllowedClass.length; i++) {
+          if (curClassName && curClassName.startsWith(notAllowedClass[i])) {
+            isNotAllowedIncluded = true;
+            break;
+          }
+        }
+
+        if (!isNotAllowedIncluded) {
+          if (curClassName) {
+            var newClipboardElem = document.createElement('span');
+            newClipboardElem.setAttribute('class', 'copy-to-clipboard');
+            newClipboardElem.setAttribute('title', 'Copy to clipboard');
+            closest(code, 'div.chroma').append(newClipboardElem);
+          }
+        }
+      }
+    }
+
+    preChromaElem ? 
+    preChromaElem.forEach(function(elem) {
+      elem.querySelectorAll('code').forEach(function(codeElem) {
+        makeClipboard(codeElem);
+      });
+    }) : null;
+    
+    langCodeElem ? 
+    langCodeElem.forEach(function(elem) {
+      elem.querySelectorAll('code').forEach(function (codeElem) {
+        makeClipboard(codeElem);
+      });
+    }) : null;
+    
+
+
+    
+    
+    var lib = JSON.parse("null");
+
+    if (lib && lib.includes('mermaid')) {
+      
+      var themeVariant = localStorage.getItem('theme') || JSON.parse("\"dark\"");
+
+      if (themeVariant === "dark" || themeVariant === "hacker") {
+        mermaid.initialize({ theme: 'dark' });
+      } else {
+        mermaid.initialize({ theme: 'default' });
+      }
+      
+      var mermaids = [];
+      [].push.apply(mermaids, document.getElementsByClassName('language-mermaid'));
+      mermaids.forEach(function(elem) {
+        var elemParentNode = elem.parentNode;
+
+        if (elemParentNode !== document.body) {
+          elemParentNode.parentNode.insertBefore(elem, elemParentNode);
+          elemParentNode.parentNode.removeChild(elemParentNode);
+        }
+
+        var newElemWrapper = document.createElement('div');
+        newElemWrapper.classList.add('mermaid');
+        newElemWrapper.style.padding = '34px 4px 6px';
+        newElemWrapper.innerHTML = elem.innerHTML;
+        elem.replaceWith(newElemWrapper);
+      });
+    }
+    
+    
+
+    
+    if (lib && lib.includes('katex')) {
+      var mathElements = document.getElementsByClassName('math');
+      var options = {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\(", right: "\\)", display: false }
+        ],
+      };
+
+      renderMathInElement(document.querySelector('.single__contents'), options);
+    }
+    
+
+
+    
+    if (lib && lib.includes('flowchartjs')) {
+      
+      var options = JSON.parse("{\"arrow-end\":\"block\",\"element-color\":\"black\",\"fill\":\"white\",\"flowstate\":{\"approved\":{\"fill\":\"#58C4A3\",\"font-size\":12,\"no-text\":\"n/a\",\"yes-text\":\"APPROVED\"},\"current\":{\"fill\":\"yellow\",\"font-color\":\"red\",\"font-weight\":\"bold\"},\"future\":{\"fill\":\"#FFFF99\"},\"invalid\":{\"fill\":\"#444444\"},\"past\":{\"fill\":\"#CCCCCC\",\"font-size\":12},\"rejected\":{\"fill\":\"#C45879\",\"font-size\":12,\"no-text\":\"REJECTED\",\"yes-text\":\"n/a\"},\"request\":{\"fill\":\"blue\"}},\"font-color\":\"black\",\"font-size\":14,\"line-color\":\"black\",\"line-length\":50,\"line-width\":3,\"no-text\":\"no\",\"scale\":1,\"symbols\":{\"end\":{\"class\":\"end-element\"},\"start\":{\"element-color\":\"green\",\"fill\":\"yellow\",\"font-color\":\"red\"}},\"text-margin\":10,\"x\":0,\"y\":0,\"yes-text\":\"yes\"}");
+      var jsonContent = null;
+
+      var flowchartPrefix = "language-flowchart";
+      var index = 0;
+      Array.prototype.forEach.call(document.querySelectorAll("[class^=" + flowchartPrefix + "]"), function(x){
+          x.style.display = 'none'
+          x.parentNode.style.backgroundColor = "transparent"
+          jsonContent = x.innerText;
+
+          var node0 = document.createElement('div');
+          node0.id = 'flowchart' + index;
+          x.parentNode.insertBefore(node0, x);
+
+          var diagram = flowchart.parse(jsonContent);
+          diagram.drawSVG("flowchart"+index, options);
+
+          index +=1;
+      });      
+    }
+    
+
+
+    
+    
+
+
+    
+    if (lib && lib.includes('msc')) {
+      
+      var options = JSON.parse("{\"theme\":\"hand\"}");
+      var jsonContent = null;
+
+      var index = 0;
+      var chartPrefix = "language-msc";
+      Array.prototype.forEach.call(document.querySelectorAll("[class^=" + chartPrefix + "]"), function (x) {
+        x.style.display = 'none'
+        x.parentNode.style.backgroundColor = "transparent"
+        jsonContent = x.innerText;
+        var node0 = document.createElement('div');
+        node0.id = 'msc' + index;
+        x.parentNode.insertBefore(node0, x);
+        var diagram = Diagram.parse(jsonContent);
+        diagram.drawSVG("msc" + index, options);
+        index += 1;
+      });
+    }
+    
+
+
+    
+    if (lib && lib.includes('chart')) {
+      var borderColor = "#666";
+      var bgColor = "#ddd";
+      var borderWidth = 2;
+
+      Chart.defaults.global.elements.rectangle.borderWidth = borderWidth;
+      Chart.defaults.global.elements.rectangle.borderColor = borderColor;
+      Chart.defaults.global.elements.rectangle.backgroundColor = bgColor;
+
+      Chart.defaults.global.elements.line.borderWidth = borderWidth;
+      Chart.defaults.global.elements.line.borderColor = borderColor;
+      Chart.defaults.global.elements.line.backgroundColor = bgColor;
+
+      Chart.defaults.global.elements.point.borderWidth = borderWidth;
+      Chart.defaults.global.elements.point.borderColor = borderColor;
+      Chart.defaults.global.elements.point.backgroundColor = bgColor;
+
+      var chartPrefix = "language-chart";
+      var index = 0;
+      var jsonContent = null;
+
+      Array.prototype.forEach.call(document.querySelectorAll("[class^=" + chartPrefix + "]"), function (x) {
+        x.style.display = 'none'
+        x.parentNode.style.backgroundColor = "transparent"
+        jsonContent = x.innerText;
+        var node0 = document.createElement('canvas');
+        var source = null;
+        node0.height = 200;
+        node0.style.height = 200;
+        node0.id = 'myChart' + index;
+        source = JSON.parse(jsonContent);
+        x.parentNode.insertBefore(node0, x);
+        var ctx = document.getElementById('myChart' + index).getContext('2d');
+        var myChart = new Chart(ctx, source);
+        index += 1;
+      });            
+    }
+    
+
+
+    
+    if (lib && lib.includes('wavedrom')) {
+      var wavePrefix = "language-wave";
+      var index = 0;
+      var jsonContent = null;
+      
+      Array.prototype.forEach.call(document.querySelectorAll("[class^=" + wavePrefix + "]"), function (x) {
+        x.style.display = 'none'
+        x.parentNode.style.backgroundColor = "transparent"
+        jsonContent = x.innerText;
+        var node0 = document.createElement('div');
+        var source = null;
+        node0.id = 'WaveDrom_Display_' + index;
+        source = JSON.parse(jsonContent);
+        x.parentNode.insertBefore(node0, x);
+        WaveDrom.RenderWaveForm(index, source, "WaveDrom_Display_");
+        index += 1;
+      });
+    }
+    
+
+
+    
+    if (lib && lib.includes('viz')) {
+      var vizPrefix = "language-viz-";
+      Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+        x.style.display = 'none'
+        x.parentNode.style.backgroundColor = "transparent"
+        var engine;
+        x.getAttribute("class").split(" ").forEach(function (cls) {
+          if (cls.startsWith(vizPrefix)) {
+            engine = cls.substr(vizPrefix.length);
+          }
+        });
+        var viz = new Viz();
+        viz.renderSVGElement(x.innerText, { engine: engine })
+          .then(function (element) {
+            element.style.width = "100%";
+            x.parentNode.insertBefore(element, x);
+          })
+      });
+    }
+    
+    
+  }
+</script>
+
+
+            
+            <footer class="footer">
+    
+<div class="dropdown">
+  <button class="dropdown-trigger" aria-label="Select Theme Button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03c1.74-1.94 2.98-4.17 3.71-6.53h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18C11.5 7.92 10.44 9.75 9 11.35c-.81-.89-1.49-1.86-2.06-2.88-.16-.29-.45-.47-.78-.47-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87c-.4.39-.4 1.03 0 1.42.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+  </button>
+  <div class="dropdown-content">
+    
+    
+    
+      
+      
+        
+        
+          
+            
+              <a href="http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/" data-lang="en" class="dropdown-item is-active">English</a>
+            
+          
+        
+      
+        
+      
+    
+  </div>
+</div>
+
+    
+<div class="footer__social">
+  <div class="social">
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+    
+  <a href="http://fatwaer.me/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection//index.xml" type="application/rss+xml" title="rss" aria-label="RSS Feed Link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><circle fill="currentColor" cx="6.18" cy="17.82" r="2.18"/><path fill="currentColor" d="M5.59 10.23c-.84-.14-1.59.55-1.59 1.4 0 .71.53 1.28 1.23 1.4 2.92.51 5.22 2.82 5.74 5.74.12.7.69 1.23 1.4 1.23.85 0 1.54-.75 1.41-1.59-.68-4.2-3.99-7.51-8.19-8.18zm-.03-5.71C4.73 4.43 4 5.1 4 5.93c0 .73.55 1.33 1.27 1.4 6.01.6 10.79 5.38 11.39 11.39.07.73.67 1.28 1.4 1.28.84 0 1.5-.73 1.42-1.56-.73-7.34-6.57-13.19-13.92-13.92z"/></svg>
+  </a>
+
+  </div>
+</div>
+
+    
+<div id="gtt">
+  <div class="gtt">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M8.12 14.71L12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71c-.39-.39-1.02-.39-1.41 0L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.38 1.03.39 1.42 0z"/></svg>
+  </div>
+</div>
+
+    <hr />
+
+    <div class="footer__poweredby">
+        
+  <div class="busuanzi">
+    
+    
+      <div class="busuanzi__item">
+        <span class="busuanzi__item--label">
+          Total visitors
+        </span>
+        <span id="busuanzi_value_site_uv" class="busuanzi__item--number">...</span>
+      </div>
+    
+
+    
+      <div class="busuanzi__item">
+        <span class="busuanzi__item--label">
+          Total views
+        </span>
+        <span id="busuanzi_value_site_pv" class="busuanzi__item--number">...</span>
+      </div>
+    
+
+  </div>
+
+                
+            <p class="caption">
+                
+                    
+                    
+
+                    
+                        ©2020, All Rights Reserved<a rel="license" href="fatwaer.me"></a>
+                    
+                
+            </p>
+        
+
+        
+            <p class="caption">Powered by <a href="https://gohugo.io/" rel="noreferrer">Hugo</a> and the <a href="https://github.com/zzossig/hugo-theme-zzo" rel="noreferrer">Zzo theme</a></p>
+        
+    </div> 
+</footer>
+        </div>
+        
+<div class="wrapper__right" dir="ltr">
+  
+    
+      
+        <div class="toc__flexbox--outer" data-position="fixed" data-dir="ltr">
+          <h6 class="toc__title toc__title--outer">What&#39;s on this Page</h6>
+          
+          <label class="switch">
+            <input id="visible-toc" aria-label="Visible TOC" type="checkbox" checked>
+            <span class="slider round"></span>
+          </label>
+          
+        </div>
+        <div class="toc toc__outer " data-dir="ltr" data-folding="false">
+          <nav id="TableOfContents">
+  <ul>
+    <li><a href="#段机制的类型检查">段机制的类型检查</a></li>
+    <li><a href="#段机制的界限检查">段机制的界限检查</a>
+      <ul>
+        <li><a href="#特权等级">特权等级</a></li>
+      </ul>
+    </li>
+    <li><a href="#段机制的数据的访问限制">段机制的数据的访问限制</a></li>
+    <li><a href="#段机制的控制转移限制">段机制的控制转移限制</a>
+      <ul>
+        <li><a href="#门限描述符对过程调用的保护">门限描述符对过程调用的保护</a></li>
+        <li><a href="#栈切换">栈切换</a></li>
+        <li><a href="#从过程调用中返回ret">从过程调用中返回（ret）</a></li>
+      </ul>
+    </li>
+    <li><a href="#指令集的限制">指令集的限制</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#页机制中的寻址限制">页机制中的寻址限制</a></li>
+    <li><a href="#页机制中的类型检查">页机制中的类型检查</a></li>
+  </ul>
+</nav>
+        </div>
+      
+    
+  
+</div>
+
+    </div>
+</body>
+
+</html>
