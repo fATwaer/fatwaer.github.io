@@ -3,58 +3,58 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>fatwaer.me/ko/categories/</loc>
+    <loc>/ko/categories/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.me/en/categories/"
+                href="/en/categories/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.me/ko/categories/"
+                href="/ko/categories/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.me/ko/</loc>
+    <loc>/ko/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.me/en/"
+                href="/en/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.me/ko/"
+                href="/ko/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.me/ko/series/</loc>
+    <loc>/ko/series/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.me/en/series/"
+                href="/en/series/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.me/ko/series/"
+                href="/ko/series/"
                 />
   </url>
   
   <url>
-    <loc>fatwaer.me/ko/tags/</loc>
+    <loc>/ko/tags/</loc>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="fatwaer.me/en/tags/"
+                href="/en/tags/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="ko"
-                href="fatwaer.me/ko/tags/"
+                href="/ko/tags/"
                 />
   </url>
   
