@@ -1187,7 +1187,7 @@
     "datePublished": "2019-09-18T14:11:14+08:00",
     "dateModified": "2019-09-18T14:11:14+08:00",
     "url" : "/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/",
-    "description": "博客从 hexo 迁到了 hugo，主要是 hexo 随着文文章增多，我build一次大概需要花到5s左右，某种程度上算是很慢了，另外个人感觉 hexo 主题社区在慢慢衰落",
+    "description": "将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布",
     "keywords": ["config"],
     "mainEntityOfPage": {
       "@type": "WebPage",
@@ -1463,23 +1463,103 @@ if (!doNotTrack) {
     <article class="single__contents" data-dir="ltr">
       
       <blockquote>
-<p>博客从 hexo 迁到了 hugo，主要是 hexo 随着文文章增多，我build一次大概需要花到5s左右，某种程度上算是很慢了，另外个人感觉 hexo 主题社区在慢慢衰落，已经是16年左右的产物了，而 hugo 相反，社区在慢慢活跃起来，其主题的更新在官网可以看出来相对频繁。另外一个原因还是看到了几个不错<a href="https://themes.gohugo.io/">网页Demo</a>。</p>
+<p>将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布出来，而 hugo 相反，随着golang热度的上涨，社区也很活跃，其主题的更新在官网可以看出来相对频繁。我目前使用的主题是由<a href="https://github.com/zzossig">zzossig</a> 提供的<a href="https://github.com/zzossig/hugo-theme-zzo">Zzo</a>主题。</p>
 </blockquote>
-<h1 id="hugo-总览">Hugo 总览</h1>
-<p>看到比较合适的主题，有需要自己定制的话，可以简单过一遍Hugo的一个官方教程： <a href="https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3">https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3</a> (大概3-4小时)</p>
-<p>Hugo 静态生成主要由两个部分组成，一个是list template，用于生成类似于目录页的页面，另一个是single template，类似于每一篇博客展现内容的页面。这两个页面一般是被嵌入在一个叫<code>baseof.html</code>的模板中。</p>
+<h2 id="hugo-总览">Hugo 总览</h2>
+<p>看到比较合适的主题，有需要自己定制的话，可以简单过一遍Hugo的一个官方教程(大概3-4小时)：</p>
+<blockquote>
+<p><a href="https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3">https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3</a></p>
+</blockquote>
+<h3 id="hugo-的安装和环境配置">Hugo 的安装和环境配置</h3>
+<p>Hugo 提供了较为详细的<a href="https://gohugo.io/getting-started/quick-start/">官方教程</a>，安装过程非常详细，如果是在windows上安装，可以下载<a href="https://github.com/gohugoio/hugo/releases">二进制文件</a>到任意目录下，并且将改目录添加到<code>PATH</code>环境变量即可。</p>
+<h3 id="hugo-的基本使用">Hugo 的基本使用</h3>
+<p>将hugo的环境搭建完成后博客根目录进行初始化：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">hugo version                                                               
+mkdir Sites
+<span class="nb">cd</span> Sites
+hugo new site sitename
+</code></pre></td></tr></table>
+</div>
+</div><p>然后需要去主题页找一个合适的<a href="https://themes.gohugo.io/">主题</a>，并且下载到<code>Sites/sitename/themes</code>目录，或者在<code>Sites/sitename</code>目录下执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">git init
+git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke
+</code></pre></td></tr></table>
+</div>
+</div><p>然后将配置文件中的主题设置为下载到<code>themes</code>目录中的主题文件夹名字：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">&#39;theme = &#34;ananke&#34;&#39;</span> &gt;&gt; config.toml
+</code></pre></td></tr></table>
+</div>
+</div><p>像hexo一样，hugo提供了本地预览的功能，在 <code>Sites/sitename</code>目录下运行，然后就可以访问<code>localhost:1313</code>来访问博客了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ hugo server
+Building sites …
+                   <span class="p">|</span> EN  <span class="p">|</span> KO
+-------------------+-----+------
+  Pages            <span class="p">|</span>  <span class="m">54</span> <span class="p">|</span>  10
+  Paginator pages  <span class="p">|</span>   <span class="m">3</span> <span class="p">|</span>   0
+  Non-page files   <span class="p">|</span>   <span class="m">0</span> <span class="p">|</span>   0
+  Static files     <span class="p">|</span> <span class="m">209</span> <span class="p">|</span> 209
+  Processed images <span class="p">|</span>   <span class="m">0</span> <span class="p">|</span>   0
+  Aliases          <span class="p">|</span>  <span class="m">11</span> <span class="p">|</span>   1
+  Sitemaps         <span class="p">|</span>   <span class="m">2</span> <span class="p">|</span>   1
+  Cleaned          <span class="p">|</span>   <span class="m">0</span> <span class="p">|</span>   0
+
+Built in <span class="m">5641</span> ms
+Environment: <span class="s2">&#34;development&#34;</span>
+Serving pages from memory
+Running in Fast Render Mode. For full rebuilds on change: hugo server --disableFastRender
+Web Server is available at //localhost:1313/ <span class="o">(</span><span class="nb">bind</span> address 127.0.0.1<span class="o">)</span>
+Press Ctrl+C to stop
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="hugo-与-github">Hugo 与 Github</h3>
+<p>如果单单运行<code>hugo</code>并且不添加仍和参数，hugo就会将博客的静态文件全部生成到<code>sitename/public</code>内，然后与<code>githubname.github.io</code>仓库进行关联，然后将代码推上去，就可以正常访问了。</p>
+<h3 id="其他">其他</h3>
+<p>Hugo 静态生成主要由两个部分组成，一个是<code>list template</code>，用于生成类似于目录页的页面，另一个是single template，类似于每一篇博客展现内容的页面。这两个页面一般是被嵌入在一个叫<code>baseof.html</code>的模板中。</p>
 <h2 id="markdown-图床">Markdown 图床</h2>
 <p>最开始用微博+chrome插件， 后来微博开启了防盗链， 转移到了七牛+picGo<br />
 <a href="https://www.cnblogs.com/Dozeer/p/10965508.html">https://www.cnblogs.com/Dozeer/p/10965508.html</a></p>
-<h2 id="hugo-markdown格式修正httpslearnnetlifycomencontmarkdown"><a href="https://learn.netlify.com/en/cont/markdown/">hugo markdown格式修正</a></h2>
-<p>ps: hugo解析markdown，换行需要追加两个空格</p>
-<h2 id="加载错误cors-policy跨域访问禁止">加载错误，CORS policy跨域访问禁止</h2>
-<p><code>Mixed Content: The page at 'https://fatwaer.me/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/' was loaded over HTTPS, but requested an insecure script 'http://fatwaer.me/js/back2top.js'. This request has been blocked; the content must be served over HTTPS.</code></p>
-<p>主要原因出在 <a href="http://fatwaer.me/js/xxx.js">http://fatwaer.me/js/xxx.js</a> 尝试去用https访问一个该站点下某个资源而出现的问题，而被<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS">CORS</a>所阻塞，资源不能被正确加载。</p>
-<p>我的解决办法是将<code>Github-page</code>强制开启https(repository -&gt; Setting -&gt; Enforce HTTPS )，即该页面只能被https进行访问，其次是将该hugo主题中自我引用的一些链接修改为相对路径。</p>
-<h2 id="在原来的主题上面加一个回到顶部的按钮">在原来的主题上面加一个回到顶部的按钮</h2>
-<p><a href="https://w3schools.com/howto/howto_js_scroll_to_top.asp">https://w3schools.com/howto/howto_js_scroll_to_top.asp</a></p>
-<h2 id="code属性的样式">&lt;code&gt;属性的样式</h2>
 
     </article>
     
@@ -2747,11 +2827,15 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="toc toc__outer " data-dir="ltr" data-folding="false">
           <nav id="TableOfContents">
   <ul>
+    <li><a href="#hugo-总览">Hugo 总览</a>
+      <ul>
+        <li><a href="#hugo-的安装和环境配置">Hugo 的安装和环境配置</a></li>
+        <li><a href="#hugo-的基本使用">Hugo 的基本使用</a></li>
+        <li><a href="#hugo-与-github">Hugo 与 Github</a></li>
+        <li><a href="#其他">其他</a></li>
+      </ul>
+    </li>
     <li><a href="#markdown-图床">Markdown 图床</a></li>
-    <li><a href="#hugo-markdown格式修正httpslearnnetlifycomencontmarkdown">hugo markdown格式修正</a></li>
-    <li><a href="#加载错误cors-policy跨域访问禁止">加载错误，CORS policy跨域访问禁止</a></li>
-    <li><a href="#在原来的主题上面加一个回到顶部的按钮">在原来的主题上面加一个回到顶部的按钮</a></li>
-    <li><a href="#code属性的样式">\<code\>属性的样式</a></li>
   </ul>
 </nav>
         </div>
