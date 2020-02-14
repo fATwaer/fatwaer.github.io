@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/en/shell-tools-and-scripting/</loc>
+    <lastmod>2020-02-13T20:55:13+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/en/categories/</loc>
     <lastmod>2020-02-02T11:12:14+08:00</lastmod>
     <xhtml:link

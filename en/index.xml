@@ -16,6 +16,15 @@
     
       
       <item>
+        <title>Shell Tools and Scripting</title>
+        <link>/en/shell-tools-and-scripting/</link>
+        <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/shell-tools-and-scripting/</guid>
+        <description>前言 这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在</description>
+      </item>
+      
+      <item>
         <title>Gallery</title>
         <link>/en/gallery/</link>
         <pubDate>Sun, 02 Feb 2020 11:12:14 +0800</pubDate>
