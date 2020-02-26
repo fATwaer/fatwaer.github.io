@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>globbing on Blog | fatwaer</title>
+    <link>/en/tags/globbing/</link>
+    <description>Recent content in globbing on Blog | fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
+    <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
+    <copyright>©{year}, All Rights Reserved</copyright>
+    <lastBuildDate>Thu, 13 Feb 2020 20:55:13 +0800</lastBuildDate>
+    
+        <atom:link href="/en/tags/globbing/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+      
+      <item>
+        <title>Shell Tools and Scripting</title>
+        <link>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/</link>
+        <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/</guid>
+        <description>前言 这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在</description>
+      </item>
+      
+    
+  </channel>
+</rss>

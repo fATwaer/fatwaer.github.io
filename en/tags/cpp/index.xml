@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>cpp on Blog | fatwaer</title>
+    <link>/en/tags/cpp/</link>
+    <description>Recent content in cpp on Blog | fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
+    <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
+    <copyright>©{year}, All Rights Reserved</copyright>
+    <lastBuildDate>Fri, 02 Jun 2017 11:15:08 +0800</lastBuildDate>
+    
+        <atom:link href="/en/tags/cpp/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+      
+      <item>
+        <title>C&#43;&#43; iterater</title>
+        <link>/en/posts/c-i-c&#43;&#43;/c&#43;&#43;/</link>
+        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/c&#43;&#43;/</guid>
+        <description>1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44  There have serveral methods: /***overload function****/ void print(int* pi) { if (pi) cout &amp;lt;&amp;lt; *pi &amp;lt;&amp;lt; endl; } void print(const char* p) { if (p) while (*p) cout &amp;lt;&amp;lt; *p++; cout &amp;lt;&amp;lt; endl; } void print(const int* beg, const int* end) { while (beg !</description>
+      </item>
+      
+    
+  </channel>
+</rss>

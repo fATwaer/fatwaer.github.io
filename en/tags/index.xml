@@ -9,12 +9,30 @@
     <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
     <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
     <copyright>©{year}, All Rights Reserved</copyright>
-    <lastBuildDate>Sun, 02 Feb 2020 11:12:14 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 13 Feb 2020 20:55:13 +0800</lastBuildDate>
     
         <atom:link href="/en/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     
+      
+      <item>
+        <title>globbing</title>
+        <link>/en/tags/globbing/</link>
+        <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/globbing/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>shell</title>
+        <link>/en/tags/shell/</link>
+        <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/shell/</guid>
+        <description></description>
+      </item>
       
       <item>
         <title>config</title>
@@ -44,6 +62,33 @@
       </item>
       
       <item>
+        <title>file</title>
+        <link>/en/tags/file/</link>
+        <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/file/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>unix</title>
+        <link>/en/tags/unix/</link>
+        <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/unix/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>I/O</title>
+        <link>/en/tags/i/o/</link>
+        <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/i/o/</guid>
+        <description></description>
+      </item>
+      
+      <item>
         <title>OS</title>
         <link>/en/tags/os/</link>
         <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
@@ -58,6 +103,24 @@
         <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
         <guid>/en/tags/assembly/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>cpp</title>
+        <link>/en/tags/cpp/</link>
+        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/cpp/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>Testing</title>
+        <link>/en/tags/testing/</link>
+        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/testing/</guid>
         <description></description>
       </item>
       

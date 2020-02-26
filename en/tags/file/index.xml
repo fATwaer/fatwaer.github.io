@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>file on Blog | fatwaer</title>
+    <link>/en/tags/file/</link>
+    <description>Recent content in file on Blog | fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
+    <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
+    <copyright>©{year}, All Rights Reserved</copyright>
+    <lastBuildDate>Tue, 14 Aug 2018 10:42:10 +0000</lastBuildDate>
+    
+        <atom:link href="/en/tags/file/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+      
+      <item>
+        <title>apue-file and directory</title>
+        <link>/en/posts/c-i-c&#43;&#43;/apue-file-and-directory/</link>
+        <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/apue-file-and-directory/</guid>
+        <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取</description>
+      </item>
+      
+      <item>
+        <title>apue-file I/O</title>
+        <link>/en/posts/c-i-c&#43;&#43;/apue-chapter3/</link>
+        <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/apue-chapter3/</guid>
+        <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言AP</description>
+      </item>
+      
+    
+  </channel>
+</rss>
