@@ -1188,7 +1188,7 @@
     "dateModified": "2018-08-14T10:42:10Z",
     "url" : "/en/posts/c-i-c++/apue-file-and-directory/",
     "description": "文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取",
-    "keywords": ["unix","file"],
+    "keywords": ["unix","file","c/c++"],
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": "/"
@@ -1256,7 +1256,7 @@ if (!doNotTrack) {
     
     
       <a href="/en" title="Home" rel="home" class="navbar__title-link">
-        <h6 class="navbar__title"> | Home |</h6>
+        <h6 class="navbar__title">  Home</h6>
       </a>
     
   </div>
@@ -1467,6 +1467,15 @@ if (!doNotTrack) {
   </li>
     
 
+  
+  
+  <li>
+    <a href="/en/tags/c/c&#43;&#43;" class="single__tag" title="c/c&#43;&#43;">
+      #c/c&#43;&#43;
+    </a>
+  </li>
+    
+
 </div>
     </div>    
     <article class="single__contents" data-dir="ltr">
@@ -1630,9 +1639,11 @@ d</p>
 </span><span class="lnt">38
 </span><span class="lnt">39
 </span><span class="lnt">40
+</span><span class="lnt">41
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#</span><span class="cp">include</span> <span class="cpf">&#34;apue.h&#34;</span><span class="cp">
+<pre class="chroma"><code class="language-C" data-lang="C">
+<span class="cp">#</span><span class="cp">include</span> <span class="cpf">&#34;apue.h&#34;</span><span class="cp">
 </span><span class="cp"></span><span class="cp">#</span><span class="cp">include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
 </span><span class="cp"></span>
 <span class="kt">int</span>
@@ -1675,13 +1686,27 @@ d</p>
 </code></pre></td></tr></table>
 </div>
 </div><p>会创建一个file.hole和file.nohole的文件，使用<code>du</code>命令(disk usage)和<code>ls</code>来分别查看实际磁盘使用数，和在文件系统中使用的数量。</p>
-<pre><code>[moonlight@ArchLinux c4]$ ll file.*
--rw------- 1 moonlight users 65550 Aug 23 16:46 file.hole
--rw------- 1 moonlight users 65550 Aug 23 16:46 file.nohole
-[moonlight@ArchLinux c4]$ du file.*
-8	file.hole
-68	file.nohole
-</code></pre><p>现在可以做下前面那一章的实验，分别使用cp和cat重定向到一个文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-s" data-lang="s">
+<span class="n">[moonlight</span><span class="o">@</span><span class="n">ArchLinux</span> <span class="n">c4</span><span class="n">]</span><span class="o">$</span> <span class="n">ll</span> <span class="n">file.</span><span class="o">*</span>
+<span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span> <span class="m">1</span> <span class="n">moonlight</span> <span class="n">users</span> <span class="m">65550</span> <span class="n">Aug</span> <span class="m">23</span> <span class="m">16</span><span class="o">:</span><span class="m">46</span> <span class="n">file.hole</span>
+<span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span><span class="o">-</span> <span class="m">1</span> <span class="n">moonlight</span> <span class="n">users</span> <span class="m">65550</span> <span class="n">Aug</span> <span class="m">23</span> <span class="m">16</span><span class="o">:</span><span class="m">46</span> <span class="n">file.nohole</span>
+<span class="n">[moonlight</span><span class="o">@</span><span class="n">ArchLinux</span> <span class="n">c4</span><span class="n">]</span><span class="o">$</span> <span class="n">du</span> <span class="n">file.</span><span class="o">*</span>
+<span class="m">8</span>	<span class="n">file.hole</span>
+<span class="m">68</span>	<span class="n">file.nohole</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>现在可以做下前面那一章的实验，分别使用cp和cat重定向到一个文件。</p>
 <pre><code>[moonlight@ArchLinux c4]$ cp  file.hole hole.cp
 [moonlight@ArchLinux c4]$ cat file.hole &gt; hole.cat
 [moonlight@ArchLinux c4]$ ll hole*
@@ -1769,7 +1794,7 @@ d</p>
       
     
       
-        <a href="https://twitter.com/intent/tweet?text=apue-file%20and%20directory&url=%2fen%2fposts%2fc-i-c%2b%2b%2fapue-file-and-directory%2f&hashtags=unix%2cfile&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+        <a href="https://twitter.com/intent/tweet?text=apue-file%20and%20directory&url=%2fen%2fposts%2fc-i-c%2b%2b%2fapue-file-and-directory%2f&hashtags=unix%2cfile%2cc%2fc%2b%2b&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
           <svg data-name="twitter" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m21.534 7.113c.976-.693 1.797-1.558 2.466-2.554v-.001c-.893.391-1.843.651-2.835.777 1.02-.609 1.799-1.566 2.165-2.719-.951.567-2.001.967-3.12 1.191-.903-.962-2.19-1.557-3.594-1.557-2.724 0-4.917 2.211-4.917 4.921 0 .39.033.765.114 1.122-4.09-.2-7.71-2.16-10.142-5.147-.424.737-.674 1.58-.674 2.487 0 1.704.877 3.214 2.186 4.089-.791-.015-1.566-.245-2.223-.606v.054c0 2.391 1.705 4.377 3.942 4.835-.401.11-.837.162-1.29.162-.315 0-.633-.018-.931-.084.637 1.948 2.447 3.381 4.597 3.428-1.674 1.309-3.8 2.098-6.101 2.098-.403 0-.79-.018-1.177-.067 2.18 1.405 4.762 2.208 7.548 2.208 8.683 0 14.342-7.244 13.986-14.637z"/></svg>
         </a>
       
@@ -1880,6 +1905,14 @@ d</p>
         
         <li>
           <a href="/en/posts/c-i-c&#43;&#43;/apue-chapter3/" class="related__link">apue-file I/O</a>
+        </li>
+        
+        <li>
+          <a href="/en/posts/c-i-c&#43;&#43;/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/" class="related__link">static,extern关键词和函数指针数组</a>
+        </li>
+        
+        <li>
+          <a href="/en/posts/c-i-c&#43;&#43;/c&#43;&#43;/" class="related__link">C&#43;&#43; iterater</a>
         </li>
         
     </ul>

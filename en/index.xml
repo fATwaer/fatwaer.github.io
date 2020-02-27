@@ -16,6 +16,15 @@
     
       
       <item>
+        <title>Golang原生RPC与gPRC</title>
+        <link>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/</link>
+        <pubDate>Wed, 26 Feb 2020 22:19:35 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/</guid>
+        <description>前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是</description>
+      </item>
+      
+      <item>
         <title>Shell Tools and Scripting</title>
         <link>/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/</link>
         <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
@@ -354,22 +363,8 @@ Classic music :  Symphony No. 7 in A, Op. 92:II composed by Beethoven Symphony n
         <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
         <guid>/en/notes/</guid>
-        <description>I want write something there.</description>
-      </item>
-      
-      <item>
-        <title></title>
-        <link>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/%E5%8E%9F%E7%94%9Frpc%E4%B8%8Egprc%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/%E5%8E%9F%E7%94%9Frpc%E4%B8%8Egprc%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8/</guid>
-        <description>���-�-�-��
-�t�i�t�l�e�:� �&amp;quot;S�u�R�P�CN�g�P�R�C{�SUOu(�&amp;quot;��
-�d�a�t�e�:� �2�0�2�0�-�0�2�-�2�6�T�2�2�:�1�9�:�3�5�+�0�8�:�0�0��
-�d�r�a�f�t�:� �t�r�u�e��
-�-�-�-��
-��
-��</description>
+        <description>I want to write something there.
+-&amp;gt; site menu</description>
       </item>
       
     

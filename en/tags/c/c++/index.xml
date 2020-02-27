@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>c/c&#43;&#43; on Blog | fatwaer</title>
+    <link>/en/tags/c/c&#43;&#43;/</link>
+    <description>Recent content in c/c&#43;&#43; on Blog | fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
+    <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
+    <copyright>©{year}, All Rights Reserved</copyright>
+    <lastBuildDate>Tue, 14 Aug 2018 10:42:10 +0000</lastBuildDate>
+    
+        <atom:link href="/en/tags/c/c++/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+      
+      <item>
+        <title>apue-file and directory</title>
+        <link>/en/posts/c-i-c&#43;&#43;/apue-file-and-directory/</link>
+        <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/apue-file-and-directory/</guid>
+        <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取</description>
+      </item>
+      
+      <item>
+        <title>apue-file I/O</title>
+        <link>/en/posts/c-i-c&#43;&#43;/apue-chapter3/</link>
+        <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/apue-chapter3/</guid>
+        <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言AP</description>
+      </item>
+      
+      <item>
+        <title>static,extern关键词和函数指针数组</title>
+        <link>/en/posts/c-i-c&#43;&#43;/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</link>
+        <pubDate>Thu, 19 Apr 2018 23:49:06 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</guid>
+        <description>extern 从该文件外部获取变量定义，在文件域默认有extern属性。存储属性为static，也就是在文件执行前就被放在静态数据区。 static 只在该文件域可以</description>
+      </item>
+      
+      <item>
+        <title>C&#43;&#43; iterater</title>
+        <link>/en/posts/c-i-c&#43;&#43;/c&#43;&#43;/</link>
+        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/c-i-c&#43;&#43;/c&#43;&#43;/</guid>
+        <description>1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44  There have serveral methods: /***overload function****/ void print(int* pi) { if (pi) cout &amp;lt;&amp;lt; *pi &amp;lt;&amp;lt; endl; } void print(const char* p) { if (p) while (*p) cout &amp;lt;&amp;lt; *p++; cout &amp;lt;&amp;lt; endl; } void print(const int* beg, const int* end) { while (beg !</description>
+      </item>
+      
+    
+  </channel>
+</rss>

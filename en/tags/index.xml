@@ -9,12 +9,21 @@
     <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
     <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
     <copyright>©{year}, All Rights Reserved</copyright>
-    <lastBuildDate>Thu, 13 Feb 2020 20:55:13 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 26 Feb 2020 22:19:35 +0000</lastBuildDate>
     
         <atom:link href="/en/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     
+      
+      <item>
+        <title>distributed system</title>
+        <link>/en/tags/distributed-system/</link>
+        <pubDate>Wed, 26 Feb 2020 22:19:35 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/distributed-system/</guid>
+        <description></description>
+      </item>
       
       <item>
         <title>globbing</title>
@@ -44,20 +53,29 @@
       </item>
       
       <item>
-        <title>distributed system</title>
-        <link>/en/tags/distributed-system/</link>
-        <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
-        <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/distributed-system/</guid>
-        <description></description>
-      </item>
-      
-      <item>
         <title>Java</title>
         <link>/en/tags/java/</link>
         <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
         <guid>/en/tags/java/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>algorithm</title>
+        <link>/en/tags/algorithm/</link>
+        <pubDate>Sun, 09 Sep 2018 18:41:48 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/algorithm/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>c/c&#43;&#43;</title>
+        <link>/en/tags/c/c&#43;&#43;/</link>
+        <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/c/c&#43;&#43;/</guid>
         <description></description>
       </item>
       
@@ -103,24 +121,6 @@
         <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
         <author>fatwaer@gmail.com (fatwaer)</author>
         <guid>/en/tags/assembly/</guid>
-        <description></description>
-      </item>
-      
-      <item>
-        <title>cpp</title>
-        <link>/en/tags/cpp/</link>
-        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
-        <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/cpp/</guid>
-        <description></description>
-      </item>
-      
-      <item>
-        <title>Testing</title>
-        <link>/en/tags/testing/</link>
-        <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
-        <author>fatwaer@gmail.com (fatwaer)</author>
-        <guid>/en/tags/testing/</guid>
         <description></description>
       </item>
       
