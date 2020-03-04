@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>6-828-操作系统工程-Lec4-7课件笔记整理 – Blog | fatwaer</title>
+    <title>6.824 Lab3 Fault-tolerant Key/Value Service – Blog | fatwaer</title>
     
 
 
@@ -489,7 +489,7 @@
 
   
     
-    var permalink = JSON.parse("\"/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/\"");
+    var permalink = JSON.parse("\"/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/\"");
     var searchResults = null;
     var searchMenu = null;
     var searchText = null;
@@ -1143,23 +1143,23 @@
     
 <meta name="description" content="fatwaer&#39;s blog about operating system and distributed system" />
 <meta name="keywords" content="">
-<meta name="created" content="2018-04-11T10:59:57&#43;0000">
-<meta name="modified" content="2018-04-11T10:59:57&#43;0000">
-<meta property="article:published_time" content="2018-04-11T10:59:57&#43;0000">
+<meta name="created" content="2020-02-12T10:42:40&#43;0800">
+<meta name="modified" content="2020-02-12T10:42:40&#43;0800">
+<meta property="article:published_time" content="2020-02-12T10:42:40&#43;0800">
 
 <meta name="author" content="fatwaer">
 
 
 <meta property="og:site_name" content="Blog | fatwaer">
-<meta property="og:title" content="6-828-操作系统工程-Lec4-7课件笔记整理">
-<meta property="og:url" content="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+<meta property="og:title" content="6.824 Lab3 Fault-tolerant Key/Value Service">
+<meta property="og:url" content="/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/">
 <meta property="og:type" content="article">
 <meta property="og:description" content="fatwaer&#39;s blog about operating system and distributed system">
 
 <meta name="generator" content="Hugo 0.63.2" />
 <meta name="msapplication-TileColor" content="#ffffff">
 <meta name="theme-color" content="#ffffff">
-<link rel="canonical" href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+<link rel="canonical" href="/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/">
 <link rel="manifest" href="/manifest.json">
 
   <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
@@ -1183,12 +1183,11 @@
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "headline": "6-828-操作系统工程-Lec4-7课件笔记整理",
-    "datePublished": "2018-04-11T10:59:57Z",
-    "dateModified": "2018-04-11T10:59:57Z",
-    "url" : "/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/",
-    "description": "Lec4 shell / OS https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space + thread app -\u0026gt; printf() -\u0026gt; write() -\u0026gt; SYSTEM CALL -\u0026gt; …",
-    "keywords": ["OS"],
+    "headline": "6.824 Lab3 Fault-tolerant Key/Value Service",
+    "datePublished": "2020-02-12T10:42:40+08:00",
+    "dateModified": "2020-02-12T10:42:40+08:00",
+    "url" : "/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/",
+    "description": "强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等",
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": "/"
@@ -1372,7 +1371,7 @@ if (!doNotTrack) {
   
   <li  class="is-active" >
     
-      <span>6-828-操作系统工程-Lec4-7课件笔记整理</span>
+      <span>6.824 Lab3 Fault-tolerant Key/Value Service</span>
     
   </li>
   
@@ -1381,158 +1380,126 @@ if (!doNotTrack) {
 </nav>
   
   <div class="single">
-    <h2 class="single__title">6-828-操作系统工程-Lec4-7课件笔记整理</h2>
+    <h2 class="single__title">6.824 Lab3 Fault-tolerant Key/Value Service</h2>
     <div class="single__meta">
       
 <div class="single__infos">
-  <time class="single__info" title="Written At">📅&nbsp;Apr 11, 2018 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 2 min read </span>
+  <time class="single__info" title="Written At">📅&nbsp;Feb 12, 2020 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 9 min read </span>
   <span class="single__info">
     
   </span>
 </div>
       <div class="single__tags caption">
 
-  
-    🏷️
-  
-  
-  <li>
-    <a href="/en/tags/os" class="single__tag" title="OS">
-      #OS
-    </a>
-  </li>
-    
-
 </div>
     </div>    
     <article class="single__contents" data-dir="ltr">
       
-      <h1 id="lec4-shell--os">Lec4 shell / OS</h1>
-<hr />
-<p><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt</a><br />
-process = address space + thread<br />
-app -&gt; printf() -&gt; write() -&gt; SYSTEM CALL -&gt; sys_write() -&gt; ..</p>
-<p><code>Homework2</code></p>
-<ul>
-<li>
-<p>exec:<br />
-execv()一个参数是用来执行命令，另一个让函数知道参数的结束。<br />
-exec程序结束后<br />
-execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()</p>
-</li>
-<li>
-<p>redirect<br />
-关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。</p>
-</li>
-<li>
-<p>pipe<br />
-如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。<br />
-reader不关掉写端，读不到数据。<br />
-writer不关读段，正常执行。<br />
-pipe的好处，例如 <code>ls | sort | uniq | wc</code>指令，如果没有pipe的话，指令则只能这样写<code>ls &gt; temp1 ; sort temp1 &gt; temp2; uniq temp2 &gt; temp3; wc temp3 &gt; temp4; cat temp4</code><br />
-<em>how does the kernel know when to free the pipe buffer?</em></p>
-</li>
-</ul>
-<p><code>fork</code></p>
-<p>sleep 5 | ls</p>
-<p>left | right | result<br />
-unfork | fork | sleep -&gt; ls<br />
-fork | fork | ls / not sleep<br />
-fork | unfork | ls / not sleep</p>
-<p>linux 情况是 ls -&gt; sleep，最后发现父进程并没有等子进程完成就结束了。<br />
-正常流程应该是 主进程-&gt;fork1()-&gt;fork2()-&gt;exec &lsquo;ls&rsquo;<br />
--&gt;exec &lsquo;sleep 5&rsquo;<br />
--&gt;wait(fork1()) -&gt; wait(fork2()) -&gt; 主进程回收。</p>
-<p><code>UNIX system call observations</code></p>
-<p>The fork/exec split looks wasteful &ndash; fork() copies mem, exec() discards.</p>
-<p>FDs hide specifics that may be important<br />
-e.g. block size for on-disk files<br />
-e.g. timing and size of network messages</p>
-<p>kernel:<br />
-abstract resources rather than raw hardware<br />
-File system, not raw disk<br />
-Processes, not raw CPU/memory<br />
-TCP, not ethernet packets<br />
-abstractions often ease isolation, multiplexing and interaction<br />
-also more convenient and portable</p>
-<ul>
-<li>Processors provide mechanisms that help with isolation
-<ul>
-<li>Hardware provides user mode and kernel mode
-<ul>
-<li>some instructions can only be executed in kernel mode<br />
-device access, processor configuration, isolation mechanisms</li>
-</ul>
-</li>
-<li>Hardware forbids apps from executing privileged instructions
-<ul>
-<li>instead traps to kernel mode</li>
-<li>kernel can clean up (e.g., kill the process)</li>
-</ul>
-</li>
-<li>Hardware lets kernel mode configure various constraints on user mode<br />
-most critical: page tables to limit user s/w to its own address space</li>
-</ul>
-</li>
-</ul>
-<h1 id="lecture-5-isolation-mechanisms">Lecture 5: Isolation mechanisms</h1>
-<h2 id="httpspdoscsailmitedu68282017lecl-internaltxt"><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt</a></h2>
-<ul>
-<li>
-<p>What is isolation?</p>
+      <h2 id="强一致性keyvalue服务">强一致性Key/Value服务</h2>
+<p>其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如<code>map[string]string</code>）即可，但是实际上在跑3A测试的时候还是出现了很多问题。</p>
+<h3 id="并发concurrency">并发(Concurrency)</h3>
+<p>虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。</p>
+<h3 id="网络不可靠unreliable">网络不可靠(Unreliable)</h3>
+<p>这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&gt;&quot;2&rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。</p>
+<h3 id="服务器主机崩溃crash">服务器主机崩溃(Crash)</h3>
+<p>服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。</p>
+<h3 id="网络分区partition">网络分区(Partition)</h3>
+<p>由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为<a href="https://en.wikipedia.org/wiki/Linearizability">线性化</a>。</p>
+<p>最先碰到网络分区和检查一致性是<code>TestOnePartition3A</code>，这个测试中做了如下几件事情：</p>
 <ol>
-<li>进程隔离内存空间</li>
-<li>阻止进程X破坏偷取进程Y内存空间，或者使用100%CPU，改变FD，进程状态等</li>
-<li>阻止进程影响操作系统</li>
+<li>创建一个5个server的kv服务器集群</li>
+<li>客户端请求: <code>Put:1 -&gt; 13</code></li>
+<li>建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。</li>
+<li>往majority中提交<code>Put:1-&gt;14</code></li>
+<li>检查majority</li>
+<li>往minority中提交操作<code>Put:1 -&gt; 15</code>和<code>Get:1</code></li>
+<li>检测6中两个操作是否会成功</li>
+<li>往majority提交<code>Put:1-&gt;16</code>并检查</li>
+<li>合并两个分区，检查最后Key 1的值。</li>
 </ol>
-</li>
-<li>
-<p>the kernel uses hardware mechanisms as part of process isolation:</p>
+<p>最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。</p>
+<p>当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：<code>Put:1 -&gt; 15</code>和<code>Get:1</code>，使客户端重定向到新的leader。</p>
+<p>而<code>Get</code>什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。</p>
+<h3 id="标识操作uniqueid">标识操作(UniqueID)</h3>
+<p>如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：</p>
 <ol>
-<li>user/kernel mode flag</li>
-<li>address spaces</li>
-<li>timeslicing</li>
-<li>system call interface</li>
+<li>seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。</li>
+<li>Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。</li>
+<li>Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。</li>
 </ol>
-</li>
-</ul>
-<h2 id="implement-system-call">implement system call</h2>
+<p>每当启用一个新的客户端并且提交操作时，先自增seriesN，如果<code>Client ID</code>为-1，就会向服务端注册自己，即请求一个可用的<code>Client ID</code>，并设置<code>Server ID</code>。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。</p>
+<p>当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。</p>
+<p>考虑下面这种情景：</p>
+<pre><code class="language-code" data-lang="code">s1 | x = 0 | x += 1
+同步到其他server
+s2 | x = 0 | x += 1
+s3 | x = 0 | x += 1
+s4 | x = 0 | x += 1
+s5 | x = 0 | nil
+</code></pre><hr />
+<ol>
+<li>leader s1 提交了一个 x += 1 的操作后，并同步到了s2, s3, s4，然后发生分区。</li>
+<li>s2 当选新一轮的leader，并同步完成</li>
+<li>s1 恢复到该分区中，被s2的心跳转变为follower</li>
+<li>client对s1的rpc被返回，重定向到s2，重复的op被提交。</li>
+</ol>
+<p>这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x += 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x += 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。</p>
+<p>既然服务端要分配client ID，那么如何记住这些id以应对服务器崩溃，比较简单的办法是分配一个client ID后就做一次持久化，因为真正进行提交操作的client并不是很多也并不频繁。另外一种方法是根据raft的applyMsg会带有Sid，Cid，SeriesN三者，所以当服务crash后重启时，会随着一致性检查恢复之前自己已经分配过的Cid。</p>
+<p>Part A内容的大致就是这些，还剩一些优化的细节，比如client在找到server后就记住server的索引，没必要每次都向集群所有服务器发送请求。关于RPC，配置到服务器上时，没必要为每次RPC都新建一次连接，应该维护住这个连接直到主动断开或者发生错误。</p>
+<h2 id="快照snapshot">快照(Snapshot)</h2>
+<p>快照机制主要作用是两点:</p>
 <ul>
-<li>how to do a system call &ndash; switching CPL<br />
-Q: would this be an OK design for user programs to make a system call:<br />
-set CPL=0<br />
-jmp sys_open<br />
-bad: user-specified instructions with CPL=0<br />
-Q: how about a combined instruction that sets CPL=0,<br />
-but <em>requires</em> an immediate jump to someplace in the kernel?<br />
-bad: user might jump somewhere awkward in the kernel<br />
-<em>the x86 answer</em>:<br />
-<strong>there are only a few permissible kernel entry points (&ldquo;vectors&rdquo;) INT instruction sets CPL=0 and jumps to an entry point but user code can&rsquo;t otherwise modify CPL or jump anywhere else in kernel system call return sets CPL=3 before returning to user code also a combined instruction (can&rsquo;t separately set CPL and jmp)</strong></li>
+<li>一是压缩日志，实际系统中，日志不能在内存中无限增长，如果没有相关机制清理陈旧的信息，那么会产生可用性的问题。日志压缩除了利用快照机制外，在Raft论文中还有提到了利用LSM-Tree对Raft的日志进行增量压缩的方法，由于保证日志的增长是顺序的，在这里利用日志结构树能承受住更高的I/O吞吐量。</li>
+<li>第二点是在写Lab中发现的，拥有快照机制的Raft能够更快地使落后的(发生了崩溃或者网络分区)follower恢复到同步水平。</li>
 </ul>
-<p><strong>使用INT指令将CPL位置为0，存储少量用户寄存器的值（  err, eip, cs, eflags, esp, ss）到内核的栈中，并且跳转到内核空间，IRET指令相反。</strong></p>
+<h3 id="snapshot要做什么">Snapshot要做什么</h3>
+<p><img src="/images/distributed-system/6.824/lab3/snapshot.png" alt="snapshot" /></p>
+<p>快照所做的事情也比较简单，主要针对的是那些已经提交过的条目(即在大多是中达成共识)进行压缩，让这些条目所应用后的状态有一个备份，然后再将这些进行截断即可。因为没有必要每应用一个条目就执行一次快照，所以在应用到状态机后，可以设置一个阈值与当前在内存中的raft log进行比较，当超过这个阈值后执行日志压缩，这也就是3b主要需要做的事情。</p>
+<p>3B部分最难处理也就是如何进行日志截断、什么时候进行日志截断、截断后需要重新设置哪些值，在想好这三个问题后动手会减少大量的debug工作。</p>
+<h3 id="什么时候进行截断">什么时候进行截断</h3>
+<p>截断的时间是发生在应用到状态机后检测到raft log的大小已经增长超过了阈值，于是kv服务将自己的状态<code>map[string]string</code>进行保存，随着logIndex一起递交给自己的raft，raft根据index获取到最后条目的term，进行持久化，然后截断自己的日志。</p>
+<h3 id="如何进行日志截断">如何进行日志截断</h3>
+<p>截断首先要考虑到截断后对其他操作的影响：</p>
+<ol>
+<li>raft负责发送appendEntry的操作，对于落后的机器可能会读取到陈旧的条目</li>
+<li>raft收到appendEntry，常常发生于旧leader对最新的服务器(leader和follower)发送的心跳</li>
+<li>raft收到InstallSnapshot后，会有log的截断操作</li>
+</ol>
+<blockquote>
+<p>InstallSnapshot RPC: 6. If existing log entry has same index and term as snapshot’s last included entry, retain log entries following it and reply</p>
+</blockquote>
+<p>这些操作本质上都是数组下标界限的问题，需要根据实际逻辑进行判断。</p>
+<p>另外一点就是关于Golang的切片内存模型，因为在这里raft log是以切片进行保存，所以类似于<code>arr[beg:end]</code>的操作只是移动指向底层的指针和长度，所以这里得需要新分配一个切片给rf.log。</p>
+<p><img src="/images/distributed-system/6.824/lab3/slice.png" alt="slice" /></p>
+<h3 id="截断后需要重新设置哪些值">截断后需要重新设置哪些值</h3>
+<p>首先是在论文里的LastIncludeIndex和LastIncludeTerm，这两个变量可以维护在raft的状态里，以免每次都需要进行一次I/O读取这两个变量。因为需要维护这两个变量，所以每当要<code>读取和写入</code>快照时都需要更新。</p>
+<p>另外一对重要的值是commitIndex和applyIndex，根据raft论文:</p>
+<blockquote>
+<p>If commitIndex &gt; lastApplied: increment lastApplied, apply log[lastApplied] to state machine</p>
+</blockquote>
+<p>这种情况在InstallSnapshot内要着重考虑，因为InstallSnapshot的LastIncludeIndex会大于当前的commitIndex，当某台follower还在apply到状态机的时候，收到了快照，需要做的事情是，应用完上一个快照后，检查自己的applyIndex和commitIndex。而在InstallSnapshot内需要做的事情除了设置LastIncludeIndex和LastIncludeTerm，还同时提高applyIndex和commitIndex。</p>
+<p>中断的之前的apply过程并不会导致不一致，在安装完快照后，需要重置kv的状态机，所以不用担心同步问题。</p>
+<h3 id="快照与kv服务">快照与K/V服务</h3>
+<p>3A部分中的kv服务是通过一致性检查后，一个一个地从0开始恢复状态，把以前的操作重新做一遍来恢复自己已分配掉的client ID，因为这个ID是会保存在raft的log中，对日志压缩也就会造成这些信息丢失，所以将当前已经分配掉的client ID写入到快照是有必要的。</p>
+<h2 id="部署后的-kv-服务">部署后的 K/V 服务</h2>
 <ul>
-<li>how to create isolated address spaces?<br />
-xv6 uses x86 &ldquo;paging hardware&rdquo; in the <em>memory management unit</em> (MMU)<br />
-MMU translates (or &ldquo;maps&rdquo;) every address issued by program</li>
+<li>Server 1:<br />
+state: <a href="http://fatwaer.store/kv/state.html">http://fatwaer.store/kv/state.html</a><br />
+log  : <a href="http://fatwaer.store/kv/log.html">http://fatwaer.store/kv/log.html</a></li>
+<li>Server 2:<br />
+state: <a href="http://106.13.211.207/kv/state.html">http://106.13.211.207/kv/state.html</a><br />
+log  : <a href="http://106.13.211.207/kv/log.html">http://106.13.211.207/kv/log.html</a></li>
+<li>Server 3:<br />
+state: <a href="http://18.162.39.157/kv/state.html">http://18.162.39.157/kv/state.html</a><br />
+log  : <a href="http://18.162.39.157/kv/log.html">http://18.162.39.157/kv/log.html</a></li>
 </ul>
-<pre><code>    CPU -&gt; MMU -&gt; RAM
-            |
-         pagetable
-</code></pre><pre><code>VA -&gt; PA
-MMU translates all memory references: user and kernel, instructions and data
-instructions use only VAs, never PAs
-</code></pre>
-<p>kernel sets up a different page table for each process<br />
-each process&rsquo;s page table allows access only to that process&rsquo;s RAM<br />
-<strong>lab2中Page Table的实现就有关于虚拟内存到物理内存的映射</strong></p>
-<p><strong>虚拟内存模型</strong></p>
-<pre><code>  FFFFFFFF:
-            ...
-  80000000: kernel
-            user stack
-            user data
-  00000000: user instructions
-</code></pre><h2 id="fork出一个新的进程">Fork出一个新的进程</h2>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li>《Unix网络编程：卷1》</li>
+<li><a href="https://blog.golang.org/go-slices-usage-and-internals">https://blog.golang.org/go-slices-usage-and-internals</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf">https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf</a></li>
+</ul>
 
     </article>
     
@@ -1545,13 +1512,13 @@ each process&rsquo;s page table allows access only to that process&rsquo;s RAM<b
     
     
       
-        <a href="https://www.facebook.com/sharer/sharer.php?u=%2fen%2fposts%2f%25E6%2593%258D%25E4%25BD%259C%25E7%25B3%25BB%25E7%25BB%259F%2f6-828-lec4-7%25E8%25AF%25BE%25E4%25BB%25B6%25E7%25AC%2594%25E8%25AE%25B0%25E6%2595%25B4%25E7%2590%2586%2f" title="Facebook" aria-label="Facebook Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+        <a href="https://www.facebook.com/sharer/sharer.php?u=%2fen%2fposts%2f%25E5%2588%2586%25E5%25B8%2583%25E5%25BC%258F%25E7%25B3%25BB%25E7%25BB%259F%2fkv-server%2f" title="Facebook" aria-label="Facebook Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
           <svg data-name="facebook" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m15.997 3.985h2.191v-3.816c-.378-.052-1.678-.169-3.192-.169-3.159 0-5.323 1.987-5.323 5.639v3.361h-3.486v4.266h3.486v10.734h4.274v-10.733h3.345l.531-4.266h-3.877v-2.939c.001-1.233.333-2.077 2.051-2.077z"/></svg>
         </a>
       
     
       
-        <a href="https://twitter.com/intent/tweet?text=6-828-%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%b7%a5%e7%a8%8b-Lec4-7%e8%af%be%e4%bb%b6%e7%ac%94%e8%ae%b0%e6%95%b4%e7%90%86&url=%2fen%2fposts%2f%25E6%2593%258D%25E4%25BD%259C%25E7%25B3%25BB%25E7%25BB%259F%2f6-828-lec4-7%25E8%25AF%25BE%25E4%25BB%25B6%25E7%25AC%2594%25E8%25AE%25B0%25E6%2595%25B4%25E7%2590%2586%2f&hashtags=OS&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+        <a href="https://twitter.com/intent/tweet?text=6.824%20Lab3%20Fault-tolerant%20Key%2fValue%20Service&url=%2fen%2fposts%2f%25E5%2588%2586%25E5%25B8%2583%25E5%25BC%258F%25E7%25B3%25BB%25E7%25BB%259F%2fkv-server%2f&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
           <svg data-name="twitter" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m21.534 7.113c.976-.693 1.797-1.558 2.466-2.554v-.001c-.893.391-1.843.651-2.835.777 1.02-.609 1.799-1.566 2.165-2.719-.951.567-2.001.967-3.12 1.191-.903-.962-2.19-1.557-3.594-1.557-2.724 0-4.917 2.211-4.917 4.921 0 .39.033.765.114 1.122-4.09-.2-7.71-2.16-10.142-5.147-.424.737-.674 1.58-.674 2.487 0 1.704.877 3.214 2.186 4.089-.791-.015-1.566-.245-2.223-.606v.054c0 2.391 1.705 4.377 3.942 4.835-.401.11-.837.162-1.29.162-.315 0-.633-.018-.931-.084.637 1.948 2.447 3.381 4.597 3.428-1.674 1.309-3.8 2.098-6.101 2.098-.403 0-.79-.018-1.177-.067 2.18 1.405 4.762 2.208 7.548 2.208 8.683 0 14.342-7.244 13.986-14.637z"/></svg>
         </a>
       
@@ -1651,41 +1618,22 @@ each process&rsquo;s page table allows access only to that process&rsquo;s RAM<b
     <section class="related">
     
     
-    <h1 class="related__title">
-      <hr class="hr-dots"/>
-      <div>
-        See Also
-      </div>
-      <hr class="hr-dots"/>
-    </h1>
-    <ul class="related-ul">
-        
-        <li>
-          <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" class="related__link">6.828-操作系统工程-Lec1-3课件笔记和作业</a>
-        </li>
-        
-        <li>
-          <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/" class="related__link">6.828-操作系统工程-Lab1:Booting a PC</a>
-        </li>
-        
-    </ul>
-    
   </section>
     <div class="grow"></div>
 <nav class="pagination-single">
   
     
-      <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" class="pagination-single__left">
+      <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/" class="pagination-single__left">
         <div class="pagination-single__icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
         </div>
-        <div class="pagination-single__left-title">6.828-操作系统工程-Lec1-3课件笔记和作业</div>      
+        <div class="pagination-single__left-title">Protection Mechanism on 80386</div>      
       </a>
     
     <div class="grow"></div>
     
-      <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/" class="pagination-single__right">      
-        <div class="pagination-single__right-title">6.828-操作系统工程-Lab2:Memory Management</div>
+      <a href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/" class="pagination-single__right">      
+        <div class="pagination-single__right-title">Shell Tools and Scripting</div>
         <div class="pagination-single__icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M5 13h11.17l-4.88 4.88c-.39.39-.39 1.03 0 1.42.39.39 1.02.39 1.41 0l6.59-6.59c.39-.39.39-1.02 0-1.41l-6.58-6.6c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L16.17 11H5c-.55 0-1 .45-1 1s.45 1 1 1z"/></svg>
         </div>
@@ -2658,7 +2606,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
           
             
-              <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" data-lang="en" class="dropdown-item is-active">English</a>
+              <a href="/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/" data-lang="en" class="dropdown-item is-active">English</a>
             
           
         
@@ -2728,7 +2676,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
     
     
-  <a href="/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86//index.xml" type="application/rss+xml" title="rss" aria-label="RSS Feed Link">
+  <a href="/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server//index.xml" type="application/rss+xml" title="rss" aria-label="RSS Feed Link">
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><circle fill="currentColor" cx="6.18" cy="17.82" r="2.18"/><path fill="currentColor" d="M5.59 10.23c-.84-.14-1.59.55-1.59 1.4 0 .71.53 1.28 1.23 1.4 2.92.51 5.22 2.82 5.74 5.74.12.7.69 1.23 1.4 1.23.85 0 1.54-.75 1.41-1.59-.68-4.2-3.99-7.51-8.19-8.18zm-.03-5.71C4.73 4.43 4 5.1 4 5.93c0 .73.55 1.33 1.27 1.4 6.01.6 10.79 5.38 11.39 11.39.07.73.67 1.28 1.4 1.28.84 0 1.5-.73 1.42-1.56-.73-7.34-6.57-13.19-13.92-13.92z"/></svg>
   </a>
 
@@ -2782,9 +2730,26 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="toc toc__outer " data-dir="ltr" data-folding="false">
           <nav id="TableOfContents">
   <ul>
-    <li><a href="#httpspdoscsailmitedu68282017lecl-internaltxt"></a></li>
-    <li><a href="#implement-system-call">implement system call</a></li>
-    <li><a href="#fork出一个新的进程">Fork出一个新的进程</a></li>
+    <li><a href="#强一致性keyvalue服务">强一致性Key/Value服务</a>
+      <ul>
+        <li><a href="#并发concurrency">并发(Concurrency)</a></li>
+        <li><a href="#网络不可靠unreliable">网络不可靠(Unreliable)</a></li>
+        <li><a href="#服务器主机崩溃crash">服务器主机崩溃(Crash)</a></li>
+        <li><a href="#网络分区partition">网络分区(Partition)</a></li>
+        <li><a href="#标识操作uniqueid">标识操作(UniqueID)</a></li>
+      </ul>
+    </li>
+    <li><a href="#快照snapshot">快照(Snapshot)</a>
+      <ul>
+        <li><a href="#snapshot要做什么">Snapshot要做什么</a></li>
+        <li><a href="#什么时候进行截断">什么时候进行截断</a></li>
+        <li><a href="#如何进行日志截断">如何进行日志截断</a></li>
+        <li><a href="#截断后需要重新设置哪些值">截断后需要重新设置哪些值</a></li>
+        <li><a href="#快照与kv服务">快照与K/V服务</a></li>
+      </ul>
+    </li>
+    <li><a href="#部署后的-kv-服务">部署后的 K/V 服务</a></li>
+    <li><a href="#参考资料">参考资料</a></li>
   </ul>
 </nav>
         </div>

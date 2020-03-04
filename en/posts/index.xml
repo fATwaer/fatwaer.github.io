@@ -35,6 +35,15 @@
       </item>
       
       <item>
+        <title>6.824 Lab3 Fault-tolerant Key/Value Service</title>
+        <link>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/</link>
+        <pubDate>Wed, 12 Feb 2020 10:42:40 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/</guid>
+        <description>强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等</description>
+      </item>
+      
+      <item>
         <title>Protection Mechanism on 80386</title>
         <link>/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/</link>
         <pubDate>Mon, 11 Nov 2019 12:34:17 +0800</pubDate>
