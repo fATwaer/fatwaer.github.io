@@ -1396,7 +1396,7 @@ if (!doNotTrack) {
     <article class="single__contents" data-dir="ltr">
       
       <p>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。</p>
-<p><img src="/uploads/apue/c11/threadop.png" alt="thread" /></p>
+<p><img src="/images/apue/c11/threadop.png" alt="thread" /></p>
 <p>在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1752,7 +1752,7 @@ if (!doNotTrack) {
 </code></pre></td></tr></table>
 </div>
 </div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-preposition.c">11-2-preposition.c</a></p>
-<p><img src="/uploads/apue/c11/11-2-1.png" alt="线程工作" /></p>
+<p><img src="/images/apue/c11/11-2-1.png" alt="线程工作" /></p>
 <p>多个线程按照想象中的情况从作业队列中取出不同的作业，然后从队列中删去通过<code>job_find()</code>找到的作业，并且调用登记在结构体中的函数进行累加，最后在<code>pthread_barrier_wait()</code>处进行同步。值得注意的是，虽然在这里一共开了4个线程，但是调用<code>pthread_barrier_init()</code>进行初始化的时候，将屏障需要等待的线程数设置为5，因为是把主线程也算了进去。还有一个有意思的地方是，总有一个线程在到达屏障的时候返回<code>-1</code>，是因为这个值实际上代表的是<code>PTHREAD_BARRIER_SERIAL_THREAD</code>宏，说明这个线程来执行多个线程的归并操作。</p>
 <p>通过书上给的代码，已经实现了一个多线程处理作业队列的操作，并且修改了暂停线程的ID，使得对应线程能从工作队列中得到作业。那么回到题目问到的问题上，这样会对<code>job_remove</code>产生什么影响？试想这样一种情况，当一个线程已经被唤醒了，然后去调用<code>job_find</code>函数寻找相应ID的作业，使得线程的工作指针<code>jp</code>指向改结构体，但是此时发生了调度或者系统拥塞事件，这时调用了修改之前修改线程id的函数<code>modify_tid</code>，使得描述该作业的结构体的线程ID被填写为另外一个线程的线程ID，现在的情况就变成两个线程的工作指针<code>jp</code>都指向了同一个结构体，并且准备执行<code>job_remove</code>，这时候任意一个线程先执行，后者都会产生段错误（一般是对NULL指针解引用）。现在修改之前代码来模拟这种情况:</p>
 <p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-expt.c">11-2-exception.c</a></p>
@@ -1825,7 +1825,7 @@ if (!doNotTrack) {
 </code></pre></td></tr></table>
 </div>
 </div><p>结果和前面所述的情况一样，两次<code>remove</code>引发了段错误。</p>
-<p><img src="/uploads/apue/c11/11-2-2.png" alt="引发的段错误" /></p>
+<p><img src="/images/apue/c11/11-2-2.png" alt="引发的段错误" /></p>
 <p>根据提示，可以使用引用计数和一个嵌入结构体的互斥量来解决这个问题，在<code>job_find()</code>的时候对引用计数进行加一，在<code>job_remove</code>的时候检查引用计数，知道引用计数为0才实际从作业队列中移除。</p>
 <ul>
 <li>修改结构体</li>
@@ -2021,7 +2021,7 @@ if (!doNotTrack) {
 </div>
 </div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2.c">11-2.c</a></p>
 <p>运行结果如下，现在两个线程可以正常的从作业队列中取作业页并且执行工作了，但是这并不是最好调度方式，如果发生了这样的问题，很大程度上是接口没有设计好，应对这样的问题书中也做了提醒，要为结构体的空间留下空位，以便以后进行拓展。</p>
-<p><img src="/uploads/apue/c11/11-2-3.png" alt="修复后的结果" /></p>
+<p><img src="/images/apue/c11/11-2-3.png" alt="修复后的结果" /></p>
 
     </article>
     
