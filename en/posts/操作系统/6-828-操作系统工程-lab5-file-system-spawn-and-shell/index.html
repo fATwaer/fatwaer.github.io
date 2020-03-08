@@ -1461,7 +1461,15 @@ if (!doNotTrack) {
         <span class="n">env</span><span class="o">-</span><span class="o">&gt;</span><span class="n">env_tf</span><span class="p">.</span><span class="n">tf_eflags</span> <span class="o">|</span><span class="o">=</span> <span class="n">FL_IOPL_3</span><span class="p">;</span> 
 </code></pre></td></tr></table>
 </div>
-</div><p>一开始的想法是使用privilige 0，也就是FL_IOPL_0，但是出错了。(官方文档)[https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf]解释是当前用户环境的CPL(current privilege level)必须小于或等于IOPL等级才行。普通用户环境默认被初始化为0，而CPL是3，所以正常的进程是不能直接执行IO操作的。在后面的测试<code>spawnfaultio</code>测试中有测试。如果需要文件系统能进行IO，则将IOPL值置为3即可。</p>
+</div><p>一开始的想法是使用privilige 0，也就是FL_IOPL_0，但是出错了。</p>
+<blockquote>
+<p>Indicates the I/O privilege<br />
+level (IOPL) of the currently running program or task. The CPL of the<br />
+currently running program or task must be less than or equal to the IOPL to<br />
+access the I/O address space. This field can only be modified by the POPF<br />
+and IRET instructions when operating at a CPL of 0.</p>
+</blockquote>
+<p>解释是当前用户环境的CPL(current privilege level)必须小于或等于IOPL等级才行。普通用户环境默认被初始化为0，而CPL是3，所以正常的进程是不能直接执行IO操作的。在后面的测试<code>spawnfaultio</code>测试中有测试。如果需要文件系统能进行IO，则将IOPL值置为3即可。</p>
 <blockquote>
 <p>Q1:Do you have to do anything else to ensure that this I/O privilege setting is saved and restored properly when you subsequently switch from one environment to another? Why?</p>
 </blockquote>

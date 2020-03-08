@@ -1187,7 +1187,7 @@
     "datePublished": "2018-05-28T09:26:33Z",
     "dateModified": "2018-05-28T09:26:33Z",
     "url" : "/en/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/",
-    "description": "准备 git 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 $ git add . $ git commit -am \u0026#34;lab 5 done\u0026#34; $ make handin $ git pull $ git checkout -b lab6 …",
+    "description": "这章节是完成一个网络驱动程序，现在系统中已经存在了文件系统里，所以可以添加一个网络栈，是基于82540EM芯片(E1000)。这章节内容比我",
     "keywords": ["OS"],
     "mainEntityOfPage": {
       "@type": "WebPage",
@@ -1407,7 +1407,8 @@ if (!doNotTrack) {
     </div>    
     <article class="single__contents" data-dir="ltr">
       
-      <h1 id="准备">准备</h1>
+      <p>这章节是完成一个网络驱动程序，现在系统中已经存在了文件系统里，所以可以添加一个网络栈，是基于<code>82540EM</code>芯片(E1000)。这章节内容比我想象中难，虽然之前概览了一下，但是实际做起来的时候涉及到的概念和知识超出我现在所掌握的。</p>
+<h1 id="准备">准备</h1>
 <p><code>git</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1459,8 +1460,7 @@ if (!doNotTrack) {
          <span class="m">33</span> files changed, <span class="m">14503</span> insertions<span class="o">(</span>+<span class="o">)</span>, <span class="m">111</span> deletions<span class="o">(</span>-<span class="o">)</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>这章节是完成一个网络驱动程序，现在系统中已经存在了文件系统里，所以可以添加一个网络栈，是基于<code>82540EM</code>芯片(E1000)。这章节内容比我想象中难，虽然之前概览了一下，但是实际做起来的时候涉及到的概念和知识超出我现在所掌握的。</p>
-<p>除了完成网卡驱动，还需要<br />
+</div><p>除了完成网卡驱动，还需要<br />
 1.创建一个系统调用接口来访问驱动。<br />
 2.实现服务器和驱动网络栈传输数据包的代码。<br />
 3.完成一个web服务器</p>

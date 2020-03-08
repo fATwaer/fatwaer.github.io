@@ -1775,7 +1775,7 @@ will panic with the message &quot;env_alloc: out of memory&quot;.
     <span class="c1">// LAB 3: Your code here.
 </span><span class="c1"></span>    <span class="cm">/* user mode */</span>
     <span class="n">lcr3</span><span class="p">(</span><span class="n">PADDR</span><span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="o">&gt;</span><span class="n">env_pgdir</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-    
+
     <span class="k">struct</span> <span class="n">Elf</span> <span class="o">*</span><span class="n">elf</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">Elf</span> <span class="o">*</span><span class="p">)</span><span class="n">binary</span><span class="p">;</span>
 
     <span class="cm">/* check file format */</span>
@@ -1794,7 +1794,7 @@ will panic with the message &quot;env_alloc: out of memory&quot;.
     <span class="k">for</span> <span class="p">(</span><span class="p">;</span> <span class="n">ph</span> <span class="o">&lt;</span> <span class="n">eph</span><span class="p">;</span> <span class="n">ph</span><span class="o">+</span><span class="o">+</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_type</span> <span class="o">=</span><span class="o">=</span> <span class="n">ELF_PROG_LOAD</span><span class="p">)</span> <span class="p">{</span>  
         <span class="n">region_alloc</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="p">(</span><span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_va</span><span class="p">)</span><span class="p">,</span> <span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_memsz</span><span class="p">)</span><span class="p">;</span>
-        
+
         <span class="n">memcpy</span><span class="p">(</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_va</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">binary</span> <span class="o">+</span> <span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_offset</span><span class="p">,</span> <span class="p">(</span><span class="n">size_t</span><span class="p">)</span><span class="p">(</span><span class="n">ph</span><span class="o">-</span><span class="o">&gt;</span><span class="n">p_filesz</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span>
@@ -2039,50 +2039,99 @@ CLI (Clear Interrupt-Enable Flag) and STI (Set Interrupt-Enable Flag) explicitly
 <p>这里直接调用trap就行，调用函数的参数已经在堆栈中，跳转到函数开始的地方就是一个普通的函数调用。</p>
 <p>回顾之前的<code>Lab2</code>，在<code>env_run()</code>之前，会执行<code>trap_init()</code>，目的就是为了安装中断向量表。<br />
 <code>trap.c/trap_init()</code>中，将<code>idt</code>数组已知中断全部设置好，并将处理这个中断或者异常的handler安装到GDT中的<code>.text</code>域中，并且设置好权限。</p>
-<pre><code>void
-trap_init(void)
-{
-    extern struct Segdesc gdt[];
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span>
+<span class="nf">trap_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">extern</span> <span class="k">struct</span> <span class="n">Segdesc</span> <span class="n">gdt</span><span class="p">[</span><span class="p">]</span><span class="p">;</span>
 
-    // LAB 3: Your code here.
-    void divid_entry();
-    void debug_entry();
-    void nmi_entry();
-    void brkpt_entry();
-    void oflow_entry();
-    void bound_entry();
-    void illop_entry();
-    void device_entry();
-    void dblflt_entry();
-    void tss_entry();
-    void segnp_entry();
-    void stack_entry();
-    void gpflt_entry();
-    void pgflt_entry();
-    void fperr_entry();
-    void syscall_entry();
+    <span class="c1">// LAB 3: Your code here.
+</span><span class="c1"></span>    <span class="kt">void</span> <span class="n">divid_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">debug_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">nmi_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">brkpt_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">oflow_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">bound_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">illop_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">device_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">dblflt_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">tss_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">segnp_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">stack_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">gpflt_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">pgflt_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">fperr_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="n">syscall_entry</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
 
-    SETGATE(idt[T_DIVIDE], 1, GD_KT, divid_entry, 0);
-    SETGATE(idt[T_DEBUG], 1, GD_KT, debug_entry, 3);
-    SETGATE(idt[T_NMI], 1, GD_KT, nmi_entry, 0);
-    SETGATE(idt[T_BRKPT], 1, GD_KT, brkpt_entry, 3);
-    SETGATE(idt[T_OFLOW], 1, GD_KT, oflow_entry, 0);
-    SETGATE(idt[T_BOUND], 1, GD_KT, bound_entry, 0);
-    SETGATE(idt[T_ILLOP], 1, GD_KT, illop_entry, 0);
-    SETGATE(idt[T_DEVICE], 1, GD_KT, device_entry, 0);
-    SETGATE(idt[T_DBLFLT], 1, GD_KT, dblflt_entry, 0);
-    SETGATE(idt[T_TSS], 1, GD_KT, tss_entry, 0);
-    SETGATE(idt[T_SEGNP], 1, GD_KT, segnp_entry, 0);
-    SETGATE(idt[T_STACK], 1, GD_KT, stack_entry, 0);
-    SETGATE(idt[T_GPFLT], 1, GD_KT, gpflt_entry, 0);
-    SETGATE(idt[T_PGFLT], 1, GD_KT, pgflt_entry, 0);
-    SETGATE(idt[T_FPERR], 1, GD_KT, fperr_entry, 0);
-    SETGATE(idt[T_SYSCALL], 1, GD_KT, syscall_entry, 3);
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_DIVIDE</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">divid_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_DEBUG</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">debug_entry</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_NMI</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">nmi_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_BRKPT</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">brkpt_entry</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_OFLOW</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">oflow_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_BOUND</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">bound_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_ILLOP</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">illop_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_DEVICE</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">device_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_DBLFLT</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">dblflt_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_TSS</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">tss_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_SEGNP</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">segnp_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_STACK</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">stack_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_GPFLT</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">gpflt_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_PGFLT</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">pgflt_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_FPERR</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">fperr_entry</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="p">;</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">T_SYSCALL</span><span class="p">]</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">GD_KT</span><span class="p">,</span> <span class="n">syscall_entry</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="p">;</span>
 
-    // Per-CPU setup 
-    trap_init_percpu();
-}
-</code></pre><blockquote>
+    <span class="c1">// Per-CPU setup
+</span><span class="c1"></span>    <span class="n">trap_init_percpu</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p>Q1:What is the purpose of having an individual handler function for each exception/interrupt? (i.e., if all exceptions/interrupts were delivered to the same handler, what feature that exists in the current implementation could not be provided?)</p>
 </blockquote>
 <p>不同的权限组应该要有不同的解决办法。</p>
@@ -2195,7 +2244,7 @@ trap_init(void)
 <hr />
 <p>用户通过系统调用进入内核态，并且保存用户的状态信息，内核执行合适的处理代码，然后恢复到用户态，当然，也需要确定调用是从内核态到用户态还是内核自身调用系统函数。<br />
 JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以需要写好相应的调用代码。</p>
-<p>应用程序将会把系统调用的编号和系统调用的参数保存在寄存器中。system call number将会保存在<code>%eax</code>中，接下来最多五个参数分别保存在 <code>%edx</code>, <code>%ecx</code>, <code>%ebx</code>, <code>%edi</code>, <code>%esi</code>中。汇编级的system call函数已经写好在了文件<code>lib/syscall.c</code>中。</p>
+<p>应用程序将会把系统调用的编号和系统调用的参数保存在寄存器中。system call number将会保存在<code>%eax</code>中，接下来最多五个参数分别保存在 <code>%edx</code>, <code>%ecx</code>, <code>%ebx</code>, <code>%edi</code>, <code>%esi</code>中。system call函数已经写好在了文件<code>lib/syscall.c</code>中。</p>
 <h2 id="trap_init">trap_init()</h2>
 <p>在<code>trap_init()</code>中添加相应的handler:</p>
 <div class="highlight"><div class="chroma">
@@ -2235,7 +2284,7 @@ JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以�
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-C" data-lang="C">    <span class="c1">// system call 
+<pre class="chroma"><code class="language-C" data-lang="C">    <span class="c1">// system call
 </span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">tf</span><span class="o">-</span><span class="o">&gt;</span><span class="n">tf_trapno</span> <span class="o">=</span><span class="o">=</span> <span class="n">T_SYSCALL</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">tf</span><span class="o">-</span><span class="o">&gt;</span><span class="n">tf_regs</span><span class="p">.</span><span class="n">reg_eax</span> <span class="o">=</span> <span class="n">syscall</span><span class="p">(</span>
                 <span class="n">tf</span><span class="o">-</span><span class="o">&gt;</span><span class="n">tf_regs</span><span class="p">.</span><span class="n">reg_eax</span><span class="p">,</span> <span class="n">tf</span><span class="o">-</span><span class="o">&gt;</span><span class="n">tf_regs</span><span class="p">.</span><span class="n">reg_edx</span><span class="p">,</span>
@@ -2248,8 +2297,7 @@ JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以�
 </div>
 </div><hr />
 <h2 id="syscall">syscall()</h2>
-<p>在文件<code>trap.h</code>文件中有一个枚举类型，相当于一个宏定义。</p>
-<hr />
+<p>利用<code>lib/syscall.c</code>中的syscall进行转移到真正处理通用系统调用的文件中，根据<code>inc/syscall.h</code>中的enum定义分发到相应的系统调用的处理函数去。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -2312,9 +2360,9 @@ JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以�
 <span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><h1 id="练习8">练习8</h1>
-<hr />
-<p>用户程序从这里开始执行，确认号相关信息后跳转到 <code>libmain</code>执行。</p>
+</div><p>完成这里，利用<code>make run-hello</code>检测自己的系统调用是否成功。</p>
+<h1 id="练习8">练习8</h1>
+<p>用户程序从这里开始执行，确认好相关信息后跳转到 <code>libmain</code>执行。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt"> 1
@@ -2366,7 +2414,7 @@ JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以�
 </div>
 </div><p>ENVX宏定义在<code>env.h</code>文件中。<br />
 然后接下来调用用户程序<code>umain</code>和<code>exit()</code>，<code>umain</code>就相当于平时执行的C程序中main函数，<code>exit()</code>执行系统调用函数<code>sys_env_destroy()</code>。</p>
-<h1 id="练习9--10">练习9 , 10</h1>
+<h1 id="练习910">练习9/10</h1>
 <p>修改kern/trap.c,当内核页错误的时候调用<code>panic</code>，检查tf_cs的低位。<br />
 阅读kern/pmap.c中user_mem_assert函数，并且实现user_mem_check函数。<br />
 修改kern/syscall.c，检查系统调用的参数。<br />

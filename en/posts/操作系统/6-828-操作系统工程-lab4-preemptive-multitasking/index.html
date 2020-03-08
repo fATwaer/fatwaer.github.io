@@ -1385,7 +1385,7 @@ if (!doNotTrack) {
     <div class="single__meta">
       
 <div class="single__infos">
-  <time class="single__info" title="Written At">📅&nbsp;May 7, 2018 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 29 min read </span>
+  <time class="single__info" title="Written At">📅&nbsp;May 7, 2018 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 30 min read </span>
   <span class="single__info">
     
   </span>
@@ -1457,8 +1457,10 @@ Local APIC主要的作用分成两部分:</p>
 <li>在MP(multiple processor)系统中，在system bus发送接收处理器间中断IPI。</li>
 </ul>
 <p><img src="/images/operating-system/6.828/lab4/figure8-4.png" alt="figure8-4.png" /></p>
-<p>处理器访问它自己的LAPIC通过MMIO(memory-mapped I/O)，在MMIO中，一部分物理内存直接与IO设备的寄存器相连接，所以类似于load/store的指令通常被用作间接访问外围设备的寄存器。Lab2为IO hole在物理地址0xA0000留了一部分内存空间用作VAG显示缓冲。LAPIC位于内存地址<code>0xFE000000</code>(4GB - 32MB)处，这个地址很高，所以不能直接映射在KERNBASE上(<code>?</code>)。JOS的虚拟内存为MMIOBASE保留了4MB的空间，所以可以用来映射设备的内存。<br />
-接下来的实验中将会介绍更多MMIO的区域，并且为外围设备实现一些基础的内存分配和映射。</p>
+<p>处理器访问它自己的LAPIC通过MMIO(memory-mapped I/O)，在MMIO中，一部分物理内存直接与IO设备的寄存器相连接，所以类似于ld/store的指令通常被用作间接访问外围设备的寄存器。Lab2为IO hole在物理地址0xA0000留了一部分内存空间用作VAG显示缓冲。LAPIC位于内存地址<code>0xFE000000</code>(4GB - 32MB)处，这个地址很高，所以不能直接通过KERNBASE映射。JOS的虚拟内存为MMIOBASE保留了4MB的空间，所以可以用来映射设备的内存。<br />
+另外Lapic所使用的内存应该是被设计为strong uncacheable的，而在<code> kern/lapic.c</code>预先定义的ID，Version等信息可以在IA-32 Table8.1中查到。</p>
+<p><img src="/images/operating-system/6.828/lab4/uncacheable.png" alt="strong uncacheable" /></p>
+<p>接下来的实验中将会介绍更多MMIO的区域，并且为外围设备实现一些基础的内存分配和映射。</p>
 <h2 id="练习1">练习1</h2>
 <blockquote>
 <p>实现<code>kern/pmap.c</code>中的<code>mmio_map_region()</code><br />
@@ -1509,7 +1511,8 @@ Local APIC主要的作用分成两部分:</p>
 </span><span class="c1"></span><span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><p>注意<code>lapic_init()</code>开头几步，需要返回一个<code>MMIO</code>的地址</p>
+</div><p>可以发现这个函数的页权限的设计是使用了PTE_PCD|PTE_PWT，当CPU采用高速缓存时，它的写内存操作有两种模式，一种称为“穿透”(Write-Through)模式，在这种模式中高速缓存对于写操作就好像不存在一样，每次写时都直接写到内存中，所以实际上只是对读操作使用高速缓存，因而效率相对较低。另一种称为“回写”(Write-Back)模式，写的时候先写入高速缓存，然后由高速缓存的硬件在周转使用缓冲线时自动写入内存，或者由软件主动地“冲刷”有关的缓冲线。另外一点就是Cache Disable，防止这里的内存被CPU缓存，就是为了保证LAPIC被映射在内存上的寄存器值能够准确地被读取。</p>
+<p>注意<code>lapic_init()</code>开头几步，需要返回一个<code>MMIO</code>的地址</p>
 <h1 id="application-processor-bootstrap">Application Processor Bootstrap</h1>
 <p>在启动APs之前，BSP首先需要收集关于多处理器系统的信息，比如CPU的数量，它们的APIC ID以及这些LAPIC单元对应的MMIO地址。<code>kern/mpconfig.c</code>中<code>mp_init()</code>通过读取BIOS内存块的MP configuration table获取这些信息。</p>
 <p><code>kern/init.c</code>中的<code>boot_aps()</code>函数驱动AP的启动引导进程，APs在实模式下开始工作，就像之前的内核引导程序(<code>boot/boot.S</code>,)，<code>boot_aps</code>在实模式下复制一份AP entry code(<code>kern/mpentry.S</code>)到一个内存可以寻址的地方，所以一定程度上可以控制AP开始执行的内存地址；现在将把entry code复制到<code>0x7000(MPENTRY_PADDR)</code>，但实际上低于640KB未使用的页对齐的物理地址都可用。</p>
@@ -1519,7 +1522,6 @@ Local APIC主要的作用分成两部分:</p>
 <blockquote>
 <p>将MPENTRY_PADDR从free_list中删除</p>
 </blockquote>
-<hr />
 <p>boot_aps():将MPENTRY的代码安装到内核中去，为每一个cpu准备相应的栈区。然后通过一个for循环初始化所以cpu，在循环体内用while循环等待cpu被启动好的信号。<br />
 lapic_startup(id, addr)然后发送IPI到APIC bus上，让相应AP的LAPIC收到这个中断，开始执行mpentry.S中的内容，开启保护模式，分页；加载数据段，代码段等。</p>
 <p>当mpentry执行到最后，调用mp_init()函数，初始化该AP的寄存器。<br />
@@ -1559,10 +1561,10 @@ trap_init_percpu():读取TSS和IDT<br />
     <span class="n">size_t</span> <span class="n">allocated_pages</span> <span class="o">=</span> <span class="p">(</span><span class="p">(</span><span class="n">uint32_t</span><span class="p">)</span><span class="n">boot_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">KERNBASE</span><span class="p">)</span> <span class="o">/</span> <span class="n">PGSIZE</span><span class="p">;</span>
     <span class="n">size_t</span> <span class="n">IOhole_pages</span> <span class="o">=</span> <span class="p">(</span><span class="n">EXTPHYSMEM</span> <span class="o">-</span> <span class="n">IOPHYSMEM</span><span class="p">)</span> <span class="o">/</span><span class="n">PGSIZE</span><span class="p">;</span>
     <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">npages</span><span class="p">;</span> <span class="n">i</span><span class="o">+</span><span class="o">+</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span><span class="o">=</span> <span class="n">MPENTRY_PADDR</span><span class="o">/</span><span class="n">PGSIZE</span><span class="p">)</span>          
+        <span class="k">if</span><span class="p">(</span><span class="n">i</span> <span class="o">=</span><span class="o">=</span> <span class="n">MPENTRY_PADDR</span><span class="o">/</span><span class="n">PGSIZE</span><span class="p">)</span>
             <span class="k">continue</span><span class="p">;</span>                  <span class="c1">// BIOS 
 </span><span class="c1"></span>        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">npages_basemem</span> <span class="o">&amp;</span><span class="o">&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">npages_basemem</span> <span class="o">+</span> <span class="n">allocated_pages</span> <span class="o">+</span> <span class="n">IOhole_pages</span><span class="p">)</span><span class="p">{</span>
-            <span class="k">continue</span><span class="p">;</span>                  <span class="c1">// see figure 
+            <span class="k">continue</span><span class="p">;</span>                  <span class="c1">// see figure
 </span><span class="c1"></span>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
             <span class="n">pages</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="p">.</span><span class="n">pp_ref</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
             <span class="n">pages</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="p">.</span><span class="n">pp_link</span> <span class="o">=</span> <span class="n">page_free_list</span><span class="p">;</span>             <span class="c1">// a linkedlist for 
@@ -1670,7 +1672,60 @@ trap_init_percpu():读取TSS和IDT<br />
 
 </code></pre><p>根据之前ts全局变量的过程，为每一个CPU都初始化任务状态。<br />
 <strong>位移运算3位是因为每个描述符的大小是8字节(struct Segdesc)</strong></p>
-<h1 id="自旋锁">自旋锁</h1>
+<p>完成这里后，利用<code>make qemu-nox CPUS=4</code>可以发现其他cpu的成功启动</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ make qemu-nox <span class="nv">CPUS</span><span class="o">=</span><span class="m">4</span>
+***
+*** Use Ctrl-a x to <span class="nb">exit</span> qemu
+***
+qemu-system-i386 -nographic -drive <span class="nv">file</span><span class="o">=</span>obj/kern/kernel.img,index<span class="o">=</span>0,media<span class="o">=</span>disk,format<span class="o">=</span>raw -serial mon:stdio -gdb tcp::26000 -D qemu.log -smp <span class="m">4</span> 
+<span class="m">6828</span> decimal is <span class="m">15254</span> octal!
+Physical memory: 131072K available, <span class="nv">base</span> <span class="o">=</span> 640K, <span class="nv">extended</span> <span class="o">=</span> 130432K
+check_page_free_list<span class="o">(</span><span class="o">)</span> succeeded!
+check_page_alloc<span class="o">(</span><span class="o">)</span> succeeded!
+check_page<span class="o">(</span><span class="o">)</span> succeeded!
+check_kern_pgdir<span class="o">(</span><span class="o">)</span> succeeded!
+check_page_free_list<span class="o">(</span><span class="o">)</span> succeeded!
+check_page_installed_pgdir<span class="o">(</span><span class="o">)</span> succeeded!
+SMP: CPU <span class="m">0</span> found <span class="m">4</span> CPU<span class="o">(</span>s<span class="o">)</span>
+enabled interrupts: <span class="m">1</span> <span class="m">2</span>
+SMP: CPU <span class="m">1</span> starting
+SMP: CPU <span class="m">2</span> starting
+SMP: CPU <span class="m">3</span> starting
+<span class="o">[</span>00000000<span class="o">]</span> new env <span class="m">00001000</span>
+kernel panic on CPU <span class="m">0</span> at kern/trap.c:295: kernel page fault
+Welcome to the JOS kernel monitor!
+Type <span class="s1">&#39;help&#39;</span> <span class="k">for</span> a list of commands.
+K&gt;
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="自旋锁">自旋锁</h1>
 <p>现在代码在执行mp_main()最后的for死循环，在AP继续运行之前，首先要解决多个CPU同时执行内核代码的条件竞争的问题。最简单的方法是使用big kernel lock，一种当一个环境进入了内核态开启的全局锁，当退回到用户态的时候解锁。在这个模式下，用户态都能同时正确地使用可用的CPU，但是只能有一个环境能运行在用户态，其他尝试进入内核态的环境都会被强制等待。</p>
 <p>自旋锁(spinlock)是互斥(mutual exclusive)锁的一种实现形式，通过不断访问所需资源来判断临界资源资源是否被释放，优点是非常高效，临界资源一释放，等待的CPU将马上获得这份临界资源，所以适合那些保持锁时间短的情况，缺点是会持续占用CPU，浪费CPU时间。面对那些长时间占用临界资源的，应该使用信号量(semaphore)机制。</p>
 <p>前段时间专业课上提到了<code>Swap</code>，就算一个基本的自旋锁。<br />
@@ -1866,31 +1921,33 @@ trap_init_percpu():读取TSS和IDT<br />
 </span><span class="lnt">23
 </span><span class="lnt">24
 </span><span class="lnt">25
+</span><span class="lnt">26
 </span></code></pre></td>
 <td class="lntd">
 <pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
 <span class="nf">sched_yield</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="c1">// LAB 4: Your code here.
-</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">cur_id</span><span class="p">,</span> <span class="n">iter</span><span class="p">;</span>
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">cur_id</span><span class="p">,</span> <span class="n">nxt</span><span class="p">;</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">curenv</span><span class="p">)</span> <span class="n">cur_id</span> <span class="o">=</span> <span class="n">ENVX</span><span class="p">(</span><span class="n">curenv</span><span class="o">-</span><span class="o">&gt;</span><span class="n">env_id</span><span class="p">)</span><span class="p">;</span>
-        <span class="k">else</span> <span class="n">cur_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">curenv</span><span class="p">)</span>
+        <span class="n">cur_id</span> <span class="o">=</span> <span class="n">ENVX</span><span class="p">(</span><span class="n">curenv</span><span class="o">-</span><span class="o">&gt;</span><span class="n">env_id</span><span class="p">)</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="n">cur_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="cp">#</span><span class="cp">ifdef SELF_DEBUG_INFO</span><span class="cp">
 </span><span class="cp"></span>    <span class="n">cprintf</span><span class="p">(</span><span class="sa"></span><span class="s">&#34;</span><span class="s">cpuid %d </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">thiscpu</span><span class="o">-</span><span class="o">&gt;</span><span class="n">cpu_id</span><span class="p">)</span><span class="p">;</span>
 <span class="cp">#</span><span class="cp">endif</span><span class="cp">
-</span><span class="cp"></span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NENV</span><span class="p">;</span> <span class="n">i</span><span class="o">+</span><span class="o">+</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">iter</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">cur_id</span><span class="p">)</span> <span class="o">%</span> <span class="n">NENV</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">envs</span><span class="p">[</span><span class="n">iter</span><span class="p">]</span><span class="p">.</span><span class="n">env_status</span> <span class="o">=</span><span class="o">=</span> <span class="n">ENV_RUNNABLE</span><span class="p">)</span>
-            <span class="n">env_run</span><span class="p">(</span><span class="n">envs</span> <span class="o">+</span> <span class="n">iter</span><span class="p">)</span><span class="p">;</span>
+</span><span class="cp"></span>    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">NENV</span><span class="p">;</span> <span class="n">i</span><span class="o">+</span><span class="o">+</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">nxt</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">cur_id</span><span class="p">)</span> <span class="o">%</span> <span class="n">NENV</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">envs</span><span class="p">[</span><span class="n">nxt</span><span class="p">]</span><span class="p">.</span><span class="n">env_status</span> <span class="o">=</span><span class="o">=</span> <span class="n">ENV_RUNNABLE</span><span class="p">)</span>
+            <span class="n">env_run</span><span class="p">(</span><span class="n">envs</span> <span class="o">+</span> <span class="n">nxt</span><span class="p">)</span><span class="p">;</span>
     <span class="p">}</span>
 
     <span class="c1">// there are no others environment to run.
 </span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">curenv</span> <span class="o">&amp;</span><span class="o">&amp;</span> <span class="n">curenv</span><span class="o">-</span><span class="o">&gt;</span><span class="n">env_status</span> <span class="o">=</span><span class="o">=</span> <span class="n">ENV_RUNNING</span><span class="p">)</span>
         <span class="n">env_run</span><span class="p">(</span><span class="n">curenv</span><span class="p">)</span><span class="p">;</span>
-    <span class="c1">// sched_halt never returns
-</span><span class="c1"></span>    <span class="n">sched_halt</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+        <span class="c1">// sched_halt never returns
+</span><span class="c1"></span>        <span class="n">sched_halt</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
 <span class="p">}</span>
 
 </code></pre></td></tr></table>
@@ -3058,7 +3115,7 @@ TRAPHANDLER_NOEC(irq_handler15, 47);
 
 </code></pre></td></tr></table>
 </div>
-</div><p>这里有大量的重复工作，之前有一个challenge会简化一部分，在这里获得一个建议：使用脚本语言完成这部分重复性工作，不知道这种办法是好是坏。</p>
+</div><p>此时为每一个用户进程响应外部中断。</p>
 <hr />
 <h1 id="handing-clock-interrupts">Handing Clock Interrupts</h1>
 <p>在<code>user/spin</code>程序中，在子程序一开始运行时就仅仅是一直循环，内核不能取回控制权，所以现在需要生成周期性的时钟中断，强制性地取回内核的控制权，并且切换到不同的用户环境。</p>
@@ -3083,8 +3140,8 @@ TRAPHANDLER_NOEC(irq_handler15, 47);
 </span><span class="c1"></span>    <span class="c1">// LAB 4: Your code here.
 </span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">tf</span><span class="o">-</span><span class="o">&gt;</span><span class="n">tf_trapno</span> <span class="o">=</span><span class="o">=</span> <span class="n">IRQ_OFFSET</span> <span class="o">+</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">lapic_eoi</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-        <span class="n">sched_yield</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>   
-    <span class="p">}</span>   
+        <span class="n">sched_yield</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
 </div><p><strong>eoi</strong>(end of interrupt):置为0表示该中断例程已经结束了。</p>
