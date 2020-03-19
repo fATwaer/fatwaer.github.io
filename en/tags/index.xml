@@ -9,12 +9,30 @@
     <managingEditor>fatwaer@gmail.com (fatwaer)</managingEditor>
     <webMaster>fatwaer@gmail.com (fatwaer)</webMaster>
     <copyright>©{year}, All Rights Reserved</copyright>
-    <lastBuildDate>Wed, 26 Feb 2020 22:19:35 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 18 Mar 2020 22:29:40 +0800</lastBuildDate>
     
         <atom:link href="/en/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     
+      
+      <item>
+        <title>B-tree</title>
+        <link>/en/tags/b-tree/</link>
+        <pubDate>Wed, 18 Mar 2020 22:29:40 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/b-tree/</guid>
+        <description></description>
+      </item>
+      
+      <item>
+        <title>LSM-tree</title>
+        <link>/en/tags/lsm-tree/</link>
+        <pubDate>Wed, 18 Mar 2020 22:29:40 +0800</pubDate>
+        <author>fatwaer@gmail.com (fatwaer)</author>
+        <guid>/en/tags/lsm-tree/</guid>
+        <description></description>
+      </item>
       
       <item>
         <title>distributed system</title>
