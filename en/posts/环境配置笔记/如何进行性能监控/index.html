@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>B-tree和LSM-tree – Blog | fatwaer</title>
+    <title>如何进行调试以及性能监控 – Blog | fatwaer</title>
     
 
 
@@ -489,7 +489,7 @@
 
   
     
-    var permalink = JSON.parse("\"/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/\"");
+    var permalink = JSON.parse("\"/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/\"");
     var searchResults = null;
     var searchMenu = null;
     var searchText = null;
@@ -1143,23 +1143,23 @@
     
 <meta name="description" content="fatwaer&#39;s blog about operating system and distributed system" />
 <meta name="keywords" content="">
-<meta name="created" content="2020-03-18T22:29:40&#43;0800">
-<meta name="modified" content="2020-03-18T22:29:40&#43;0800">
-<meta property="article:published_time" content="2020-03-18T22:29:40&#43;0800">
+<meta name="created" content="2020-03-20T16:01:24&#43;0800">
+<meta name="modified" content="2020-03-20T16:01:24&#43;0800">
+<meta property="article:published_time" content="2020-03-20T16:01:24&#43;0800">
 
 <meta name="author" content="fatwaer">
 
 
 <meta property="og:site_name" content="Blog | fatwaer">
-<meta property="og:title" content="B-tree和LSM-tree">
-<meta property="og:url" content="/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/">
+<meta property="og:title" content="如何进行调试以及性能监控">
+<meta property="og:url" content="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">
 <meta property="og:type" content="article">
 <meta property="og:description" content="fatwaer&#39;s blog about operating system and distributed system">
 
 <meta name="generator" content="Hugo 0.63.2" />
 <meta name="msapplication-TileColor" content="#ffffff">
 <meta name="theme-color" content="#ffffff">
-<link rel="canonical" href="/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/">
+<link rel="canonical" href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">
 <link rel="manifest" href="/manifest.json">
 
   <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
@@ -1183,12 +1183,12 @@
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "headline": "B-tree和LSM-tree",
-    "datePublished": "2020-03-18T22:29:40+08:00",
-    "dateModified": "2020-03-18T22:29:40+08:00",
-    "url" : "/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/",
-    "description": "最初的数据库 LSM-tree得从最简单的数据库的shell实现说起，如： 1 2 3 4 5 6 7 8 9 #! /bin/bash db_set() { echo \u0026#34;$1,$2\u0026#34; \u0026gt;\u0026gt; database } db_get() { grep \u0026#34;^$1,\u0026#34; database | sed -e …",
-    "keywords": ["LSM-tree","B-tree"],
+    "headline": "如何进行调试以及性能监控",
+    "datePublished": "2020-03-20T16:01:24+08:00",
+    "dateModified": "2020-03-20T16:01:24+08:00",
+    "url" : "/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/",
+    "description": "“The most effective debugging tool is still careful thought, coupled with judiciously placed print statements” — Brian Kernighan, Unix for Beginners. 最朴素的debug方法还是使 …",
+    "keywords": ["shell","debug","profiling"],
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": "/"
@@ -1372,7 +1372,7 @@ if (!doNotTrack) {
   
   <li  class="is-active" >
     
-      <span>B-tree和LSM-tree</span>
+      <span>如何进行调试以及性能监控</span>
     
   </li>
   
@@ -1381,11 +1381,11 @@ if (!doNotTrack) {
 </nav>
   
   <div class="single">
-    <h2 class="single__title">B-tree和LSM-tree</h2>
+    <h2 class="single__title">如何进行调试以及性能监控</h2>
     <div class="single__meta">
       
 <div class="single__infos">
-  <time class="single__info" title="Written At">📅&nbsp;Mar 18, 2020 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 6 min read </span>
+  <time class="single__info" title="Written At">📅&nbsp;Mar 20, 2020 </time>  &middot; <span class="single__info" title="Reading Time"> ☕ 4 min read </span>
   <span class="single__info">
     
   </span>
@@ -1397,8 +1397,8 @@ if (!doNotTrack) {
   
   
   <li>
-    <a href="/en/tags/lsm-tree" class="single__tag" title="LSM-tree">
-      #LSM-tree
+    <a href="/en/tags/shell" class="single__tag" title="shell">
+      #shell
     </a>
   </li>
     
@@ -1406,8 +1406,17 @@ if (!doNotTrack) {
   
   
   <li>
-    <a href="/en/tags/b-tree" class="single__tag" title="B-tree">
-      #B-tree
+    <a href="/en/tags/debug" class="single__tag" title="debug">
+      #debug
+    </a>
+  </li>
+    
+
+  
+  
+  <li>
+    <a href="/en/tags/profiling" class="single__tag" title="profiling">
+      #profiling
     </a>
   </li>
     
@@ -1416,8 +1425,114 @@ if (!doNotTrack) {
     </div>    
     <article class="single__contents" data-dir="ltr">
       
-      <h2 id="最初的数据库">最初的数据库</h2>
-<p>LSM-tree得从最简单的数据库的shell实现说起，如：</p>
+      <blockquote>
+<p>“The most effective debugging tool is still careful thought, coupled with judiciously placed print statements” — Brian Kernighan, Unix for Beginners.</p>
+</blockquote>
+<p>最朴素的debug方法还是使用print，并且在合适的地方插入print语句，过多的日志信息反而会引起混乱，使debug效率降低。</p>
+<h2 id="日志分级">日志分级</h2>
+<p>根据事情的验证程度，可以将事件的严重情况分为：</p>
+<ul>
+<li><code>INFO</code></li>
+<li><code>WARNING</code></li>
+<li><code>ERROR</code></li>
+<li><code>CRITICAL</code></li>
+</ul>
+<p>每当输出日志的时候，在响应事件前面加上前缀，相关的语言应该都有现成的库，根据需求进行选取即可。</p>
+<p>对于一个事件运行的程序，比如<code>daemon</code>进程，日志输出在响应文件夹，利用<code>grep</code>就能很好的查询不同严重程度的事件的发生情况。</p>
+<p>日志的位置通常在<code>/var/log</code>目录下，例如nginx的日志文件就在<code>/var/log/nginx</code>目录下，系统服务<code>systemd</code>的地址文件就在<code>/var/log/journal</code>目录下。</p>
+<p>日志除了写入文件外，还能通过相关配置写入到<code>套接字</code>/<code>远程服务器</code>上，对日志进行集中处理或存储。</p>
+<p>其他：<br />
+- 交互式日志查看工具: <a href="http://lnav.org/">lnav</a></p>
+<h2 id="debug-工具">debug 工具</h2>
+<p>除了GNU项目中的<code>gdb</code>和python自带的<code>pdb</code>，还有一些能在debug过程中自动显示相关变量以及寄存器值的debug工具：</p>
+<ul>
+<li><a href="https://github.com/pwndbg/pwndbg">pwndb</a></li>
+<li><a href="https://lldb.llvm.org/">lldb</a></li>
+</ul>
+<h2 id="backtrace">backtrace</h2>
+<p>利用<code>strace</code>可以查询一些系统调用的次数，例如</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">store : ~/go &gt;&gt; ls
+bin  pkg  src
+store : ~/go &gt;&gt; sudo strace -e lstat ls -l &gt; /dev/null
+lstat<span class="o">(</span><span class="s2">&#34;pkg&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">}</span><span class="o">)</span> <span class="o">=</span> <span class="m">0</span>
+lstat<span class="o">(</span><span class="s2">&#34;src&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">}</span><span class="o">)</span> <span class="o">=</span> <span class="m">0</span>
+lstat<span class="o">(</span><span class="s2">&#34;bin&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">}</span><span class="o">)</span> <span class="o">=</span> <span class="m">0</span>
++++ exited with <span class="m">0</span> +++
+</code></pre></td></tr></table>
+</div>
+</div><p>通过strace获得ls程序调用了多少次lstat。</p>
+<p>扩展阅读：<br />
+- <a href="https://blogs.oracle.com/linux/strace-the-sysadmins-microscope-v2">https://blogs.oracle.com/linux/strace-the-sysadmins-microscope-v2</a></p>
+<h2 id="静态分析">静态分析</h2>
+<p>静态分析(<a href="https://en.wikipedia.org/wiki/Static_program_analysis">wiki</a>)就像是对一个文本直接检查，推断相应的语法错误和可能的语法错误。</p>
+<p>例如python有<a href="https://pypi.org/project/pyflakes">pyflakes</a>，shell脚本有<code>shellcheck</code>，在github上也有相关的静态分析工具<a href="https://github.com/mre/awesome-static-analysis">集合</a>。</p>
+<h2 id="性能剖析">性能剖析</h2>
+<blockquote>
+<p>Premature optimization is the root of all evil</p>
+</blockquote>
+<p>通常认为过早优化是不好的，有时间可以读下**<a href="http://wiki.c2.com/?PrematureOptimization">Premature Optimization</a>**。</p>
+<p>最简单的性能测试可以通过程序结束的时间减去程序开始运行的时间获得。比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">time</span> ls &gt; /dev/null
+
+real    0m0.002s
+user    0m0.001s
+sys     0m0.000s
+</code></pre></td></tr></table>
+</div>
+</div><p>可以获得三个时间:</p>
+<ul>
+<li>real: 从程序开始到程序结束的时间，包括了I/O，网络的时间</li>
+<li>user：运行用户级别代码的时间</li>
+<li>sys: 运行内核的时间</li>
+</ul>
+<h3 id="cpu">CPU</h3>
+<p>在python中，可以利用<code>cProfile</code>模组进行测试每个函数所使用的时间，<a href="https://github.com/rkern/line_profiler">line profile</a>测试每一行执行时间。</p>
+<h3 id="内存占用">内存占用</h3>
+<ul>
+<li>
+<p>c/c++: Valgrind<br />
+<a href="https://valgrind.org/">https://valgrind.org/</a></p>
+</li>
+<li>
+<p>python: mem-profiler<br />
+<a href="https://pypi.org/project/memory-profiler/">https://pypi.org/project/memory-profiler/</a></p>
+</li>
+</ul>
+<h3 id="事件采样">事件采样</h3>
+<h4 id="perf-简介">perf 简介</h4>
+<p><code>perf</code>工具是Linux下用于性能剖析的工具，执行相应的程序，由内核或者硬件来计数程序所触发的事件。</p>
+<p>事件分为几类：</p>
+<ul>
+<li>software events: 完全由内核计数的事件，比如：上下文切换，fault等</li>
+<li>PMU hardware events: 由处理器自己或者性能监控单元PMU(Performance Monitoring Unit)提供，比如这些事件：运行CPU时钟的数量，<strong>失效指令</strong>，L1级cache未命中次数等。由CPU的种类和模型决定。</li>
+<li>tracepoint events：由内核的ftrace实现，并且只能用在2.6.3x等更新的内核。</li>
+</ul>
+<p><strong>失效指令</strong>这个术语是intel中的<code>instructions retired</code>，意思是所执行的指令数目，并不包括由于分支预测失败的那一部分指令。</p>
+<blockquote>
+<p>Instructions Retired:<br />
+This event indicates the number of instructions that retired or executed completely. This does not include partially processed instructions executed due to branch mispredictions.</p>
+</blockquote>
+<p>回到<code>perf</code>工具，机器所支持的事件列表可以通过list查询:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre class="chroma"><code><span class="lnt">1
@@ -1431,114 +1546,177 @@ if (!doNotTrack) {
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#! /bin/bash
-</span><span class="cp"></span>
-db_set<span class="o">(</span><span class="o">)</span> <span class="o">{</span>
-    <span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$1</span><span class="s2">,</span><span class="nv">$2</span><span class="s2">&#34;</span> &gt;&gt; database
-<span class="o">}</span>
+<pre class="chroma"><code class="language-shell" data-lang="shell">$ perf list
 
-db_get<span class="o">(</span><span class="o">)</span> <span class="o">{</span>
-    grep <span class="s2">&#34;</span><span class="s2">^</span><span class="nv">$1</span><span class="s2">,</span><span class="s2">&#34;</span> database <span class="p">|</span> sed -e <span class="s2">&#34;</span><span class="s2">s/^</span><span class="nv">$1</span><span class="s2">,//</span><span class="s2">&#34;</span> <span class="p">|</span> tail -n <span class="m">1</span>
-<span class="o">}</span>
+List of pre-defined events <span class="o">(</span>to be used in -e<span class="o">)</span>:
+
+  alignment-faults                                   <span class="o">[</span>Software event<span class="o">]</span>
+  context-switches OR cs                             <span class="o">[</span>Software event<span class="o">]</span>
+  cpu-clock                                          <span class="o">[</span>Software event<span class="o">]</span>
+
+...
 </code></pre></td></tr></table>
 </div>
-</div><p><code>db_set</code>将两个参数简单追加<code>database</code>文件，而<code>db_get</code>利用匹配出来的结果去掉key和逗号得到value，再利用tail获取到最set到database中去。</p>
-<h3 id="读取优化">读取优化</h3>
-<p>很明显，由于是追加写也是最简单的写操作，这种set方式通常足够高效，但是对于get，事件复杂度就需要上升到O(n)，所以最常见的想法是对数据追加索引，比如利用哈希表在内存中设置一个key，而key对应的value设置为该key/value在文件中的偏移。</p>
-<table>
-<thead>
-<tr>
-<th>key</th>
-<th>byte offset</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>abc</td>
-<td>0</td>
-</tr>
-<tr>
-<td>b</td>
-<td>64</td>
-</tr>
-<tr>
-<td>&hellip;</td>
-<td>&hellip;</td>
-</tr>
-<tr>
-<td>aacb</td>
-<td>3613</td>
-</tr>
-</tbody>
-</table>
-<p>就有类似于这样一个哈希表存储在内存中，这也就是<code>Bitcask</code>的核心做法，只需要一次磁盘寻址就可以加载到这个value，适合每个键的值频繁更新的场景。</p>
-<h3 id="存储优化">存储优化</h3>
-<p>因为都会往同一个文件追加文件，所以设置键的写入，会造成磁盘空间用尽。解决办法是将日志分解成一定大小的段，文件到达一定大小就关闭，后续的写入写到新的段文件中，读请求仍旧使用旧段文件，当后台线程将后台文件合并/压缩后，读请求就能切换到新的合并段上，旧段文件安全删除。</p>
-<h3 id="其他">其他</h3>
-<ul>
-<li>文件格式：替换类似于CSV的字符格式为二进制格式。</li>
-<li>删除记录：追加删除标记，当合并时检测到这个标记丢弃响应的key</li>
-<li>崩溃恢复：这个主要针对存储在内存中的哈希表，当机器宕机后，哈希表将会丢失，重启恢复需要重新读取所有的段文件才能恢复，Bitcask的做法时将相应段的哈希表快照存储磁盘中。</li>
-<li>记录写入：写入操作的过程中如果发送了崩溃，那么最新的值将是不完整的，可以在一条记录前追加校验，如果损毁就需要丢弃。</li>
-<li>并发控制：写入需要按先后顺序写入，所以写线程通常只有一个，而读取是可以多个同时进行的。</li>
-</ul>
-<h2 id="sstables">SSTables</h2>
-<p>SSTables全名为排序字符串表(Sort String Tables)，写入的记录会被排序。对key进行排序会有如下的有点：</p>
-<ol>
-<li>合并段更加高效：方法类似于归并排序，同时读取多个段文件，比较每一个文件的第一个键，将最小的键拷贝到输出文件，重复这个过程，就可以得到一个按键排序的合并段文件。另外就是文件大于可用内存也可以进行，像前面的方法，需要将所有kv都保存在内存中，合并完成才能写入磁盘，而归并的方法只需要维护输入端的数量个kv，即使出现相同的kv，也可以保证他们是相邻的，覆盖即可。</li>
-<li>压缩内存：查找特定键时，不需要保存所有键的索引，而是建立<code>稀疏索引</code>，比如1个几KB大小的文件，只需要1个key即可。根据这个key的字典序找到稀疏索引中提供的偏移，读取该部分，找到相应的key即可。</li>
-<li>范围查询：请求某个范围内的多个key/value更加方便。</li>
-</ol>
-<h3 id="构建和维护sstables">构建和维护SSTables</h3>
-<ol>
-<li>写入Key写写入内存表(类似于红黑树的平衡树)</li>
-<li>内存表大小大于某个阈值，根据二叉排序树的特点，顺序写入磁盘，此时在内存中新生成一个内存表</li>
-<li>查表时，先查询内存表找到偏移，如果没找到，那么查找以前的段文件</li>
-<li>后台周期性合并，压缩，丢弃不需要的key</li>
-<li>写入key需要追加日志(用于恢复内存表)，但是超出阈值并写完当前内存表后，可以删除该日志。</li>
-</ol>
-<h3 id="优化sstables">优化SSTables</h3>
-<ul>
-<li>读取SSTables中不存在的key会回溯到最旧的段文件，所以开销很大，对于这种存在问题，可以使用布隆过滤器。</li>
-<li>其他是一些压缩/合并的方式，例如LevelDB/RocksDB使用的分层压缩，HBase使用大小分级，而Cassandra两种都支持。</li>
-</ul>
-<h2 id="lsm-tree和sstables">LSM-tree和SSTables</h2>
-<p>SSTables的算法本质就是LevelDB和RocksDB所使用，并且最初这种索引结构是被称为以日志结构的合并树(Log-Structured Merge-Tree)，因此，基于合并和压缩排序文件原理的存储引擎，通常被称为LSM存储引擎。</p>
-<h2 id="b-tree">B-tree</h2>
-<p>B树其实已经非常熟悉了，常见于各大关系型数据的索引。Btree也是按键排序的key-value对，以及高效的区间查询。但是在存储方面，是以4KB甚至更大作为存储单元，这样更加借鉴底层硬件。</p>
-<p>由于B树也保持平衡，具有n个key的B树深度也是O(log n)，其中一个页中包含子页的引用数量称为<code>分页因子</code>，当分页因子为500的4KB页的四级树可存储256TB数据。</p>
-<p>崩溃问题：和日志合并树一样，也要考虑写时发生崩溃的问题，因为在重写页时，如果发生崩溃直接导致的结果是索引破坏，所以需要<code>预写日志</code>WAL(WriteAhead Log)在写入前，追加写入日志文件，用于恢复B树到最近一致状态。</p>
-<h3 id="优化b-tree">优化B-tree</h3>
-<ul>
-<li>写时复制：修改的页被写入不同位置，创建完成后修改父页中的引用。这样就不用覆盖和维护WAL</li>
-<li>保存键的缩略信息，减少key在页内占用，增加分页因子，降低层数</li>
-<li>尝试让页的磁盘位置更加接近，减少寻道时间</li>
-<li>另外一点就是常见的添加一个额外的指针到相邻的页，这样就不需要跳回父页，减少不必要的I/O</li>
-<li>最后就是分型树等等</li>
-</ul>
-<h2 id="lsm-tree和b-tree的优劣">LSM-tree和B-tree的优劣</h2>
-<p>通常认为B树读取更快，而LSM树写入更快。</p>
-<h3 id="lsm-tree的优点">LSM-tree的优点</h3>
-<p>对于B树来说，一次写操作需要写两次磁盘：</p>
-<ul>
-<li>写入日志(WAL)</li>
-<li>写入到实际的B树中，另外还有页分裂的可能，导致多次I/O</li>
-</ul>
-<p>而对于LSM树来说：</p>
-<ul>
-<li>追加写一次</li>
-<li>但是又反复的后台压缩和SSTables合并</li>
-</ul>
-<p>所以要注意一次写入请求会导致多次磁盘写(写放大)，SSD由于其物理性质所决定，只能承受住比机械硬盘更低覆盖重写次数，所以需要加入考量，另外，如果写入磁盘占用的带块越多，可用的磁盘带宽也就越少。而LSM时拥有较低的写放大。</p>
-<p>另外，回到SSTables的构建，LSM的写入时是从内存一次性写入到磁盘的，也就是其磁盘块更加连续，顺序写比随机写要快得多，相比于分散的磁盘块，拥有更低的寻道时间。相关联的还有<code>碎片化</code>问题，由于B树是面向页的，也可能被分裂成多个页时，页中空间无法使用，导致碎片化。而SSTables的定期合并可以消除碎片话，拥有更加紧凑的数据表达方式。</p>
-<h3 id="lsm-tree的缺点">LSM-tree的缺点</h3>
-<ul>
-<li>压缩过程(I/O)中会干扰当前读写操作(I/O)，造成读写等待。</li>
-<li>另外B-tree的key在磁盘中，只有一个副本，而LSM-tree有多个。所以在关系型数据库中，B树可以直接定义锁在页中，完成键范围上的事务隔离。</li>
-</ul>
+</div><h4 id="开始监控一个程序运行">开始监控一个程序运行</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ perf stat -B dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/null <span class="nv">count</span><span class="o">=</span><span class="m">1000000</span>
+1000000+0 records in
+1000000+0 records out
+<span class="m">512000000</span> bytes <span class="o">(</span><span class="m">512</span> MB<span class="o">)</span> copied, 0.461866 s, 1.1 GB/s
+
+ Performance counter stats <span class="k">for</span> <span class="s1">&#39;dd if=/dev/zero of=/dev/null count=1000000&#39;</span>:
+
+            453.12 msec task-clock                <span class="c1">#    0.979 CPUs utilized</span>
+                <span class="m">43</span>      context-switches          <span class="c1">#    0.095 K/sec</span>
+                 <span class="m">0</span>      cpu-migrations            <span class="c1">#    0.000 K/sec</span>
+               <span class="m">216</span>      page-faults               <span class="c1">#    0.477 K/sec</span>
+   &lt;not supported&gt;      cycles
+   &lt;not supported&gt;      instructions
+   &lt;not supported&gt;      branches
+   &lt;not supported&gt;      branch-misses
+
+       0.462827938 seconds <span class="nb">time</span> elapsed
+
+       0.087344000 seconds user
+       0.366061000 seconds sys
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="火焰图">火焰图</h3>
+<p>利用<code>perf</code>工具还有一个比较方便的功能就是生成<a href="http://www.brendangregg.com/flamegraphs.html">火焰图</a>。</p>
+<p>例如，以上面的例子制作一个火焰图:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ git clone git@github.com:brendangregg/FlameGraph.git
+$ perf record -F <span class="m">99</span> -g dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/null <span class="nv">count</span><span class="o">=</span><span class="m">1000000</span>
+$ perf script &gt; out.perf
+$ FlameGraph/stackcollapse-perf.pl out.perf &gt; out.folded
+$ FlameGraph/flamegraph.pl out.folded &gt; myflame.svg
+</code></pre></td></tr></table>
+</div>
+</div><p>就能得到一个<code>dd</code>命令执行的调用过程：</p>
+<p><img src="/images/shell/flame.svg" alt="flame" /></p>
+<p>另外python有<code>pycallgraph</code>，golang也有<code>go tool pprof</code>工具进行性能剖析。</p>
+<h2 id="性能监控">性能监控</h2>
+<h3 id="资源概览">资源概览</h3>
+<p>除了经常使用的<code>top</code>，还有许多开源的可视化的工具也比较方便。</p>
+<h4 id="htop">htop</h4>
+<p><img src="/images/shell/htop.png" alt="htop" /></p>
+<h4 id="glances">glances</h4>
+<p><img src="/images/shell/glances.png" alt="glances" /></p>
+<h3 id="磁盘与io">磁盘与I/O</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># io监控</span>
+$ iotop
+
+<span class="c1"># 全局系统磁盘空间使用</span>
+df -h
+
+<span class="c1"># 指定目录占用情况</span>
+$ du -sh *
+
+<span class="c1"># 交互式磁盘占用工具</span>
+$ ncdu
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="内存">内存</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ free -h
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="打开的文件">打开的文件</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ lsof 
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="网络">网络</h3>
+<p>常用命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ ss
+$ ip 
+$ netstat
+$ ifconfig
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="网络使用情况">网络使用情况</h3>
+<h4 id="iftop">iftop</h4>
+<p><img src="/images/shell/nethogs/iftop.png" alt="iftop" /></p>
+<h4 id="nethogs">nethogs</h4>
+<p><img src="/images/shell/nethogs.png" alt="nethogs" /></p>
+<h2 id="misc">MISC</h2>
+<p>除了这些基本的命令外，还有一些杂项，比如比较两个命令哪个执行得比较快的工具<a href="https://www.hyperfine.io/">hyperfine</a>:</p>
+<p><img src="/images/shell/hyperfine.gif" alt="hyperfine" /></p>
+<p>还有 cgroup/taskset 等工具，其中cgroup需要单独拿出讲，cgroup在Docker中的资源隔离起着重要作用，先挖个坑。</p>
 <h2 id="参考">参考</h2>
 <ul>
-<li>《数据密集型应用系统设计》</li>
+<li><a href="https://missing.csail.mit.edu/2020/debugging-profiling/">https://missing.csail.mit.edu/2020/debugging-profiling/</a></li>
+</ul>
+<p>perf相关:</p>
+<ul>
+<li><a href="http://perf.wiki.kernel.org/index.php/Tutorial">http://perf.wiki.kernel.org/index.php/Tutorial</a></li>
+<li><a href="https://github.com/brendangregg/FlameGraph">https://github.com/brendangregg/FlameGraph</a></li>
+</ul>
+<p>hyperfine:</p>
+<ul>
+<li><a href="https://github.com/sharkdp/hyperfine">https://github.com/sharkdp/hyperfine</a></li>
 </ul>
 
     </article>
@@ -1552,13 +1730,13 @@ db_get<span class="o">(</span><span class="o">)</span> <span class="o">{</span>
     
     
       
-        <a href="https://www.facebook.com/sharer/sharer.php?u=%2fen%2fposts%2f%25E7%25AE%2597%25E6%25B3%2595%25E4%25B8%258E%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%2fb-tree-and-lsm-tree%2f" title="Facebook" aria-label="Facebook Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+        <a href="https://www.facebook.com/sharer/sharer.php?u=%2fen%2fposts%2f%25E7%258E%25AF%25E5%25A2%2583%25E9%2585%258D%25E7%25BD%25AE%25E7%25AC%2594%25E8%25AE%25B0%2f%25E5%25A6%2582%25E4%25BD%2595%25E8%25BF%259B%25E8%25A1%258C%25E6%2580%25A7%25E8%2583%25BD%25E7%259B%2591%25E6%258E%25A7%2f" title="Facebook" aria-label="Facebook Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
           <svg data-name="facebook" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m15.997 3.985h2.191v-3.816c-.378-.052-1.678-.169-3.192-.169-3.159 0-5.323 1.987-5.323 5.639v3.361h-3.486v4.266h3.486v10.734h4.274v-10.733h3.345l.531-4.266h-3.877v-2.939c.001-1.233.333-2.077 2.051-2.077z"/></svg>
         </a>
       
     
       
-        <a href="https://twitter.com/intent/tweet?text=B-tree%e5%92%8cLSM-tree&url=%2fen%2fposts%2f%25E7%25AE%2597%25E6%25B3%2595%25E4%25B8%258E%25E6%2595%25B0%25E6%258D%25AE%25E7%25BB%2593%25E6%259E%2584%2fb-tree-and-lsm-tree%2f&hashtags=LSM-tree%2cB-tree&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
+        <a href="https://twitter.com/intent/tweet?text=%e5%a6%82%e4%bd%95%e8%bf%9b%e8%a1%8c%e8%b0%83%e8%af%95%e4%bb%a5%e5%8f%8a%e6%80%a7%e8%83%bd%e7%9b%91%e6%8e%a7&url=%2fen%2fposts%2f%25E7%258E%25AF%25E5%25A2%2583%25E9%2585%258D%25E7%25BD%25AE%25E7%25AC%2594%25E8%25AE%25B0%2f%25E5%25A6%2582%25E4%25BD%2595%25E8%25BF%259B%25E8%25A1%258C%25E6%2580%25A7%25E8%2583%25BD%25E7%259B%2591%25E6%258E%25A7%2f&hashtags=shell%2cdebug%2cprofiling&via=fatqaq" title="Twitter" aria-label="Twitter Share Button" class="donation__item" target="_blank" rel="noreferrer" data-type="share">
           <svg data-name="twitter" enable-background="new 0 0 24 24" viewBox="0 0 24 24" width="35" height="35" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="m21.534 7.113c.976-.693 1.797-1.558 2.466-2.554v-.001c-.893.391-1.843.651-2.835.777 1.02-.609 1.799-1.566 2.165-2.719-.951.567-2.001.967-3.12 1.191-.903-.962-2.19-1.557-3.594-1.557-2.724 0-4.917 2.211-4.917 4.921 0 .39.033.765.114 1.122-4.09-.2-7.71-2.16-10.142-5.147-.424.737-.674 1.58-.674 2.487 0 1.704.877 3.214 2.186 4.089-.791-.015-1.566-.245-2.223-.606v.054c0 2.391 1.705 4.377 3.942 4.835-.401.11-.837.162-1.29.162-.315 0-.633-.018-.931-.084.637 1.948 2.447 3.381 4.597 3.428-1.674 1.309-3.8 2.098-6.101 2.098-.403 0-.79-.018-1.177-.067 2.18 1.405 4.762 2.208 7.548 2.208 8.683 0 14.342-7.244 13.986-14.637z"/></svg>
         </a>
       
@@ -1658,26 +1836,34 @@ db_get<span class="o">(</span><span class="o">)</span> <span class="o">{</span>
     <section class="related">
     
     
+    <h1 class="related__title">
+      <hr class="hr-dots"/>
+      <div>
+        See Also
+      </div>
+      <hr class="hr-dots"/>
+    </h1>
+    <ul class="related-ul">
+        
+        <li>
+          <a href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/" class="related__link">Shell Tools and Scripting</a>
+        </li>
+        
+    </ul>
+    
   </section>
     <div class="grow"></div>
 <nav class="pagination-single">
   
     
-      <a href="/en/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/" class="pagination-single__left">
+      <a href="/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/" class="pagination-single__left">
         <div class="pagination-single__icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
         </div>
-        <div class="pagination-single__left-title">Golang原生RPC与gPRC</div>      
+        <div class="pagination-single__left-title">B-tree和LSM-tree</div>      
       </a>
     
     <div class="grow"></div>
-    
-      <a href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/" class="pagination-single__right">      
-        <div class="pagination-single__right-title">如何进行调试以及性能监控</div>
-        <div class="pagination-single__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path fill="currentColor" d="M5 13h11.17l-4.88 4.88c-.39.39-.39 1.03 0 1.42.39.39 1.02.39 1.41 0l6.59-6.59c.39-.39.39-1.02 0-1.41l-6.58-6.6c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L16.17 11H5c-.55 0-1 .45-1 1s.45 1 1 1z"/></svg>
-        </div>
-      </a>
     
   
 </nav>
@@ -2646,7 +2832,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
           
             
-              <a href="/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/" data-lang="en" class="dropdown-item is-active">English</a>
+              <a href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/" data-lang="en" class="dropdown-item is-active">English</a>
             
           
         
@@ -2716,7 +2902,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
     
     
-  <a href="/en/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree//index.xml" type="application/rss+xml" title="rss" aria-label="RSS Feed Link">
+  <a href="/en/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7//index.xml" type="application/rss+xml" title="rss" aria-label="RSS Feed Link">
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><circle fill="currentColor" cx="6.18" cy="17.82" r="2.18"/><path fill="currentColor" d="M5.59 10.23c-.84-.14-1.59.55-1.59 1.4 0 .71.53 1.28 1.23 1.4 2.92.51 5.22 2.82 5.74 5.74.12.7.69 1.23 1.4 1.23.85 0 1.54-.75 1.41-1.59-.68-4.2-3.99-7.51-8.19-8.18zm-.03-5.71C4.73 4.43 4 5.1 4 5.93c0 .73.55 1.33 1.27 1.4 6.01.6 10.79 5.38 11.39 11.39.07.73.67 1.28 1.4 1.28.84 0 1.5-.73 1.42-1.56-.73-7.34-6.57-13.19-13.92-13.92z"/></svg>
   </a>
 
@@ -2770,31 +2956,29 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="toc toc__outer " data-dir="ltr" data-folding="false">
           <nav id="TableOfContents">
   <ul>
-    <li><a href="#最初的数据库">最初的数据库</a>
+    <li><a href="#日志分级">日志分级</a></li>
+    <li><a href="#debug-工具">debug 工具</a></li>
+    <li><a href="#backtrace">backtrace</a></li>
+    <li><a href="#静态分析">静态分析</a></li>
+    <li><a href="#性能剖析">性能剖析</a>
       <ul>
-        <li><a href="#读取优化">读取优化</a></li>
-        <li><a href="#存储优化">存储优化</a></li>
-        <li><a href="#其他">其他</a></li>
+        <li><a href="#cpu">CPU</a></li>
+        <li><a href="#内存占用">内存占用</a></li>
+        <li><a href="#事件采样">事件采样</a></li>
+        <li><a href="#火焰图">火焰图</a></li>
       </ul>
     </li>
-    <li><a href="#sstables">SSTables</a>
+    <li><a href="#性能监控">性能监控</a>
       <ul>
-        <li><a href="#构建和维护sstables">构建和维护SSTables</a></li>
-        <li><a href="#优化sstables">优化SSTables</a></li>
+        <li><a href="#资源概览">资源概览</a></li>
+        <li><a href="#磁盘与io">磁盘与I/O</a></li>
+        <li><a href="#内存">内存</a></li>
+        <li><a href="#打开的文件">打开的文件</a></li>
+        <li><a href="#网络">网络</a></li>
+        <li><a href="#网络使用情况">网络使用情况</a></li>
       </ul>
     </li>
-    <li><a href="#lsm-tree和sstables">LSM-tree和SSTables</a></li>
-    <li><a href="#b-tree">B-tree</a>
-      <ul>
-        <li><a href="#优化b-tree">优化B-tree</a></li>
-      </ul>
-    </li>
-    <li><a href="#lsm-tree和b-tree的优劣">LSM-tree和B-tree的优劣</a>
-      <ul>
-        <li><a href="#lsm-tree的优点">LSM-tree的优点</a></li>
-        <li><a href="#lsm-tree的缺点">LSM-tree的缺点</a></li>
-      </ul>
-    </li>
+    <li><a href="#misc">MISC</a></li>
     <li><a href="#参考">参考</a></li>
   </ul>
 </nav>

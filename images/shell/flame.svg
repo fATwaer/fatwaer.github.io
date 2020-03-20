@@ -1,0 +1,520 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="214" onload="init(evt)" viewBox="0 0 1200 214" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+	}
+
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom();
+			zoom(target);
+		}
+		else if (e.target.id == "unzoom") unzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+	}, false)
+
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+		return;
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		// Fit in full text width
+		if (/^ *$/.test(txt) || t.getSubStringLength(0, txt.length) < w)
+			return;
+
+		for (var x = txt.length - 2; x > 0; x--) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom() {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			update_text(el[i]);
+		}
+		search();
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) {
+				currentSearchTerm = term;
+				search();
+			}
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (currentSearchTerm === null) return;
+		var term = currentSearchTerm;
+
+		var re = new RegExp(term, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="214.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="197" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="197" > </text>
+<g id="frames">
+<g >
+<title>auditsys (1 samples, 2.56%)</title><rect x="524.4" y="117" width="30.2" height="15.0" fill="rgb(208,92,32)" rx="2" ry="2" />
+<text  x="527.36" y="127.5" >au..</text>
+</g>
+<g >
+<title>__audit_syscall_exit (3 samples, 7.69%)</title><rect x="554.6" y="101" width="90.8" height="15.0" fill="rgb(214,71,32)" rx="2" ry="2" />
+<text  x="557.62" y="111.5" >__audit_sy..</text>
+</g>
+<g >
+<title>read_zero.part.5 (5 samples, 12.82%)</title><rect x="312.6" y="53" width="151.2" height="15.0" fill="rgb(233,227,32)" rx="2" ry="2" />
+<text  x="315.56" y="63.5" >read_zero.part.5</text>
+</g>
+<g >
+<title>fsnotify (6 samples, 15.38%)</title><rect x="796.7" y="69" width="181.5" height="15.0" fill="rgb(219,60,38)" rx="2" ry="2" />
+<text  x="799.67" y="79.5" >fsnotify</text>
+</g>
+<g >
+<title>read_zero (7 samples, 17.95%)</title><rect x="252.1" y="69" width="211.7" height="15.0" fill="rgb(254,66,36)" rx="2" ry="2" />
+<text  x="255.05" y="79.5" >read_zero</text>
+</g>
+<g >
+<title>_cond_resched (1 samples, 2.56%)</title><rect x="282.3" y="53" width="30.3" height="15.0" fill="rgb(228,76,44)" rx="2" ry="2" />
+<text  x="285.31" y="63.5" >_c..</text>
+</g>
+<g >
+<title>kfree (1 samples, 2.56%)</title><rect x="100.8" y="101" width="30.2" height="15.0" fill="rgb(219,197,40)" rx="2" ry="2" />
+<text  x="103.77" y="111.5" >kf..</text>
+</g>
+<g >
+<title>vfs_read (10 samples, 25.64%)</title><rect x="221.8" y="85" width="302.6" height="15.0" fill="rgb(243,91,47)" rx="2" ry="2" />
+<text  x="224.79" y="95.5" >vfs_read</text>
+</g>
+<g >
+<title>rw_verify_area (3 samples, 7.69%)</title><rect x="978.2" y="69" width="90.8" height="15.0" fill="rgb(210,34,1)" rx="2" ry="2" />
+<text  x="981.21" y="79.5" >rw_verify_..</text>
+</g>
+<g >
+<title>__GI___libc_read (17 samples, 43.59%)</title><rect x="10.0" y="133" width="514.4" height="15.0" fill="rgb(230,25,20)" rx="2" ry="2" />
+<text  x="13.00" y="143.5" >__GI___libc_read</text>
+</g>
+<g >
+<title>__clear_user (5 samples, 12.82%)</title><rect x="312.6" y="37" width="151.2" height="15.0" fill="rgb(209,45,39)" rx="2" ry="2" />
+<text  x="315.56" y="47.5" >__clear_user</text>
+</g>
+<g >
+<title>sysret_audit (4 samples, 10.26%)</title><rect x="10.0" y="117" width="121.0" height="15.0" fill="rgb(224,36,28)" rx="2" ry="2" />
+<text  x="13.00" y="127.5" >sysret_audit</text>
+</g>
+<g >
+<title>__clear_user (1 samples, 2.56%)</title><rect x="252.1" y="53" width="30.2" height="15.0" fill="rgb(246,216,19)" rx="2" ry="2" />
+<text  x="255.05" y="63.5" >__..</text>
+</g>
+<g >
+<title>__memcpy_ssse3_back (4 samples, 10.26%)</title><rect x="1069.0" y="133" width="121.0" height="15.0" fill="rgb(250,151,45)" rx="2" ry="2" />
+<text  x="1071.97" y="143.5" >__memcpy_ssse3_..</text>
+</g>
+<g >
+<title>unroll_tree_refs (1 samples, 2.56%)</title><rect x="645.4" y="101" width="30.2" height="15.0" fill="rgb(245,58,38)" rx="2" ry="2" />
+<text  x="648.38" y="111.5" >un..</text>
+</g>
+<g >
+<title>__GI___libc_write (18 samples, 46.15%)</title><rect x="524.4" y="133" width="544.6" height="15.0" fill="rgb(227,36,8)" rx="2" ry="2" />
+<text  x="527.36" y="143.5" >__GI___libc_write</text>
+</g>
+<g >
+<title>security_file_permission (1 samples, 2.56%)</title><rect x="494.1" y="53" width="30.3" height="15.0" fill="rgb(235,110,32)" rx="2" ry="2" />
+<text  x="497.10" y="63.5" >se..</text>
+</g>
+<g >
+<title>system_call_after_swapgs (1 samples, 2.56%)</title><rect x="131.0" y="117" width="30.3" height="15.0" fill="rgb(226,81,12)" rx="2" ry="2" />
+<text  x="134.03" y="127.5" >sy..</text>
+</g>
+<g >
+<title>system_call_fastpath (12 samples, 30.77%)</title><rect x="161.3" y="117" width="363.1" height="15.0" fill="rgb(233,110,38)" rx="2" ry="2" />
+<text  x="164.28" y="127.5" >system_call_fastpath</text>
+</g>
+<g >
+<title>system_call_after_swapgs (1 samples, 2.56%)</title><rect x="675.6" y="117" width="30.3" height="15.0" fill="rgb(237,78,40)" rx="2" ry="2" />
+<text  x="678.64" y="127.5" >sy..</text>
+</g>
+<g >
+<title>sysret_audit (4 samples, 10.26%)</title><rect x="554.6" y="117" width="121.0" height="15.0" fill="rgb(207,75,45)" rx="2" ry="2" />
+<text  x="557.62" y="127.5" >sysret_audit</text>
+</g>
+<g >
+<title>fget_light (1 samples, 2.56%)</title><rect x="161.3" y="101" width="30.2" height="15.0" fill="rgb(228,208,40)" rx="2" ry="2" />
+<text  x="164.28" y="111.5" >fg..</text>
+</g>
+<g >
+<title>sys_write (11 samples, 28.21%)</title><rect x="736.2" y="101" width="332.8" height="15.0" fill="rgb(216,35,43)" rx="2" ry="2" />
+<text  x="739.15" y="111.5" >sys_write</text>
+</g>
+<g >
+<title>all (39 samples, 100%)</title><rect x="10.0" y="165" width="1180.0" height="15.0" fill="rgb(225,134,48)" rx="2" ry="2" />
+<text  x="13.00" y="175.5" ></text>
+</g>
+<g >
+<title>__srcu_read_lock (1 samples, 2.56%)</title><rect x="857.2" y="53" width="30.2" height="15.0" fill="rgb(253,71,14)" rx="2" ry="2" />
+<text  x="860.18" y="63.5" >__..</text>
+</g>
+<g >
+<title>system_call_fastpath (12 samples, 30.77%)</title><rect x="705.9" y="117" width="363.1" height="15.0" fill="rgb(230,46,13)" rx="2" ry="2" />
+<text  x="708.90" y="127.5" >system_call_fastpath</text>
+</g>
+<g >
+<title>__audit_syscall_exit (3 samples, 7.69%)</title><rect x="10.0" y="101" width="90.8" height="15.0" fill="rgb(208,189,34)" rx="2" ry="2" />
+<text  x="13.00" y="111.5" >__audit_sy..</text>
+</g>
+<g >
+<title>sys_read (11 samples, 28.21%)</title><rect x="191.5" y="101" width="332.9" height="15.0" fill="rgb(224,74,29)" rx="2" ry="2" />
+<text  x="194.54" y="111.5" >sys_read</text>
+</g>
+<g >
+<title>__srcu_read_unlock (3 samples, 7.69%)</title><rect x="887.4" y="53" width="90.8" height="15.0" fill="rgb(224,91,16)" rx="2" ry="2" />
+<text  x="890.44" y="63.5" >__srcu_rea..</text>
+</g>
+<g >
+<title>vfs_write (9 samples, 23.08%)</title><rect x="796.7" y="85" width="272.3" height="15.0" fill="rgb(207,123,44)" rx="2" ry="2" />
+<text  x="799.67" y="95.5" >vfs_write</text>
+</g>
+<g >
+<title>__fsnotify_parent (1 samples, 2.56%)</title><rect x="494.1" y="37" width="30.3" height="15.0" fill="rgb(218,164,54)" rx="2" ry="2" />
+<text  x="497.10" y="47.5" >__..</text>
+</g>
+<g >
+<title>dd (39 samples, 100.00%)</title><rect x="10.0" y="149" width="1180.0" height="15.0" fill="rgb(254,134,8)" rx="2" ry="2" />
+<text  x="13.00" y="159.5" >dd</text>
+</g>
+<g >
+<title>fsnotify (1 samples, 2.56%)</title><rect x="463.8" y="53" width="30.3" height="15.0" fill="rgb(228,225,30)" rx="2" ry="2" />
+<text  x="466.85" y="63.5" >fs..</text>
+</g>
+<g >
+<title>rw_verify_area (2 samples, 5.13%)</title><rect x="463.8" y="69" width="60.6" height="15.0" fill="rgb(242,219,4)" rx="2" ry="2" />
+<text  x="466.85" y="79.5" >rw_ver..</text>
+</g>
+<g >
+<title>read_zero (1 samples, 2.56%)</title><rect x="191.5" y="85" width="30.3" height="15.0" fill="rgb(235,204,22)" rx="2" ry="2" />
+<text  x="194.54" y="95.5" >re..</text>
+</g>
+<g >
+<title>fget_light (1 samples, 2.56%)</title><rect x="705.9" y="101" width="30.3" height="15.0" fill="rgb(213,207,20)" rx="2" ry="2" />
+<text  x="708.90" y="111.5" >fg..</text>
+</g>
+</g>
+</svg>
