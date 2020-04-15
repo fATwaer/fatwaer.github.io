@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>线程同步 - fatwaer</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="fatwaer&#39;s blog">
+    <meta property="og:site_name" content="fatwaer" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/blog/c-i-c&#43;&#43;/thread-synchronization/" />
+    <meta property="og:title" content="线程同步" />
+    <meta property="og:image" content="//images/whoami/5.jpg" />
+    <meta property="og:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <meta property="twitter:title" content="线程同步" />
+    <meta property="twitter:image" content="//images/whoami/5.jpg" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <link rel="canonical" href="/blog/c-i-c&#43;&#43;/thread-synchronization/">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css" />
+    
+    
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="/images/whoami/5.jpg">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="fatwaer" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+    
+
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="/images/whoami/5.jpg" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        fatwaer
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://404.html">
+                                
+                                Click me
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    <h1 class="mx-0 mx-md-4">
+                        线程同步
+                    </h1>
+
+                    <div class="mb-4 mb-md-5 meta">
+                        <span class="date" title='Mon Oct 15 2018 08:36:39 UTC'>
+                            October 15, 2018
+                        </span>
+
+                        
+                            
+                        
+
+                        <span class="reading-time middot">
+                            3 minutes
+                        </span>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                            </ul>
+                        </div>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="markdown">
+                        
+    
+    <p>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。</p>
+<p><img src="/images/apue/c11/threadop.png" alt="thread"></p>
+<p>在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> job {
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>j_next;
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>j_prev;
+    pthread_t   j_id;
+    <span style="color:#75715e">/** job */</span>
+    <span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>j_add)(<span style="color:#66d9ef">int</span>);
+    <span style="color:#66d9ef">int</span>         j_num;
+};
+</code></pre></div><p>然后写一个简单的作业函数，完成<code>j_num</code>的累加工作，已经初始化结构体<code>job</code>的作业分配函数，并且将这个作业加入到作业队列中去：</p>
+<ul>
+<li>累加函数</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">add</span>(<span style="color:#66d9ef">int</span> i)
+{
+    <span style="color:#66d9ef">int</span> sum;
+
+    sum <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">while</span> (i)
+        sum <span style="color:#f92672">+</span><span style="color:#f92672">=</span> i<span style="color:#f92672">-</span><span style="color:#f92672">-</span>;
+
+    <span style="color:#66d9ef">return</span> sum;
+}
+</code></pre></div><ul>
+<li>作业分配</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">job_alloc</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>qp, <span style="color:#66d9ef">int</span> num)
+{
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>jp;
+
+    <span style="color:#66d9ef">if</span> ((jp <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>)malloc(<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> job))) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL)
+        <span style="color:#66d9ef">return</span> (NULL);
+
+    jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_add <span style="color:#f92672">=</span> add;
+    jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_num <span style="color:#f92672">=</span> num;
+    jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id <span style="color:#f92672">=</span> pthread_self();
+    job_insert(qp, jp);
+
+    <span style="color:#66d9ef">return</span> (jp);
+}
+</code></pre></div><p>然后可以创建一个线程去完成作业分配工作，生成一个待执行的作业队列，虽然在这里使用主线程来创建会更好。</p>
+<ul>
+<li>开启线程以及队列初始化</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#66d9ef">struct</span> queue qn;
+    <span style="color:#66d9ef">int</span> err;
+    pthread_t tid1, tid2;
+   
+    queue_init(<span style="color:#f92672">&amp;</span>qn);
+
+    setbuf(stdout, NULL);
+    err <span style="color:#f92672">=</span> pthread_create(<span style="color:#f92672">&amp;</span>tid1, NULL, th_func1, <span style="color:#f92672">&amp;</span>qn);
+    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        err_exit(err, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread create error</span><span style="color:#e6db74">&#34;</span>);
+    pthread_join(tid1, NULL);
+</code></pre></div><ul>
+<li>线程例程</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">th_func1</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg)
+{
+    job_alloc((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, <span style="color:#ae81ff">10</span>);
+    job_alloc((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, <span style="color:#ae81ff">9</span>);
+    job_alloc((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, <span style="color:#ae81ff">8</span>);
+    job_alloc((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, <span style="color:#ae81ff">7</span>);
+
+    <span style="color:#66d9ef">return</span> ((<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)<span style="color:#ae81ff">0</span>);
+}
+</code></pre></div><p>题目中有提到，需要将线程挂起然后修改作业对应的线程ID，之后要继续执行进行验证，在这里先排除信号量，因为信号量是用在多进程同步，异常的一种机制；所以选择条件变量实现线程的唤醒操作，然后定义一个枚举量来判断多线程处于挂起还是运行状态，如果线程发现这个全局枚举量是处于运行状态，从作业队列中用<code>job_find</code>找到一个作业，并且使用<code>job_remove</code>从作业队列中移除。</p>
+<ul>
+<li>条件变量和枚举量</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">/** thread suspend mutex*/</span>
+pthread_cond_t jready <span style="color:#f92672">=</span> PTHREAD_COND_INITIALIZER;
+pthread_mutex_t statmtx <span style="color:#f92672">=</span> PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t b;
+<span style="color:#66d9ef">enum</span> status {
+    STOP    <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+    RUNNING <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+};
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">enum</span> status t1st <span style="color:#f92672">=</span> STOP;
+</code></pre></div><ul>
+<li>作业线程例程</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">th_func2</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg)
+{
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>jp;
+    <span style="color:#66d9ef">int</span> sum;
+
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>statmtx);
+    <span style="color:#66d9ef">while</span> (t1st <span style="color:#f92672">=</span><span style="color:#f92672">=</span> STOP) {
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread %lu is waiting resource..</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)pthread_self());  
+
+        pthread_cond_wait(<span style="color:#f92672">&amp;</span>jready, <span style="color:#f92672">&amp;</span>statmtx);
+
+        <span style="color:#75715e">/** when the pthread recived the signal, it will test the while loop confidion fisrt*/</span>
+    }
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread %lu is going to run</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)pthread_self());
+    pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>statmtx);
+
+
+
+    jp <span style="color:#f92672">=</span> job_find((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, pthread_self());
+    job_remove((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, jp);
+
+    <span style="color:#75715e">/** processing job */</span>
+    sum <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_add(jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_num);
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread %lu caculate %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)pthread_self(), sum);
+
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">return = %d, tid = %lu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pthread_barrier_wait(<span style="color:#f92672">&amp;</span>b), (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)pthread_self());
+
+</code></pre></div><p>全局枚举量已经将状态设置为了暂停状态，所以线程一进入例程，就将挂起等待条件变量发生改变，恢复函数应该将枚举量提前设置为运行状态，因为当<code>pthread_cond_wait()</code>函数在接收到条件变量发生变化时，只是唤醒线程，不能跳出while循环。</p>
+<ul>
+<li>修改线程ID</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">modify_tid</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>qp, pthread_t tid1, pthread_t tid2)
+{
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>jp;
+
+    pthread_rwlock_wrlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+
+    <span style="color:#66d9ef">for</span> (jp <span style="color:#f92672">=</span> qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_head; jp <span style="color:#f92672">!</span><span style="color:#f92672">=</span> NULL; jp <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next)
+        <span style="color:#66d9ef">if</span> (pthread_equal(jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id, tid1))
+            <span style="color:#66d9ef">break</span>;
+    jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id <span style="color:#f92672">=</span> tid2;
+
+    pthread_rwlock_unlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>在线程唤醒之前，将ID修改为tid2指定的数值，让新创建的线程能在工作队列中找到设置好的对应作业。</p>
+<ul>
+<li>线程恢复</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">th_resume</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#66d9ef">if</span> (t1st <span style="color:#f92672">=</span><span style="color:#f92672">=</span> STOP) {
+        pthread_mutex_lock(<span style="color:#f92672">&amp;</span>statmtx);
+        t1st <span style="color:#f92672">=</span> RUNNING;
+        pthread_cond_broadcast(<span style="color:#f92672">&amp;</span>jready);
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread resume signal send..</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>statmtx);
+    }
+}
+</code></pre></div><p>简单地把状态设置为运行，并且广播条件变量已经发生了改变。</p>
+<ul>
+<li>多线程创建和恢复运行线程</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    pthread_barrier_init(<span style="color:#f92672">&amp;</span>b, NULL, <span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>);
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>)
+    {
+        err <span style="color:#f92672">=</span> pthread_create(<span style="color:#f92672">&amp;</span>tid2, NULL, th_func2, <span style="color:#f92672">&amp;</span>qn);
+        <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+            err_exit(err, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread create error</span><span style="color:#e6db74">&#34;</span>);
+
+        modify_tid(<span style="color:#f92672">&amp;</span>qn, tid1, tid2);
+    }
+    th_resume();
+    pthread_barrier_wait(<span style="color:#f92672">&amp;</span>b);
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-preposition.c">11-2-preposition.c</a></p>
+<p><img src="/images/apue/c11/11-2-1.png" alt="线程工作"></p>
+<p>多个线程按照想象中的情况从作业队列中取出不同的作业，然后从队列中删去通过<code>job_find()</code>找到的作业，并且调用登记在结构体中的函数进行累加，最后在<code>pthread_barrier_wait()</code>处进行同步。值得注意的是，虽然在这里一共开了4个线程，但是调用<code>pthread_barrier_init()</code>进行初始化的时候，将屏障需要等待的线程数设置为5，因为是把主线程也算了进去。还有一个有意思的地方是，总有一个线程在到达屏障的时候返回<code>-1</code>，是因为这个值实际上代表的是<code>PTHREAD_BARRIER_SERIAL_THREAD</code>宏，说明这个线程来执行多个线程的归并操作。</p>
+<p>通过书上给的代码，已经实现了一个多线程处理作业队列的操作，并且修改了暂停线程的ID，使得对应线程能从工作队列中得到作业。那么回到题目问到的问题上，这样会对<code>job_remove</code>产生什么影响？试想这样一种情况，当一个线程已经被唤醒了，然后去调用<code>job_find</code>函数寻找相应ID的作业，使得线程的工作指针<code>jp</code>指向改结构体，但是此时发生了调度或者系统拥塞事件，这时调用了修改之前修改线程id的函数<code>modify_tid</code>，使得描述该作业的结构体的线程ID被填写为另外一个线程的线程ID，现在的情况就变成两个线程的工作指针<code>jp</code>都指向了同一个结构体，并且准备执行<code>job_remove</code>，这时候任意一个线程先执行，后者都会产生段错误（一般是对NULL指针解引用）。现在修改之前代码来模拟这种情况:</p>
+<p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-expt.c">11-2-exception.c</a></p>
+<ul>
+<li>模拟拥塞或者调度</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    jp <span style="color:#f92672">=</span> job_find((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, pthread_self());
+    sleep(<span style="color:#ae81ff">5</span>);
+    job_remove((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, jp);
+
+</code></pre></div><ul>
+<li>修改ID</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    err <span style="color:#f92672">=</span> pthread_create(<span style="color:#f92672">&amp;</span>tid1, NULL, th_func1, <span style="color:#f92672">&amp;</span>qn);
+    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        err_exit(err, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread create error</span><span style="color:#e6db74">&#34;</span>);
+    pthread_join(tid1, NULL);
+
+
+    err <span style="color:#f92672">=</span> pthread_create(<span style="color:#f92672">&amp;</span>tid2, NULL, th_func2, <span style="color:#f92672">&amp;</span>qn);
+    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        err_exit(err, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread create error</span><span style="color:#e6db74">&#34;</span>);
+
+    modify_tid(<span style="color:#f92672">&amp;</span>qn, tid1, tid2);
+    th_resume();
+    sleep(<span style="color:#ae81ff">1</span>);  <span style="color:#75715e">/** important here*/</span>
+    th_suspend();
+    err <span style="color:#f92672">=</span> pthread_create(<span style="color:#f92672">&amp;</span>tid3, NULL, th_func2, <span style="color:#f92672">&amp;</span>qn);
+    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        err_exit(err, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">thread create error</span><span style="color:#e6db74">&#34;</span>);
+    modify_tid(<span style="color:#f92672">&amp;</span>qn, tid2, tid3);
+    th_resume();
+
+    sleep(<span style="color:#ae81ff">10</span>);
+</code></pre></div><p>结果和前面所述的情况一样，两次<code>remove</code>引发了段错误。</p>
+<p><img src="/images/apue/c11/11-2-2.png" alt="引发的段错误"></p>
+<p>根据提示，可以使用引用计数和一个嵌入结构体的互斥量来解决这个问题，在<code>job_find()</code>的时候对引用计数进行加一，在<code>job_remove</code>的时候检查引用计数，知道引用计数为0才实际从作业队列中移除。</p>
+<ul>
+<li>修改结构体</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> job {
+    <span style="color:#66d9ef">struct</span> job     <span style="color:#f92672">*</span>j_next;
+    <span style="color:#66d9ef">struct</span> job     <span style="color:#f92672">*</span>j_prev;
+    pthread_t       j_id;
+    <span style="color:#75715e">/**mutex and reference count*/</span>
+    pthread_mutex_t j_mtx;
+    <span style="color:#66d9ef">int</span>             j_count;
+    <span style="color:#75715e">/** job */</span>
+    <span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>j_add)(<span style="color:#66d9ef">int</span>);
+    <span style="color:#66d9ef">int</span>             j_num;
+};
+</code></pre></div><ul>
+<li>job_find</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">job_find</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>qp, pthread_t id)
+{
+    <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>jp;
+
+    <span style="color:#66d9ef">if</span> (pthread_rwlock_rdlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock) <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+        <span style="color:#66d9ef">return</span> (NULL);
+
+    <span style="color:#66d9ef">for</span> (jp <span style="color:#f92672">=</span> qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_head; jp <span style="color:#f92672">!</span><span style="color:#f92672">=</span> NULL; jp <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next)
+    {
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">head %p now %p </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">  |-job_id %lu cur_id %lu</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_head, jp, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)id);
+        <span style="color:#66d9ef">if</span> (pthread_equal(jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id, id))
+        {
+            pthread_mutex_lock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+            jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_count<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;
+            pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+            <span style="color:#66d9ef">break</span>;
+        }
+
+    }
+
+    pthread_rwlock_unlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+    <span style="color:#66d9ef">return</span> (jp);
+}
+</code></pre></div><ul>
+<li>job_remove</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">job_remove</span>(<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>qp, <span style="color:#66d9ef">struct</span> job <span style="color:#f92672">*</span>jp)
+{
+    pthread_mutex_lock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+    <span style="color:#66d9ef">if</span> (jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_count <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>) {
+        <span style="color:#75715e">/** avoid deadlock*/</span>
+        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+        pthread_rwlock_wrlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+        pthread_mutex_lock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+
+        <span style="color:#66d9ef">if</span> (jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_count <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>) {
+            jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_count<span style="color:#f92672">-</span><span style="color:#f92672">-</span>;
+            pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+            pthread_rwlock_unlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+        }
+
+        <span style="color:#66d9ef">if</span> (jp <span style="color:#f92672">=</span><span style="color:#f92672">=</span> qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_head) {
+            qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_head <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next;
+            <span style="color:#66d9ef">if</span> (qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_tail <span style="color:#f92672">=</span><span style="color:#f92672">=</span> jp)
+                qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_tail <span style="color:#f92672">=</span> NULL;
+            <span style="color:#66d9ef">else</span>
+                jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev;
+        } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (jp <span style="color:#f92672">=</span><span style="color:#f92672">=</span> qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_tail) {
+            qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_tail <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev;
+            jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next;
+        } <span style="color:#66d9ef">else</span> {
+            jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next;
+            jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_next<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev <span style="color:#f92672">=</span> jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_prev;
+        }
+        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+        pthread_rwlock_unlock(<span style="color:#f92672">&amp;</span>qp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>q_lock);
+    } <span style="color:#66d9ef">else</span> {
+        jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_count<span style="color:#f92672">-</span><span style="color:#f92672">-</span>;
+        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_mtx);
+    }
+}
+</code></pre></div><p>并且稍微修改下线程的例程，重新检测线程ID是否发生了改变：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {
+    jp <span style="color:#f92672">=</span> job_find((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, pthread_self());
+    sleep(<span style="color:#ae81ff">5</span>);
+    job_remove((<span style="color:#66d9ef">struct</span> queue <span style="color:#f92672">*</span>)arg, jp);
+
+    <span style="color:#66d9ef">if</span> (jp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>j_id <span style="color:#f92672">=</span><span style="color:#f92672">=</span> pthread_self())
+        <span style="color:#66d9ef">break</span>;
+} 
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2.c">11-2.c</a></p>
+<p>运行结果如下，现在两个线程可以正常的从作业队列中取作业页并且执行工作了，但是这并不是最好调度方式，如果发生了这样的问题，很大程度上是接口没有设计好，应对这样的问题书中也做了提醒，要为结构体的空间留下空位，以便以后进行拓展。</p>
+<p><img src="/images/apue/c11/11-2-3.png" alt="修复后的结果"></p>
+
+
+
+                    </div>
+                </div>
+
+                
+                    <div class="col-sm-12 col-md-3">
+                        <nav id="TableOfContents" class="sticky-top"></nav>
+                    </div>
+                
+            </div>
+
+            <div class="row">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    
+                        <div class="navigation">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-left">
+                                            <a href="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/">
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225 c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z" />
+    </svg>
+</span>
+
+                                                <span class="text">算法与数据结构总结</span>
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-right">
+                                            <a href="/blog/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/">
+                                                <span class="text">Core Java for DataBase</span>
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5 c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z" />
+    </svg>
+</span>
+
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+
+                    
+                        
+                            <a href="https://www.fatwaer.store">@Powered by Hugo and the alageek theme</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/go.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C&#43;&#43;.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

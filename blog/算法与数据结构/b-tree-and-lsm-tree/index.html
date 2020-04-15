@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>B-tree和LSM-tree - fatwaer</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="fatwaer&#39;s blog">
+    <meta property="og:site_name" content="fatwaer" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/" />
+    <meta property="og:title" content="B-tree和LSM-tree" />
+    <meta property="og:image" content="//images/whoami/5.jpg" />
+    <meta property="og:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <meta property="twitter:title" content="B-tree和LSM-tree" />
+    <meta property="twitter:image" content="//images/whoami/5.jpg" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <link rel="canonical" href="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css" />
+    
+    
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="/images/whoami/5.jpg">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="fatwaer" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+    
+
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="/images/whoami/5.jpg" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        fatwaer
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://404.html">
+                                
+                                Click me
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    <h1 class="mx-0 mx-md-4">
+                        B-tree和LSM-tree
+                    </h1>
+
+                    <div class="mb-4 mb-md-5 meta">
+                        <span class="date" title='Wed Mar 18 2020 22:29:40 CST'>
+                            March 18, 2020
+                        </span>
+
+                        
+                            
+                        
+
+                        <span class="reading-time middot">
+                            1 minute
+                        </span>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/lsm-tree">LSM-tree</a>
+                                    </li>
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/b-tree">B-tree</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="markdown">
+                        
+    
+    <h2 id="最初的数据库">最初的数据库</h2>
+<p>LSM-tree得从最简单的数据库的shell实现说起，如：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#75715e">#! /bin/bash
+</span><span style="color:#75715e"></span>
+db_set<span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    echo <span style="color:#e6db74">&#34;</span>$1<span style="color:#e6db74">,</span>$2<span style="color:#e6db74">&#34;</span> &gt;&gt; database
+<span style="color:#f92672">}</span>
+
+db_get<span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    grep <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">^</span>$1<span style="color:#e6db74">,</span><span style="color:#e6db74">&#34;</span> database | sed -e <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">s/^</span>$1<span style="color:#e6db74">,//</span><span style="color:#e6db74">&#34;</span> | tail -n <span style="color:#ae81ff">1</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p><code>db_set</code>将两个参数简单追加<code>database</code>文件，而<code>db_get</code>利用匹配出来的结果去掉key和逗号得到value，再利用tail获取到最set到database中去。</p>
+<h3 id="读取优化">读取优化</h3>
+<p>很明显，由于是追加写也是最简单的写操作，这种set方式通常足够高效，但是对于get，事件复杂度就需要上升到O(n)，所以最常见的想法是对数据追加索引，比如利用哈希表在内存中设置一个key，而key对应的value设置为该key/value在文件中的偏移。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>byte offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>abc</td>
+<td>0</td>
+</tr>
+<tr>
+<td>b</td>
+<td>64</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td>&hellip;</td>
+</tr>
+<tr>
+<td>aacb</td>
+<td>3613</td>
+</tr>
+</tbody>
+</table>
+<p>就有类似于这样一个哈希表存储在内存中，这也就是<code>Bitcask</code>的核心做法，只需要一次磁盘寻址就可以加载到这个value，适合每个键的值频繁更新的场景。</p>
+<h3 id="存储优化">存储优化</h3>
+<p>因为都会往同一个文件追加文件，所以设置键的写入，会造成磁盘空间用尽。解决办法是将日志分解成一定大小的段，文件到达一定大小就关闭，后续的写入写到新的段文件中，读请求仍旧使用旧段文件，当后台线程将后台文件合并/压缩后，读请求就能切换到新的合并段上，旧段文件安全删除。</p>
+<h3 id="其他">其他</h3>
+<ul>
+<li>文件格式：替换类似于CSV的字符格式为二进制格式。</li>
+<li>删除记录：追加删除标记，当合并时检测到这个标记丢弃响应的key</li>
+<li>崩溃恢复：这个主要针对存储在内存中的哈希表，当机器宕机后，哈希表将会丢失，重启恢复需要重新读取所有的段文件才能恢复，Bitcask的做法时将相应段的哈希表快照存储磁盘中。</li>
+<li>记录写入：写入操作的过程中如果发送了崩溃，那么最新的值将是不完整的，可以在一条记录前追加校验，如果损毁就需要丢弃。</li>
+<li>并发控制：写入需要按先后顺序写入，所以写线程通常只有一个，而读取是可以多个同时进行的。</li>
+</ul>
+<h2 id="sstables">SSTables</h2>
+<p>SSTables全名为排序字符串表(Sort String Tables)，写入的记录会被排序。对key进行排序会有如下的有点：</p>
+<ol>
+<li>合并段更加高效：方法类似于归并排序，同时读取多个段文件，比较每一个文件的第一个键，将最小的键拷贝到输出文件，重复这个过程，就可以得到一个按键排序的合并段文件。另外就是文件大于可用内存也可以进行，像前面的方法，需要将所有kv都保存在内存中，合并完成才能写入磁盘，而归并的方法只需要维护输入端的数量个kv，即使出现相同的kv，也可以保证他们是相邻的，覆盖即可。</li>
+<li>压缩内存：查找特定键时，不需要保存所有键的索引，而是建立<code>稀疏索引</code>，比如1个几KB大小的文件，只需要1个key即可。根据这个key的字典序找到稀疏索引中提供的偏移，读取该部分，找到相应的key即可。</li>
+<li>范围查询：请求某个范围内的多个key/value更加方便。</li>
+</ol>
+<h3 id="构建和维护sstables">构建和维护SSTables</h3>
+<ol>
+<li>写入Key写写入内存表(类似于红黑树的平衡树)</li>
+<li>内存表大小大于某个阈值，根据二叉排序树的特点，顺序写入磁盘，此时在内存中新生成一个内存表</li>
+<li>查表时，先查询内存表找到偏移，如果没找到，那么查找以前的段文件</li>
+<li>后台周期性合并，压缩，丢弃不需要的key</li>
+<li>写入key需要追加日志(用于恢复内存表)，但是超出阈值并写完当前内存表后，可以删除该日志。</li>
+</ol>
+<h3 id="优化sstables">优化SSTables</h3>
+<ul>
+<li>读取SSTables中不存在的key会回溯到最旧的段文件，所以开销很大，对于这种存在问题，可以使用布隆过滤器。</li>
+<li>其他是一些压缩/合并的方式，例如LevelDB/RocksDB使用的分层压缩，HBase使用大小分级，而Cassandra两种都支持。</li>
+</ul>
+<h2 id="lsm-tree和sstables">LSM-tree和SSTables</h2>
+<p>SSTables的算法本质就是LevelDB和RocksDB所使用，并且最初这种索引结构是被称为以日志结构的合并树(Log-Structured Merge-Tree)，因此，基于合并和压缩排序文件原理的存储引擎，通常被称为LSM存储引擎。</p>
+<h2 id="b-tree">B-tree</h2>
+<p>B树其实已经非常熟悉了，常见于各大关系型数据的索引。Btree也是按键排序的key-value对，以及高效的区间查询。但是在存储方面，是以4KB甚至更大作为存储单元，这样更加借鉴底层硬件。</p>
+<p>由于B树也保持平衡，具有n个key的B树深度也是O(log n)，其中一个页中包含子页的引用数量称为<code>分页因子</code>，当分页因子为500的4KB页的四级树可存储256TB数据。</p>
+<p>崩溃问题：和日志合并树一样，也要考虑写时发生崩溃的问题，因为在重写页时，如果发生崩溃直接导致的结果是索引破坏，所以需要<code>预写日志</code>WAL(WriteAhead Log)在写入前，追加写入日志文件，用于恢复B树到最近一致状态。</p>
+<h3 id="优化b-tree">优化B-tree</h3>
+<ul>
+<li>写时复制：修改的页被写入不同位置，创建完成后修改父页中的引用。这样就不用覆盖和维护WAL</li>
+<li>保存键的缩略信息，减少key在页内占用，增加分页因子，降低层数</li>
+<li>尝试让页的磁盘位置更加接近，减少寻道时间</li>
+<li>另外一点就是常见的添加一个额外的指针到相邻的页，这样就不需要跳回父页，减少不必要的I/O</li>
+<li>最后就是分型树等等</li>
+</ul>
+<h2 id="lsm-tree和b-tree的优劣">LSM-tree和B-tree的优劣</h2>
+<p>通常认为B树读取更快，而LSM树写入更快。</p>
+<h3 id="lsm-tree的优点">LSM-tree的优点</h3>
+<p>对于B树来说，一次写操作需要写两次磁盘：</p>
+<ul>
+<li>写入日志(WAL)</li>
+<li>写入到实际的B树中，另外还有页分裂的可能，导致多次I/O</li>
+</ul>
+<p>而对于LSM树来说：</p>
+<ul>
+<li>追加写一次</li>
+<li>但是又反复的后台压缩和SSTables合并</li>
+</ul>
+<p>所以要注意一次写入请求会导致多次磁盘写(写放大)，SSD由于其物理性质所决定，只能承受住比机械硬盘更低覆盖重写次数，所以需要加入考量，另外，如果写入磁盘占用的带块越多，可用的磁盘带宽也就越少。而LSM时拥有较低的写放大。</p>
+<p>另外，回到SSTables的构建，LSM的写入时是从内存一次性写入到磁盘的，也就是其磁盘块更加连续，顺序写比随机写要快得多，相比于分散的磁盘块，拥有更低的寻道时间。相关联的还有<code>碎片化</code>问题，由于B树是面向页的，也可能被分裂成多个页时，页中空间无法使用，导致碎片化。而SSTables的定期合并可以消除碎片话，拥有更加紧凑的数据表达方式。</p>
+<h3 id="lsm-tree的缺点">LSM-tree的缺点</h3>
+<ul>
+<li>压缩过程(I/O)中会干扰当前读写操作(I/O)，造成读写等待。</li>
+<li>另外B-tree的key在磁盘中，只有一个副本，而LSM-tree有多个。所以在关系型数据库中，B树可以直接定义锁在页中，完成键范围上的事务隔离。</li>
+</ul>
+<h2 id="参考">参考</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+</ul>
+
+
+
+                    </div>
+                </div>
+
+                
+                    <div class="col-sm-12 col-md-3">
+                        <nav id="TableOfContents" class="sticky-top">
+  <ul>
+    <li><a href="#最初的数据库">最初的数据库</a>
+      <ul>
+        <li><a href="#读取优化">读取优化</a></li>
+        <li><a href="#存储优化">存储优化</a></li>
+        <li><a href="#其他">其他</a></li>
+      </ul>
+    </li>
+    <li><a href="#sstables">SSTables</a>
+      <ul>
+        <li><a href="#构建和维护sstables">构建和维护SSTables</a></li>
+        <li><a href="#优化sstables">优化SSTables</a></li>
+      </ul>
+    </li>
+    <li><a href="#lsm-tree和sstables">LSM-tree和SSTables</a></li>
+    <li><a href="#b-tree">B-tree</a>
+      <ul>
+        <li><a href="#优化b-tree">优化B-tree</a></li>
+      </ul>
+    </li>
+    <li><a href="#lsm-tree和b-tree的优劣">LSM-tree和B-tree的优劣</a>
+      <ul>
+        <li><a href="#lsm-tree的优点">LSM-tree的优点</a></li>
+        <li><a href="#lsm-tree的缺点">LSM-tree的缺点</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+                    </div>
+                
+            </div>
+
+            <div class="row">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    
+                        <div class="navigation">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-left">
+                                            <a href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/">
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225 c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z" />
+    </svg>
+</span>
+
+                                                <span class="text">Golang原生RPC与gPRC</span>
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-right">
+                                            <a href="/blog/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">
+                                                <span class="text">如何进行调试以及性能剖析</span>
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5 c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z" />
+    </svg>
+</span>
+
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+
+                    
+                        
+                            <a href="https://www.fatwaer.store">@Powered by Hugo and the alageek theme</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/go.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C&#43;&#43;.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>6.828-操作系统工程-Lec1-3课件笔记和作业 - alaGeek Theme</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="Hugo alaGeek Theme">
+    <meta property="og:site_name" content="alaGeek Theme" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" />
+    <meta property="og:title" content="6.828-操作系统工程-Lec1-3课件笔记和作业" />
+    <meta property="og:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="og:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta property="twitter:site" content="@?">
+    
+
+    <meta property="twitter:title" content="6.828-操作系统工程-Lec1-3课件笔记和作业" />
+    <meta property="twitter:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta name="flattr:id" content="?">
+    
+
+    <link rel="canonical" href="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/css/main.css" />
+
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="https://gokmengorgen.net/img/laughing-man-favicon.png">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="alaGeek Theme" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto offset-lg-1 d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="https://gokmengorgen.net/img/laughing-man.png" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        alaGeek Theme
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-patreon" href="https://www.patreon.com/bePatron?u=10637849">
+                                
+                                Become a patron
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://www.buymeacoffee.com/gokmen">
+                                
+                                Buy me a coffee
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <h1 class="mx-0 mx-md-4">
+                        6.828-操作系统工程-Lec1-3课件笔记和作业
+                    </h1>
+                    <div class="markdown">
+                        
+    
+    <h1 id="笔记">笔记</h1>
+<hr>
+<h2 id="函数的开场和结束">函数的开场和结束</h2>
+<pre><code>               +------------+   |
+               | arg 2      |   \
+               +------------+    &gt;- previous function's stack frame
+               | arg 1      |   /
+               +------------+   |
+               | ret %eip   |   /
+               +============+   
+               | saved %ebp |   \
+        %ebp-&gt; +------------+   |
+               |            |   |
+               |   local    |   \
+               | variables, |    &gt;- current function's stack frame
+               |    etc.    |   /
+               |            |   |
+               |            |   |
+        %esp-&gt; +------------+   /
+</code></pre><h2 id="函数调用和汇编对应">函数调用和汇编对应</h2>
+<p><img src="/images/operating-system/6.828/lab1/note1.png" alt="note1.png"></p>
+<p>其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。</p>
+<h2 id="c源文件编译过程">C源文件编译过程</h2>
+<p><img src="/images/operating-system/6.828/lab1/note2.png" alt="note2.png"></p>
+<hr>
+<h2 id="pc-模拟器实现">PC 模拟器实现</h2>
+<hr>
+<h3 id="cpu寄存器">CPU寄存器</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">存储在全局变量中</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>int32_t regs[<span style="color:#ae81ff">8</span>];
+<span style="color:#75715e">#</span><span style="color:#75715e">define REG_EAX 1;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define REG_EBX 2;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">define REG_ECX 3;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>...
+int32_t eip;
+int16_t segregs[<span style="color:#ae81ff">4</span>];
+...
+</code></pre></div><h3 id="物理内存">物理内存</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">char</span> mem[<span style="color:#ae81ff">256</span><span style="color:#f92672">*</span><span style="color:#ae81ff">1024</span><span style="color:#f92672">*</span><span style="color:#ae81ff">1024</span>];
+</code></pre></div><h3 id="执行">执行</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">for</span> (;;) {
+        read_instruction();
+        <span style="color:#66d9ef">switch</span> (decode_instruction_opcode()) {
+        <span style="color:#66d9ef">case</span> OPCODE_ADD:
+            <span style="color:#66d9ef">int</span> src <span style="color:#f92672">=</span> decode_src_reg();
+            <span style="color:#66d9ef">int</span> dst <span style="color:#f92672">=</span> decode_dst_reg();
+            regs[dst] <span style="color:#f92672">=</span> regs[dst] <span style="color:#f92672">+</span> regs[src];
+            <span style="color:#66d9ef">break</span>;
+        <span style="color:#66d9ef">case</span> OPCODE_SUB:
+            <span style="color:#66d9ef">int</span> src <span style="color:#f92672">=</span> decode_src_reg();
+            <span style="color:#66d9ef">int</span> dst <span style="color:#f92672">=</span> decode_dst_reg();
+            regs[dst] <span style="color:#f92672">=</span> regs[dst] <span style="color:#f92672">-</span> regs[src];
+            <span style="color:#66d9ef">break</span>;
+        ...
+        }
+        eip <span style="color:#f92672">+</span><span style="color:#f92672">=</span> instruction_length;
+</code></pre></div><h3 id="物理内存布局">物理内存布局</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">define KB      1024</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">#</span><span style="color:#75715e">define MB      1024*1024</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">#</span><span style="color:#75715e">define LOW_MEMORY  640*KB</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">#</span><span style="color:#75715e">define EXT_MEMORY  10*MB</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+    uint8_t low_mem[LOW_MEMORY];
+    uint8_t ext_mem[EXT_MEMORY];
+    uint8_t bios_rom[<span style="color:#ae81ff">64</span><span style="color:#f92672">*</span>KB];
+
+    uint8_t <span style="color:#a6e22e">read_byte</span>(uint32_t phys_addr) {
+        <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&lt;</span> LOW_MEMORY)
+            <span style="color:#66d9ef">return</span> low_mem[phys_addr];
+        <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">960</span><span style="color:#f92672">*</span>KB <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> phys_addr <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB)
+            <span style="color:#66d9ef">return</span> rom_bios[phys_addr <span style="color:#f92672">-</span> <span style="color:#ae81ff">960</span><span style="color:#f92672">*</span>KB];
+        <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> phys_addr <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB<span style="color:#f92672">+</span>EXT_MEMORY) {
+            <span style="color:#66d9ef">return</span> ext_mem[phys_addr<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB];
+        <span style="color:#66d9ef">else</span> ...
+    }
+
+    <span style="color:#66d9ef">void</span> write_byte(uint32_t phys_addr, uint8_t val) {
+        <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&lt;</span> LOW_MEMORY)
+            low_mem[phys_addr] <span style="color:#f92672">=</span> val;
+        <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">960</span><span style="color:#f92672">*</span>KB <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> phys_addr <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB)
+            ; <span style="color:#75715e">/* ignore attempted write to ROM! */</span>
+        <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (phys_addr <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> phys_addr <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB<span style="color:#f92672">+</span>EXT_MEMORY) {
+            ext_mem[phys_addr<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">*</span>MB] <span style="color:#f92672">=</span> val;
+        <span style="color:#66d9ef">else</span> ...
+    }
+</code></pre></div><h3 id="外围设备">外围设备</h3>
+<ul>
+<li>Hard disk: using a file of the host</li>
+<li>VGA display: draw in a host window</li>
+<li>Keyboard: hostsʼs keyboard API</li>
+<li>Clock chip: hostʼs clock</li>
+<li>Etc.</li>
+</ul>
+<hr>
+<h1 id="homework">Homework</h1>
+<hr>
+<h2 id="implement-shell">Implement Shell</h2>
+<p><a href="https://github.com/fATwaer/Operating-System-Engineering-Code/tree/master/homework1">注释好的shell code和最后完成的shell code</a></p>
+<h3 id="代码片段1">代码片段1</h3>
+<p>实现shell的执行命令</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    ecmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> execcmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#66d9ef">if</span>(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+      _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#66d9ef">char</span> path[<span style="color:#ae81ff">256</span>];
+    <span style="color:#66d9ef">if</span>( <span style="color:#f92672">!</span>access(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>], F_OK) ){  <span style="color:#75715e">//argv[0]为要执行的命令
+</span><span style="color:#75715e"></span>        execv(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>], ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv);
+        fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">executed in home dictory</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>); 
+    } <span style="color:#66d9ef">else</span> {
+        strcpy(path,<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/bin/</span><span style="color:#e6db74">&#34;</span>);
+        strcat(path,ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>]);
+        <span style="color:#66d9ef">if</span>( <span style="color:#f92672">!</span>access(path, F_OK) )
+                execv(path, ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv);
+        <span style="color:#66d9ef">else</span>
+                <span style="color:#a6e22e">fprintf</span>(stderr,<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74"> command not found</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, path);
+</code></pre></div><hr>
+<h4 id="access和execv">access和execv</h4>
+<pre><code>int access(const char *pathname, int mode);
+</code></pre>
+<p>判断用户是否能使用pathname这个文件或者目录。
+mode有4种:</p>
+<ol>
+<li>
+<p>F_OK tests  for  the  existence  of  the file.</p>
+</li>
+<li>
+<p>R_OK,  W_OK,  and  X_OK test whether the file exists and grants read, write, and execute permissions</p>
+<p>int execv(const char *path, char *const argv[]);
+执行path下的命令</p>
+</li>
+</ol>
+<h3 id="代码片段2">代码片段2</h3>
+<hr>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&gt;</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&lt;</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    rcmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> redircmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#75715e">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Your code here ...
+</span><span style="color:#75715e"></span>    close(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>fd);
+    <span style="color:#66d9ef">if</span>((open(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>file, rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>flags, <span style="color:#ae81ff">777</span>)) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>){
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">open file error</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    exit(<span style="color:#ae81ff">0</span>);
+    }
+    runcmd(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cmd);
+    <span style="color:#66d9ef">break</span>;
+</code></pre></div><h4 id="open">open()</h4>
+<pre><code>int open(constchar* pathname,int flags,[mode_t mode]);
+</code></pre>
+<p><code>返回值</code> : 成功则返回文件描述符，否则返回-1
+<code>flags</code> : 参数用来描述打开文件的方法:</p>
+<pre><code>O_RDONLY 只读模式
+O_WRONLY 只写模式
+O_RDWR 读写模式
+O_APPEND 每次写操作都写入文件的末尾
+O_CREAT 如果指定文件不存在，则创建这个文件
+O_EXCL 如果要创建的文件已存在，则返回-1，并且修改errno的值
+O_TRUNC 如果文件存在，并且以只写/读写方式打开，则清空文件全部内容(即将其长度截短为0)
+O_NOCTTY 如果路径名指向终端设备，不要把这个设备用作控制终端。
+O_NONBLOCK 如果路径名指向FIFO/块文件/字符文件，则把文件的打开和后继I/O
+</code></pre><p>代码测试片段</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span> fd;
+fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">test.c</span><span style="color:#e6db74">&#34;</span>,O_RDONLY);
+printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,fd);
+<span style="color:#75715e">//close(fd);
+</span><span style="color:#75715e"></span>fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">test1.c</span><span style="color:#e6db74">&#34;</span>,O_WRONLY);
+printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,fd);
+
+<span style="color:#75715e">#</span><span style="color:#75715e"> result:</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">3</span>
+<span style="color:#ae81ff">4</span>
+</code></pre></div><h3 id="代码片段3">代码片段3</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">|</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    pcmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> pipecmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#75715e">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Your code here ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span>((pipe(p)) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) perror(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pipe</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">if</span>(fork1() <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>){
+        close(p[<span style="color:#ae81ff">0</span>]);
+    dup2(p[<span style="color:#ae81ff">1</span>], STDOUT_FILENO);
+    close(p[<span style="color:#ae81ff">1</span>]);
+    runcmd(pcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>left);
+    }
+    wait(<span style="color:#ae81ff">0</span>);
+    close(p[<span style="color:#ae81ff">1</span>]);
+    dup2(p[<span style="color:#ae81ff">0</span>], STDIN_FILENO);
+    close(p[<span style="color:#ae81ff">0</span>]);
+    runcmd(pcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>right);
+    <span style="color:#66d9ef">break</span>;
+</code></pre></div><h4 id="pipe">pipe()</h4>
+<pre><code>int pipe(int pipefd[2]);
+</code></pre>
+<p>Dscpt:
+<code>pipefd[0]</code> : pipe的读取端
+<code>pipefd[1]</code> : pipe的写入端
+<code>The read  end</code> is  opened using the O_RDONLY flag;
+<code>The write end</code> is opened using the O_WRONLY flag.</p>
+<h4 id="使用fork和pipe进行进程之间的通信">使用fork和pipe进行进程之间的通信</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">include</span><span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span><span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span><span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+        <span style="color:#66d9ef">int</span> fd[<span style="color:#ae81ff">2</span>];
+        pid_t pid;
+
+        pipe(fd);
+        pid <span style="color:#f92672">=</span> fork();
+        <span style="color:#66d9ef">if</span>(pid <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>){
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">parent process:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+            <span style="color:#66d9ef">char</span> sp[] <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">string is waiting for being loaded</span><span style="color:#e6db74">&#34;</span>;
+            write(fd[<span style="color:#ae81ff">1</span>], sp, <span style="color:#66d9ef">sizeof</span>(sp));
+        } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (pid <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>) {
+            <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">80</span>];
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">child process:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+            read(fd[<span style="color:#ae81ff">0</span>], buf, <span style="color:#66d9ef">sizeof</span>(buf));
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">loaded: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, buf);
+        } <span style="color:#66d9ef">else</span> {
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">fork error</span><span style="color:#e6db74">&#34;</span>);
+        }
+
+</code></pre></div><hr>
+<h4 id="dup和fcntl">dup和fcntl</h4>
+<pre><code>int  dup(int oldfd)
+</code></pre>
+<p>新复制的fd和旧的fd共享文件位移(offset)和文件状态标识符(file status flags),不共享文件描述符标识(file descriptor flags),文件描述符标识只有一个the close-on-exec flag,用来指示fork的子进程在执行之前,要不要关闭这个文件描述符。</p>
+<p>每个文件描述符都有一个close-on-exec标志。在系统默认情况下，这个标志最后一位被设置为0。而FD_CLOEXEC则用来设置文件的close-on-exec，FD_CLOEXEC的值为1，所以在设置close-on-exec位时可以使用FD_CLOEXEC也可以直接的使用0或1数字对close-on-exec位进行设置,FD_CLOEXEC可以用fcntl()来设置。当将close-on-exec标志置为1时，即开启此标志。那么当子进程调用exec函数之前，系统就已经让子进程将此文件描述符关闭了。当close-on-exec标志置为0时，即关闭了此标志。那么当子进程调用exec函数，子进程将不会关闭该文件描述符。此时，父子进程将共享该文件，它们具有同一个文件表项，也就有了同一个文件偏移量等。</p>
+<pre><code>int dup2( int fd, int new_fd )
+</code></pre>
+<p>同样，函数返回一个新的文件描述符，若出错则返回 -1。与 dup 不同的是，dup2 可以用 filedes2 参数指定新描述符的数值。如果 filedes2 已经打开,则先将其关闭。如若 filedes 等于 filedes2 , 则 dup2 返回 filedes2 , 而不关闭它。返回的新文件描述符与参数 filedes 共享同一个文件数据结构。</p>
+<p>比如,<code>dup2(p[1], STDOUT_FILENO)</code>,p[1]为pipe的写入口</p>
+<ol>
+<li>
+<p>把进程的标准输出关闭</p>
+</li>
+<li>
+<p>复制一个大于等于<code>STDOUT_FILENO</code>的文件描述符FD</p>
+</li>
+<li>
+<p>这时候新的FD共享<code>STDOUT_FILENO</code>的文件内容。</p>
+</li>
+<li>
+<p>原本进程的输出，就转移到了pipe管道的写入口。</p>
+<p>int fcntl(int filedes,int cmd,&hellip;);
+<code>cmd = F_DUPFD</code>, 复制一个现有的文件描述符,返回值为新文件描述符。相当于<code>dup(oldfd)</code>
+<code>cmd = F_SETFL</code> : 设置状态标志
+<code>cmd = F_GETFL</code> : 获取状态标志
+状态标志就是open是的oflag(O_RDONLY,O_WRONLY,O_RDWR,O_NONBLOCK,O_APPEND,O_SYNC（异步I/O）,O_ASYNC（等待写完成）
+可以更改的标志是O_APPEND，O_NONBLOCK，O_SYNC,O_ASYNC。)
+<code>FD_CLOEXEC</code>:fcntl调用的一个宏定义，填在fcntl第三个参数处。
+<code>O_CLOEXEC</code>:open()调用的一个宏定义</p>
+</li>
+</ol>
+<h4 id="用fcntl复制一个fd">用fcntl复制一个fd</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">80</span>];
+    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">a1</span><span style="color:#e6db74">&#34;</span>, O_RDONLY);
+    <span style="color:#66d9ef">int</span> fd_new <span style="color:#f92672">=</span> fcntl(fd, F_DUPFD);
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">fd_new : %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, fd_new);
+    <span style="color:#66d9ef">while</span>(read(fd_new, buf, <span style="color:#66d9ef">sizeof</span>(buf)))
+    {
+            printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, buf);
+    }
+</code></pre></div><p>关于<a href="https://fatwaer.github.io/2018/04/09/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/FD-CLOEXEC%E6%A0%87%E5%BF%97/">FD_CLOEXEC flag</a> , 是指在FD在被exec()函数族被调用的时候,自动关闭。</p>
+<hr>
+<h4 id="结构体强制转换">结构体强制转换</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> a1{
+    <span style="color:#66d9ef">int</span> a;
+    <span style="color:#66d9ef">char</span> c;
+};
+
+<span style="color:#66d9ef">struct</span> b1{
+    <span style="color:#66d9ef">int</span> c;
+    <span style="color:#66d9ef">char</span> cc;
+    <span style="color:#66d9ef">int</span> interger;
+};
+
+<span style="color:#66d9ef">struct</span> a1<span style="color:#f92672">*</span>
+<span style="color:#a6e22e">b1</span>(<span style="color:#66d9ef">void</span>){
+    <span style="color:#66d9ef">struct</span> b1<span style="color:#f92672">*</span> temp;
+    temp <span style="color:#f92672">=</span> malloc(<span style="color:#66d9ef">sizeof</span>(<span style="color:#f92672">*</span>b1));
+    temp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>c <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+    temp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cc <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">c</span><span style="color:#e6db74">&#39;</span>;
+    temp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>interger <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>;
+    <span style="color:#66d9ef">return</span> (<span style="color:#66d9ef">struct</span> a1<span style="color:#f92672">*</span>) temp;
+} 
+
+
+<span style="color:#66d9ef">int</span> 
+<span style="color:#a6e22e">main</span>()
+{
+    <span style="color:#66d9ef">struct</span> a1 <span style="color:#f92672">*</span>a;
+    <span style="color:#66d9ef">struct</span> b1 <span style="color:#f92672">*</span>b;
+    a <span style="color:#f92672">=</span> b1();
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d , %c</span><span style="color:#e6db74">&#34;</span>,a<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>a, a<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>c);
+}
+</code></pre></div><h4 id="获取环境变量">获取环境变量</h4>
+<p>获得一个环境变量的字符串数组</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#75715e">#</span><span style="color:#75715e">include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">#</span><span style="color:#75715e">define MAX_PATH 20</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> s_ptr;
+    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pa, <span style="color:#f92672">*</span>pb, <span style="color:#f92672">*</span>buf;
+    <span style="color:#66d9ef">int</span> i;
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> path[MAX_PATH];
+    s_ptr <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">PATH</span><span style="color:#e6db74">&#34;</span>);
+    printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, s_ptr);
+    buf <span style="color:#f92672">=</span> malloc(strlen(s_ptr)<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>);  
+    strcpy(buf, s_ptr);
+    
+    <span style="color:#66d9ef">int</span> length;
+    i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    pa <span style="color:#f92672">=</span> pb <span style="color:#f92672">=</span> buf;
+    <span style="color:#66d9ef">while</span>(<span style="color:#f92672">*</span>pa){
+        <span style="color:#66d9ef">while</span>(<span style="color:#f92672">*</span>pa <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">*</span>pa<span style="color:#f92672">+</span><span style="color:#f92672">+</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">:</span><span style="color:#e6db74">&#39;</span>)  ;
+        length <span style="color:#f92672">=</span> pa <span style="color:#f92672">-</span> pb;
+        path[i] <span style="color:#f92672">=</span> malloc(length);
+        strncpy(path[i], pb, length);
+        <span style="color:#66d9ef">if</span>(<span style="color:#f92672">*</span>pa <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+            path[i][pa<span style="color:#f92672">-</span>pb<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+        
+        i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;
+        pb <span style="color:#f92672">=</span> pa;
+    }
+    <span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+    <span style="color:#66d9ef">for</span>(; j <span style="color:#f92672">&lt;</span> i; j<span style="color:#f92672">+</span><span style="color:#f92672">+</span> )
+        printf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, path[j]);    
+}
+</code></pre></div><h3 id="最后完成的runcmd">最后完成的runcmd()</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">runcmd</span>(<span style="color:#66d9ef">struct</span> cmd <span style="color:#f92672">*</span>cmd)
+{
+  <span style="color:#66d9ef">int</span> p[<span style="color:#ae81ff">2</span>], r;
+  <span style="color:#66d9ef">struct</span> execcmd <span style="color:#f92672">*</span>ecmd;
+  <span style="color:#66d9ef">struct</span> pipecmd <span style="color:#f92672">*</span>pcmd;
+  <span style="color:#66d9ef">struct</span> redircmd <span style="color:#f92672">*</span>rcmd;
+
+  <span style="color:#66d9ef">if</span>(cmd <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+    _exit(<span style="color:#ae81ff">0</span>);
+  
+  <span style="color:#66d9ef">switch</span>(cmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>type){
+  <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">unknown runcmd</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    _exit(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+
+  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    ecmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> execcmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#66d9ef">if</span>(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+      _exit(<span style="color:#ae81ff">0</span>);
+    <span style="color:#75715e">// fprintf(stderr, &#34;exec not implemented\n&#34;);
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Your code here ...
+</span><span style="color:#75715e"></span>    
+    <span style="color:#66d9ef">char</span> pathbuf[<span style="color:#ae81ff">256</span>];
+    <span style="color:#66d9ef">if</span>( <span style="color:#f92672">!</span>access(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>], F_OK) ){
+        execv(ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>], ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv);
+        fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">executed in home dictory</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    } <span style="color:#66d9ef">else</span> {
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> s_ptr;
+        <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pa, <span style="color:#f92672">*</span>pb, <span style="color:#f92672">*</span>buf;
+        <span style="color:#66d9ef">int</span> i;
+        <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> path[MAX_PATH];
+        s_ptr <span style="color:#f92672">=</span> getenv(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">PATH</span><span style="color:#e6db74">&#34;</span>);
+        buf <span style="color:#f92672">=</span> malloc(strlen(s_ptr)<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>);  
+        strcpy(buf, s_ptr);
+    
+        <span style="color:#66d9ef">int</span> length;
+        i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+        pa <span style="color:#f92672">=</span> pb <span style="color:#f92672">=</span> buf;
+        <span style="color:#66d9ef">while</span>(<span style="color:#f92672">*</span>pa){
+            <span style="color:#66d9ef">while</span>(<span style="color:#f92672">*</span>pa <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">*</span>pa<span style="color:#f92672">+</span><span style="color:#f92672">+</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">:</span><span style="color:#e6db74">&#39;</span>)  ;
+            length <span style="color:#f92672">=</span> pa <span style="color:#f92672">-</span> pb;
+            path[i] <span style="color:#f92672">=</span> malloc(length);
+            strncpy(path[i], pb, length);
+            <span style="color:#66d9ef">if</span>(<span style="color:#f92672">*</span>pa <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+                path[i][pa<span style="color:#f92672">-</span>pb<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+ 
+            i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;
+            pb <span style="color:#f92672">=</span> pa;
+        }
+
+    <span style="color:#66d9ef">int</span> ji;
+    <span style="color:#66d9ef">for</span>(ji<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; ji <span style="color:#f92672">&lt;</span> i; ji<span style="color:#f92672">+</span><span style="color:#f92672">+</span>){
+        strcpy(pathbuf, path[ji]);
+        strcat(pathbuf, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/</span><span style="color:#e6db74">&#34;</span>);
+        strcat(pathbuf, ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>]);
+        <span style="color:#75715e">//printf(&#34;path-&gt; %s\n&#34;, pathbuf);
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span>( <span style="color:#f92672">!</span>access(pathbuf, F_OK) ){
+            execv(pathbuf, ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv);
+        }
+        
+        memset(pathbuf, <span style="color:#ae81ff">0</span>, <span style="color:#66d9ef">sizeof</span>(pathbuf));
+    }
+    <span style="color:#66d9ef">if</span>(ji <span style="color:#f92672">=</span><span style="color:#f92672">=</span> i)
+        fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74"> </span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\&#34;</span><span style="color:#e6db74">command not found</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ecmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>argv[<span style="color:#ae81ff">0</span>]);
+    }   
+    <span style="color:#66d9ef">break</span>;
+
+  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&gt;</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">&lt;</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    rcmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> redircmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#75715e">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Your code here ...
+</span><span style="color:#75715e"></span>    close(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>fd);
+    <span style="color:#66d9ef">if</span>((open(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>file, rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>flags, <span style="color:#ae81ff">777</span>)) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>){
+    fprintf(stderr, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">open file error</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    exit(<span style="color:#ae81ff">0</span>);
+    }
+    runcmd(rcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>cmd);
+    <span style="color:#66d9ef">break</span>;
+
+  <span style="color:#66d9ef">case</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">|</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">:</span>
+    pcmd <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> pipecmd<span style="color:#f92672">*</span>)cmd;
+    <span style="color:#75715e">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Your code here ...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span>((pipe(p)) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) perror(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">pipe</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">if</span>(fork1() <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>){
+        close(p[<span style="color:#ae81ff">0</span>]);
+        dup2(p[<span style="color:#ae81ff">1</span>], STDOUT_FILENO);  
+        close(p[<span style="color:#ae81ff">1</span>]);                     <span style="color:#75715e">// &lt;- 关闭p[1],防止fd泄露
+</span><span style="color:#75715e"></span>        runcmd(pcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>left);
+    }
+    wait(<span style="color:#ae81ff">0</span>);
+    close(p[<span style="color:#ae81ff">1</span>]);
+    dup2(p[<span style="color:#ae81ff">0</span>], STDIN_FILENO);
+    close(p[<span style="color:#ae81ff">0</span>]);
+    runcmd(pcmd<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>right);
+    <span style="color:#66d9ef">break</span>;
+  }    
+  _exit(<span style="color:#ae81ff">0</span>);
+}
+</code></pre></div><h3 id="结果">结果</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">moonlight@ubuntu:~/homework$ ./a.out &lt; t.sh
+     <span style="color:#ae81ff">15</span>      <span style="color:#ae81ff">15</span>      <span style="color:#ae81ff">82</span>
+     <span style="color:#ae81ff">15</span>      <span style="color:#ae81ff">15</span>      <span style="color:#ae81ff">82</span>
+</code></pre></div><h3 id="pipedup重定向文章">pipe、dup重定向文章</h3>
+<p>[I/O重定向和管道：使用pipe、fork、exec详解。] :https://blog.csdn.net/skyroben/article/details/71513385#
+[进程间的通信方式] : <a href="https://blog.csdn.net/yake25/article/details/7447086">https://blog.csdn.net/yake25/article/details/7447086</a><br>
+[dup2后close] : <a href="http://blog.51cto.com/keren/170892">http://blog.51cto.com/keren/170892</a></p>
+<p>_* 挑战题目未完成_</p>
+<blockquote>
+<p>获取环境变量的时候造了个轮子.</p>
+</blockquote>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+                        <div>
+                            <a class="mx-1 mr-md-2 ml-md-0  text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </div>
+                    
+
+                    
+                        
+                            <a href="https://gokmengorgen.net">© 2018 by Gökmen Görgen</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+    <a href="https://gitlab.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitLab">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1792 1792">
+            <path d="M104 706l792 1015-868-630q-18-13-25-34.5t0-42.5l101-308zm462 0h660l-330 1015zm-198-612l198 612h-462l198-612q8-23 33-23t33 23zm1320 612l101 308q7 21 0 42.5t-25 34.5l-868 630 792-1015zm0 0h-462l198-612q8-23 33-23t33 23z"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://github.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitHub">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M8 0C3.58 0 0 3.582 0 8c0 3.535 2.292 6.533 5.47 7.59.4.075.547-.172.547-.385 0-.19-.007-.693-.01-1.36-2.226.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.725-.496.056-.486.056-.486.803.056 1.225.824 1.225.824.714 1.223 1.873.87 2.33.665.072-.517.278-.87.507-1.07-1.777-.2-3.644-.888-3.644-3.953 0-.873.31-1.587.823-2.147-.09-.202-.36-1.015.07-2.117 0 0 .67-.215 2.2.82.64-.178 1.32-.266 2-.27.68.004 1.36.092 2 .27 1.52-1.035 2.19-.82 2.19-.82.43 1.102.16 1.915.08 2.117.51.56.82 1.274.82 2.147 0 3.073-1.87 3.75-3.65 3.947.28.24.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.14.46.55.38C13.71 14.53 16 11.53 16 8c0-4.418-3.582-8-8-8"/>
+        </svg>
+    </a>
+
+
+                    
+
+                    
+    <a href="https://twitter.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Twitter">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M16 3.038c-.59.26-1.22.437-1.885.517.677-.407 1.198-1.05 1.443-1.816-.634.37-1.337.64-2.085.79-.598-.64-1.45-1.04-2.396-1.04-1.812 0-3.282 1.47-3.282 3.28 0 .26.03.51.085.75-2.728-.13-5.147-1.44-6.766-3.42C.83 2.58.67 3.14.67 3.75c0 1.14.58 2.143 1.46 2.732-.538-.017-1.045-.165-1.487-.41v.04c0 1.59 1.13 2.918 2.633 3.22-.276.074-.566.114-.865.114-.21 0-.41-.02-.61-.058.42 1.304 1.63 2.253 3.07 2.28-1.12.88-2.54 1.404-4.07 1.404-.26 0-.52-.015-.78-.045 1.46.93 3.18 1.474 5.04 1.474 6.04 0 9.34-5 9.34-9.33 0-.14 0-.28-.01-.42.64-.46 1.2-1.04 1.64-1.7z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a rel="me" href="https://mastodon.url/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Mastodon">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216.4144 232.00976">
+            <path d="M211.80734 139.0875c-3.18125 16.36625-28.4925 34.2775-57.5625 37.74875-15.15875 1.80875-30.08375 3.47125-45.99875 2.74125-26.0275-1.1925-46.565-6.2125-46.565-6.2125 0 2.53375.15625 4.94625.46875 7.2025 3.38375 25.68625 25.47 27.225 46.39125 27.9425 21.11625.7225 39.91875-5.20625 39.91875-5.20625l.8675 19.09s-14.77 7.93125-41.08125 9.39c-14.50875.7975-32.52375-.365-53.50625-5.91875C9.23234 213.82 1.40609 165.31125.20859 116.09125c-.365-14.61375-.14-28.39375-.14-39.91875 0-50.33 32.97625-65.0825 32.97625-65.0825C49.67234 3.45375 78.20359.2425 107.86484 0h.72875c29.66125.2425 58.21125 3.45375 74.8375 11.09 0 0 32.975 14.7525 32.975 65.0825 0 0 .41375 37.13375-4.59875 62.915"/>
+            <path fill="#fff" d="M177.50984 80.077v60.94125h-24.14375v-59.15c0-12.46875-5.24625-18.7975-15.74-18.7975-11.6025 0-17.4175 7.5075-17.4175 22.3525v32.37625H96.20734V85.42325c0-14.845-5.81625-22.3525-17.41875-22.3525-10.49375 0-15.74 6.32875-15.74 18.7975v59.15H38.90484V80.077c0-12.455 3.17125-22.3525 9.54125-29.675 6.56875-7.3225 15.17125-11.07625 25.85-11.07625 12.355 0 21.71125 4.74875 27.8975 14.2475l6.01375 10.08125 6.015-10.08125c6.185-9.49875 15.54125-14.2475 27.8975-14.2475 10.6775 0 19.28 3.75375 25.85 11.07625 6.36875 7.3225 9.54 17.22 9.54 29.675"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://t.me/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Telegram">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+            <circle cx="120" cy="120" r="120"/>
+            <path fill="#c8daea" d="m98 175c-3.8876 0-3.227-1.4679-4.5678-5.1695L82 132.2059 170 80"/>
+            <path fill="#a9c9dd" d="m98 175c3 0 4.3255-1.372 6-3l16-15.558-19.958-12.035"/>
+            <path fill="#eff7fc" d="m100.04 144.41 48.36 35.729c5.5185 3.0449 9.5014 1.4684 10.876-5.1235l19.685-92.763c2.0154-8.0802-3.0801-11.745-8.3594-9.3482l-115.59 44.571c-7.8901 3.1647-7.8441 7.5666-1.4382 9.528l29.663 9.2583 68.673-43.325c3.2419-1.9659 6.2173-0.90899 3.7752 1.2584"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://www.linkedin.com/in/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Linkedin">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M13.632 13.635h-2.37V9.922c0-.886-.018-2.025-1.234-2.025-1.235 0-1.424.964-1.424 1.96v3.778h-2.37V6H8.51v1.04h.03c.318-.6 1.092-1.233 2.247-1.233 2.4 0 2.845 1.58 2.845 3.637v4.188zM3.558 4.955c-.762 0-1.376-.617-1.376-1.377 0-.758.614-1.375 1.376-1.375.76 0 1.376.617 1.376 1.375 0 .76-.617 1.377-1.376 1.377zm1.188 8.68H2.37V6h2.376v7.635zM14.816 0H1.18C.528 0 0 .516 0 1.153v13.694C0 15.484.528 16 1.18 16h13.635c.652 0 1.185-.516 1.185-1.153V1.153C16 .516 15.467 0 14.815 0z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="mailto:?@localhost"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Email">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16">
+            <path d="M0 4v8c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H1c-.55 0-1 .45-1 1zm13 0L7 9 1 4h12zM1 5.5l4 3-4 3v-6zM2 12l3.5-3L7 10.5 8.5 9l3.5 3H2zm11-.5l-4-3 4-3v6z"/>
+        </svg>
+    </a>
+
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

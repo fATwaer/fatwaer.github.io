@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>apue-file I/O - fatwaer</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="fatwaer&#39;s blog">
+    <meta property="og:site_name" content="fatwaer" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/blog/c-i-c&#43;&#43;/apue-chapter3/" />
+    <meta property="og:title" content="apue-file I/O" />
+    <meta property="og:image" content="//images/whoami/5.jpg" />
+    <meta property="og:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <meta property="twitter:title" content="apue-file I/O" />
+    <meta property="twitter:image" content="//images/whoami/5.jpg" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <link rel="canonical" href="/blog/c-i-c&#43;&#43;/apue-chapter3/">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css" />
+    
+    
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="/images/whoami/5.jpg">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="fatwaer" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+    
+
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="/images/whoami/5.jpg" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        fatwaer
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://404.html">
+                                
+                                Click me
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    <h1 class="mx-0 mx-md-4">
+                        apue-file I/O
+                    </h1>
+
+                    <div class="mb-4 mb-md-5 meta">
+                        <span class="date" title='Sat Aug 11 2018 20:02:09 UTC'>
+                            August 11, 2018
+                        </span>
+
+                        
+                            
+                        
+
+                        <span class="reading-time middot">
+                            1 minute
+                        </span>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/file">file</a>
+                                    </li>
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/c/c&#43;&#43;">c/c&#43;&#43;</a>
+                                    </li>
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/i/o">I/O</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="markdown">
+                        
+    
+    <h1 id="写在前面的话">写在前面的话</h1>
+<p>暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言API的书籍，中间穿插了关于UNIX操作系统的知识，趁这个机会，利用6.828的知识，来提高下在linux下的编程水平，比完赛回来后，换成了arch linux，这是一款非常轻量级的操作系统，比较适合用来做自己的开发环境，另一方面也减少了游戏对自己的干扰。
+本书第一章节主要讲的标准输入输出的一些基本操作，第二章提到了一些POSIX的标准，快速浏览一遍就好。</p>
+<h1 id="学习笔记">学习笔记</h1>
+<hr>
+<h2 id="文件描述符">文件描述符</h2>
+<p>文件描述符这个概念已经比较熟悉了，是一个 0~OPEN_MAX-1 的正整数，也是一个程序中方便操作的对象。一般来说，0代表的标准输入，1代表标准输出，2代表的是标准错误输出。</p>
+<h2 id="open标志位">open()标志位</h2>
+<p>O_RDONLY : 只读打开</p>
+<p>O_WRONLY : 只写打开，后面会发现如果尝试读取只写的文件会出现乱码</p>
+<p>O_RDWR   : 读写打开</p>
+<p>O_EXEC   : 只执行打开</p>
+<p>O_SEARCH : 用于搜索*</p>
+<p>以上是打开文件必须选择的标志</p>
+<p>O_APPEND : 附加</p>
+<p>O_CLOEXEC: 这个以前做过验证: <a href="www.">链接</a></p>
+<p>O_CREAT : 不存在就创建</p>
+<p>O_EXCL  : 在创建文件时，如果指定了该标志位，文件存在，那么open返回失败值</p>
+<p>O_DIRECTORY: 目录判断</p>
+<p>O_NOFOLLOW: 需要是非链接文件</p>
+<p>O_NOBLOCK : 以非阻塞模式打开FIFO，块设备，字符特殊文件</p>
+<p>O_SYNC : 每次write都需要写入磁盘(同步写)，然后等待磁盘返回</p>
+<p>O_TRUNC: 打开已存在的文件，并且将长度截为0，也就是原来的文件内容不能再进行访问，文件变为新文件,需要有写权限。</p>
+<p>*O_TTY_INIT/O_DSYNC/O_RSYNC 还不清楚</p>
+<h2 id="习题-writeup">习题 writeup</h2>
+<h3 id="33">3.3</h3>
+<p>在该题目中，fd1和fd2当然都指向同一个文件表，因为执行了dup操作，所以相关的文件描述符标志等信息都会被复制，对于fd3，我理解为这是打开的同一个文件，在自己尝试写出的代码中，可以反复打开同一个文件多次，但是不会指向同一个文件表项。</p>
+<p>首先打开两个相同的文件</p>
+<pre><code>	fd1 = open(&quot;file&quot;, O_RDONLY);
+	fd2 = open(&quot;file&quot;, O_RDONLY);
+</code></pre><p>然后读取分别读取fd1，fd2几个字符，再用lseek()获取当前文件偏移。</p>
+<pre><code>read(fd1, buf, 3);
+off1 = lseek(fd1, 0, SEEK_CUR);
+
+read(fd2, buf, 5);
+off2 = lseek(fd2, 0, SEEK_CUR);
+
+</code></pre><p>结果显示这两个文件偏移off1和off2并没有相互叠加。</p>
+<pre><code>read: abc
+read: abcde
+fd1 off: 3, fd2 off: 5
+</code></pre><p>这就是说明，一个程序用open()打开文件多次的话，不同的fd会指向不同的文件表项，其中包含了“当前文件偏移量”，及时都是指向的同一个文件。</p>
+<h3 id="36">3.6</h3>
+<p>我自己测试的程序实际上是可以任意位置读写的，和书上的答案有所不同。首先是打开文件，然后用lseek()定位到一个任意位置开始读取一定长度的字符:</p>
+<pre><code>lseek(fd, 1, SEEK_SET);
+read(fd, buf, 32);
+printf(&quot;read file(seek (1)):%s\n&quot;, buf);
+</code></pre><p>然后再一次使用lseek()继续定位一个位置，再进行写操作。</p>
+<pre><code>lseek(fd, 1, SEEK_SET);
+write(fd, buf2, sizeof(buf2)/sizeof(*buf2));
+</code></pre><p>实际上，lseek可以定位到任意位置，也就是可以大于文件字符大小，造成文件空洞的现象。</p>
+
+
+
+                    </div>
+                </div>
+
+                
+                    <div class="col-sm-12 col-md-3">
+                        <nav id="TableOfContents" class="sticky-top">
+  <ul>
+    <li><a href="#文件描述符">文件描述符</a></li>
+    <li><a href="#open标志位">open()标志位</a></li>
+    <li><a href="#习题-writeup">习题 writeup</a>
+      <ul>
+        <li><a href="#33">3.3</a></li>
+        <li><a href="#36">3.6</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                
+            </div>
+
+            <div class="row">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    
+                        <div class="navigation">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-left">
+                                            <a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/">
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225 c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z" />
+    </svg>
+</span>
+
+                                                <span class="text">6-828-操作系统工程-Lab6-Network Driver(Final)</span>
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-right">
+                                            <a href="/blog/c-i-c&#43;&#43;/apue-file-and-directory/">
+                                                <span class="text">apue-file and directory</span>
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5 c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z" />
+    </svg>
+</span>
+
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+
+                    
+                        
+                            <a href="https://www.fatwaer.store">@Powered by Hugo and the alageek theme</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/go.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C&#43;&#43;.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

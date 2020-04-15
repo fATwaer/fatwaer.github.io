@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>6-828-操作系统工程-Lec4-7课件笔记整理 - fatwaer</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="fatwaer&#39;s blog">
+    <meta property="og:site_name" content="fatwaer" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" />
+    <meta property="og:title" content="6-828-操作系统工程-Lec4-7课件笔记整理" />
+    <meta property="og:image" content="//images/whoami/5.jpg" />
+    <meta property="og:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <meta property="twitter:title" content="6-828-操作系统工程-Lec4-7课件笔记整理" />
+    <meta property="twitter:image" content="//images/whoami/5.jpg" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <link rel="canonical" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css" />
+    
+    
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="/images/whoami/5.jpg">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="fatwaer" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+    
+
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="/images/whoami/5.jpg" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        fatwaer
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://404.html">
+                                
+                                Click me
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    <h1 class="mx-0 mx-md-4">
+                        6-828-操作系统工程-Lec4-7课件笔记整理
+                    </h1>
+
+                    <div class="mb-4 mb-md-5 meta">
+                        <span class="date" title='Wed Apr 11 2018 10:59:57 UTC'>
+                            April 11, 2018
+                        </span>
+
+                        
+                            
+                        
+
+                        <span class="reading-time middot">
+                            3 minutes
+                        </span>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/os">OS</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="markdown">
+                        
+    
+    <h1 id="lec4-shell--os">Lec4 shell / OS</h1>
+<hr>
+<p><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt</a>
+process = address space + thread
+app -&gt; printf() -&gt; write() -&gt; SYSTEM CALL -&gt; sys_write() -&gt; ..</p>
+<p><code>Homework2</code></p>
+<ul>
+<li>
+<p>exec:
+execv()一个参数是用来执行命令，另一个让函数知道参数的结束。
+exec程序结束后
+execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()</p>
+</li>
+<li>
+<p>redirect
+关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。</p>
+</li>
+<li>
+<p>pipe
+如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。
+reader不关掉写端，读不到数据。
+writer不关读段，正常执行。
+pipe的好处，例如 <code>ls | sort | uniq | wc</code>指令，如果没有pipe的话，指令则只能这样写<code>ls &gt; temp1 ; sort temp1 &gt; temp2; uniq temp2 &gt; temp3; wc temp3 &gt; temp4; cat temp4</code>
+<em>how does the kernel know when to free the pipe buffer?</em></p>
+</li>
+</ul>
+<p><code>fork</code></p>
+<p>sleep 5 | ls</p>
+<p>left | right | result
+unfork | fork | sleep -&gt; ls
+fork | fork | ls / not sleep
+fork | unfork | ls / not sleep</p>
+<p>linux 情况是 ls -&gt; sleep，最后发现父进程并没有等子进程完成就结束了。
+正常流程应该是 主进程-&gt;fork1()-&gt;fork2()-&gt;exec &lsquo;ls&rsquo;
+-&gt;exec &lsquo;sleep 5&rsquo;
+-&gt;wait(fork1()) -&gt; wait(fork2()) -&gt; 主进程回收。</p>
+<p><code>UNIX system call observations</code></p>
+<p>The fork/exec split looks wasteful &ndash; fork() copies mem, exec() discards.</p>
+<p>FDs hide specifics that may be important
+e.g. block size for on-disk files
+e.g. timing and size of network messages</p>
+<p>kernel:
+abstract resources rather than raw hardware
+File system, not raw disk
+Processes, not raw CPU/memory
+TCP, not ethernet packets
+abstractions often ease isolation, multiplexing and interaction
+also more convenient and portable</p>
+<ul>
+<li>Processors provide mechanisms that help with isolation
+<ul>
+<li>Hardware provides user mode and kernel mode
+<ul>
+<li>some instructions can only be executed in kernel mode
+device access, processor configuration, isolation mechanisms</li>
+</ul>
+</li>
+<li>Hardware forbids apps from executing privileged instructions
+<ul>
+<li>instead traps to kernel mode</li>
+<li>kernel can clean up (e.g., kill the process)</li>
+</ul>
+</li>
+<li>Hardware lets kernel mode configure various constraints on user mode
+most critical: page tables to limit user s/w to its own address space</li>
+</ul>
+</li>
+</ul>
+<h1 id="lecture-5-isolation-mechanisms">Lecture 5: Isolation mechanisms</h1>
+<h2 id="httpspdoscsailmitedu68282017lecl-internaltxt"><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt</a></h2>
+<ul>
+<li>
+<p>What is isolation?</p>
+<ol>
+<li>进程隔离内存空间</li>
+<li>阻止进程X破坏偷取进程Y内存空间，或者使用100%CPU，改变FD，进程状态等</li>
+<li>阻止进程影响操作系统</li>
+</ol>
+</li>
+<li>
+<p>the kernel uses hardware mechanisms as part of process isolation:</p>
+<ol>
+<li>user/kernel mode flag</li>
+<li>address spaces</li>
+<li>timeslicing</li>
+<li>system call interface</li>
+</ol>
+</li>
+</ul>
+<h2 id="implement-system-call">implement system call</h2>
+<ul>
+<li>how to do a system call &ndash; switching CPL
+Q: would this be an OK design for user programs to make a system call:
+set CPL=0
+jmp sys_open
+bad: user-specified instructions with CPL=0
+Q: how about a combined instruction that sets CPL=0,
+but <em>requires</em> an immediate jump to someplace in the kernel?
+bad: user might jump somewhere awkward in the kernel
+<em>the x86 answer</em>:
+<strong>there are only a few permissible kernel entry points (&ldquo;vectors&rdquo;) INT instruction sets CPL=0 and jumps to an entry point but user code can&rsquo;t otherwise modify CPL or jump anywhere else in kernel system call return sets CPL=3 before returning to user code also a combined instruction (can&rsquo;t separately set CPL and jmp)</strong></li>
+</ul>
+<p><strong>使用INT指令将CPL位置为0，存储少量用户寄存器的值（  err, eip, cs, eflags, esp, ss）到内核的栈中，并且跳转到内核空间，IRET指令相反。</strong></p>
+<ul>
+<li>how to create isolated address spaces?
+xv6 uses x86 &ldquo;paging hardware&rdquo; in the <em>memory management unit</em> (MMU)
+MMU translates (or &ldquo;maps&rdquo;) every address issued by program</li>
+</ul>
+<pre><code>    CPU -&gt; MMU -&gt; RAM
+            |
+         pagetable
+</code></pre><pre><code>VA -&gt; PA
+MMU translates all memory references: user and kernel, instructions and data
+instructions use only VAs, never PAs
+</code></pre>
+<p>kernel sets up a different page table for each process
+each process&rsquo;s page table allows access only to that process&rsquo;s RAM
+<strong>lab2中Page Table的实现就有关于虚拟内存到物理内存的映射</strong></p>
+<p><strong>虚拟内存模型</strong></p>
+<pre><code>  FFFFFFFF:
+            ...
+  80000000: kernel
+            user stack
+            user data
+  00000000: user instructions
+</code></pre><h2 id="fork出一个新的进程">Fork出一个新的进程</h2>
+
+
+
+                    </div>
+                </div>
+
+                
+                    <div class="col-sm-12 col-md-3">
+                        <nav id="TableOfContents" class="sticky-top">
+  <ul>
+    <li><a href="#httpspdoscsailmitedu68282017lecl-internaltxt"></a></li>
+    <li><a href="#implement-system-call">implement system call</a></li>
+    <li><a href="#fork出一个新的进程">Fork出一个新的进程</a></li>
+  </ul>
+</nav>
+                    </div>
+                
+            </div>
+
+            <div class="row">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    
+                        <div class="navigation">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-left">
+                                            <a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225 c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z" />
+    </svg>
+</span>
+
+                                                <span class="text">6.828-操作系统工程-Lec1-3课件笔记和作业</span>
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-right">
+                                            <a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/">
+                                                <span class="text">6.828-操作系统工程-Lab2:Memory Management</span>
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5 c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z" />
+    </svg>
+</span>
+
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+
+                    
+                        
+                            <a href="https://www.fatwaer.store">@Powered by Hugo and the alageek theme</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/go.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C&#43;&#43;.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

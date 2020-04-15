@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Protection Mechanism on 80386 - alaGeek Theme</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="Hugo alaGeek Theme">
+    <meta property="og:site_name" content="alaGeek Theme" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/" />
+    <meta property="og:title" content="Protection Mechanism on 80386" />
+    <meta property="og:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="og:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta property="twitter:site" content="@?">
+    
+
+    <meta property="twitter:title" content="Protection Mechanism on 80386" />
+    <meta property="twitter:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta name="flattr:id" content="?">
+    
+
+    <link rel="canonical" href="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/css/main.css" />
+
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="https://gokmengorgen.net/img/laughing-man-favicon.png">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="alaGeek Theme" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto offset-lg-1 d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="https://gokmengorgen.net/img/laughing-man.png" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        alaGeek Theme
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-patreon" href="https://www.patreon.com/bePatron?u=10637849">
+                                
+                                Become a patron
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://www.buymeacoffee.com/gokmen">
+                                
+                                Buy me a coffee
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <h1 class="mx-0 mx-md-4">
+                        Protection Mechanism on 80386
+                    </h1>
+                    <div class="markdown">
+                        
+    
+    <p>80386 下的保护模式划为5个部分：</p>
+<ol>
+<li>类型检查</li>
+<li>界限检查</li>
+<li>可寻址域的限制</li>
+<li>过程调用的限制</li>
+<li>指令集的限制</li>
+</ol>
+<p>事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。</p>
+<h1 id="段级别的保护">段级别的保护</h1>
+<p>段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。</p>
+<blockquote>
+<p>段描述符格式</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-1.gif" alt="fig6-1.gif"></p>
+<p>上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。</p>
+<p>当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register.png" alt="segment-register.png"></p>
+<h2 id="段机制的类型检查">段机制的类型检查</h2>
+<p>描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。</p>
+<ul>
+<li>
+<p>在数据段的 writable bit 代表正在执行的指令可否写入到该段。</p>
+</li>
+<li>
+<p>代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。</p>
+<p>一个可读可执行的段可以被两种形式加载：</p>
+<ol>
+<li>通过 CS 寄存器，例如 ljmp cs:addr</li>
+<li>加载到通用段寄存器中</li>
+</ol>
+</li>
+</ul>
+<p>类型检查会在两种情况下进行：</p>
+<ol>
+<li>
+<p>当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：</p>
+<ul>
+<li>CS 寄存器只能加载可执行的段</li>
+<li>不可读但是可执行的段不能被加载到数据段寄存器中</li>
+<li>只有科协的数据段能被加载到SS寄存器</li>
+</ul>
+</li>
+<li>
+<p>当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：</p>
+<ul>
+<li>不能尝试往可执行的段中写入</li>
+<li>不能往w位未置位的数据段中写入</li>
+<li>不能读取r位未置位的可执行段（数据段默认可读）</li>
+</ul>
+</li>
+</ol>
+<h2 id="段机制的界限检查">段机制的界限检查</h2>
+<p>故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</p>
+<blockquote>
+<p>bit 组合</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/table6-2.png" alt="table6-2.png"></p>
+<p>除去 expand-down 类型的数据段，下列这些情况会产生一般保护错误（general-protection exception）：</p>
+<ol>
+<li>尝试访问1字节的地址，地址大于界限</li>
+<li>尝试访问1字的地址，地址大于等于界限</li>
+<li>尝试访问2字的地址，地址大于等于界限值-2</li>
+</ol>
+<p>界限的检查能捕获一些程序的运行错误例如非法的指针计算。这些错误会在刚刚发生时被检测到，所以检测这些错误更加简单，如果没有这个机制，这些错误可能会影响到其他的部件，到那时候再去追踪就难多了。</p>
+<h3 id="特权等级">特权等级</h3>
+<p>特权等级分为四级，但是基本只会用到两级，最高特权级别 ring 0和最低的特权级别 ring 3。</p>
+<p><img src="/images/operating-system/6.828/protection/ring.png" alt="ring.png"></p>
+<p>特权等级在以下这些地方展现：</p>
+<ul>
+<li>
+<p>CPL(Current privilege level): CPL 代表当前正在运行的程序或者任务的权限等级，存储在CS或者SS段寄存器的第0和1位。通常CPL和当前运行的代码段的等级相同，当CPL发生改变时，代表程序在不同特权等级之间的控制转移。</p>
+<p>但是当代码段描述符的 conforming 位置位时，情况有所不同，conforming 置位的代码段能被特权等级与其相等或者更低权限的任务所访问，并且，在执行 conforming 置位的代码时，CPL不会发生改变，所以通常 conforming 代码段用于低权限任务需要执行数学函数或者异常处理函数等情况。</p>
+</li>
+<li>
+<p>DPL(descriptor privilege level): 在段描述符或者门描述符中存在一个域用于表明这个描述符的特权等级，当正在执行的代码段尝试去访问一个段或者门时，CPL和RPL就会与DPL进行比较，DPL根据段或门的类型不同会有不同的解释方法：</p>
+<ul>
+<li>数据段：DPL代表可以访问该段的最低权限，比如数据段的DPL位1，仅只有程序运行在CPL为0或1时才能访问该段。</li>
+<li>非 conforming 的代码段（不使用 call gate）：DPL代表程序必须运行在的特权等级（即使特权等级大于DPL也不行）</li>
+<li>Call gate：DPL代表可以访问该段的最低权限，同数据段</li>
+<li>使用call gate 访问代码段：DPL代表可以访问该段的最高权限，比如某个代码段的DPL为2，运行在特权等级 0 或者 1 的程序无法访问。</li>
+<li>TSS：DPL代表可以访问该段的最低权限，同数据段</li>
+</ul>
+</li>
+<li>
+<p>RPL(Requested privilege level): RPL 是存储在段选择子第0 和 1 位，处理器在检查特权等级时会同时检查 CPL 和 RPL。即使程序运行的特权等级 (CPL) 已经满足了相应段的特权等级 (DPL)，如果 RPL 不能满足 DPL 的话，访问段的操作仍然会被拒绝。这意味着，如果 RPL 树枝上大于 CPL，那么RPL将会作为尝试去访问相应段的特权等级，反之亦然。RPL 可以被保证 特权代码不会代表应用程序去访问一个该应用程序并没有权限的段。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register-format.png" alt="segment-register-format.png"></p>
+<p>关于 RPL 的作用在  Intel® 64 Developer’s Manual : <strong>4.10.4 Checking Caller Access Privileges (ARPL Instruction)</strong> 里面有几个例子进行说明。</p>
+<p>当一个应用程序过程(the calling procedure)调用操作系统 的一个过程(the called procedure)时，在执行操作系统过程中会将特权等级设置为应用程序的段选择子的 RPL。当操作系统尝试去访问相关的段时，处理器会对 RPL 而不是特权等级值更低的 CPL（此时为0）进行特权等级检查。</p>
+<p><img src="/images/operating-system/6.828/protection/rpl.png" alt="rpl.png"></p>
+<p>在上图中，应用程序正运行在代码段A中，处理数据段D1中的数据，此时在数据段D1中指向了一个特权数据结构（在数据段D中的操作系统数据结构，数据段的 DPL 为0）。因为 CPL 的值大于特权等级值，权限不足以访问。</p>
+<p>为了访问到数据段 D，应用程序执行了一个调用，并且通过栈传递了段选择子 D1（存在RPL） 到操作系统。在传递段选择子前，应用程序会将段选择子设置为当前的 CPL （SS或者CS中）。当通过门 C （运行在特权等级0）利用段选择子 D1 （栈上的值）访问数据段 D时，由于D1的RPL要大于DPL，访问数据段 D 的操作被拒绝。</p>
+<p>该部分后面还有一种情况，通过门调用时，由于应用程序可以修改栈上的段选择器中的 RPL 值（对应图中数据段D2），这会导致保护机制被破坏，于是有了 ARPL 指令对栈上的 RPL 和调用此操作系统过程的程序的 CPL 进行比较。</p>
+</li>
+</ul>
+<h2 id="段机制的数据的访问限制">段机制的数据的访问限制</h2>
+<p>为了访问到在内存中的操作数，程序必须将数据段加载到数据段(DS, ES, FS, GS, SS)寄存器中。处理器会在访问数据段时自动比较特权等级。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-3.gif" alt="fig6-3.gif"></p>
+<p>数据段寄存器能加载一个数据段的前提是DPL大于RPL和CPL。</p>
+<h2 id="段机制的控制转移限制">段机制的控制转移限制</h2>
+<p>控制转移往往伴随着JMP, CALL, RET, INT, IRET指令以及中断和异常机制。在同一个代码段的JMP, CALL, RET仅仅只有段界限检查。远距离的调用或者跳转会引用到其他段，因此，处理器会进行特权检查。</p>
+<p>例如：ljmp   $0x8,$0x7c32，$0x8为段寄存器值。</p>
+<p>JMP 或者 CALL 会通过两种方式引用另外一个段：</p>
+<ol>
+<li>操作数中存在另一个可执行的代码段描述符</li>
+<li>操作数中有一个调用门描述符</li>
+</ol>
+<p>一般情况下，处理器正在运行的代码段的 DPL 和 CPL 相等，但是如果代码段的 conforming 位置位时，CPL 可能大于 DPL。所以只有当 DPL 和 CPL 相等时或者代码段的conforming 位置位并且 DPL 小于等于 CPL 时，JMP和CALL能够直接从原先的代码段跳转到另一个代码段。</p>
+<blockquote>
+<p>代码段的检查</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-4.gif" alt="fig6-4.gif"></p>
+<h3 id="门限描述符对过程调用的保护">门限描述符对过程调用的保护</h3>
+<p>一共有4中描述符用于在不同特权等级间进行跳转：</p>
+<ul>
+<li>call gate</li>
+<li>Trap gates</li>
+<li>Interrupt gates</li>
+<li>Task gates</li>
+</ul>
+<p>call gate 和普通描述符一样，定义在GDT或者LDT中，它定义了一个过程调用的入口和调用该过程所需要的特权等级。call gate描述符对于jmp和call指令来说和代码段的处理方式一样。</p>
+<blockquote>
+<p>call gate</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-5.gif" alt="fig6-5.gif"></p>
+<p>selector 和 offset 域能形成一个到调用过程入口的指针，call gate 保证能跳转到另一个段的合法地址，而不是跳转到一个过程调用的中间或者&hellip;.一条指令的中间。一条指令的控制转移的偏移地址不会在call gate跳转中使用（前面那种跳转到中途的情况）。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-6.gif" alt="fig6-6.gif"></p>
+<p>执行指令时，首先通过操作数中的段选择器得到门限描述符的偏移，在门限描述符中的 selector 字段获得目标调用过程的代码段描述符，执行过程调用，在这过程中，一共涉及到4个特权等级，CPL，RPL，门限的 DPL 和目标代码段的 DPL。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-7.gif" alt="fig6-7.gif"></p>
+<p>通过 gate 可以实现不同特权等级的转移，但是只有通过 call 指令能切换到更低的特权等级上，而 jmp 指令只能在同特权等级之间跳转（不考虑comforming 代码段）。</p>
+<p>对于 jmp 指令，要求：</p>
+<pre><code>MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL = CPL
+</code></pre><p>对于 call 指令或者 jmp 目的代码段为 comforming：</p>
+<pre><code>MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL &lt;= CPL
+</code></pre><h3 id="栈切换">栈切换</h3>
+<p>为了维护系统的整体性，任意特权等级拥有各自独立的栈，处理器通过TSS（task state segment）定位这些不同特权等级的栈。比如通过call gate切换特权等级时，新的栈指针将会从tss中读取出来。</p>
+<blockquote>
+<p>TSS</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-8.gif" alt="fig6-8.gif"></p>
+<p>处理器会利用目标代码段的DPL找到对应特权等级（PL 0，1，2）的栈，并且 DPL 必须与 CPL 相等。TSS 中没有对应特权等级为3的栈，因为特权等级3的过程不能被其他任意低于其特权等级的过程调用。每个栈都必须有足够的空间去存储 ss:esp，返回地址，参数等。</p>
+<p>为了在不同特权等级之间调用过程，处理器必须将调用者的参数从旧的栈帧中拷贝到新特权等级的栈帧中去。call gate 描述符中的 count 字段代表多少双字（doublewords）需要拷贝，如果count为0，拷贝就不会发生。</p>
+<blockquote>
+<p>切换特权等级的栈切换：</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-9.gif" alt="fig6-9.gif"></p>
+<ol>
+<li>新栈检查是否有足够的空间容纳参数等，否则产生一个栈错误，错误代码设置为0.</li>
+<li>将旧栈SS:ESP压入新栈（占用两个双字）</li>
+<li>复制剩下的参数</li>
+<li>调用者的call的下一条指令地址以 CS:EIP 压入新栈</li>
+<li>将新的 SS:ESP 指向新栈栈顶</li>
+</ol>
+<h3 id="从过程调用中返回ret">从过程调用中返回（ret）</h3>
+<p>和 call 指令类似，同一个代码段之间的 ret 只有界限检查。对于段间的 ret，首先会弹出由 call 压入的返回地址，通常情况下时合法的，但是也有可能由于调用过程替换掉了这个地址或者没有很好地维护栈，这个返回地址也是不可信的，所以权限检查还是会有的。</p>
+<p>段之间的 ret 只能返回到与其相等或者更高特权值的等级去，当栈上保存的 CS 中的 RPL 大于当前的 CPL 时，特权等级间的控制转移就会发生：</p>
+<ol>
+<li>检查下表中的内容，加载栈上的 CS:EIP 和 SS:ESP 到相应寄存器。</li>
+<li>原先的栈指针会被 ret 指令做相应的调整，此时 esp 的值不会进行界限检查，如果 esp 实在超出了界限，那么下次对栈的操作将会产生错误。</li>
+<li>基础段寄存器的特权值将会被检查，如果这些段寄存器引用了那些 DPL 大于新 CPL（栈上保存的CS得到） 的段，那么段寄存器就会加载 null selector，即 GDT 中的一个 null 描述符（INDEX = 0, TI = 0）。并且，此时不会产生异常，直到下次操作相应段内存时产生一般保护异常。</li>
+</ol>
+<pre><code>SF = Stack Fault
+GP = General Protection Exception
+NP = Segment-Not-Present Exception
+
+Type of Check                                  Exception   Error Code
+
+ESP is within current SS segment               SF          0
+ESP + 7 is within current SS segment           SF          0
+RPL of return CS is greater than CPL           GP          Return CS
+Return CS selector is not null                 GP          Return CS
+Return CS segment is within descriptor
+  table limit                                  GP          Return CS
+Return CS descriptor is a code segment         GP          Return CS
+Return CS segment is present                   NP          Return CS
+DPL of return nonconforming code
+  segment = RPL of return CS, or DPL of
+  return conforming code segment &lt;= RPL
+  of return CS                                 GP          Return CS
+ESP + N + 15 is within SS segment
+N   Immediate Operand of RET N Instruction     SF          Return SS
+SS selector at ESP + N + 12 is not null        GP          Return SS
+SS selector at ESP + N + 12 is within
+  descriptor table limit                       GP          Return SS
+SS descriptor is writable data segment         GP          Return SS
+SS segment is present                          SF          Return SS
+Saved SS segment DPL = RPL of saved
+  CS                                           GP          Return SS
+Saved SS selector RPL = Saved SS
+  segment DPL                                  GP          Return SS
+</code></pre><h2 id="指令集的限制">指令集的限制</h2>
+<p>影响到保护机制的指令分为两类，特权指令，通常被用于系统控制；敏感指令，通常被用作 IO或者 IO相关的操作。</p>
+<p>特权指令如下：</p>
+<pre><code>CLTS -- Clear Task-Switched Flag
+HLT -- Halt Processor
+LGDT -- Load GDL Register
+LIDT -- Load IDT Register
+LLDT -- Load LDT Register
+LMSW -- Load Machine Status Word
+LTR -- Load Task Register
+MOV to/from CRn -- Move to Control Register n
+MOV to /from DRn -- Move to Debug Register n
+MOV to/from TRn -- Move to Test Register n
+</code></pre><h1 id="页级别保护">页级别保护</h1>
+<p>页级别的保护较为简单，分成有两种：</p>
+<ol>
+<li>对可寻址的内存进行限制</li>
+<li>类型检查</li>
+</ol>
+<h2 id="页机制中的寻址限制">页机制中的寻址限制</h2>
+<blockquote>
+<p>PDE/PTE</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-10.gif" alt="fig6-10.gif"></p>
+<p>在页机制中，特权等级被分为了两级：</p>
+<ol>
+<li>Supervisor level (U/S=0) ：对应操作系统的软件和相关数据</li>
+<li>User level (U/S=1)：对于应用程序级别的过程和数据</li>
+</ol>
+<p>页机制中的特权等级和段机制中的 CPL 相关联，CPL 处于 ring 0,1,2 代表处理器执行在 supervisor level， CPL 处于 ring 3 代表执行在 user level。</p>
+<p>当处理器执行在 user level ，只能寻址那些属于用户级别的页，如果处于  supervisor level ，那么处理器能够寻址所有的页。</p>
+<h2 id="页机制中的类型检查">页机制中的类型检查</h2>
+<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论。处于 user 级别时，对于supervisor 的所有的页都是不可读写的。</p>
+<p><strong>参考资料</strong>：</p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-1.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</a></p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/c06.htm">6.828 readings, Protection</a></p>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+                        <div>
+                            <a class="mx-1 mr-md-2 ml-md-0  text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </div>
+                    
+
+                    
+                        
+                            <a href="https://gokmengorgen.net">© 2018 by Gökmen Görgen</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+    <a href="https://gitlab.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitLab">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1792 1792">
+            <path d="M104 706l792 1015-868-630q-18-13-25-34.5t0-42.5l101-308zm462 0h660l-330 1015zm-198-612l198 612h-462l198-612q8-23 33-23t33 23zm1320 612l101 308q7 21 0 42.5t-25 34.5l-868 630 792-1015zm0 0h-462l198-612q8-23 33-23t33 23z"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://github.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitHub">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M8 0C3.58 0 0 3.582 0 8c0 3.535 2.292 6.533 5.47 7.59.4.075.547-.172.547-.385 0-.19-.007-.693-.01-1.36-2.226.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.725-.496.056-.486.056-.486.803.056 1.225.824 1.225.824.714 1.223 1.873.87 2.33.665.072-.517.278-.87.507-1.07-1.777-.2-3.644-.888-3.644-3.953 0-.873.31-1.587.823-2.147-.09-.202-.36-1.015.07-2.117 0 0 .67-.215 2.2.82.64-.178 1.32-.266 2-.27.68.004 1.36.092 2 .27 1.52-1.035 2.19-.82 2.19-.82.43 1.102.16 1.915.08 2.117.51.56.82 1.274.82 2.147 0 3.073-1.87 3.75-3.65 3.947.28.24.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.14.46.55.38C13.71 14.53 16 11.53 16 8c0-4.418-3.582-8-8-8"/>
+        </svg>
+    </a>
+
+
+                    
+
+                    
+    <a href="https://twitter.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Twitter">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M16 3.038c-.59.26-1.22.437-1.885.517.677-.407 1.198-1.05 1.443-1.816-.634.37-1.337.64-2.085.79-.598-.64-1.45-1.04-2.396-1.04-1.812 0-3.282 1.47-3.282 3.28 0 .26.03.51.085.75-2.728-.13-5.147-1.44-6.766-3.42C.83 2.58.67 3.14.67 3.75c0 1.14.58 2.143 1.46 2.732-.538-.017-1.045-.165-1.487-.41v.04c0 1.59 1.13 2.918 2.633 3.22-.276.074-.566.114-.865.114-.21 0-.41-.02-.61-.058.42 1.304 1.63 2.253 3.07 2.28-1.12.88-2.54 1.404-4.07 1.404-.26 0-.52-.015-.78-.045 1.46.93 3.18 1.474 5.04 1.474 6.04 0 9.34-5 9.34-9.33 0-.14 0-.28-.01-.42.64-.46 1.2-1.04 1.64-1.7z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a rel="me" href="https://mastodon.url/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Mastodon">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216.4144 232.00976">
+            <path d="M211.80734 139.0875c-3.18125 16.36625-28.4925 34.2775-57.5625 37.74875-15.15875 1.80875-30.08375 3.47125-45.99875 2.74125-26.0275-1.1925-46.565-6.2125-46.565-6.2125 0 2.53375.15625 4.94625.46875 7.2025 3.38375 25.68625 25.47 27.225 46.39125 27.9425 21.11625.7225 39.91875-5.20625 39.91875-5.20625l.8675 19.09s-14.77 7.93125-41.08125 9.39c-14.50875.7975-32.52375-.365-53.50625-5.91875C9.23234 213.82 1.40609 165.31125.20859 116.09125c-.365-14.61375-.14-28.39375-.14-39.91875 0-50.33 32.97625-65.0825 32.97625-65.0825C49.67234 3.45375 78.20359.2425 107.86484 0h.72875c29.66125.2425 58.21125 3.45375 74.8375 11.09 0 0 32.975 14.7525 32.975 65.0825 0 0 .41375 37.13375-4.59875 62.915"/>
+            <path fill="#fff" d="M177.50984 80.077v60.94125h-24.14375v-59.15c0-12.46875-5.24625-18.7975-15.74-18.7975-11.6025 0-17.4175 7.5075-17.4175 22.3525v32.37625H96.20734V85.42325c0-14.845-5.81625-22.3525-17.41875-22.3525-10.49375 0-15.74 6.32875-15.74 18.7975v59.15H38.90484V80.077c0-12.455 3.17125-22.3525 9.54125-29.675 6.56875-7.3225 15.17125-11.07625 25.85-11.07625 12.355 0 21.71125 4.74875 27.8975 14.2475l6.01375 10.08125 6.015-10.08125c6.185-9.49875 15.54125-14.2475 27.8975-14.2475 10.6775 0 19.28 3.75375 25.85 11.07625 6.36875 7.3225 9.54 17.22 9.54 29.675"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://t.me/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Telegram">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+            <circle cx="120" cy="120" r="120"/>
+            <path fill="#c8daea" d="m98 175c-3.8876 0-3.227-1.4679-4.5678-5.1695L82 132.2059 170 80"/>
+            <path fill="#a9c9dd" d="m98 175c3 0 4.3255-1.372 6-3l16-15.558-19.958-12.035"/>
+            <path fill="#eff7fc" d="m100.04 144.41 48.36 35.729c5.5185 3.0449 9.5014 1.4684 10.876-5.1235l19.685-92.763c2.0154-8.0802-3.0801-11.745-8.3594-9.3482l-115.59 44.571c-7.8901 3.1647-7.8441 7.5666-1.4382 9.528l29.663 9.2583 68.673-43.325c3.2419-1.9659 6.2173-0.90899 3.7752 1.2584"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://www.linkedin.com/in/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Linkedin">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M13.632 13.635h-2.37V9.922c0-.886-.018-2.025-1.234-2.025-1.235 0-1.424.964-1.424 1.96v3.778h-2.37V6H8.51v1.04h.03c.318-.6 1.092-1.233 2.247-1.233 2.4 0 2.845 1.58 2.845 3.637v4.188zM3.558 4.955c-.762 0-1.376-.617-1.376-1.377 0-.758.614-1.375 1.376-1.375.76 0 1.376.617 1.376 1.375 0 .76-.617 1.377-1.376 1.377zm1.188 8.68H2.37V6h2.376v7.635zM14.816 0H1.18C.528 0 0 .516 0 1.153v13.694C0 15.484.528 16 1.18 16h13.635c.652 0 1.185-.516 1.185-1.153V1.153C16 .516 15.467 0 14.815 0z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="mailto:?@localhost"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Email">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16">
+            <path d="M0 4v8c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H1c-.55 0-1 .45-1 1zm13 0L7 9 1 4h12zM1 5.5l4 3-4 3v-6zM2 12l3.5-3L7 10.5 8.5 9l3.5 3H2zm11-.5l-4-3 4-3v6z"/>
+        </svg>
+    </a>
+
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

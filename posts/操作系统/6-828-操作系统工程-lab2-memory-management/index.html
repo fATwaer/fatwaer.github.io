@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>6.828-操作系统工程-Lab2:Memory Management - alaGeek Theme</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="Hugo alaGeek Theme">
+    <meta property="og:site_name" content="alaGeek Theme" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/" />
+    <meta property="og:title" content="6.828-操作系统工程-Lab2:Memory Management" />
+    <meta property="og:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="og:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta property="twitter:site" content="@?">
+    
+
+    <meta property="twitter:title" content="6.828-操作系统工程-Lab2:Memory Management" />
+    <meta property="twitter:image" content="/https://gokmengorgen.net/img/laughing-man.png" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="Hugo alaGeek Theme" />
+
+    
+        <meta name="flattr:id" content="?">
+    
+
+    <link rel="canonical" href="/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/css/main.css" />
+
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="https://gokmengorgen.net/img/laughing-man-favicon.png">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="alaGeek Theme" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto offset-lg-1 d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="https://gokmengorgen.net/img/laughing-man.png" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        alaGeek Theme
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-patreon" href="https://www.patreon.com/bePatron?u=10637849">
+                                
+                                Become a patron
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://www.buymeacoffee.com/gokmen">
+                                
+                                Buy me a coffee
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <h1 class="mx-0 mx-md-4">
+                        6.828-操作系统工程-Lab2:Memory Management
+                    </h1>
+                    <div class="markdown">
+                        
+    
+    <h2 id="exercise-1-内存初始化">Exercise 1: 内存初始化</h2>
+<p>在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。</p>
+<blockquote>
+<p>地址转换</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/lab2/address-translation.png" alt="地址转换"></p>
+<p>首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。</p>
+<p>线性地址转换过程:</p>
+<p><img src="/images/operating-system/6.828/lab2/fig5-8.png" alt="fig5-8.png"></p>
+<p>段翻译机制输出一个线性地址（Linear address）
+Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。</p>
+<pre><code>// A linear address 'la' has a three-part structure as follows:
+//
+// +--------10------+-------10-------+---------12----------+
+// | Page Directory |   Page Table   | Offset within Page  |
+// |      Index     |      Index     |                     |
+// +----------------+----------------+---------------------+
+//  \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/
+//  \---------- PGNUM(la) ----------/
+//
+// The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.
+// To construct a linear address la from PDX(la), PTX(la), and PGOFF(la),
+// use PGADDR(PDX(la), PTX(la), PGOFF(la)).
+</code></pre><p>首先取线性地址的高10位作为页目录索引(Page Directory Index)，共1024个，从 0 ~ 1023。再使用cr3寄存器中的高二十位定位内存中页目录的基址。</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3.png" alt="cr3.png"></p>
+<p>在页目录和页表中，每个单元都是4bytes。
+<img src="/images/operating-system/6.828/lab2/pagedirectory.png" alt="pagedirectory.png"></p>
+<p>最后在页目录中的寻址组成为：</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3-addressing.png" alt="cr3-addressing.png"></p>
+<p>每个索引只使用高20位进行寻址，因为页操作的最小粒度为4KB。只需要4个字节的前面20位进行寻址就行了，剩下的比特可以用作其他标志位。</p>
+<p>根据前十位索引获得相应的页目录项后，用其前20位作为一个4KB对齐的地址作为页表（Page Table）的基址。然后从线性地址中取出中间的10位作为的索引，得到相应的页表项（Page Table Entry）。</p>
+<p>继续从PTE中取出前20位得到4KB对齐的基址，然后从利用线性地址（LA）最后12位作为在这4K页内的偏移，组合得到32位的地址，即最终的物理地址。</p>
+<p>下面是JOS需要完成的内存布局。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">/*
+</span><span style="color:#75715e"> * Virtual memory map:                                Permissions
+</span><span style="color:#75715e"> *                                                    kernel/user
+</span><span style="color:#75715e"> *
+</span><span style="color:#75715e"> *    4 Gig --------&gt;  +------------------------------+
+</span><span style="color:#75715e"> *                     |                              | RW/--
+</span><span style="color:#75715e"> *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</span><span style="color:#75715e"> *                     :              .               :
+</span><span style="color:#75715e"> *                     :              .               :
+</span><span style="color:#75715e"> *                     :              .               :
+</span><span style="color:#75715e"> *                     |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~| RW/--
+</span><span style="color:#75715e"> *                     |                              | RW/--
+</span><span style="color:#75715e"> *                     |   Remapped Physical Memory   | RW/--
+</span><span style="color:#75715e"> *                     |                              | RW/--
+</span><span style="color:#75715e"> *    KERNBASE, ----&gt;  +------------------------------+ 0xf0000000      --+
+</span><span style="color:#75715e"> *    KSTACKTOP        |     CPU0&#39;s Kernel Stack      | RW/--  KSTKSIZE   |
+</span><span style="color:#75715e"> *                     | - - - - - - - - - - - - - - -|                   |
+</span><span style="color:#75715e"> *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
+</span><span style="color:#75715e"> *                     +------------------------------+                   |
+</span><span style="color:#75715e"> *                     |     CPU1&#39;s Kernel Stack      | RW/--  KSTKSIZE   |
+</span><span style="color:#75715e"> *                     | - - - - - - - - - - - - - - -|                 PTSIZE
+</span><span style="color:#75715e"> *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
+</span><span style="color:#75715e"> *                     +------------------------------+                   |
+</span><span style="color:#75715e"> *                     :              .               :                   |
+</span><span style="color:#75715e"> *                     :              .               :                   |
+</span><span style="color:#75715e"> *    MMIOLIM ------&gt;  +------------------------------+ 0xefc00000      --+
+</span><span style="color:#75715e"> *                     |       Memory-mapped I/O      | RW/--  PTSIZE
+</span><span style="color:#75715e"> * ULIM, MMIOBASE --&gt;  +------------------------------+ 0xef800000
+</span><span style="color:#75715e"> *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
+</span><span style="color:#75715e"> *    UVPT      ----&gt;  +------------------------------+ 0xef400000
+</span><span style="color:#75715e"> *                     |          RO PAGES            | R-/R-  PTSIZE
+</span><span style="color:#75715e"> *    UPAGES    ----&gt;  +------------------------------+ 0xef000000
+</span><span style="color:#75715e"> *                     |           RO ENVS            | R-/R-  PTSIZE
+</span><span style="color:#75715e"> * UTOP,UENVS ------&gt;  +------------------------------+ 0xeec00000
+</span><span style="color:#75715e"> * UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
+</span><span style="color:#75715e"> *                     +------------------------------+ 0xeebff000
+</span><span style="color:#75715e"> *                     |       Empty Memory (*)       | --/--  PGSIZE
+</span><span style="color:#75715e"> *    USTACKTOP  ---&gt;  +------------------------------+ 0xeebfe000
+</span><span style="color:#75715e"> *                     |      Normal User Stack       | RW/RW  PGSIZE
+</span><span style="color:#75715e"> *                     +------------------------------+ 0xeebfd000
+</span><span style="color:#75715e"> *                     |                              |
+</span><span style="color:#75715e"> *                     |                              |
+</span><span style="color:#75715e"> *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</span><span style="color:#75715e"> *                     .                              .
+</span><span style="color:#75715e"> *                     .                              .
+</span><span style="color:#75715e"> *                     .                              .
+</span><span style="color:#75715e"> *                     |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
+</span><span style="color:#75715e"> *                     |     Program Data &amp; Heap      |
+</span><span style="color:#75715e"> *    UTEXT --------&gt;  +------------------------------+ 0x00800000
+</span><span style="color:#75715e"> *    PFTEMP -------&gt;  |       Empty Memory (*)       |        PTSIZE
+</span><span style="color:#75715e"> *                     |                              |
+</span><span style="color:#75715e"> *    UTEMP --------&gt;  +------------------------------+ 0x00400000      --+
+</span><span style="color:#75715e"> *                     |       Empty Memory (*)       |                   |
+</span><span style="color:#75715e"> *                     | - - - - - - - - - - - - - - -|                   |
+</span><span style="color:#75715e"> *                     |  User STAB Data (optional)   |                 PTSIZE
+</span><span style="color:#75715e"> *    USTABDATA ----&gt;  +------------------------------+ 0x00200000        |
+</span><span style="color:#75715e"> *                     |       Empty Memory (*)       |                   |
+</span><span style="color:#75715e"> *    0 ------------&gt;  +------------------------------+                 --+
+</span><span style="color:#75715e"> *
+</span><span style="color:#75715e"> * (*) Note: The kernel ensures that &#34;Invalid Memory&#34; is *never* mapped.
+</span><span style="color:#75715e"> *     &#34;Empty Memory&#34; is normally unmapped, but user programs may map pages
+</span><span style="color:#75715e"> *     there if desired.  JOS user programs map pages temporarily at UTEMP.
+</span><span style="color:#75715e"> */</span>
+
+</code></pre></div><p>首先是执行 i386_detect_memory() 探测内存，分别调用了3次读取CMOS寄存器的函数：</p>
+<pre><code>	basemem = nvram_read(NVRAM_BASELO);
+	extmem = nvram_read(NVRAM_EXTLO);
+	ext16mem = nvram_read(NVRAM_EXT16LO) * 64;
+</code></pre><p>追踪到  kclock.h 注释</p>
+<pre><code>#define	MC_NVRAM_START	0xe	/* start of NVRAM: offset 14 */
+
+...
+
+/* NVRAM bytes 7 &amp; 8: base memory size */
+#define NVRAM_BASELO	(MC_NVRAM_START + 7)	/* low byte; RTC off. 0x15 */
+#define NVRAM_BASEHI	(MC_NVRAM_START + 8)	/* high byte; RTC off. 0x16 */
+
+/* NVRAM bytes 9 &amp; 10: extended memory size (between 1MB and 16MB) */
+#define NVRAM_EXTLO	(MC_NVRAM_START + 9)	/* low byte; RTC off. 0x17 */
+#define NVRAM_EXTHI	(MC_NVRAM_START + 10)	/* high byte; RTC off. 0x18 */
+
+/* NVRAM bytes 38 and 39: extended memory size (between 16MB and 4G) */
+#define NVRAM_EXT16LO	(MC_NVRAM_START + 38)	/* low byte; RTC off. 0x34 */
+#define NVRAM_EXT16HI	(MC_NVRAM_START + 39)	/* high byte; RTC off. 0x35 */
+</code></pre><p>可以看到内存探测可以分为三部分</p>
+<ul>
+<li>base memory 0 ~ 1MB</li>
+<li>extended memory 1MB ~ 16MB</li>
+<li>extended memory 16MB ~ 4G</li>
+</ul>
+<p>内存的初始化可以完成一部分，引导用的内存页分配函数以及准备为每一个页准备一个 PageInfo 结构体进行管理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">boot_alloc()<span style="color:#f92672">:</span>
+    <span style="color:#75715e">// before the page_init(), it&#39;s a temple allocater .
+</span><span style="color:#75715e"></span>    result <span style="color:#f92672">=</span> nextfree;
+    nextfree <span style="color:#f92672">=</span> ROUNDUP(nextfree <span style="color:#f92672">+</span> n, PGSIZE);
+    <span style="color:#66d9ef">if</span>((uint32_t )nextfree <span style="color:#f92672">-</span> KERNBASE <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0xfffffff</span>)
+            panic(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">out of ranges</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">return</span> result;
+
+mem_init()<span style="color:#f92672">:</span>
+    <span style="color:#75715e">//为每一个4K页面准备一个结构体进行管理。
+</span><span style="color:#75715e"></span>    pages <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>)boot_alloc(npages <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> PageInfo));
+    memset(pages, <span style="color:#ae81ff">0</span>, npages <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> PageInfo));
+</code></pre></div><p>根据 page_init() 注释，内存未使用情况应该如下图（白色部分）：</p>
+<p><img src="/images/operating-system/6.828/lab2/mem-layout.png" alt="mem-layout.png"></p>
+<p>在 boot_alloc() 函数中，内存是从 <strong>end</strong> 这个位置开始分配的：</p>
+<pre><code>extern char end[];
+nextfree = ROUNDUP((char *) end, PGSIZE);
+</code></pre><p><strong>end</strong> 是由链接器自动产生的符号，指向内核的 .bss 段的结尾，所以 boot_alloc() 分配的内存都是从内核elf的bss段后开始分配的。</p>
+<p>以下内存不可以被分配（灰色部分）：</p>
+<ol>
+<li>实模式下的 IDT 和 BIOS 数据结构 (page 0)</li>
+<li>IO hole （IOPHYSMEM ~ EXTPHYSMEM）</li>
+<li>之前通过 boot_alloc() 分配掉用于存储页目录和页管理结构体的内存。</li>
+</ol>
+<p>于是在初始化的时候，就将不可再分配的页的引用次数计为1。代码中出现的 basemem 实际上指 0 ~ 640K (从CMOS中读取出来的值)，而不是指广义上的 0 ~ 1MB。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">page_init</span>(<span style="color:#66d9ef">void</span>)
+{
+    size_t i;
+    size_t IOhole_pages <span style="color:#f92672">=</span> (EXTPHYSMEM <span style="color:#f92672">-</span> IOPHYSMEM) <span style="color:#f92672">/</span> PGSIZE;
+    size_t allocated_pages <span style="color:#f92672">=</span> ((uint32_t)boot_alloc(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">-</span> KERNBASE) <span style="color:#f92672">/</span> PGSIZE;
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> npages; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>) {
+		<span style="color:#66d9ef">if</span> (i <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+			pages[i].pp_ref <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;                            
+		<span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> npages_basemem <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> 
+				i <span style="color:#f92672">&lt;</span> npages_basemem <span style="color:#f92672">+</span> IOhole_pages <span style="color:#f92672">+</span> allocated_pages) {
+			pages[i].pp_ref <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+		} <span style="color:#66d9ef">else</span> {
+			pages[i].pp_ref <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+			pages[i].pp_link <span style="color:#f92672">=</span> page_free_list;
+			page_free_list <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>pages[i];
+		}
+    }	
+}
+</code></pre></div><p>页的分配和回收实现为单链表插入与删除。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">page_alloc</span>(<span style="color:#66d9ef">int</span> alloc_flags)
+{
+    <span style="color:#66d9ef">if</span> (page_free_list <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL)
+        <span style="color:#66d9ef">return</span> NULL;
+
+    <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>newpage <span style="color:#f92672">=</span> page_free_list;
+    page_free_list <span style="color:#f92672">=</span> page_free_list<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_link;
+    newpage<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_link <span style="color:#f92672">=</span> NULL;
+
+    <span style="color:#66d9ef">if</span> (alloc_flags <span style="color:#f92672">&amp;</span> ALLOC_ZERO)
+    	memset(page2kva(newpage), <span style="color:#ae81ff">0</span>, PGSIZE);
+
+    <span style="color:#66d9ef">return</span> newpage;
+}
+
+<span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">page_free</span>(<span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>pp)
+{
+	<span style="color:#66d9ef">if</span>(pp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_link <span style="color:#f92672">!</span><span style="color:#f92672">=</span> NULL <span style="color:#f92672">|</span><span style="color:#f92672">|</span> pp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_ref <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+		panic(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">cann&#39;t free or it&#39;s free</span><span style="color:#e6db74">&#34;</span>);
+	<span style="color:#66d9ef">else</span> {
+		pp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_link <span style="color:#f92672">=</span> page_free_list;
+		page_free_list <span style="color:#f92672">=</span> pp;
+	}
+}
+</code></pre></div><p>这部分做到 <code>check_page_free_list(1);</code></p>
+<pre><code>$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+</code></pre><h2 id="练习2">练习2</h2>
+<p>了解x86保护机制和段页翻译.</p>
+<p>参考资料：</p>
+<blockquote>
+<ul>
+<li><a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/toc.htm">Intel 80386 Reference Manual: chapters 5 and 6</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></li>
+</ul>
+</blockquote>
+<p>保护机制的产生实际上是为了探测和找到程序中可能出现的bug。</p>
+<h2 id="练习3">练习3</h2>
+<h3 id="使用qemu和gdb查看内存">使用QEMU和GDB查看内存</h3>
+<p>进入保护模式后可以通过</p>
+<pre><code>ctrl+a c
+</code></pre>
+<p>进入QEMU的监视器，查看内存情况。</p>
+<pre><code>(QEMU) xp phisical address
+</code></pre>
+<p>查看物理地址信息</p>
+<pre><code>(gdb) x/x virtual address
+</code></pre>
+<p>查看虚拟地址信息</p>
+<h2 id="练习4">练习4</h2>
+<p>JOS中定义了两种针对于不同地址的数据类型,<code>uintptr_t</code>代表虚拟地址,<code>physaddr_t</code>表示物理地址,宏定义都为<code>uint32_t</code>。解引用(dereference)都要通过段页机制实现，所以如果对物理地址进行解引用，会有非预期的结果。</p>
+<p><strong>Question</strong></p>
+<ul>
+<li>Assuming that the following JOS kernel code is correct, what type should variable x have, uintptr_t or physaddr_t?
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    mystery_t x;
+    <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> value <span style="color:#f92672">=</span> return_a_pointer();
+    <span style="color:#f92672">*</span>value <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;
+    x <span style="color:#f92672">=</span> (mystery_t) value;
+</code></pre></div></li>
+</ul>
+<p>根据上述对类型的描述，因为有解引用操作，x的类型应该为<code>uintptr_t</code>。</p>
+<h3 id="引用计数">引用计数</h3>
+<p>每一个 struct PageInfo 对应一个4KB物理页，对应一个页，如果计数到达了 0，说明这块内存将不再使用，一般来说，引用计数的值应该等于在 UTOP 以下的页表中出现的次数。因为高于 UTOP 的页表一般被内核所使用，不应该释放。</p>
+<h3 id="page-table-management">Page Table Management</h3>
+<p>因为此时内核已经开启了页机制，所以不可能绕过这个机制，所使用的地址必须映射在页目录中的地址。</p>
+<p><strong>PADDR(va)</strong> : virtual address - KERNELBASE， va 如果小于 KERNELBASE 则 panic。</p>
+<p><strong>KADDR(pa)</strong> : physical address + KERNELBASE，pa 如果超出实际内存大小 则 panic。</p>
+<p>*<em>page2kva(struct PageInfo <em>)</em></em> : struct PageInfo pointer -&gt; virtual address</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">
+pte_t <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">pgdir_walk</span>(pde_t <span style="color:#f92672">*</span>pgdir, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va, <span style="color:#66d9ef">int</span> create)
+{
+    size_t pgdir_index <span style="color:#f92672">=</span> PDX(va);
+    size_t page_offset <span style="color:#f92672">=</span> PTX(va);
+    pde_t dir_entry <span style="color:#f92672">=</span> pgdir[pgdir_index];
+
+	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(dir_entry <span style="color:#f92672">&amp;</span> PTE_P)) {
+        <span style="color:#75715e">// get page table address which a pointer point to .
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span>(create){
+            <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>allocated_page <span style="color:#f92672">=</span> page_alloc(ALLOC_ZERO);
+		   	<span style="color:#66d9ef">if</span>(allocated_page <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL) <span style="color:#66d9ef">return</span> NULL;
+			<span style="color:#75715e">// increment reference count
+</span><span style="color:#75715e"></span>            allocated_page<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_ref<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;       
+            <span style="color:#75715e">// the page physical address
+</span><span style="color:#75715e"></span>			physaddr_t pg_phyaddr <span style="color:#f92672">=</span> page2pa(allocated_page) ; 
+			<span style="color:#75715e">// fill page table entry
+</span><span style="color:#75715e"></span>            pgdir[pgdir_index] <span style="color:#f92672">=</span> pg_phyaddr <span style="color:#f92672">|</span> PTE_P <span style="color:#f92672">|</span> PTE_W <span style="color:#f92672">|</span> PTE_U; 
+		} <span style="color:#66d9ef">else</span> {
+           <span style="color:#66d9ef">return</span> NULL;
+		}
+    }
+
+	<span style="color:#75715e">// point to a page table
+</span><span style="color:#75715e"></span>    pte_t <span style="color:#f92672">*</span>pt_base <span style="color:#f92672">=</span> KADDR(PTE_ADDR(pgdir[pgdir_index]));
+    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span>(pt_base[page_offset]);	
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">boot_map_region</span>(pde_t <span style="color:#f92672">*</span>pgdir, uintptr_t va, 
+                  size_t size, physaddr_t pa, <span style="color:#66d9ef">int</span> perm)
+{
+    pte_t <span style="color:#f92672">*</span>pte;
+	<span style="color:#75715e">// &#39;size&#39; is a multiple of PGSIZE. 
+</span><span style="color:#75715e"></span>    size_t page_num <span style="color:#f92672">=</span> size <span style="color:#f92672">/</span> PGSIZE;
+    uint32_t i;
+
+    <span style="color:#66d9ef">for</span>(i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> page_num; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>)
+    {
+        pte <span style="color:#f92672">=</span> pgdir_walk(pgdir, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)va, true);
+        <span style="color:#66d9ef">if</span> (pte <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL) <span style="color:#66d9ef">return</span>;
+		<span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> pa <span style="color:#f92672">|</span> perm <span style="color:#f92672">|</span> PTE_P;
+        pa <span style="color:#f92672">+</span><span style="color:#f92672">=</span> PGSIZE;
+        va <span style="color:#f92672">+</span><span style="color:#f92672">=</span> PGSIZE;
+    }			
+}
+
+<span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">page_lookup</span>(pde_t <span style="color:#f92672">*</span>pgdir, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va, pte_t <span style="color:#f92672">*</span><span style="color:#f92672">*</span>pte_store)
+{
+    <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>ret <span style="color:#f92672">=</span> NULL;
+    pte_t <span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> pgdir_walk(pgdir, va, false);
+    <span style="color:#66d9ef">if</span>(pte <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL)
+    	<span style="color:#66d9ef">return</span> NULL;
+    <span style="color:#66d9ef">if</span>((<span style="color:#f92672">*</span>pte <span style="color:#f92672">&amp;</span> PTE_P) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)
+    	<span style="color:#66d9ef">return</span> NULL;
+
+    ret <span style="color:#f92672">=</span> pa2page(PTE_ADDR(<span style="color:#f92672">*</span>pte));
+    <span style="color:#66d9ef">if</span>(pte_store <span style="color:#f92672">!</span><span style="color:#f92672">=</span> NULL)
+    {
+    	<span style="color:#f92672">*</span>pte_store <span style="color:#f92672">=</span> pte;
+    }
+    <span style="color:#66d9ef">return</span> ret;
+}
+
+<span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">page_remove</span>(pde_t <span style="color:#f92672">*</span>pgdir, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va)
+{
+	<span style="color:#75715e">// get page table entry and PageInfo.
+</span><span style="color:#75715e"></span>	pte_t <span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> NULL;
+	<span style="color:#66d9ef">struct</span> PageInfo<span style="color:#f92672">*</span> upage <span style="color:#f92672">=</span> page_lookup(pgdir, va, <span style="color:#f92672">&amp;</span>pte);
+
+	<span style="color:#66d9ef">if</span>(upage <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL) <span style="color:#66d9ef">return</span>;
+
+	<span style="color:#75715e">// decrement reference count
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// freeing it if there are no more refs
+</span><span style="color:#75715e"></span>	page_decref(upage);
+
+	<span style="color:#75715e">// flush page-translation cache about this page
+</span><span style="color:#75715e"></span>	tlb_invalidate(pgdir, va);
+
+	<span style="color:#75715e">// clean pte
+</span><span style="color:#75715e"></span>	<span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span> ;                 	
+}
+
+<span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">page_insert</span>(pde_t <span style="color:#f92672">*</span>pgdir, <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>pp, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va, <span style="color:#66d9ef">int</span> perm)
+{
+	<span style="color:#75715e">// modify pde
+</span><span style="color:#75715e"></span>	pte_t <span style="color:#f92672">*</span>entry <span style="color:#f92672">=</span> pgdir_walk(pgdir, va, true);
+	<span style="color:#66d9ef">if</span> (entry <span style="color:#f92672">=</span><span style="color:#f92672">=</span> NULL) 
+		<span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>E_NO_MEM;
+
+	<span style="color:#75715e">// page colides	
+</span><span style="color:#75715e"></span>	pp<span style="color:#f92672">-</span><span style="color:#f92672">&gt;</span>pp_ref<span style="color:#f92672">+</span><span style="color:#f92672">+</span>;
+	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">*</span>entry <span style="color:#f92672">&amp;</span> PTE_P) {
+		<span style="color:#75715e">// decrement and free
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// page invalidate in page_remove()
+</span><span style="color:#75715e"></span>		page_remove(pgdir, va); 
+	}
+
+	<span style="color:#75715e">// modify pte
+</span><span style="color:#75715e"></span>	<span style="color:#f92672">*</span>entry <span style="color:#f92672">=</span> page2pa(pp) <span style="color:#f92672">|</span> perm <span style="color:#f92672">|</span> PTE_P;
+	
+	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Intel TLB 无效技术有两种方法：</p>
+<ul>
+<li>向CR3寄存器写入值时，所有处理器自动刷新相对于非全局TLB表项</li>
+<li>在Pentium Pro及以后的处理器中，invlpg 指令能使映射指定线性地址的单个TLB表项无效</li>
+</ul>
+<p>练习4到此完成。</p>
+<h2 id="练习5">练习5</h2>
+<p><code>Kernal Address Space</code></p>
+<p>JOS把线性地址分为两部分，低地址的用户环境(User enviroment - Processes)和高地址的内核，用户部分在Lab3中加载使用。内存分给内核从<code>KERNBASE</code>开始到内存结束共大约256MB。</p>
+<h3 id="权限和错误隔离">权限和错误隔离</h3>
+<p>为了防止用户代码的bug覆盖写内核数据或者代码导致崩溃，使用权限bit位限制用户代码的权限，使其只能访问其内存空间。对于用户级代码来说大于ULIM的是不允许访问的，属于内核的空间。内存地址[UTOP,ULIM) 对于User和Kernal都是只读的，用于内核暴露一部分只读数据结构给用户。</p>
+<p>完成 mem_init() 剩余的代码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">// Map &#39;pages&#39; read-only by the user at linear address UPAGES
+</span><span style="color:#75715e"></span>boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U <span style="color:#f92672">|</span> PTE_P);
+
+<span style="color:#75715e">// Use the physical memory that &#39;bootstack&#39; refers to as the kernel
+</span><span style="color:#75715e"></span>boot_map_region(kern_pgdir, (KSTACKTOP<span style="color:#f92672">-</span>KSTKSIZE), KSTKSIZE, PADDR(bootstack), PTE_W <span style="color:#f92672">|</span> PTE_P);
+
+<span style="color:#75715e">// Map all of physical memory at KERNBASE.
+</span><span style="color:#75715e"></span>boot_map_region(kern_pgdir, KERNBASE, <span style="color:#ae81ff">0xFFFFFFF</span>, <span style="color:#ae81ff">0</span>, PTE_W <span style="color:#f92672">|</span> PTE_P);
+
+</code></pre></div><p>通过剩下几个测试</p>
+<pre><code>$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+check_page() succeeded!
+check_kern_pgdir() succeeded!
+check_page_free_list() succeeded!
+check_page_installed_pgdir() succeeded!
+</code></pre><p>然后将新填写的页目录地址重新加载到CR3寄存器内，在开启剩余一些CR0寄存器位。</p>
+<pre><code>lcr3(PADDR(kern_pgdir));
+cr0 = rcr0();
+cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
+cr0 &amp;= ~(CR0_TS|CR0_EM);
+lcr0(cr0);
+</code></pre><p>|PE|</p>
+<hr>
+<h3 id="question">Question</h3>
+<ul>
+<li>Q2:What entries (rows) in the page directory have been filled in at this point? What addresses do they map and where do they point?</li>
+</ul>
+<p><img src="/images/operating-system/6.828/lab2/virtualaddress.jpg" alt="virtualaddress.png"></p>
+<ul>
+<li>
+<p>Q3:We have placed the kernel and user environment in the same address space. Why will user programs not be able to read or write the kernel&rsquo;s memory? What specific mechanisms protect the kernel memory?</p>
+<p>与页目录和页表中的 User/supervisor flag 和 Read/write flag 有关</p>
+<blockquote>
+<p>“ When the processor is in user mode, it can write only to usermode pages that are read/write accessible. User-mode pages which are read/write or read-only are readable; supervisor-mode pages are neither readable nor writable from user mode. ”</p>
+</blockquote>
+<blockquote>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></p>
+</blockquote>
+<blockquote>
+<p><strong>4.11.3</strong> Page Type</p>
+</blockquote>
+<p>可以看到 jos 只有 UPAGES 以上 PTSIZE 的内存设置了 PTE_U，除了这个部分对于用户级别可以读，其他的部分都是不可读或写的。</p>
+</li>
+<li>
+<p>Q5:How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory? How is this overhead broken down?</p>
+<p>2G</p>
+</li>
+<li>
+<p>Q6: Revisit the page table setup in kern/entry.S and kern/entrypgdir.c. Immediately after we turn on paging, EIP is still a low number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE? Why is this transition necessary?</p>
+<pre><code>  mov     $relocated, %eax
+  jmp     *%eax
+</code></pre>
+<p>jmp 完后就到了高地址，在临时的内核页目录中，同时将虚拟地址 [0 ~ 4MB) 和 [KERNELBASE ~ KERNELBASE+4MB) 映射了物理内存 [0 ~ 4MB)，所以即使 PE 置位后仍然能正常执行。在 lab2 中重新加载了新映射的 kern_pgdir，里面并没有映射 [0 ~ 4MB) 这一部分，继续在低地址执行但是页表里面并没有相应的项。</p>
+</li>
+</ul>
+<p>答案参考: <a href="https://github.com/Clann24/jos/tree/master/lab2">https://github.com/Clann24/jos/tree/master/lab2</a></p>
+<h2 id="challenge-2">Challenge 2</h2>
+<hr>
+<p>这个给JOS增加一个调试器，很有必要做一下，方便之后的学习。</p>
+<h3 id="辅助函数-str2ptr">辅助函数 str2ptr()</h3>
+<p>JOS中没有包含标准库，需要自己写一下字符串到整形的转换。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">pde_t <span style="color:#f92672">*</span>
+<span style="color:#a6e22e">str2ptr</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>str)
+{
+    pde_t ptr;
+    <span style="color:#66d9ef">int</span> temp, i; 
+    size_t length;
+
+    length <span style="color:#f92672">=</span> strlen(str) ;
+    ptr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; 
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>; str[i] <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i<span style="color:#f92672">+</span><span style="color:#f92672">+</span>) {
+
+        <span style="color:#66d9ef">if</span>(str[i] <span style="color:#f92672">&lt;</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">9</span><span style="color:#e6db74">&#39;</span>) 
+            temp <span style="color:#f92672">=</span> str[i] <span style="color:#f92672">-</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">0</span><span style="color:#e6db74">&#39;</span>;
+        <span style="color:#66d9ef">else</span>
+            temp <span style="color:#f92672">=</span> str[i] <span style="color:#f92672">-</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">a</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">10</span>;
+        ptr <span style="color:#f92672">+</span><span style="color:#f92672">=</span> temp <span style="color:#f92672">*</span> ( <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;</span><span style="color:#f92672">&lt;</span> (length <span style="color:#f92672">-</span> i <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span> );
+    }
+    <span style="color:#66d9ef">return</span> (pde_t <span style="color:#f92672">*</span>)ptr;
+}
+</code></pre></div><h3 id="mon_mapinfo">mon_mapinfo()</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">mon_mapinfo</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#f92672">*</span>argv, <span style="color:#66d9ef">struct</span> Trapframe <span style="color:#f92672">*</span>tf)
+{
+    <span style="color:#66d9ef">extern</span> pde_t <span style="color:#f92672">*</span>kern_pgdir;
+    pde_t <span style="color:#f92672">*</span>pg_pa, <span style="color:#f92672">*</span>pg_va, size, iter;
+    <span style="color:#66d9ef">extern</span> pte_t <span style="color:#f92672">*</span> pgdir_walk(pde_t <span style="color:#f92672">*</span>,<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>, <span style="color:#66d9ef">int</span>);
+
+
+    <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>) {
+        cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">too few argument  </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+    }
+    
+    <span style="color:#66d9ef">if</span> (argv[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">0</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> argv[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">x</span><span style="color:#e6db74">&#39;</span>) {       <span style="color:#75715e">/* show address */</span>
+        
+        <span style="color:#75715e">/*initialize some variables*/</span>
+        size <span style="color:#f92672">=</span> str2ptr(argv[<span style="color:#ae81ff">2</span>]) <span style="color:#f92672">-</span> str2ptr(argv[<span style="color:#ae81ff">1</span>]); 
+        pg_va <span style="color:#f92672">=</span> str2ptr(argv[<span style="color:#ae81ff">1</span>]);
+
+        <span style="color:#75715e">/* use pgdir_walk function to get page entry */</span>
+        <span style="color:#66d9ef">for</span> (iter <span style="color:#f92672">=</span> (pde_t)pg_va; iter <span style="color:#f92672">&lt;</span><span style="color:#f92672">=</span> (pde_t)str2ptr(argv[<span style="color:#ae81ff">2</span>]); iter <span style="color:#f92672">+</span><span style="color:#f92672">=</span> PGSIZE) { 
+
+            pg_pa <span style="color:#f92672">=</span> pgdir_walk(kern_pgdir, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)iter, false);            
+
+            <span style="color:#66d9ef">if</span> (pg_pa <span style="color:#f92672">=</span><span style="color:#f92672">=</span> (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)<span style="color:#ae81ff">0</span>)
+                cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">0x%x: None</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, iter);
+            <span style="color:#66d9ef">else</span>
+                cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">0x%x: %x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, iter, <span style="color:#f92672">*</span>pg_pa <span style="color:#f92672">&amp;</span> <span style="color:#f92672">~</span><span style="color:#ae81ff">0xFFF</span>);
+            
+        }
+    } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (strcmp(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">set</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>) {       <span style="color:#75715e">/* set flag to Page Entry */</span>
+        pte_t flag;
+
+        pg_va <span style="color:#f92672">=</span> str2ptr(argv[<span style="color:#ae81ff">2</span>]);   
+        pg_pa <span style="color:#f92672">=</span> pgdir_walk(kern_pgdir, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)pg_va, false);
+        <span style="color:#66d9ef">if</span> (pg_pa <span style="color:#f92672">=</span><span style="color:#f92672">=</span> (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)<span style="color:#ae81ff">0</span>) {
+            cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Error: Unallocated page</span><span style="color:#e6db74">&#34;</span>);
+            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+        }
+        <span style="color:#66d9ef">else</span> {
+            flag <span style="color:#f92672">=</span> (pte_t) str2ptr(argv[<span style="color:#ae81ff">3</span>]);
+            
+            cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">set physical address %x: flag = %x -&gt;</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>pg_pa <span style="color:#f92672">&amp;</span> <span style="color:#f92672">~</span><span style="color:#ae81ff">0xFFF</span>, <span style="color:#f92672">*</span>pg_pa);
+            
+            flag <span style="color:#f92672">&amp;</span><span style="color:#f92672">=</span> <span style="color:#ae81ff">0xFFF</span>;          <span style="color:#75715e">/* promise that the flag cann&#39;t affect the address */</span>   
+            <span style="color:#f92672">*</span>pg_pa <span style="color:#f92672">&amp;</span><span style="color:#f92672">=</span> <span style="color:#f92672">~</span><span style="color:#ae81ff">0xFFF</span>;
+            <span style="color:#f92672">*</span>pg_pa <span style="color:#f92672">|</span><span style="color:#f92672">=</span>  flag;
+            
+            cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74"> %x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>pg_pa <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFF</span>);
+        }
+
+    } <span style="color:#66d9ef">else</span> {
+        cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Usage error: showmapings </span><span style="color:#e6db74">&#34;</span>);
+        cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">smp 0xff00ff00 0xff00ff00</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+        cprintf(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">smp set 0xff00ff00 0x1</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+</code></pre></div><h3 id="show">show</h3>
+<pre><code>K&gt; smp 0xf0000000 0xf01000000
+0xf0000000: 0
+0xf0001000: 1000
+0xf0002000: 2000
+0xf0003000: 3000
+0xf0004000: 4000
+0xf0005000: 5000
+0xf0006000: 6000
+0xf0007000: 7000
+0xf0008000: 8000
+0xf0009000: 9000
+...
+0xf00fe000: fe000
+0xf00ff000: ff000
+0xf0100000: 100000
+</code></pre>
+<p>正好说明虚拟地址__KERNBASE~0xFFFFFFFF__被映射到了__0x00000000~0x0FFFFFFF__</p>
+<h3 id="set">set</h3>
+<pre><code>K&gt; smp set 0xf0000000 0x1
+set physical address 0: flag = 3 -&gt; 1</code></pre>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+                        <div>
+                            <a class="mx-1 mr-md-2 ml-md-0  text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </div>
+                    
+
+                    
+                        
+                            <a href="https://gokmengorgen.net">© 2018 by Gökmen Görgen</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+    <a href="https://gitlab.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitLab">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1792 1792">
+            <path d="M104 706l792 1015-868-630q-18-13-25-34.5t0-42.5l101-308zm462 0h660l-330 1015zm-198-612l198 612h-462l198-612q8-23 33-23t33 23zm1320 612l101 308q7 21 0 42.5t-25 34.5l-868 630 792-1015zm0 0h-462l198-612q8-23 33-23t33 23z"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://github.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="GitHub">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M8 0C3.58 0 0 3.582 0 8c0 3.535 2.292 6.533 5.47 7.59.4.075.547-.172.547-.385 0-.19-.007-.693-.01-1.36-2.226.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.725-.496.056-.486.056-.486.803.056 1.225.824 1.225.824.714 1.223 1.873.87 2.33.665.072-.517.278-.87.507-1.07-1.777-.2-3.644-.888-3.644-3.953 0-.873.31-1.587.823-2.147-.09-.202-.36-1.015.07-2.117 0 0 .67-.215 2.2.82.64-.178 1.32-.266 2-.27.68.004 1.36.092 2 .27 1.52-1.035 2.19-.82 2.19-.82.43 1.102.16 1.915.08 2.117.51.56.82 1.274.82 2.147 0 3.073-1.87 3.75-3.65 3.947.28.24.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.14.46.55.38C13.71 14.53 16 11.53 16 8c0-4.418-3.582-8-8-8"/>
+        </svg>
+    </a>
+
+
+                    
+
+                    
+    <a href="https://twitter.com/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Twitter">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M16 3.038c-.59.26-1.22.437-1.885.517.677-.407 1.198-1.05 1.443-1.816-.634.37-1.337.64-2.085.79-.598-.64-1.45-1.04-2.396-1.04-1.812 0-3.282 1.47-3.282 3.28 0 .26.03.51.085.75-2.728-.13-5.147-1.44-6.766-3.42C.83 2.58.67 3.14.67 3.75c0 1.14.58 2.143 1.46 2.732-.538-.017-1.045-.165-1.487-.41v.04c0 1.59 1.13 2.918 2.633 3.22-.276.074-.566.114-.865.114-.21 0-.41-.02-.61-.058.42 1.304 1.63 2.253 3.07 2.28-1.12.88-2.54 1.404-4.07 1.404-.26 0-.52-.015-.78-.045 1.46.93 3.18 1.474 5.04 1.474 6.04 0 9.34-5 9.34-9.33 0-.14 0-.28-.01-.42.64-.46 1.2-1.04 1.64-1.7z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a rel="me" href="https://mastodon.url/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Mastodon">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216.4144 232.00976">
+            <path d="M211.80734 139.0875c-3.18125 16.36625-28.4925 34.2775-57.5625 37.74875-15.15875 1.80875-30.08375 3.47125-45.99875 2.74125-26.0275-1.1925-46.565-6.2125-46.565-6.2125 0 2.53375.15625 4.94625.46875 7.2025 3.38375 25.68625 25.47 27.225 46.39125 27.9425 21.11625.7225 39.91875-5.20625 39.91875-5.20625l.8675 19.09s-14.77 7.93125-41.08125 9.39c-14.50875.7975-32.52375-.365-53.50625-5.91875C9.23234 213.82 1.40609 165.31125.20859 116.09125c-.365-14.61375-.14-28.39375-.14-39.91875 0-50.33 32.97625-65.0825 32.97625-65.0825C49.67234 3.45375 78.20359.2425 107.86484 0h.72875c29.66125.2425 58.21125 3.45375 74.8375 11.09 0 0 32.975 14.7525 32.975 65.0825 0 0 .41375 37.13375-4.59875 62.915"/>
+            <path fill="#fff" d="M177.50984 80.077v60.94125h-24.14375v-59.15c0-12.46875-5.24625-18.7975-15.74-18.7975-11.6025 0-17.4175 7.5075-17.4175 22.3525v32.37625H96.20734V85.42325c0-14.845-5.81625-22.3525-17.41875-22.3525-10.49375 0-15.74 6.32875-15.74 18.7975v59.15H38.90484V80.077c0-12.455 3.17125-22.3525 9.54125-29.675 6.56875-7.3225 15.17125-11.07625 25.85-11.07625 12.355 0 21.71125 4.74875 27.8975 14.2475l6.01375 10.08125 6.015-10.08125c6.185-9.49875 15.54125-14.2475 27.8975-14.2475 10.6775 0 19.28 3.75375 25.85 11.07625 6.36875 7.3225 9.54 17.22 9.54 29.675"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://t.me/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Telegram">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+            <circle cx="120" cy="120" r="120"/>
+            <path fill="#c8daea" d="m98 175c-3.8876 0-3.227-1.4679-4.5678-5.1695L82 132.2059 170 80"/>
+            <path fill="#a9c9dd" d="m98 175c3 0 4.3255-1.372 6-3l16-15.558-19.958-12.035"/>
+            <path fill="#eff7fc" d="m100.04 144.41 48.36 35.729c5.5185 3.0449 9.5014 1.4684 10.876-5.1235l19.685-92.763c2.0154-8.0802-3.0801-11.745-8.3594-9.3482l-115.59 44.571c-7.8901 3.1647-7.8441 7.5666-1.4382 9.528l29.663 9.2583 68.673-43.325c3.2419-1.9659 6.2173-0.90899 3.7752 1.2584"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="https://www.linkedin.com/in/?"
+        target="_blank"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Linkedin">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+            <path d="M13.632 13.635h-2.37V9.922c0-.886-.018-2.025-1.234-2.025-1.235 0-1.424.964-1.424 1.96v3.778h-2.37V6H8.51v1.04h.03c.318-.6 1.092-1.233 2.247-1.233 2.4 0 2.845 1.58 2.845 3.637v4.188zM3.558 4.955c-.762 0-1.376-.617-1.376-1.377 0-.758.614-1.375 1.376-1.375.76 0 1.376.617 1.376 1.375 0 .76-.617 1.377-1.376 1.377zm1.188 8.68H2.37V6h2.376v7.635zM14.816 0H1.18C.528 0 0 .516 0 1.153v13.694C0 15.484.528 16 1.18 16h13.635c.652 0 1.185-.516 1.185-1.153V1.153C16 .516 15.467 0 14.815 0z" fill-rule="nonzero"/>
+        </svg>
+    </a>
+
+
+                    
+    <a href="mailto:?@localhost"
+        class="mx-1 ml-md-2 mr-md-0 icon"
+        aria-label="Email">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16">
+            <path d="M0 4v8c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H1c-.55 0-1 .45-1 1zm13 0L7 9 1 4h12zM1 5.5l4 3-4 3v-6zM2 12l3.5-3L7 10.5 8.5 9l3.5 3H2zm11-.5l-4-3 4-3v6z"/>
+        </svg>
+    </a>
+
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>

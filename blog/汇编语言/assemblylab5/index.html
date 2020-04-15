@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>《汇编语言》 Lab5 - fatwaer</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="fatwaer&#39;s blog">
+    <meta property="og:site_name" content="fatwaer" />
+    <meta property="og:locale" content="nn_NO" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/" />
+    <meta property="og:title" content="《汇编语言》 Lab5" />
+    <meta property="og:image" content="//images/whoami/5.jpg" />
+    <meta property="og:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <meta property="twitter:title" content="《汇编语言》 Lab5" />
+    <meta property="twitter:image" content="//images/whoami/5.jpg" />
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:description" content="fatwaer&#39;s blog" />
+
+    
+
+    <link rel="canonical" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/">
+
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css" />
+    
+    
+    
+        <link rel="stylesheet" href="/css/highlight.css" />
+    
+    
+
+    
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.css" integrity="sha256-xbqLYBMsjpuCihs+3Fgp/MFMtPdo2SWKoOjEWOqR4X0=" crossorigin="anonymous" />
+    
+
+    <link rel="shortcut icon"
+          href="/images/whoami/5.jpg">
+
+    <link href='' rel="alternate" type="application/rss+xml" title="fatwaer" />
+    <link href="https://fonts.googleapis.com/css?family=Fira+Code|Merriweather+Sans:400,700|Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    
+    
+
+    
+
+    
+
+<div class="my-4 my-md-5 header">
+    <div class="container">
+        <div class="row">
+            <div class="col-auto d-none d-md-block">
+                
+                    <a href="/">
+                        <img class="logo" src="/images/whoami/5.jpg" alt="logo">
+                    </a>
+                
+            </div>
+            <div class="col-auto align-self-center mr-auto">
+                <a href="/">
+                    <h1 class="font-weight-bold name">
+                        fatwaer
+                    </h1>
+                </a>
+
+                <ul class="nav nav-primary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-blog" href="/blog/">
+                                
+                                Blog
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-about" href="/about/">
+                                
+                                About
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase nav-link text-tags" href="/tags/">
+                                
+                                Tags
+                            </a>
+                        </li>
+                    
+
+                    
+                </ul>
+
+                <ul class="nav nav-secondary">
+                    
+                        <li class="nav-item">
+                            <a class="text-uppercase font-weight-bold nav-link text-bmc" href="https://404.html">
+                                
+                                Click me
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    <h1 class="mx-0 mx-md-4">
+                        《汇编语言》 Lab5
+                    </h1>
+
+                    <div class="mb-4 mb-md-5 meta">
+                        <span class="date" title='Mon Nov 13 2017 22:49:40 UTC'>
+                            November 13, 2017
+                        </span>
+
+                        
+                            
+                        
+
+                        <span class="reading-time middot">
+                            1 minute
+                        </span>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                    <li class="d-inline middot">
+                                        <a href="/tags/assembly">Assembly</a>
+                                    </li>
+                                
+                            </ul>
+                        </div>
+
+                        <div class="d-none d-md-inline tags">
+                            <ul class="list-unstyled d-inline">
+                                
+                                
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="markdown">
+                        
+    
+    <p>根据程序编译连接并用Debug加载、跟踪，然后回答问题。</p>
+<h3 id="1">(1)</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">assume</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">code</span>,<span style="color:#66d9ef">ds</span>:<span style="color:#66d9ef">data</span>,<span style="color:#66d9ef">ss</span>:<span style="color:#66d9ef">stack</span>
+
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0123</span><span style="color:#66d9ef">h</span>,<span style="color:#ae81ff">0456</span><span style="color:#66d9ef">h</span>,<span style="color:#ae81ff">0789</span><span style="color:#66d9ef">h</span>,<span style="color:#ae81ff">0</span><span style="color:#66d9ef">abch</span>,<span style="color:#ae81ff">0</span><span style="color:#66d9ef">defh</span>,<span style="color:#ae81ff">0</span><span style="color:#66d9ef">fedh</span>,<span style="color:#ae81ff">0</span><span style="color:#66d9ef">cbah</span>,<span style="color:#ae81ff">0987</span><span style="color:#66d9ef">h</span>
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">segment</span>
+
+start: <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">stack</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ss</span>,<span style="color:#66d9ef">ax</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">sp</span>,<span style="color:#ae81ff">10</span><span style="color:#66d9ef">h</span>
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">data</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>
+	   
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>  <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>	<span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#ae81ff">4</span><span style="color:#66d9ef">c00h</span>
+	   <span style="color:#a6e22e">int</span> <span style="color:#ae81ff">21</span><span style="color:#66d9ef">h</span>
+	   
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">ends</span>
+
+
+<span style="color:#a6e22e">end</span> <span style="color:#66d9ef">start</span>
+</code></pre></div><p>CS=0B4A;SS=0B49;DS=0B4B</p>
+<h3 id="2">(2)</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">assume</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">code</span>,<span style="color:#66d9ef">ds</span>:<span style="color:#66d9ef">data</span>,<span style="color:#66d9ef">ss</span>:<span style="color:#66d9ef">stack</span>
+
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0123</span><span style="color:#66d9ef">h</span>,<span style="color:#ae81ff">0456</span><span style="color:#66d9ef">h</span>
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">segment</span>
+
+start: <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">stack</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ss</span>,<span style="color:#66d9ef">ax</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">sp</span>,<span style="color:#ae81ff">10</span><span style="color:#66d9ef">h</span>
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">data</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>
+	   
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>  <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>	<span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#ae81ff">4</span><span style="color:#66d9ef">c00h</span>
+	   <span style="color:#a6e22e">int</span> <span style="color:#ae81ff">21</span><span style="color:#66d9ef">h</span>
+	   
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">ends</span>
+
+
+<span style="color:#a6e22e">end</span> <span style="color:#66d9ef">start</span>
+</code></pre></div><p>CS=0B4A;SS=0B49;DS=0B48</p>
+<h3 id="3">(3)</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">assume</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">code</span>,<span style="color:#66d9ef">ds</span>:<span style="color:#66d9ef">data</span>,<span style="color:#66d9ef">ss</span>:<span style="color:#66d9ef">stack</span>
+
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">segment</span>
+
+start: <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">stack</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ss</span>,<span style="color:#66d9ef">ax</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">sp</span>,<span style="color:#ae81ff">10</span><span style="color:#66d9ef">h</span>
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">data</span>
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>
+	   
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   <span style="color:#a6e22e">push</span> <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>  <span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">2</span>]
+	   <span style="color:#a6e22e">pop</span>	<span style="color:#66d9ef">ds</span>:[<span style="color:#ae81ff">0</span>]
+	   
+	   <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#ae81ff">4</span><span style="color:#66d9ef">c00h</span>
+	   <span style="color:#a6e22e">int</span> <span style="color:#ae81ff">21</span><span style="color:#66d9ef">h</span>
+	   
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0123</span><span style="color:#66d9ef">h</span>,<span style="color:#ae81ff">0456</span><span style="color:#66d9ef">h</span>
+<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">dw</span> <span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>
+<span style="color:#a6e22e">stack</span> <span style="color:#66d9ef">ends</span>
+
+
+<span style="color:#a6e22e">end</span> <span style="color:#66d9ef">start</span>
+</code></pre></div><p>CS=0B48;SS=0B4C;DS=0B4B</p>
+<h3 id="4">(4)</h3>
+<h4 id="如果将123题目中最后一条伪指令end-start改为end则哪个程序可以正确执行请说明原因">如果将(1)(2)(3)题目中最后一条伪指令“end start”改为“end”，则哪个程序可以正确执行？请说明原因。</h4>
+<p>(1)(2)可以，end是告诉编译器在此结束了代码的声明。</p>
+<h3 id="5">(5)</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">assume</span> <span style="color:#66d9ef">cs</span>:<span style="color:#66d9ef">code</span>
+
+<span style="color:#a6e22e">a</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">db</span> <span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span>,<span style="color:#ae81ff">8</span>
+<span style="color:#a6e22e">a</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">b</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">db</span> <span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">4</span>,<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">7</span>,<span style="color:#ae81ff">8</span>
+<span style="color:#a6e22e">b</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">c</span> <span style="color:#66d9ef">segment</span>
+	<span style="color:#a6e22e">db</span> <span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>
+<span style="color:#a6e22e">c</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">segment</span>
+
+start:
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">bx</span>,<span style="color:#ae81ff">0</span>
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">cx</span>,<span style="color:#ae81ff">8</span>
+		
+    s1:	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">a</span>
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>				
+		<span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">dl</span>,[<span style="color:#66d9ef">bx</span>]	
+		<span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">c</span>
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>		
+		<span style="color:#66d9ef">mov</span> [<span style="color:#66d9ef">bx</span>],<span style="color:#66d9ef">dl</span>
+		<span style="color:#a6e22e">inc</span> <span style="color:#66d9ef">bx</span>
+		<span style="color:#a6e22e">loop</span> <span style="color:#66d9ef">s1</span>	
+
+		<span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">bx</span>,<span style="color:#ae81ff">0</span> 
+	<span style="color:#66d9ef">s2</span>: <span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">a</span>
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>		
+		<span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">dl</span>,[<span style="color:#66d9ef">bx</span>]		
+		<span style="color:#66d9ef">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#66d9ef">c</span>
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ds</span>,<span style="color:#66d9ef">ax</span>		
+		<span style="color:#66d9ef">add</span> [<span style="color:#66d9ef">bx</span>],<span style="color:#66d9ef">dl</span>
+		<span style="color:#a6e22e">inc</span> <span style="color:#66d9ef">bx</span>
+		<span style="color:#a6e22e">loop</span> <span style="color:#66d9ef">s2</span>
+		
+		
+	
+		<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">ax</span>,<span style="color:#ae81ff">4</span><span style="color:#66d9ef">c00h</span>
+		<span style="color:#a6e22e">int</span> <span style="color:#ae81ff">21</span><span style="color:#66d9ef">h</span>
+<span style="color:#a6e22e">code</span> <span style="color:#66d9ef">ends</span>
+
+<span style="color:#a6e22e">end</span> <span style="color:#66d9ef">start</span>
+</code></pre></div><p>先将数据段a中的数据传送，再累加b数据段的数据，完成运算</p>
+
+
+
+                    </div>
+                </div>
+
+                
+                    <div class="col-sm-12 col-md-3">
+                        <nav id="TableOfContents" class="sticky-top">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1">(1)</a></li>
+        <li><a href="#2">(2)</a></li>
+        <li><a href="#3">(3)</a></li>
+        <li><a href="#4">(4)</a></li>
+        <li><a href="#5">(5)</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+                    </div>
+                
+            </div>
+
+            <div class="row">
+                <div
+                    
+                    class="col-md-9 col-lg-9"
+                    
+                >
+                    
+                        <div class="navigation">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-left">
+                                            <a href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/">
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M145.188,238.575l215.5-215.5c5.3-5.3,5.3-13.8,0-19.1s-13.8-5.3-19.1,0l-225.1,225.1c-5.3,5.3-5.3,13.8,0,19.1l225.1,225 c2.6,2.6,6.1,4,9.5,4s6.9-1.3,9.5-4c5.3-5.3,5.3-13.8,0-19.1L145.188,238.575z" />
+    </svg>
+</span>
+
+                                                <span class="text">《汇编语言》 Lab1</span>
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    
+                                        <div class="mx-0 mx-md-4 mt-4 text-right">
+                                            <a href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/">
+                                                <span class="text">《汇编语言》 Lab6</span>
+                                                <span class="icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175">
+        <path d="M360.731,229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1,0s-5.3,13.8,0,19.1l215.5,215.5l-215.5,215.5 c-5.3,5.3-5.3,13.8,0,19.1c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-4l225.1-225.1C365.931,242.875,365.931,234.275,360.731,229.075z" />
+    </svg>
+</span>
+
+                                            </a>
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="my-4 footer">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 mb-2 text-center text-md-left">
+                    
+
+                    
+                        
+                            <a href="https://www.fatwaer.store">@Powered by Hugo and the alageek theme</a>
+                        
+                    
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="mx-0 mx-md-4 text-center text-md-right">
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <a href=''
+    class="mx-1 ml-md-2 mr-md-0 icon"
+    aria-label="RSS">
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414">
+        <path d="M12.8 16C12.8 8.978 7.022 3.2 0 3.2V0c8.777 0 16 7.223 16 16h-3.2zM2.194 11.61c1.21 0 2.195.985 2.195 2.196 0 1.21-.99 2.194-2.2 2.194C.98 16 0 15.017 0 13.806c0-1.21.983-2.195 2.194-2.195zM10.606 16h-3.11c0-4.113-3.383-7.497-7.496-7.497v-3.11c5.818 0 10.606 4.79 10.606 10.607z"/>
+    </svg>
+</a>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/go.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/C&#43;&#43;.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/bash.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/css.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/diff.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/django.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/javascript.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/python.min.js" defer></script>
+        
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js" defer></script>
+        
+        <script>
+            window.addEventListener('load', function() {
+                hljs.initHighlighting();
+            }, true);
+        </script>
+    
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/progressively/1.2.5/progressively.min.js" integrity="sha256-LvFVlLdfGI3WeEH+8Ni4kxLm02g2GlOfeGCGLXfRk/U=" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('load', function() {
+                progressively.init({delay: 30, throttle: 50});
+            }, true);
+        </script>
+    
+
+    
+
+    
+    
+</body>
+
+</html>
