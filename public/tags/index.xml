@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Pok</title>
+    <link>/tags/</link>
+    <description>Recent content in Tags on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 20 Mar 2020 16:01:24 +0800</lastBuildDate><atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>debug</title>
+      <link>/tags/debug/</link>
+      <pubDate>Fri, 20 Mar 2020 16:01:24 +0800</pubDate>
+      
+      <guid>/tags/debug/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>profiling</title>
+      <link>/tags/profiling/</link>
+      <pubDate>Fri, 20 Mar 2020 16:01:24 +0800</pubDate>
+      
+      <guid>/tags/profiling/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>shell</title>
+      <link>/tags/shell/</link>
+      <pubDate>Fri, 20 Mar 2020 16:01:24 +0800</pubDate>
+      
+      <guid>/tags/shell/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>B-tree</title>
+      <link>/tags/b-tree/</link>
+      <pubDate>Wed, 18 Mar 2020 22:29:40 +0800</pubDate>
+      
+      <guid>/tags/b-tree/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>LSM-tree</title>
+      <link>/tags/lsm-tree/</link>
+      <pubDate>Wed, 18 Mar 2020 22:29:40 +0800</pubDate>
+      
+      <guid>/tags/lsm-tree/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>distributed system</title>
+      <link>/tags/distributed-system/</link>
+      <pubDate>Wed, 26 Feb 2020 22:19:35 +0000</pubDate>
+      
+      <guid>/tags/distributed-system/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>globbing</title>
+      <link>/tags/globbing/</link>
+      <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
+      
+      <guid>/tags/globbing/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>config</title>
+      <link>/tags/config/</link>
+      <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
+      
+      <guid>/tags/config/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Java</title>
+      <link>/tags/java/</link>
+      <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
+      
+      <guid>/tags/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>algorithm</title>
+      <link>/tags/algorithm/</link>
+      <pubDate>Sun, 09 Sep 2018 18:41:48 +0000</pubDate>
+      
+      <guid>/tags/algorithm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>file</title>
+      <link>/tags/file/</link>
+      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+      
+      <guid>/tags/file/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>unix</title>
+      <link>/tags/unix/</link>
+      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+      
+      <guid>/tags/unix/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>OS</title>
+      <link>/tags/os/</link>
+      <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
+      
+      <guid>/tags/os/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Assembly</title>
+      <link>/tags/assembly/</link>
+      <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
+      
+      <guid>/tags/assembly/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>c/c&#43;&#43;</title>
+      <link>/tags/c/c&#43;&#43;/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/c/c&#43;&#43;/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>I/O</title>
+      <link>/tags/i/o/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/i/o/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

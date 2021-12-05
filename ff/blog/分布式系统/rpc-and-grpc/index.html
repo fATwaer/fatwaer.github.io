@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Golang原生RPC与gPRC&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Golang原生RPC与gPRC" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Golang原生RPC与gPRC</h1><p class="article date">Wednesday, February 26, 2020</p></section><article class="article markdown-body"><h2 id="前言">前言</h2>
+<p>因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。</p>
+<h2 id="rpc历史">RPC历史</h2>
+<p>RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证<strong>幂等性</strong>等。</p>
+<p>虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。</p>
+<p>RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。</p>
+<h2 id="原生rpc">原生RPC</h2>
+<p>这里直接尝试写一个简单的KV服务，提供Put，Get的接口。</p>
+<h3 id="客户端代码">客户端代码</h3>
+<div class="highlight"><pre class="chroma"><code class="language-Go" data-lang="Go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+        <span class="s">&#34;fmt&#34;</span>
+        <span class="s">&#34;log&#34;</span>
+        <span class="s">&#34;net/rpc&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">//
+</span><span class="c1">// Common RPC request/reply definitions
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">const</span> <span class="p">(</span>
+        <span class="nx">OK</span>       <span class="p">=</span> <span class="s">&#34;OK&#34;</span>
+        <span class="nx">ErrNoKey</span> <span class="p">=</span> <span class="s">&#34;ErrNoKey&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Err</span> <span class="kt">string</span>
+
+<span class="kd">type</span> <span class="nx">PutArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Key</span>   <span class="kt">string</span>
+        <span class="nx">Value</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">PutReply</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Err</span> <span class="nx">Err</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">GetArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Key</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">GetReply</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Err</span>   <span class="nx">Err</span>
+        <span class="nx">Value</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c1">//
+</span><span class="c1">// Client
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">func</span> <span class="nf">connect</span><span class="p">()</span> <span class="o">*</span><span class="nx">rpc</span><span class="p">.</span><span class="nx">Client</span> <span class="p">{</span>
+        <span class="nx">client</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">rpc</span><span class="p">.</span><span class="nf">Dial</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="s">&#34;fatwaer.store:1234&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;dialing:&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">client</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">get</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+        <span class="nx">client</span> <span class="o">:=</span> <span class="nf">connect</span><span class="p">()</span>
+        <span class="nx">args</span> <span class="o">:=</span> <span class="nx">GetArgs</span><span class="p">{</span><span class="s">&#34;subject&#34;</span><span class="p">}</span>
+        <span class="nx">reply</span> <span class="o">:=</span> <span class="nx">GetReply</span><span class="p">{}</span>
+        <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Call</span><span class="p">(</span><span class="s">&#34;KV.Get&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">reply</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;error:&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">client</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nx">reply</span><span class="p">.</span><span class="nx">Value</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">put</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">val</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">client</span> <span class="o">:=</span> <span class="nf">connect</span><span class="p">()</span>
+        <span class="nx">args</span> <span class="o">:=</span> <span class="nx">PutArgs</span><span class="p">{</span><span class="s">&#34;subject&#34;</span><span class="p">,</span> <span class="s">&#34;6.824&#34;</span><span class="p">}</span>
+        <span class="nx">reply</span> <span class="o">:=</span> <span class="nx">PutReply</span><span class="p">{}</span>
+        <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Call</span><span class="p">(</span><span class="s">&#34;KV.Put&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">reply</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;error:&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">client</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1">//
+</span><span class="c1">// main
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">put</span><span class="p">(</span><span class="s">&#34;subject&#34;</span><span class="p">,</span> <span class="s">&#34;6.824&#34;</span><span class="p">)</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Put(subject, 6.824) done\n&#34;</span><span class="p">)</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;get(subject) -&gt; %s\n&#34;</span><span class="p">,</span> <span class="nf">get</span><span class="p">(</span><span class="s">&#34;subject&#34;</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="服务端代码">服务端代码</h3>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+        <span class="s">&#34;fmt&#34;</span>
+        <span class="s">&#34;log&#34;</span>
+        <span class="s">&#34;net&#34;</span>
+        <span class="s">&#34;net/rpc&#34;</span>
+        <span class="s">&#34;sync&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">//
+</span><span class="c1">// Common RPC request/reply definitions
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">const</span> <span class="p">(</span>
+        <span class="nx">OK</span>       <span class="p">=</span> <span class="s">&#34;OK&#34;</span>
+        <span class="nx">ErrNoKey</span> <span class="p">=</span> <span class="s">&#34;ErrNoKey&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Err</span> <span class="kt">string</span>
+
+<span class="kd">type</span> <span class="nx">PutArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Key</span>   <span class="kt">string</span>
+        <span class="nx">Value</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">PutReply</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Err</span> <span class="nx">Err</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">GetArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Key</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">GetReply</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Err</span>   <span class="nx">Err</span>
+        <span class="nx">Value</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c1">//
+</span><span class="c1">// Server
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">type</span> <span class="nx">KV</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">mu</span>   <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span>
+        <span class="nx">data</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">server</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">kv</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">KV</span><span class="p">)</span>
+        <span class="nx">kv</span><span class="p">.</span><span class="nx">data</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">{}</span>
+        <span class="nx">rpcs</span> <span class="o">:=</span> <span class="nx">rpc</span><span class="p">.</span><span class="nf">NewServer</span><span class="p">()</span>
+        <span class="nx">rpcs</span><span class="p">.</span><span class="nf">Register</span><span class="p">(</span><span class="nx">kv</span><span class="p">)</span>
+        <span class="nx">l</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="s">&#34;:1234&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;listen error:&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;server Listen &#34;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">{</span>
+                <span class="nx">conn</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">l</span><span class="p">.</span><span class="nf">Accept</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+                        <span class="k">go</span> <span class="nx">rpcs</span><span class="p">.</span><span class="nf">ServeConn</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="k">break</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nx">l</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">kv</span> <span class="o">*</span><span class="nx">KV</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">args</span> <span class="o">*</span><span class="nx">GetArgs</span><span class="p">,</span> <span class="nx">reply</span> <span class="o">*</span><span class="nx">GetReply</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;server recive get %s\n&#34;</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">Key</span><span class="p">)</span>
+        <span class="nx">kv</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+        <span class="k">defer</span> <span class="nx">kv</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+
+        <span class="nx">val</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">kv</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">args</span><span class="p">.</span><span class="nx">Key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nx">ok</span> <span class="p">{</span>
+                <span class="nx">reply</span><span class="p">.</span><span class="nx">Err</span> <span class="p">=</span> <span class="nx">OK</span>
+                <span class="nx">reply</span><span class="p">.</span><span class="nx">Value</span> <span class="p">=</span> <span class="nx">val</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">reply</span><span class="p">.</span><span class="nx">Err</span> <span class="p">=</span> <span class="nx">ErrNoKey</span>
+                <span class="nx">reply</span><span class="p">.</span><span class="nx">Value</span> <span class="p">=</span> <span class="s">&#34;&#34;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">kv</span> <span class="o">*</span><span class="nx">KV</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">args</span> <span class="o">*</span><span class="nx">PutArgs</span><span class="p">,</span> <span class="nx">reply</span> <span class="o">*</span><span class="nx">PutReply</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;server recive put %s-&gt;%s\n&#34;</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">Key</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">Value</span><span class="p">)</span>
+        <span class="nx">kv</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+        <span class="k">defer</span> <span class="nx">kv</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+
+        <span class="nx">kv</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">args</span><span class="p">.</span><span class="nx">Key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">args</span><span class="p">.</span><span class="nx">Value</span>
+        <span class="nx">reply</span><span class="p">.</span><span class="nx">Err</span> <span class="p">=</span> <span class="nx">OK</span>
+        <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">//
+</span><span class="c1">// main
+</span><span class="c1">//
+</span><span class="c1"></span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">server</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="运行结果">运行结果</h3>
+<p>分别在两台云服务器上运行，确保可以通过网络传递消息：</p>
+<p><img  src="/images/distributed-system/rpc/rpcc.png"
+        alt="client"/>
+<img  src="/images/distributed-system/rpc/rpcs.png"
+        alt="server"/></p>
+<h3 id="代码结构">代码结构</h3>
+<pre><code class="language-code" data-lang="code">    Software structure
+      client app        handler fns
+      stub fns         dispatcher
+      RPC lib           RPC lib
+        net  ------------ net
+</code></pre><p>客户端/服务端需要先建立相应的TCP连接，即服务端先在相应端口绑定监听，然后客户端与该端口三次握手后，服务端accept返回得到建立好的TCP连接，注册到RPC中，然后将数据写入到连接内，服务端收到调用，执行相应的程序返回。</p>
+<hr>
+<h2 id="grpc">gRPC</h2>
+<p>gRPC的使用分为三部:</p>
+<ol>
+<li>将需要在网络中传递的数据/服务定义在<code>.proto</code>里</li>
+<li>利用protocol buffer compiler基于上面的<code>.proto</code>生成代码</li>
+<li>使用gRPC的API</li>
+</ol>
+<h3 id="安装依赖">安装依赖</h3>
+<ul>
+<li>grpc</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">go get google.golang.org/grpc
+go get -u github.com/golang/protobuf/protoc-gen-go
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$GOPATH</span>/bin
+</code></pre></div><ul>
+<li>protocol buffer compiler(protoc)</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">PROTOC_ZIP</span><span class="o">=</span>protoc-3.7.1-linux-x86_64.zip
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/<span class="nv">$PROTOC_ZIP</span>
+sudo unzip -o <span class="nv">$PROTOC_ZIP</span> -d /usr/local bin/protoc
+sudo unzip -o <span class="nv">$PROTOC_ZIP</span> -d /usr/local <span class="s1">&#39;include/*&#39;</span>
+rm -f <span class="nv">$PROTOC_ZIP</span>
+</code></pre></div><h3 id="定义自己的proto">定义自己的proto</h3>
+<ul>
+<li>kv.proto</li>
+</ul>
+<pre><code class="language-pb" data-lang="pb">syntax = &quot;proto3&quot;;
+
+package kv;
+
+service kv {
+    rpc Put (PutArgs) returns (PutReply) {}
+    rpc Get (GetArgs) returns (GetReply) {}
+}
+
+message PutArgs {
+    string key = 1;
+    string value = 2;
+}
+
+message PutReply {
+    string ok = 1;
+}
+
+message GetArgs {
+    string key = 1;
+}
+
+message GetReply {
+    string ok = 1;
+    string value = 2;
+}
+
+</code></pre><p><code>syntax</code>为protobuf编码版本，<code>message</code>类似于类型定义关键字，而每一个message内都需要有一个单独的值来指定某个变量。</p>
+<h3 id="生成-pbgo">生成 .pb.go</h3>
+<p>例如如下的代码结构：</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">store : ~/gokv/grpc/src &gt; tree .
+.
+├── kv
+│   ├── kv.proto
+store : ~/gokv/grpc/src &gt; <span class="nb">echo</span> <span class="nv">$GOPATH</span>
+/root/go:/root/gokv/grpc
+</code></pre></div><p>执行</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">protoc -I kv/ kv/kv.proto --go_out<span class="o">=</span><span class="nv">plugins</span><span class="o">=</span>grpc:kv
+</code></pre></div><p>在kv目录下生成kv.pb.go，然后在外部利用import kv即可使用kv.pb.go中生成的代码。
+kv.pb.go包含了如下内容：</p>
+<ol>
+<li>生成的服务端和客户端的代码</li>
+<li>对调用参数进行序列化、反序列化的代码</li>
+</ol>
+<h3 id="写自己的kv服务">写自己的KV服务</h3>
+<p>和上面原生RPC的类似：</p>
+<ul>
+<li>服务端代码</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+        <span class="s">&#34;context&#34;</span>
+        <span class="s">&#34;log&#34;</span>
+        <span class="s">&#34;net&#34;</span>
+    <span class="s">&#34;sync&#34;</span>
+
+        <span class="s">&#34;google.golang.org/grpc&#34;</span>
+        <span class="nx">pb</span> <span class="s">&#34;kv&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+        <span class="nx">port</span> <span class="p">=</span> <span class="s">&#34;:1234&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// server is used to implement kv.Kvserver.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">server</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span> <span class="kt">string</span>
+    <span class="nx">mu</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span>
+        <span class="nx">pb</span><span class="p">.</span><span class="nx">UnimplementedKvServer</span>
+<span class="p">}</span>
+
+<span class="c1">// Put implements implement kv.Kvserver
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><span class="nx">server</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">in</span> <span class="o">*</span><span class="nx">pb</span><span class="p">.</span><span class="nx">PutArgs</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">pb</span><span class="p">.</span><span class="nx">PutReply</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Received Put: %v&#34;</span><span class="p">,</span> <span class="nx">in</span><span class="p">)</span>
+    <span class="nx">s</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+    <span class="k">defer</span> <span class="nx">s</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+    <span class="nx">s</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">in</span><span class="p">.</span><span class="nx">Key</span><span class="p">]</span>  <span class="p">=</span> <span class="nx">in</span><span class="p">.</span><span class="nx">Value</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">pb</span><span class="p">.</span><span class="nx">PutReply</span><span class="p">{</span><span class="nx">Ok</span><span class="p">:</span> <span class="s">&#34;Ok&#34;</span><span class="p">},</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><span class="nx">server</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">in</span> <span class="o">*</span><span class="nx">pb</span><span class="p">.</span><span class="nx">GetArgs</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">pb</span><span class="p">.</span><span class="nx">GetReply</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Received Get: %v&#34;</span><span class="p">,</span> <span class="nx">in</span><span class="p">)</span>
+    <span class="nx">s</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+    <span class="k">defer</span> <span class="nx">s</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+    <span class="nx">value</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">in</span><span class="p">.</span><span class="nx">Key</span><span class="p">]</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">pb</span><span class="p">.</span><span class="nx">GetReply</span><span class="p">{</span><span class="nx">Ok</span><span class="p">:</span> <span class="s">&#34;Ok&#34;</span><span class="p">,</span> <span class="nx">Value</span><span class="p">:</span><span class="nx">value</span><span class="p">},</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;server start\n&#34;</span><span class="p">)</span>
+    <span class="nx">lis</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="nx">port</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;failed to listen: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">rpcs</span> <span class="o">:=</span> <span class="nx">grpc</span><span class="p">.</span><span class="nf">NewServer</span><span class="p">()</span>
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">server</span><span class="p">)</span>
+    <span class="nx">srv</span><span class="p">.</span><span class="nx">data</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">{}</span>
+
+    <span class="nx">pb</span><span class="p">.</span><span class="nf">RegisterKvServer</span><span class="p">(</span><span class="nx">rpcs</span><span class="p">,</span> <span class="nx">srv</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Listen at %s\n&#34;</span><span class="p">,</span> <span class="nx">port</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">rpcs</span><span class="p">.</span><span class="nf">Serve</span><span class="p">(</span><span class="nx">lis</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;failed to serve: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>客户端代码</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+        <span class="s">&#34;context&#34;</span>
+        <span class="s">&#34;log&#34;</span>
+        <span class="s">&#34;time&#34;</span>
+
+        <span class="s">&#34;google.golang.org/grpc&#34;</span>
+        <span class="nx">pb</span> <span class="s">&#34;kv&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="p">(</span>
+        <span class="nx">address</span> <span class="p">=</span> <span class="s">&#34;fatwaer.store:1234&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// set-up connection.
+</span><span class="c1"></span>        <span class="nx">conn</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">grpc</span><span class="p">.</span><span class="nf">Dial</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">grpc</span><span class="p">.</span><span class="nf">WithInsecure</span><span class="p">(),</span> <span class="nx">grpc</span><span class="p">.</span><span class="nf">WithBlock</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;didn&#39;t connect: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">defer</span> <span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+        <span class="nx">c</span> <span class="o">:=</span> <span class="nx">pb</span><span class="p">.</span><span class="nf">NewKvClient</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;connect ok&#34;</span><span class="p">)</span>
+        <span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">(),</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+        <span class="k">defer</span> <span class="nf">cancel</span><span class="p">()</span>
+        <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">pb</span><span class="p">.</span><span class="nx">PutArgs</span><span class="p">{</span><span class="nx">Key</span><span class="p">:</span> <span class="s">&#34;Hello&#34;</span><span class="p">,</span> <span class="nx">Value</span><span class="p">:</span> <span class="s">&#34;World&#34;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;put err %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;put %s&#34;</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nf">GetOk</span><span class="p">())</span>
+
+        <span class="nx">nr</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">pb</span><span class="p">.</span><span class="nx">GetArgs</span><span class="p">{</span><span class="nx">Key</span><span class="p">:</span> <span class="s">&#34;Hello&#34;</span><span class="p">})</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;put err %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;get %s, get value %s&#34;</span><span class="p">,</span> <span class="nx">nr</span><span class="p">.</span><span class="nf">GetOk</span><span class="p">(),</span> <span class="nx">nr</span><span class="p">.</span><span class="nf">GetValue</span><span class="p">())</span>
+
+<span class="p">}</span>
+</code></pre></div><h3 id="运行结果-1">运行结果</h3>
+<p><img  src="/images/distributed-system/rpc/grpcs.png"
+        alt="server"/>
+<img  src="/images/distributed-system/rpc/grpcc.png"
+        alt="client"/></p>
+<p>和原生RPC使用很类似，但是中间加了一层protobuf的使用问题，而protobuf的存在却可以解决在多语言之间进行通信的问题，而原生不行。
+<img  src="/images/distributed-system/rpc/landing-2.svg"
+        alt="landing"/></p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li><a href="https://pdos.csail.mit.edu/6.824/notes/kv.go">https://pdos.csail.mit.edu/6.824/notes/kv.go</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/notes/l-rpc.txt">https://pdos.csail.mit.edu/6.824/notes/l-rpc.txt</a></li>
+<li><a href="https://developers.google.com/protocol-buffers/docs/overview">https://developers.google.com/protocol-buffers/docs/overview</a></li>
+<li><a href="https://developers.google.com/protocol-buffers/docs/proto">https://developers.google.com/protocol-buffers/docs/proto</a></li>
+<li><a href="https://grpc.io/docs/tutorials/basic/go/">https://grpc.io/docs/tutorials/basic/go/</a></li>
+<li><a href="http://google.github.io/proto-lens/installing-protoc.html">http://google.github.io/proto-lens/installing-protoc.html</a></li>
+</ul>
+</article><section class="article labels"><a class="tag" href=/tags/distributed-system/>distributed system</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/"><span class="iconfont icon-article"></span>B-tree和LSM-tree</a></p><p><a class="link" href="/blog/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/"><span class="iconfont icon-article"></span>Shell Tools and Scripting</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

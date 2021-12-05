@@ -1,0 +1,61 @@
+section:
+  name: About # Title of section (default: "")
+  id: about # url id/slug of section *Required*
+  enable: true # Boolean to determine if this section is enabled (default: false)
+  weight: 1 # Order to display section in (default: alphabetical followed by weight)
+  showOnNavbar: true # Boolean to determine if a link should be shown for this section on the navbar
+  template: sections/about.html # allows you to point to a specific template.
+
+# your designation
+designation: Software Engineer
+# your company information
+company:
+  name: Anywhere
+  url: "https://www.example.com"
+
+
+# a summary about you
+summary: '这里是pok的博客，会在这里记录一些学习笔记和研究记录，正在践行着一些理念，帮助自己探索这个世界以及获得自由。
+
+
+日常希望自己会画画、唱歌、跳舞和摄影，梦想是去到北极甚至地外银河系漫游，但是在早十晚九地工作着。身边有一台树莓派3B，总希望它能够在某一天能做一些有意思的事情。喜欢猫猫狗狗，在每天早晨和女朋友道完早安后，
+会看一会狗狗和猫猫的视频再起床。
+
+
+"Learning Machine" 这个词和终身学习的概念非常接近，只是会将目标聚焦到每天每日，
+让自己每天都会有新的收获，来源于芒格在南加州大学毕业典礼上的演讲，这个阶段的我在
+这1小时多的演讲中收获不少我觉得有指导性的建议和道理，如果你看到这里，我也会推荐你看看。
+
+
+mail: fatwaer@gmail.com
+
+
+wechat: pok-42
+'
+
+# your social links
+# give as many as you want. use font-awesome for the icons.
+# socialLinks:
+# - name: Email
+#   icon: "fas fa-envelope"
+#   url: "fatwaer@gmail.com"
+
+# - name: Github
+#   icon: "fab fa-github"
+#   url: "https://www.github.com/example"
+
+# - name: Stackoverflow
+#   icon: "fab fa-stack-overflow"
+#   url: "#"
+
+# - name: LinkedIn
+#   icon: "fab fa-linkedin"
+#   url: "#"
+
+# - name: Twitter
+#   icon: "fab fa-twitter"
+#   url: "#"
+
+# - name: Facebook
+#   icon: "fab fa-facebook"
+#   url: "#"

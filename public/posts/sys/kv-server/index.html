@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>6.824 Lab3 Fault-tolerant Key/Value Service</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="6.824 Lab3 Fault-tolerant Key/Value Service" />
+<meta property="og:description" content="强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如map[string]string）即可，但是实际上在跑3A测试的时候还是出现了很多问题。
+并发(Concurrency) 虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。
+网络不可靠(Unreliable) 这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&gt;&ldquo;2&rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。
+服务器主机崩溃(Crash) 服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。
+网络分区(Partition) 由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为线性化。
+最先碰到网络分区和检查一致性是TestOnePartition3A，这个测试中做了如下几件事情：
+ 创建一个5个server的kv服务器集群 客户端请求: Put:1 -&gt; 13 建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。 往majority中提交Put:1-&gt;14 检查majority 往minority中提交操作Put:1 -&gt; 15和Get:1 检测6中两个操作是否会成功 往majority提交Put:1-&gt;16并检查 合并两个分区，检查最后Key 1的值。  最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。
+当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：Put:1 -&gt; 15和Get:1，使客户端重定向到新的leader。
+而Get什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。
+标识操作(UniqueID) 如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：
+ seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。 Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。 Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。  每当启用一个新的客户端并且提交操作时，先自增seriesN，如果Client ID为-1，就会向服务端注册自己，即请求一个可用的Client ID，并设置Server ID。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。
+当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。
+考虑下面这种情景：
+s1 | x = 0 | x &#43;= 1 同步到其他server s2 | x = 0 | x &#43;= 1 s3 | x = 0 | x &#43;= 1 s4 | x = 0 | x &#43;= 1 s5 | x = 0 | nil   leader s1 提交了一个 x &#43;= 1 的操作后，并同步到了s2, s3, s4，然后发生分区。 s2 当选新一轮的leader，并同步完成 s1 恢复到该分区中，被s2的心跳转变为follower client对s1的rpc被返回，重定向到s2，重复的op被提交。  这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x &#43;= 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x &#43;= 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/sys/kv-server/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-02-12T10:42:40+08:00" />
+<meta property="article:modified_time" content="2020-02-12T10:42:40+08:00" />
+
+
+
+    
+    
+<meta name="description" content="6.824 Lab3 Fault-tolerant Key/Value Service" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>February 12, 2020</p>
+        </div>
+
+        <div class="title">
+          <h1>6.824 Lab3 Fault-tolerant Key/Value Service</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h2 id="强一致性keyvalue服务">强一致性Key/Value服务</h2>
+<p>其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如<code>map[string]string</code>）即可，但是实际上在跑3A测试的时候还是出现了很多问题。</p>
+<h3 id="并发concurrency">并发(Concurrency)</h3>
+<p>虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。</p>
+<h3 id="网络不可靠unreliable">网络不可靠(Unreliable)</h3>
+<p>这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&gt;&ldquo;2&rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。</p>
+<h3 id="服务器主机崩溃crash">服务器主机崩溃(Crash)</h3>
+<p>服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。</p>
+<h3 id="网络分区partition">网络分区(Partition)</h3>
+<p>由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为<a href="https://en.wikipedia.org/wiki/Linearizability">线性化</a>。</p>
+<p>最先碰到网络分区和检查一致性是<code>TestOnePartition3A</code>，这个测试中做了如下几件事情：</p>
+<ol>
+<li>创建一个5个server的kv服务器集群</li>
+<li>客户端请求: <code>Put:1 -&gt; 13</code></li>
+<li>建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。</li>
+<li>往majority中提交<code>Put:1-&gt;14</code></li>
+<li>检查majority</li>
+<li>往minority中提交操作<code>Put:1 -&gt; 15</code>和<code>Get:1</code></li>
+<li>检测6中两个操作是否会成功</li>
+<li>往majority提交<code>Put:1-&gt;16</code>并检查</li>
+<li>合并两个分区，检查最后Key 1的值。</li>
+</ol>
+<p>最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。</p>
+<p>当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：<code>Put:1 -&gt; 15</code>和<code>Get:1</code>，使客户端重定向到新的leader。</p>
+<p>而<code>Get</code>什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。</p>
+<h3 id="标识操作uniqueid">标识操作(UniqueID)</h3>
+<p>如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：</p>
+<ol>
+<li>seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。</li>
+<li>Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。</li>
+<li>Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。</li>
+</ol>
+<p>每当启用一个新的客户端并且提交操作时，先自增seriesN，如果<code>Client ID</code>为-1，就会向服务端注册自己，即请求一个可用的<code>Client ID</code>，并设置<code>Server ID</code>。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。</p>
+<p>当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。</p>
+<p>考虑下面这种情景：</p>
+<pre tabindex="0"><code class="language-code" data-lang="code">s1 | x = 0 | x += 1
+同步到其他server
+s2 | x = 0 | x += 1
+s3 | x = 0 | x += 1
+s4 | x = 0 | x += 1
+s5 | x = 0 | nil
+</code></pre><hr>
+<ol>
+<li>leader s1 提交了一个 x += 1 的操作后，并同步到了s2, s3, s4，然后发生分区。</li>
+<li>s2 当选新一轮的leader，并同步完成</li>
+<li>s1 恢复到该分区中，被s2的心跳转变为follower</li>
+<li>client对s1的rpc被返回，重定向到s2，重复的op被提交。</li>
+</ol>
+<p>这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x += 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x += 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。</p>
+<p>既然服务端要分配client ID，那么如何记住这些id以应对服务器崩溃，比较简单的办法是分配一个client ID后就做一次持久化，因为真正进行提交操作的client并不是很多也并不频繁。另外一种方法是根据raft的applyMsg会带有Sid，Cid，SeriesN三者，所以当服务crash后重启时，会随着一致性检查恢复之前自己已经分配过的Cid。</p>
+<p>Part A内容的大致就是这些，还剩一些优化的细节，比如client在找到server后就记住server的索引，没必要每次都向集群所有服务器发送请求。关于RPC，配置到服务器上时，没必要为每次RPC都新建一次连接，应该维护住这个连接直到主动断开或者发生错误。</p>
+<h2 id="快照snapshot">快照(Snapshot)</h2>
+<p>快照机制主要作用是两点:</p>
+<ul>
+<li>一是压缩日志，实际系统中，日志不能在内存中无限增长，如果没有相关机制清理陈旧的信息，那么会产生可用性的问题。日志压缩除了利用快照机制外，在Raft论文中还有提到了利用LSM-Tree对Raft的日志进行增量压缩的方法，由于保证日志的增长是顺序的，在这里利用日志结构树能承受住更高的I/O吞吐量。</li>
+<li>第二点是在写Lab中发现的，拥有快照机制的Raft能够更快地使落后的(发生了崩溃或者网络分区)follower恢复到同步水平。</li>
+</ul>
+<h3 id="snapshot要做什么">Snapshot要做什么</h3>
+<p><img src="/images/distributed-system/6.824/lab3/snapshot.png" alt="snapshot"></p>
+<p>快照所做的事情也比较简单，主要针对的是那些已经提交过的条目(即在大多是中达成共识)进行压缩，让这些条目所应用后的状态有一个备份，然后再将这些进行截断即可。因为没有必要每应用一个条目就执行一次快照，所以在应用到状态机后，可以设置一个阈值与当前在内存中的raft log进行比较，当超过这个阈值后执行日志压缩，这也就是3b主要需要做的事情。</p>
+<p>3B部分最难处理也就是如何进行日志截断、什么时候进行日志截断、截断后需要重新设置哪些值，在想好这三个问题后动手会减少大量的debug工作。</p>
+<h3 id="什么时候进行截断">什么时候进行截断</h3>
+<p>截断的时间是发生在应用到状态机后检测到raft log的大小已经增长超过了阈值，于是kv服务将自己的状态<code>map[string]string</code>进行保存，随着logIndex一起递交给自己的raft，raft根据index获取到最后条目的term，进行持久化，然后截断自己的日志。</p>
+<h3 id="如何进行日志截断">如何进行日志截断</h3>
+<p>截断首先要考虑到截断后对其他操作的影响：</p>
+<ol>
+<li>raft负责发送appendEntry的操作，对于落后的机器可能会读取到陈旧的条目</li>
+<li>raft收到appendEntry，常常发生于旧leader对最新的服务器(leader和follower)发送的心跳</li>
+<li>raft收到InstallSnapshot后，会有log的截断操作</li>
+</ol>
+<blockquote>
+<p>InstallSnapshot RPC: 6. If existing log entry has same index and term as snapshot’s last included entry, retain log entries following it and reply</p>
+</blockquote>
+<p>这些操作本质上都是数组下标界限的问题，需要根据实际逻辑进行判断。</p>
+<p>另外一点就是关于Golang的切片内存模型，因为在这里raft log是以切片进行保存，所以类似于<code>arr[beg:end]</code>的操作只是移动指向底层的指针和长度，所以这里得需要新分配一个切片给rf.log。</p>
+<p><img src="/images/distributed-system/6.824/lab3/slice.png" alt="slice"></p>
+<h3 id="截断后需要重新设置哪些值">截断后需要重新设置哪些值</h3>
+<p>首先是在论文里的LastIncludeIndex和LastIncludeTerm，这两个变量可以维护在raft的状态里，以免每次都需要进行一次I/O读取这两个变量。因为需要维护这两个变量，所以每当要<code>读取和写入</code>快照时都需要更新。</p>
+<p>另外一对重要的值是commitIndex和applyIndex，根据raft论文:</p>
+<blockquote>
+<p>If commitIndex &gt; lastApplied: increment lastApplied, apply log[lastApplied] to state machine</p>
+</blockquote>
+<p>这种情况在InstallSnapshot内要着重考虑，因为InstallSnapshot的LastIncludeIndex会大于当前的commitIndex，当某台follower还在apply到状态机的时候，收到了快照，需要做的事情是，应用完上一个快照后，检查自己的applyIndex和commitIndex。而在InstallSnapshot内需要做的事情除了设置LastIncludeIndex和LastIncludeTerm，还同时提高applyIndex和commitIndex。</p>
+<p>中断的之前的apply过程并不会导致不一致，在安装完快照后，需要重置kv的状态机，所以不用担心同步问题。</p>
+<h3 id="快照与kv服务">快照与K/V服务</h3>
+<p>3A部分中的kv服务是通过一致性检查后，一个一个地从0开始恢复状态，把以前的操作重新做一遍来恢复自己已分配掉的client ID，因为这个ID是会保存在raft的log中，对日志压缩也就会造成这些信息丢失，所以将当前已经分配掉的client ID写入到快照是有必要的。</p>
+<h2 id="部署后的-kv-服务">部署后的 K/V 服务</h2>
+<ul>
+<li>Server 1:
+state: <a href="http://fatwaer.store/kv/state.html">http://fatwaer.store/kv/state.html</a>
+log  : <a href="http://fatwaer.store/kv/log.html">http://fatwaer.store/kv/log.html</a></li>
+<li>Server 2:
+state: <a href="http://106.13.211.207/kv/state.html">http://106.13.211.207/kv/state.html</a>
+log  : <a href="http://106.13.211.207/kv/log.html">http://106.13.211.207/kv/log.html</a></li>
+<li>Server 3:
+state: <a href="http://18.162.39.157/kv/state.html">http://18.162.39.157/kv/state.html</a>
+log  : <a href="http://18.162.39.157/kv/log.html">http://18.162.39.157/kv/log.html</a></li>
+</ul>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li>《Unix网络编程：卷1》</li>
+<li><a href="https://blog.golang.org/go-slices-usage-and-internals">https://blog.golang.org/go-slices-usage-and-internals</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf">https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf</a></li>
+</ul>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/sys/kv-server.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#强一致性keyvalue服务">强一致性Key/Value服务</a>
+      <ul>
+        <li><a href="#并发concurrency">并发(Concurrency)</a></li>
+        <li><a href="#网络不可靠unreliable">网络不可靠(Unreliable)</a></li>
+        <li><a href="#服务器主机崩溃crash">服务器主机崩溃(Crash)</a></li>
+        <li><a href="#网络分区partition">网络分区(Partition)</a></li>
+        <li><a href="#标识操作uniqueid">标识操作(UniqueID)</a></li>
+      </ul>
+    </li>
+    <li><a href="#快照snapshot">快照(Snapshot)</a>
+      <ul>
+        <li><a href="#snapshot要做什么">Snapshot要做什么</a></li>
+        <li><a href="#什么时候进行截断">什么时候进行截断</a></li>
+        <li><a href="#如何进行日志截断">如何进行日志截断</a></li>
+        <li><a href="#截断后需要重新设置哪些值">截断后需要重新设置哪些值</a></li>
+        <li><a href="#快照与kv服务">快照与K/V服务</a></li>
+      </ul>
+    </li>
+    <li><a href="#部署后的-kv-服务">部署后的 K/V 服务</a></li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

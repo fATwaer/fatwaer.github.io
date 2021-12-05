@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lt_top100_array</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Lt_top100_array" />
+<meta property="og:description" content="15. 三数之和 class Solution { public: vector&lt;vector&lt;int&gt;&gt; threeSum(vector&lt;int&gt;&amp; nums) { vector&lt;vector&lt;int&gt;&gt; res; std::sort(nums.begin(), nums.end()); for (int i = 0; i &lt; nums.size(); &#43;&#43;i) { int first = nums[i]; if (first &gt; 0) { continue; } if (i &gt; 0 &amp;&amp; nums[i-1] == first) { continue; } int target = -1 * first; int j = i &#43; 1; int k = nums.size() - 1; while (j &lt; k) { int second = nums[j]; int third = nums[k]; if (second &#43; third &gt; target) { k--; continue; } else if (second &#43; third &lt; target) { j&#43;&#43;; continue; } else { res." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/lt_top100_array/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-11-18T21:50:21+08:00" />
+<meta property="article:modified_time" content="2021-11-18T21:50:21+08:00" />
+
+
+
+    
+    
+<meta name="description" content="Lt_top100_array" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>November 18, 2021</p>
+        </div>
+
+        <div class="title">
+          <h1>Lt_top100_array</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h2 id="15-三数之和httpsleetcode-cncomproblems3sum"><a href="https://leetcode-cn.com/problems/3sum/">15. 三数之和</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c++" data-lang="c++"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Solution</span> {
+<span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+    vector<span style="color:#f92672">&lt;</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&gt;</span> threeSum(vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&amp;</span> nums) {
+        vector<span style="color:#f92672">&lt;</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;&gt;</span> res;
+        std<span style="color:#f92672">::</span>sort(nums.begin(), nums.end());
+        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> nums.size(); <span style="color:#f92672">++</span>i) {
+            <span style="color:#66d9ef">int</span> first <span style="color:#f92672">=</span> nums[i];
+            <span style="color:#66d9ef">if</span> (first <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+                <span style="color:#66d9ef">continue</span>;
+            }
+            <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> nums[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> first) {
+                <span style="color:#66d9ef">continue</span>;
+            }
+            <span style="color:#66d9ef">int</span> target <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">*</span> first;
+            <span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>;
+            <span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> nums.size() <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>;
+            <span style="color:#66d9ef">while</span> (j <span style="color:#f92672">&lt;</span> k) {
+                <span style="color:#66d9ef">int</span> second <span style="color:#f92672">=</span> nums[j];
+                <span style="color:#66d9ef">int</span> third <span style="color:#f92672">=</span> nums[k];
+                <span style="color:#66d9ef">if</span> (second <span style="color:#f92672">+</span> third <span style="color:#f92672">&gt;</span> target) {
+                    k<span style="color:#f92672">--</span>;
+                    <span style="color:#66d9ef">continue</span>;
+                } <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span> (second <span style="color:#f92672">+</span> third <span style="color:#f92672">&lt;</span> target) {
+                    j<span style="color:#f92672">++</span>;
+                    <span style="color:#66d9ef">continue</span>;
+                } <span style="color:#66d9ef">else</span> {
+                    res.emplace_back(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">int</span><span style="color:#f92672">&gt;</span>({first, second, third}));
+                    <span style="color:#f92672">++</span>j;
+                    <span style="color:#f92672">--</span>k;
+                    <span style="color:#66d9ef">while</span> (j <span style="color:#f92672">&lt;</span> k <span style="color:#f92672">&amp;&amp;</span> nums[j] <span style="color:#f92672">==</span> nums[j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]) <span style="color:#f92672">++</span>j;
+                    <span style="color:#66d9ef">while</span> (j <span style="color:#f92672">&lt;</span> k <span style="color:#f92672">&amp;&amp;</span> nums[k] <span style="color:#f92672">==</span> nums[k<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>]) <span style="color:#f92672">--</span>k;
+                }
+            }
+        }
+        <span style="color:#66d9ef">return</span> res;
+    }
+    
+};
+</code></pre></div><p>题目的注意事项是：不包含重复的三元组，暴力去解决还需要set来去重，特别麻烦。</p>
+<p>解法应该是将三数和转化为两数和的问题，排序+双指针。</p>
+<p>注意：</p>
+<ol>
+<li>因为是递增序列，如果第一个不是负数，那后面相加肯定不可能等于0</li>
+<li>找到target后，用双指针移动不断找到两个合适的值，并且要用移动指针去重。</li>
+</ol>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/%e7%ae%97%e6%b3%95%e4%b8%8e%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84/lt_top100_array.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#15-三数之和httpsleetcode-cncomproblems3sum"><a href="https://leetcode-cn.com/problems/3sum/">15. 三数之和</a></a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

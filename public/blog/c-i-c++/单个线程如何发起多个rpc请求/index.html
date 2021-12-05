@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://www.fatwae.store/blog/c-i-c&#43;&#43;/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/" />
+  <link rel="canonical" href="https://www.fatwae.store/blog/c-i-c&#43;&#43;/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/" /><link rel="alternate" type="application/atom+xml" href="https://www.fatwae.store/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/www.fatwae.store\/"
+      },
+      "articleSection" : "blog",
+      "name" : "gRPC：复用CompletionQueue",
+      "headline" : "gRPC：复用CompletionQueue",
+      "description" : "异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。\n异步请求流程应该如下：\n在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，\n\/\/ struct for keeping state and data information  struct AsyncClientCall { \/\/ Container for the data we expect from the server.  HelloReply reply; \/\/ Context for the client. It could be used to convey extra information to  \/\/ the server and\/or tweak certain RPC behaviors.  ClientContext context; \/\/ Storage for the status of the RPC upon completion.  Status status; std::unique_ptr\u0026lt;ClientAsyncResponseReader\u0026lt;HelloReply\u0026gt;\u0026gt; response_reader; }; void SayHello(const std::string\u0026amp; user) { \/\/ Data we are sending to the server.",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-10-19 22:56:03 \u002b0800 CST",
+      "dateModified" : "2020-10-19 22:56:03 \u002b0800 CST",
+      "url" : "https:\/\/www.fatwae.store\/blog\/c-i-c\u002b\u002b\/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82\/",
+      "keywords" : [  ]
+  }
+</script>
+<title>gRPC：复用CompletionQueue</title>
+  <meta property="og:title" content="gRPC：复用CompletionQueue" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。
+异步请求流程应该如下：
+在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，
+// struct for keeping state and data information  struct AsyncClientCall { // Container for the data we expect from the server.  HelloReply reply; // Context for the client. It could be used to convey extra information to  // the server and/or tweak certain RPC behaviors.  ClientContext context; // Storage for the status of the RPC upon completion.  Status status; std::unique_ptr&amp;lt;ClientAsyncResponseReader&amp;lt;HelloReply&amp;gt;&amp;gt; response_reader; }; void SayHello(const std::string&amp;amp; user) { // Data we are sending to the server." />
+  <meta name="description" content="异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。
+异步请求流程应该如下：
+在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，
+// struct for keeping state and data information  struct AsyncClientCall { // Container for the data we expect from the server.  HelloReply reply; // Context for the client. It could be used to convey extra information to  // the server and/or tweak certain RPC behaviors.  ClientContext context; // Storage for the status of the RPC upon completion.  Status status; std::unique_ptr&amp;lt;ClientAsyncResponseReader&amp;lt;HelloReply&amp;gt;&amp;gt; response_reader; }; void SayHello(const std::string&amp;amp; user) { // Data we are sending to the server." />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="https://pawer.io" target="_blank">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="" target="_blank">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">gRPC：复用CompletionQueue</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2020-10-19 22:56:03 CST">
+                19 Oct 2020
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https://pwaer.io/">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="异步请求过程">异步请求过程</h2>
+<p>在利用异步gRPC实现请求的时候，通常使用gRPC example中的<code>greeter_async_client2.cc</code>作为模板发起异步请求，并通过<code>CompletionQueue</code>中的Next()阻塞机制等待请求的完成。</p>
+<p>异步请求流程应该如下：</p>
+<p><img src="/images/program/grpc.png" alt="请求流程"></p>
+<p>在<code>greeter_async_client2.cc</code>中，每一个请求都会创建一个<code>AsyncClientCall</code>，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c++" data-lang="c++">    <span style="font-style:italic">// struct for keeping state and data information
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">struct</span> <span style="font-weight:bold">AsyncClientCall</span> {
+        <span style="font-style:italic">// Container for the data we expect from the server.
+</span><span style="font-style:italic"></span>        HelloReply reply;
+
+        <span style="font-style:italic">// Context for the client. It could be used to convey extra information to
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// the server and/or tweak certain RPC behaviors.
+</span><span style="font-style:italic"></span>        ClientContext context;
+
+        <span style="font-style:italic">// Storage for the status of the RPC upon completion.
+</span><span style="font-style:italic"></span>        Status status;
+
+
+        std::unique_ptr&lt;ClientAsyncResponseReader&lt;HelloReply&gt;&gt; response_reader;
+    };
+    <span style="">void</span> SayHello(<span style="font-weight:bold">const</span> std::string&amp; user) {
+        <span style="font-style:italic">// Data we are sending to the server.
+</span><span style="font-style:italic"></span>        HelloRequest request;
+        request.set_name(user);
+
+        <span style="font-style:italic">// Call object to store rpc data
+</span><span style="font-style:italic"></span>        AsyncClientCall* call = <span style="font-weight:bold">new</span> AsyncClientCall;
+
+        <span style="font-style:italic">// stub_-&gt;PrepareAsyncSayHello() creates an RPC object, returning
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// an instance to store in &#34;call&#34; but does not actually start the RPC
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// Because we are using the asynchronous API, we need to hold on to
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// the &#34;call&#34; instance in order to get updates on the ongoing RPC.
+</span><span style="font-style:italic"></span>        call-&gt;response_reader =
+            stub_-&gt;PrepareAsyncSayHello(&amp;call-&gt;context, request, &amp;cq_);
+
+        <span style="font-style:italic">// StartCall initiates the RPC call
+</span><span style="font-style:italic"></span>        call-&gt;response_reader-&gt;StartCall();
+
+        <span style="font-style:italic">// Request that, upon completion of the RPC, &#34;reply&#34; be updated with the
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// server&#39;s response; &#34;status&#34; with the indication of whether the operation
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// was successful. Tag the request with the memory address of the call object.
+</span><span style="font-style:italic"></span>        call-&gt;response_reader-&gt;Finish(&amp;call-&gt;reply, &amp;call-&gt;status, (<span style="">void</span>*)call);
+
+    }
+</code></pre></div><p>在官方的例子中，客户端启动了一个线程专门去处理数据异步的接收，但是能同步完成，即在发送完后
+直接利用<code>cq.Next()</code>等待请求的完成。</p>
+<h2 id="为什么需要复用一个completionqueue">为什么需要复用一个CompletionQueue</h2>
+<p>假设目前有个线程正在执行一个操作，并且需要调用多个不同的gRPC服务获取数据，如果使用同步的调用，
+那么就需要经过多次调用的时间才能完成数据的获取。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">
+...
+↓
+call A  --&gt;t1--&gt; gRPC Server A
+↓
+call B  --&gt;t2--&gt; gRPC Server B
+↓
+call C  --&gt;t3--&gt; gRPC Server C
+↓
+...
+</code></pre></div><p>完成三次数据取的时间就是 t1 + t2 + t3，换成官方的example中的aync_client中的异步调用，收到请求需要CompletetionQueue的Next()调用来同步，处理收到的请求。因为要发起不同的RPC请求，容易惯性地开启多个CompletetionQueue来发起请求，最终等待的时候就会需要多个Next()进行同步，从而不得不开启另一个线程检查
+多个CompletetionQueue是否完成，或者单线调用多次Next()导致使用的时间和同步调用没有差别。</p>
+<p>如果使用同一个CompletetionQueue发送请求，那么就可以使用一个Next()等待多个请求同步，所使用的时间就是
+Max(t1, t2, t3)。使用同一个CompletetionQueue会产生一个问题，Next()等待收到响应后，如何分发到不同的
+响应处理中去就成了一个新的问题，最简单的方法之一就是在CompletetionQueue的tag值上想方法，类似于greeter_async_client2.cc中的AsyncClientCall，将结构体的地址写入CQ中，然后在Next()返回得到tag值时
+转型成AsyncClientCall类型。在这个结构体中，加入一个类似于type的字段，用于判断请求的类型，就能区分收到的响应是哪个gRPC请求对应的响应。</p>
+<h2 id="简单例子">简单例子</h2>
+<h3 id="protobuffer-协议文件">Protobuffer 协议文件</h3>
+<p><code>grpc/examples/protos/helloworld.proto</code></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-proto" data-lang="proto">syntax = <span style="font-style:italic">&#34;proto3&#34;</span>;<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">option</span> java_multiple_files = <span style="font-weight:bold">true</span>;<span style="">
+</span><span style=""></span><span style="font-weight:bold">option</span> java_package = <span style="font-style:italic">&#34;io.grpc.examples.helloworld&#34;</span>;<span style="">
+</span><span style=""></span><span style="font-weight:bold">option</span> java_outer_classname = <span style="font-style:italic">&#34;HelloWorldProto&#34;</span>;<span style="">
+</span><span style=""></span><span style="font-weight:bold">option</span> objc_class_prefix = <span style="font-style:italic">&#34;HLW&#34;</span>;<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">package</span> <span style="font-weight:bold">helloworld</span>;<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-style:italic">// The greeting service definition.
+</span><span style="font-style:italic"></span><span style="font-weight:bold">service</span> Greeter {<span style="">
+</span><span style=""></span>  <span style="font-style:italic">// Sends a greeting
+</span><span style="font-style:italic"></span>  <span style="font-weight:bold">rpc</span> SayHello (HelloRequest) <span style="font-weight:bold">returns</span> (HelloReply) {}<span style="">
+</span><span style=""></span>}<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-style:italic">// The request message containing the user&#39;s name.
+</span><span style="font-style:italic"></span><span style="font-weight:bold">message</span> <span style="font-weight:bold">HelloRequest</span> {<span style="">
+</span><span style=""></span>  <span style="">string</span> name = 1;<span style="">
+</span><span style=""></span>}<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-style:italic">// The response message containing the greetings
+</span><span style="font-style:italic"></span><span style="font-weight:bold">message</span> <span style="font-weight:bold">HelloReply</span> {<span style="">
+</span><span style=""></span>  <span style="">string</span> <span style="font-weight:bold">message</span> = 1;<span style="">
+</span><span style=""></span>}<span style="">
+</span><span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">service</span> PingPongService {<span style="">
+</span><span style=""></span>  <span style="font-weight:bold">rpc</span> PingPong (PingRequest) <span style="font-weight:bold">returns</span> (PongReply) {}<span style="">
+</span><span style=""></span>}<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">message</span> <span style="font-weight:bold">PingRequest</span> {<span style="">
+</span><span style=""></span>  <span style="">string</span> seq = 1;<span style="">
+</span><span style=""></span>}<span style="">
+</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">message</span> <span style="font-weight:bold">PongReply</span> {<span style="">
+</span><span style=""></span>  <span style="">string</span> seq = 1;<span style="">
+</span><span style=""></span>}<span style="">
+</span></code></pre></div><h3 id="servercc">server.cc</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-cpp" data-lang="cpp"><span style="">#include</span> <span style="">&lt;iostream&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;memory&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;string&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;thread&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#include</span> <span style="">&lt;grpcpp/grpcpp.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;grpcpp/health_check_service_interface.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;grpcpp/ext/proto_server_reflection_plugin.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#ifdef BAZEL_BUILD
+</span><span style="">#include</span> <span style="">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span style="">
+</span><span style="">#else
+</span><span style="">#include</span> <span style="">&#34;helloworld.grpc.pb.h&#34;</span><span style="">
+</span><span style="">#endif
+</span><span style=""></span>
+<span style="font-weight:bold">using</span> grpc::Server;
+<span style="font-weight:bold">using</span> grpc::ServerBuilder;
+<span style="font-weight:bold">using</span> grpc::ServerContext;
+<span style="font-weight:bold">using</span> grpc::Status;
+<span style="font-weight:bold">using</span> helloworld::HelloRequest;
+<span style="font-weight:bold">using</span> helloworld::HelloReply;
+<span style="font-weight:bold">using</span> helloworld::Greeter;
+<span style="font-weight:bold">using</span> helloworld::PingPongService;
+<span style="font-weight:bold">using</span> helloworld::PingRequest;
+<span style="font-weight:bold">using</span> helloworld::PongReply;
+
+<span style="font-style:italic">// Logic and data behind the server&#39;s behavior.
+</span><span style="font-style:italic"></span><span style="font-weight:bold">class</span> <span style="font-weight:bold">GreeterServiceImpl</span> <span style="font-weight:bold">final</span> : <span style="font-weight:bold">public</span> Greeter::Service {
+  Status SayHello(ServerContext* context, <span style="font-weight:bold">const</span> HelloRequest* request,
+                  HelloReply* reply) <span style="font-weight:bold">override</span> {
+    std::cout &lt;&lt; request-&gt;name() &lt;&lt; std::endl;
+    reply-&gt;set_message(<span style="font-style:italic">&#34;world&#34;</span>);
+    <span style="font-weight:bold">return</span> Status::OK;
+  }
+};
+
+<span style="font-weight:bold">class</span> <span style="font-weight:bold">PingPongServiceImpl</span> <span style="font-weight:bold">final</span> : <span style="font-weight:bold">public</span> PingPongService::Service {
+  Status PingPong(ServerContext* context, <span style="font-weight:bold">const</span> PingRequest* request,
+                  PongReply* reply) <span style="font-weight:bold">override</span> {
+    std::cout &lt;&lt; request-&gt;seq() &lt;&lt; std::endl;
+    reply-&gt;set_seq(<span style="font-style:italic">&#34;pong&#34;</span>);
+    <span style="font-weight:bold">return</span> Status::OK;
+  }
+};
+
+<span style="">void</span> RunServer() {
+  std::string server_address(<span style="font-style:italic">&#34;0.0.0.0:50051&#34;</span>);
+  GreeterServiceImpl service;
+
+  grpc::EnableDefaultHealthCheckService(true);
+  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+  ServerBuilder builder;
+  <span style="font-style:italic">// Listen on the given address without any authentication mechanism.
+</span><span style="font-style:italic"></span>  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  <span style="font-style:italic">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span style="font-style:italic"></span>  <span style="font-style:italic">// clients. In this case it corresponds to an *synchronous* service.
+</span><span style="font-style:italic"></span>  builder.RegisterService(&amp;service);
+  <span style="font-style:italic">// Finally assemble the server.
+</span><span style="font-style:italic"></span>  std::unique_ptr&lt;Server&gt; server(builder.BuildAndStart());
+  std::cout &lt;&lt; <span style="font-style:italic">&#34;Server listening on &#34;</span> &lt;&lt; server_address &lt;&lt; std::endl;
+
+  <span style="font-style:italic">// Wait for the server to shutdown. Note that some other thread must be
+</span><span style="font-style:italic"></span>  <span style="font-style:italic">// responsible for shutting down the server for this call to ever return.
+</span><span style="font-style:italic"></span>  server-&gt;Wait();
+}
+
+<span style="">void</span> RunPingPongServer() {
+  std::string server_address(<span style="font-style:italic">&#34;0.0.0.0:50052&#34;</span>);
+  PingPongServiceImpl service;
+
+  grpc::EnableDefaultHealthCheckService(true);
+  grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+  ServerBuilder builder;
+  <span style="font-style:italic">// Listen on the given address without any authentication mechanism.
+</span><span style="font-style:italic"></span>  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  <span style="font-style:italic">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span style="font-style:italic"></span>  <span style="font-style:italic">// clients. In this case it corresponds to an *synchronous* service.
+</span><span style="font-style:italic"></span>  builder.RegisterService(&amp;service);
+  <span style="font-style:italic">// Finally assemble the server.
+</span><span style="font-style:italic"></span>  std::unique_ptr&lt;Server&gt; server(builder.BuildAndStart());
+  std::cout &lt;&lt; <span style="font-style:italic">&#34;Server listening on &#34;</span> &lt;&lt; server_address &lt;&lt; std::endl;
+
+  <span style="font-style:italic">// Wait for the server to shutdown. Note that some other thread must be
+</span><span style="font-style:italic"></span>  <span style="font-style:italic">// responsible for shutting down the server for this call to ever return.
+</span><span style="font-style:italic"></span>  server-&gt;Wait();
+}
+
+
+<span style="">int</span> main(<span style="">int</span> argc, <span style="">char</span>** argv) {
+  std::<span style="font-weight:bold">thread</span> t1 = std::<span style="font-weight:bold">thread</span>(RunServer);
+  std::<span style="font-weight:bold">thread</span> t2 = std::<span style="font-weight:bold">thread</span>(RunPingPongServer);
+  t1.join();
+  t2.join();
+  <span style="font-weight:bold">return</span> 0;
+}
+
+</code></pre></div><h3 id="async_clientcc">async_client.cc</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-cpp" data-lang="cpp"><span style="">#include</span> <span style="">&lt;iostream&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;memory&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;string&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#include</span> <span style="">&lt;grpcpp/grpcpp.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;grpc/support/log.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;thread&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#ifdef BAZEL_BUILD
+</span><span style="">#include</span> <span style="">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span style="">
+</span><span style="">#else
+</span><span style="">#include</span> <span style="">&#34;helloworld.grpc.pb.h&#34;</span><span style="">
+</span><span style="">#endif
+</span><span style=""></span>
+<span style="font-weight:bold">using</span> grpc::Channel;
+<span style="font-weight:bold">using</span> grpc::ClientAsyncResponseReader;
+<span style="font-weight:bold">using</span> grpc::ClientContext;
+<span style="font-weight:bold">using</span> grpc::CompletionQueue;
+<span style="font-weight:bold">using</span> grpc::Status;
+<span style="font-weight:bold">using</span> helloworld::PingRequest;
+<span style="font-weight:bold">using</span> helloworld::PongReply;
+<span style="font-weight:bold">using</span> helloworld::PingPongService;
+<span style="font-weight:bold">using</span> helloworld::HelloRequest;
+<span style="font-weight:bold">using</span> helloworld::HelloReply;
+<span style="font-weight:bold">using</span> helloworld::Greeter;
+
+<span style="font-weight:bold">struct</span> <span style="font-weight:bold">AsyncClientCall</span> {
+    <span style="">int</span> type;
+    PongReply pong_reply;
+    HelloReply hello_reply;
+    ClientContext context;
+    Status status;
+    std::unique_ptr&lt;ClientAsyncResponseReader&lt;PongReply&gt;&gt; pingpong_reader;
+    std::unique_ptr&lt;ClientAsyncResponseReader&lt;HelloReply&gt;&gt; greeter_reader;
+};
+
+<span style="font-weight:bold">class</span> <span style="font-weight:bold">PingPongClient</span> {
+  <span style="font-weight:bold">public</span>:
+    <span style="font-weight:bold">explicit</span> PingPongClient(std::shared_ptr&lt;Channel&gt; channel, CompletionQueue *cq)
+            : stub_(PingPongService::NewStub(channel)), cq_(cq) {}
+    <span style="">void</span> PingPong(<span style="font-weight:bold">const</span> std::string&amp; seq) {
+        PingRequest request;
+        request.set_seq(seq);
+        AsyncClientCall* call = <span style="font-weight:bold">new</span> AsyncClientCall;
+        call-&gt;type = 1;
+        call-&gt;pingpong_reader = stub_-&gt;PrepareAsyncPingPong(&amp;call-&gt;context, request, cq_);
+        call-&gt;pingpong_reader-&gt;StartCall();
+        call-&gt;pingpong_reader-&gt;Finish(&amp;call-&gt;pong_reply, &amp;call-&gt;status, (<span style="">void</span>*)call);
+        std::cout &lt;&lt; <span style="font-style:italic">&#34;pingpong call struct address:&#34;</span> &lt;&lt; call &lt;&lt; std::endl;
+
+    }
+  <span style="font-weight:bold">private</span>:
+    std::unique_ptr&lt;PingPongService::Stub&gt; stub_;
+    CompletionQueue *cq_;
+};
+
+<span style="font-weight:bold">class</span> <span style="font-weight:bold">GreeterClient</span> {
+  <span style="font-weight:bold">public</span>:
+    <span style="font-weight:bold">explicit</span> GreeterClient(std::shared_ptr&lt;Channel&gt; channel, CompletionQueue *cq)
+            : stub_(Greeter::NewStub(channel)), cq_(cq) {}
+    <span style="">void</span> SayHello(<span style="font-weight:bold">const</span> std::string&amp; user) {
+        HelloRequest request;
+        request.set_name(user);
+        AsyncClientCall* call = <span style="font-weight:bold">new</span> AsyncClientCall;
+        call-&gt;type = 0;
+        call-&gt;greeter_reader = stub_-&gt;PrepareAsyncSayHello(&amp;call-&gt;context, request, cq_);
+        call-&gt;greeter_reader-&gt;StartCall();
+        call-&gt;greeter_reader-&gt;Finish(&amp;call-&gt;hello_reply, &amp;call-&gt;status, (<span style="">void</span>*)call);
+        std::cout &lt;&lt; <span style="font-style:italic">&#34;greeter call struct address:&#34;</span> &lt;&lt; call &lt;&lt; std::endl;
+    }
+  <span style="font-weight:bold">private</span>:
+    std::unique_ptr&lt;Greeter::Stub&gt; stub_;
+    CompletionQueue *cq_;
+};
+
+<span style="">void</span> AsyncCompleteRpc(CompletionQueue&amp; cq_) {
+    <span style="">void</span>* got_tag;
+    <span style="">bool</span> ok = false;
+    <span style="font-weight:bold">while</span> (cq_.Next(&amp;got_tag, &amp;ok)) {
+        AsyncClientCall* call = <span style="font-weight:bold">static_cast</span>&lt;AsyncClientCall*&gt;(got_tag);
+        <span style="font-weight:bold">if</span> (call-&gt;status.ok())
+            <span style="font-weight:bold">if</span> (call-&gt;type == 0) {
+                std::cout &lt;&lt; <span style="font-style:italic">&#34;address=&#34;</span> &lt;&lt; call &lt;&lt; <span style="font-style:italic">&#34; received: &#34;</span> &lt;&lt; call-&gt;hello_reply.message() &lt;&lt; std::endl;
+            } <span style="font-weight:bold">else</span> {
+                std::cout &lt;&lt; <span style="font-style:italic">&#34;address=&#34;</span> &lt;&lt; call &lt;&lt; <span style="font-style:italic">&#34; received: &#34;</span> &lt;&lt; call-&gt;pong_reply.seq() &lt;&lt; std::endl;
+            }
+        <span style="font-weight:bold">else</span>
+            std::cout &lt;&lt; <span style="font-style:italic">&#34;RPC failed&#34;</span> &lt;&lt; std::endl;
+        <span style="font-weight:bold">delete</span> call;
+    }
+}
+
+<span style="">int</span> main(<span style="">int</span> argc, <span style="">char</span>** argv) {
+
+    CompletionQueue cq;
+
+    GreeterClient greeter(grpc::CreateChannel(
+            <span style="font-style:italic">&#34;localhost:50051&#34;</span>, grpc::InsecureChannelCredentials()), &amp;cq);
+    PingPongClient client(grpc::CreateChannel(
+            <span style="font-style:italic">&#34;localhost:50052&#34;</span>, grpc::InsecureChannelCredentials()), &amp;cq);
+
+    greeter.SayHello(<span style="font-style:italic">&#34;hello&#34;</span>);
+    client.PingPong(<span style="font-style:italic">&#34;ping&#34;</span>);
+    AsyncCompleteRpc(cq);
+
+    <span style="font-weight:bold">return</span> 0;
+}
+</code></pre></div><h3 id="运行结果">运行结果</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">&gt;&gt; ./server
+Server listening on 0.0.0.0:50052
+Server listening on 0.0.0.0:50051
+
+----
+
+&gt;&gt; ./async_client
+greeter call struct address:0x1748eb0
+pingpong call struct address:0x174e410
+address=0x1748eb0 received: world
+address=0x174e410 received: pong
+</code></pre></div>
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

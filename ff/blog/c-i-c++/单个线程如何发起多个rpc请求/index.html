@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>gRPC：复用CompletionQueue&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="gRPC：复用CompletionQueue" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">gRPC：复用CompletionQueue</h1><p class="article date">Monday, October 19, 2020</p></section><article class="article markdown-body"><h2 id="异步请求过程">异步请求过程</h2>
+<p>在利用异步gRPC实现请求的时候，通常使用gRPC example中的<code>greeter_async_client2.cc</code>作为模板发起异步请求，并通过<code>CompletionQueue</code>中的Next()阻塞机制等待请求的完成。</p>
+<p>异步请求流程应该如下：</p>
+<p><img  src="/images/program/grpc.png"
+        alt="请求流程"/></p>
+<p>在<code>greeter_async_client2.cc</code>中，每一个请求都会创建一个<code>AsyncClientCall</code>，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++">    <span class="c1">// struct for keeping state and data information
+</span><span class="c1"></span>    <span class="k">struct</span> <span class="nc">AsyncClientCall</span> <span class="p">{</span>
+        <span class="c1">// Container for the data we expect from the server.
+</span><span class="c1"></span>        <span class="n">HelloReply</span> <span class="n">reply</span><span class="p">;</span>
+
+        <span class="c1">// Context for the client. It could be used to convey extra information to
+</span><span class="c1"></span>        <span class="c1">// the server and/or tweak certain RPC behaviors.
+</span><span class="c1"></span>        <span class="n">ClientContext</span> <span class="n">context</span><span class="p">;</span>
+
+        <span class="c1">// Storage for the status of the RPC upon completion.
+</span><span class="c1"></span>        <span class="n">Status</span> <span class="n">status</span><span class="p">;</span>
+
+
+        <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">HelloReply</span><span class="o">&gt;&gt;</span> <span class="n">response_reader</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="kt">void</span> <span class="nf">SayHello</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Data we are sending to the server.
+</span><span class="c1"></span>        <span class="n">HelloRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+
+        <span class="c1">// Call object to store rpc data
+</span><span class="c1"></span>        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+
+        <span class="c1">// stub_-&gt;PrepareAsyncSayHello() creates an RPC object, returning
+</span><span class="c1"></span>        <span class="c1">// an instance to store in &#34;call&#34; but does not actually start the RPC
+</span><span class="c1"></span>        <span class="c1">// Because we are using the asynchronous API, we need to hold on to
+</span><span class="c1"></span>        <span class="c1">// the &#34;call&#34; instance in order to get updates on the ongoing RPC.
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span> <span class="o">=</span>
+            <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncSayHello</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cq_</span><span class="p">);</span>
+
+        <span class="c1">// StartCall initiates the RPC call
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+
+        <span class="c1">// Request that, upon completion of the RPC, &#34;reply&#34; be updated with the
+</span><span class="c1"></span>        <span class="c1">// server&#39;s response; &#34;status&#34; with the indication of whether the operation
+</span><span class="c1"></span>        <span class="c1">// was successful. Tag the request with the memory address of the call object.
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+
+    <span class="p">}</span>
+</code></pre></div><p>在官方的例子中，客户端启动了一个线程专门去处理数据异步的接收，但是能同步完成，即在发送完后
+直接利用<code>cq.Next()</code>等待请求的完成。</p>
+<h2 id="为什么需要复用一个completionqueue">为什么需要复用一个CompletionQueue</h2>
+<p>假设目前有个线程正在执行一个操作，并且需要调用多个不同的gRPC服务获取数据，如果使用同步的调用，
+那么就需要经过多次调用的时间才能完成数据的获取。</p>
+<pre><code>
+...
+↓
+call A  --&gt;t1--&gt; gRPC Server A
+↓
+call B  --&gt;t2--&gt; gRPC Server B
+↓
+call C  --&gt;t3--&gt; gRPC Server C
+↓
+...
+</code></pre><p>完成三次数据取的时间就是 t1 + t2 + t3，换成官方的example中的aync_client中的异步调用，收到请求需要CompletetionQueue的Next()调用来同步，处理收到的请求。因为要发起不同的RPC请求，容易惯性地开启多个CompletetionQueue来发起请求，最终等待的时候就会需要多个Next()进行同步，从而不得不开启另一个线程检查
+多个CompletetionQueue是否完成，或者单线调用多次Next()导致使用的时间和同步调用没有差别。</p>
+<p>如果使用同一个CompletetionQueue发送请求，那么就可以使用一个Next()等待多个请求同步，所使用的时间就是
+Max(t1, t2, t3)。使用同一个CompletetionQueue会产生一个问题，Next()等待收到响应后，如何分发到不同的
+响应处理中去就成了一个新的问题，最简单的方法之一就是在CompletetionQueue的tag值上想方法，类似于greeter_async_client2.cc中的AsyncClientCall，将结构体的地址写入CQ中，然后在Next()返回得到tag值时
+转型成AsyncClientCall类型。在这个结构体中，加入一个类似于type的字段，用于判断请求的类型，就能区分收到的响应是哪个gRPC请求对应的响应。</p>
+<h2 id="简单例子">简单例子</h2>
+<h3 id="protobuffer-协议文件">Protobuffer 协议文件</h3>
+<p><code>grpc/examples/protos/helloworld.proto</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-proto" data-lang="proto"><span class="n">syntax</span> <span class="o">=</span> <span class="s">&#34;proto3&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_multiple_files</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_package</span> <span class="o">=</span> <span class="s">&#34;io.grpc.examples.helloworld&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_outer_classname</span> <span class="o">=</span> <span class="s">&#34;HelloWorldProto&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">objc_class_prefix</span> <span class="o">=</span> <span class="s">&#34;HLW&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kn">package</span> <span class="nn">helloworld</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The greeting service definition.
+</span><span class="c1"></span><span class="kd">service</span> <span class="n">Greeter</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="c1">// Sends a greeting
+</span><span class="c1"></span>  <span class="k">rpc</span> <span class="n">SayHello</span> <span class="p">(</span><span class="n">HelloRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">HelloReply</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The request message containing the user&#39;s name.
+</span><span class="c1"></span><span class="kd">message</span> <span class="nc">HelloRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The response message containing the greetings
+</span><span class="c1"></span><span class="kd">message</span> <span class="nc">HelloReply</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="kd">message</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">service</span> <span class="n">PingPongService</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">PingPong</span> <span class="p">(</span><span class="n">PingRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">PongReply</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">PingRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">seq</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">PongReply</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">seq</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span></code></pre></div><h3 id="servercc">server.cc</h3>
+<div class="highlight"><pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;grpcpp/grpcpp.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpcpp/health_check_service_interface.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpcpp/ext/proto_server_reflection_plugin.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#ifdef BAZEL_BUILD
+</span><span class="cp">#include</span> <span class="cpf">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#else
+</span><span class="cp">#include</span> <span class="cpf">&#34;helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#endif
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Server</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ServerBuilder</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ServerContext</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Status</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">Greeter</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingPongService</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PongReply</span><span class="p">;</span>
+
+<span class="c1">// Logic and data behind the server&#39;s behavior.
+</span><span class="c1"></span><span class="k">class</span> <span class="nc">GreeterServiceImpl</span> <span class="k">final</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Greeter</span><span class="o">::</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="n">Status</span> <span class="nf">SayHello</span><span class="p">(</span><span class="n">ServerContext</span><span class="o">*</span> <span class="n">context</span><span class="p">,</span> <span class="k">const</span> <span class="n">HelloRequest</span><span class="o">*</span> <span class="n">request</span><span class="p">,</span>
+                  <span class="n">HelloReply</span><span class="o">*</span> <span class="n">reply</span><span class="p">)</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">request</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">reply</span><span class="o">-&gt;</span><span class="n">set_message</span><span class="p">(</span><span class="s">&#34;world&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Status</span><span class="o">::</span><span class="n">OK</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">PingPongServiceImpl</span> <span class="k">final</span> <span class="o">:</span> <span class="k">public</span> <span class="n">PingPongService</span><span class="o">::</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="n">Status</span> <span class="nf">PingPong</span><span class="p">(</span><span class="n">ServerContext</span><span class="o">*</span> <span class="n">context</span><span class="p">,</span> <span class="k">const</span> <span class="n">PingRequest</span><span class="o">*</span> <span class="n">request</span><span class="p">,</span>
+                  <span class="n">PongReply</span><span class="o">*</span> <span class="n">reply</span><span class="p">)</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">request</span><span class="o">-&gt;</span><span class="n">seq</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">reply</span><span class="o">-&gt;</span><span class="n">set_seq</span><span class="p">(</span><span class="s">&#34;pong&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Status</span><span class="o">::</span><span class="n">OK</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">RunServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">server_address</span><span class="p">(</span><span class="s">&#34;0.0.0.0:50051&#34;</span><span class="p">);</span>
+  <span class="n">GreeterServiceImpl</span> <span class="n">service</span><span class="p">;</span>
+
+  <span class="n">grpc</span><span class="o">::</span><span class="n">EnableDefaultHealthCheckService</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">grpc</span><span class="o">::</span><span class="n">reflection</span><span class="o">::</span><span class="n">InitProtoReflectionServerBuilderPlugin</span><span class="p">();</span>
+  <span class="n">ServerBuilder</span> <span class="n">builder</span><span class="p">;</span>
+  <span class="c1">// Listen on the given address without any authentication mechanism.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">AddListeningPort</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureServerCredentials</span><span class="p">());</span>
+  <span class="c1">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span class="c1"></span>  <span class="c1">// clients. In this case it corresponds to an *synchronous* service.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">RegisterService</span><span class="p">(</span><span class="o">&amp;</span><span class="n">service</span><span class="p">);</span>
+  <span class="c1">// Finally assemble the server.
+</span><span class="c1"></span>  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span> <span class="n">server</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">BuildAndStart</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Server listening on &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">server_address</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// Wait for the server to shutdown. Note that some other thread must be
+</span><span class="c1"></span>  <span class="c1">// responsible for shutting down the server for this call to ever return.
+</span><span class="c1"></span>  <span class="n">server</span><span class="o">-&gt;</span><span class="n">Wait</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">RunPingPongServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">server_address</span><span class="p">(</span><span class="s">&#34;0.0.0.0:50052&#34;</span><span class="p">);</span>
+  <span class="n">PingPongServiceImpl</span> <span class="n">service</span><span class="p">;</span>
+
+  <span class="n">grpc</span><span class="o">::</span><span class="n">EnableDefaultHealthCheckService</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">grpc</span><span class="o">::</span><span class="n">reflection</span><span class="o">::</span><span class="n">InitProtoReflectionServerBuilderPlugin</span><span class="p">();</span>
+  <span class="n">ServerBuilder</span> <span class="n">builder</span><span class="p">;</span>
+  <span class="c1">// Listen on the given address without any authentication mechanism.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">AddListeningPort</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureServerCredentials</span><span class="p">());</span>
+  <span class="c1">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span class="c1"></span>  <span class="c1">// clients. In this case it corresponds to an *synchronous* service.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">RegisterService</span><span class="p">(</span><span class="o">&amp;</span><span class="n">service</span><span class="p">);</span>
+  <span class="c1">// Finally assemble the server.
+</span><span class="c1"></span>  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span> <span class="n">server</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">BuildAndStart</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Server listening on &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">server_address</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// Wait for the server to shutdown. Note that some other thread must be
+</span><span class="c1"></span>  <span class="c1">// responsible for shutting down the server for this call to ever return.
+</span><span class="c1"></span>  <span class="n">server</span><span class="o">-&gt;</span><span class="n">Wait</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">RunServer</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">RunPingPongServer</span><span class="p">);</span>
+  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><h3 id="async_clientcc">async_client.cc</h3>
+<div class="highlight"><pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;grpcpp/grpcpp.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpc/support/log.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#ifdef BAZEL_BUILD
+</span><span class="cp">#include</span> <span class="cpf">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#else
+</span><span class="cp">#include</span> <span class="cpf">&#34;helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#endif
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Channel</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ClientAsyncResponseReader</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ClientContext</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">CompletionQueue</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Status</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PongReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingPongService</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">Greeter</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nc">AsyncClientCall</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">type</span><span class="p">;</span>
+    <span class="n">PongReply</span> <span class="n">pong_reply</span><span class="p">;</span>
+    <span class="n">HelloReply</span> <span class="n">hello_reply</span><span class="p">;</span>
+    <span class="n">ClientContext</span> <span class="n">context</span><span class="p">;</span>
+    <span class="n">Status</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">PongReply</span><span class="o">&gt;&gt;</span> <span class="n">pingpong_reader</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">HelloReply</span><span class="o">&gt;&gt;</span> <span class="n">greeter_reader</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">PingPongClient</span> <span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="k">explicit</span> <span class="n">PingPongClient</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Channel</span><span class="o">&gt;</span> <span class="n">channel</span><span class="p">,</span> <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq</span><span class="p">)</span>
+            <span class="o">:</span> <span class="n">stub_</span><span class="p">(</span><span class="n">PingPongService</span><span class="o">::</span><span class="n">NewStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)),</span> <span class="n">cq_</span><span class="p">(</span><span class="n">cq</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="kt">void</span> <span class="nf">PingPong</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">seq</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">PingRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">);</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span> <span class="o">=</span> <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncPingPong</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">cq_</span><span class="p">);</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">pong_reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;pingpong call struct address:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+    <span class="p">}</span>
+  <span class="k">private</span><span class="o">:</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">PingPongService</span><span class="o">::</span><span class="n">Stub</span><span class="o">&gt;</span> <span class="n">stub_</span><span class="p">;</span>
+    <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">GreeterClient</span> <span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="k">explicit</span> <span class="n">GreeterClient</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Channel</span><span class="o">&gt;</span> <span class="n">channel</span><span class="p">,</span> <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq</span><span class="p">)</span>
+            <span class="o">:</span> <span class="n">stub_</span><span class="p">(</span><span class="n">Greeter</span><span class="o">::</span><span class="n">NewStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)),</span> <span class="n">cq_</span><span class="p">(</span><span class="n">cq</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="kt">void</span> <span class="nf">SayHello</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">HelloRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span> <span class="o">=</span> <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncSayHello</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">cq_</span><span class="p">);</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">hello_reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;greeter call struct address:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="k">private</span><span class="o">:</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Greeter</span><span class="o">::</span><span class="n">Stub</span><span class="o">&gt;</span> <span class="n">stub_</span><span class="p">;</span>
+    <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">AsyncCompleteRpc</span><span class="p">(</span><span class="n">CompletionQueue</span><span class="o">&amp;</span> <span class="n">cq_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">got_tag</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">ok</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">cq_</span><span class="p">.</span><span class="n">Next</span><span class="p">(</span><span class="o">&amp;</span><span class="n">got_tag</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ok</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">AsyncClientCall</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">got_tag</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;address=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; received: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span><span class="o">-&gt;</span><span class="n">hello_reply</span><span class="p">.</span><span class="n">message</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;address=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; received: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span><span class="o">-&gt;</span><span class="n">pong_reply</span><span class="p">.</span><span class="n">seq</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="k">else</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;RPC failed&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">delete</span> <span class="n">call</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">CompletionQueue</span> <span class="n">cq</span><span class="p">;</span>
+
+    <span class="n">GreeterClient</span> <span class="n">greeter</span><span class="p">(</span><span class="n">grpc</span><span class="o">::</span><span class="n">CreateChannel</span><span class="p">(</span>
+            <span class="s">&#34;localhost:50051&#34;</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureChannelCredentials</span><span class="p">()),</span> <span class="o">&amp;</span><span class="n">cq</span><span class="p">);</span>
+    <span class="n">PingPongClient</span> <span class="n">client</span><span class="p">(</span><span class="n">grpc</span><span class="o">::</span><span class="n">CreateChannel</span><span class="p">(</span>
+            <span class="s">&#34;localhost:50052&#34;</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureChannelCredentials</span><span class="p">()),</span> <span class="o">&amp;</span><span class="n">cq</span><span class="p">);</span>
+
+    <span class="n">greeter</span><span class="p">.</span><span class="n">SayHello</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span>
+    <span class="n">client</span><span class="p">.</span><span class="n">PingPong</span><span class="p">(</span><span class="s">&#34;ping&#34;</span><span class="p">);</span>
+    <span class="n">AsyncCompleteRpc</span><span class="p">(</span><span class="n">cq</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="运行结果">运行结果</h3>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">&gt;&gt; ./server
+Server listening on 0.0.0.0:50052
+Server listening on 0.0.0.0:50051
+
+----
+
+&gt;&gt; ./async_client
+greeter call struct address:0x1748eb0
+pingpong call struct address:0x174e410
+<span class="nv">address</span><span class="o">=</span>0x1748eb0 received: world
+<span class="nv">address</span><span class="o">=</span>0x174e410 received: pong
+</code></pre></div></article><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/c-i-c&#43;&#43;/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/"><span class="iconfont icon-article"></span>利用Jemalloc进行内存泄漏的调试</a></p><p><a class="link" href="/blog/c-i-c&#43;&#43;/programatic2/"><span class="iconfont icon-article"></span>实效性软件构建的途径-下</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6.828-操作系统工程-Lab2:Memory Management",
+      "headline" : "6.828-操作系统工程-Lab2:Memory Management",
+      "description" : "Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。\n 地址转换\n 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。\n线性地址转换过程:\n段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。\n\/\/ A linear address \u0026#39;la\u0026#39; has a three-part structure as follows: \/\/ \/\/ \u002b--------10------\u002b-------10-------\u002b---------12----------\u002b \/\/ | Page Directory | Page Table | Offset within Page | \/\/ | Index | Index | | \/\/ \u002b----------------\u002b----------------\u002b---------------------\u002b \/\/ \\--- PDX(la) --\/ \\--- PTX(la) --\/ \\---- PGOFF(la) ----\/ \/\/ \\---------- PGNUM(la) ----------\/ \/\/ \/\/ The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-04-12 19:18:13 \u002b0000 UTC",
+      "dateModified" : "2018-04-12 19:18:13 \u002b0000 UTC",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management\/",
+      "keywords" : [ "OS", ]
+  }
+</script>
+<title>6.828-操作系统工程-Lab2:Memory Management</title>
+  <meta property="og:title" content="6.828-操作系统工程-Lab2:Memory Management" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。
+ 地址转换
+ 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。
+线性地址转换过程:
+段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。
+// A linear address &amp;#39;la&amp;#39; has a three-part structure as follows: // // &#43;--------10------&#43;-------10-------&#43;---------12----------&#43; // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // &#43;----------------&#43;----------------&#43;---------------------&#43; // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown." />
+  <meta name="description" content="Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。
+ 地址转换
+ 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。
+线性地址转换过程:
+段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。
+// A linear address &amp;#39;la&amp;#39; has a three-part structure as follows: // // &#43;--------10------&#43;-------10-------&#43;---------12----------&#43; // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // &#43;----------------&#43;----------------&#43;---------------------&#43; // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown." />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6.828-操作系统工程-Lab2:Memory Management</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-04-12 19:18:13 UTC">
+                12 Apr 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="exercise-1-内存初始化">Exercise 1: 内存初始化</h2>
+<p>在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。</p>
+<blockquote>
+<p>地址转换</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/lab2/address-translation.png" alt="地址转换"></p>
+<p>首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。</p>
+<p>线性地址转换过程:</p>
+<p><img src="/images/operating-system/6.828/lab2/fig5-8.png" alt="fig5-8.png"></p>
+<p>段翻译机制输出一个线性地址（Linear address）
+Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">// A linear address &#39;la&#39; has a three-part structure as follows:
+//
+// +--------10------+-------10-------+---------12----------+
+// | Page Directory |   Page Table   | Offset within Page  |
+// |      Index     |      Index     |                     |
+// +----------------+----------------+---------------------+
+//  \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/
+//  \---------- PGNUM(la) ----------/
+//
+// The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.
+// To construct a linear address la from PDX(la), PTX(la), and PGOFF(la),
+// use PGADDR(PDX(la), PTX(la), PGOFF(la)).
+</code></pre></div><p>首先取线性地址的高10位作为页目录索引(Page Directory Index)，共1024个，从 0 ~ 1023。再使用cr3寄存器中的高二十位定位内存中页目录的基址。</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3.png" alt="cr3.png"></p>
+<p>在页目录和页表中，每个单元都是4bytes。
+<img src="/images/operating-system/6.828/lab2/pagedirectory.png" alt="pagedirectory.png"></p>
+<p>最后在页目录中的寻址组成为：</p>
+<p><img src="/images/operating-system/6.828/lab2/cr3-addressing.png" alt="cr3-addressing.png"></p>
+<p>每个索引只使用高20位进行寻址，因为页操作的最小粒度为4KB。只需要4个字节的前面20位进行寻址就行了，剩下的比特可以用作其他标志位。</p>
+<p>根据前十位索引获得相应的页目录项后，用其前20位作为一个4KB对齐的地址作为页表（Page Table）的基址。然后从线性地址中取出中间的10位作为的索引，得到相应的页表项（Page Table Entry）。</p>
+<p>继续从PTE中取出前20位得到4KB对齐的基址，然后从利用线性地址（LA）最后12位作为在这4K页内的偏移，组合得到32位的地址，即最终的物理地址。</p>
+<p>下面是JOS需要完成的内存布局。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-style:italic">/*
+</span><span style="font-style:italic"> * Virtual memory map:                                Permissions
+</span><span style="font-style:italic"> *                                                    kernel/user
+</span><span style="font-style:italic"> *
+</span><span style="font-style:italic"> *    4 Gig --------&gt;  +------------------------------+
+</span><span style="font-style:italic"> *                     |                              | RW/--
+</span><span style="font-style:italic"> *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</span><span style="font-style:italic"> *                     :              .               :
+</span><span style="font-style:italic"> *                     :              .               :
+</span><span style="font-style:italic"> *                     :              .               :
+</span><span style="font-style:italic"> *                     |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~| RW/--
+</span><span style="font-style:italic"> *                     |                              | RW/--
+</span><span style="font-style:italic"> *                     |   Remapped Physical Memory   | RW/--
+</span><span style="font-style:italic"> *                     |                              | RW/--
+</span><span style="font-style:italic"> *    KERNBASE, ----&gt;  +------------------------------+ 0xf0000000      --+
+</span><span style="font-style:italic"> *    KSTACKTOP        |     CPU0&#39;s Kernel Stack      | RW/--  KSTKSIZE   |
+</span><span style="font-style:italic"> *                     | - - - - - - - - - - - - - - -|                   |
+</span><span style="font-style:italic"> *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
+</span><span style="font-style:italic"> *                     +------------------------------+                   |
+</span><span style="font-style:italic"> *                     |     CPU1&#39;s Kernel Stack      | RW/--  KSTKSIZE   |
+</span><span style="font-style:italic"> *                     | - - - - - - - - - - - - - - -|                 PTSIZE
+</span><span style="font-style:italic"> *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
+</span><span style="font-style:italic"> *                     +------------------------------+                   |
+</span><span style="font-style:italic"> *                     :              .               :                   |
+</span><span style="font-style:italic"> *                     :              .               :                   |
+</span><span style="font-style:italic"> *    MMIOLIM ------&gt;  +------------------------------+ 0xefc00000      --+
+</span><span style="font-style:italic"> *                     |       Memory-mapped I/O      | RW/--  PTSIZE
+</span><span style="font-style:italic"> * ULIM, MMIOBASE --&gt;  +------------------------------+ 0xef800000
+</span><span style="font-style:italic"> *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
+</span><span style="font-style:italic"> *    UVPT      ----&gt;  +------------------------------+ 0xef400000
+</span><span style="font-style:italic"> *                     |          RO PAGES            | R-/R-  PTSIZE
+</span><span style="font-style:italic"> *    UPAGES    ----&gt;  +------------------------------+ 0xef000000
+</span><span style="font-style:italic"> *                     |           RO ENVS            | R-/R-  PTSIZE
+</span><span style="font-style:italic"> * UTOP,UENVS ------&gt;  +------------------------------+ 0xeec00000
+</span><span style="font-style:italic"> * UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
+</span><span style="font-style:italic"> *                     +------------------------------+ 0xeebff000
+</span><span style="font-style:italic"> *                     |       Empty Memory (*)       | --/--  PGSIZE
+</span><span style="font-style:italic"> *    USTACKTOP  ---&gt;  +------------------------------+ 0xeebfe000
+</span><span style="font-style:italic"> *                     |      Normal User Stack       | RW/RW  PGSIZE
+</span><span style="font-style:italic"> *                     +------------------------------+ 0xeebfd000
+</span><span style="font-style:italic"> *                     |                              |
+</span><span style="font-style:italic"> *                     |                              |
+</span><span style="font-style:italic"> *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</span><span style="font-style:italic"> *                     .                              .
+</span><span style="font-style:italic"> *                     .                              .
+</span><span style="font-style:italic"> *                     .                              .
+</span><span style="font-style:italic"> *                     |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
+</span><span style="font-style:italic"> *                     |     Program Data &amp; Heap      |
+</span><span style="font-style:italic"> *    UTEXT --------&gt;  +------------------------------+ 0x00800000
+</span><span style="font-style:italic"> *    PFTEMP -------&gt;  |       Empty Memory (*)       |        PTSIZE
+</span><span style="font-style:italic"> *                     |                              |
+</span><span style="font-style:italic"> *    UTEMP --------&gt;  +------------------------------+ 0x00400000      --+
+</span><span style="font-style:italic"> *                     |       Empty Memory (*)       |                   |
+</span><span style="font-style:italic"> *                     | - - - - - - - - - - - - - - -|                   |
+</span><span style="font-style:italic"> *                     |  User STAB Data (optional)   |                 PTSIZE
+</span><span style="font-style:italic"> *    USTABDATA ----&gt;  +------------------------------+ 0x00200000        |
+</span><span style="font-style:italic"> *                     |       Empty Memory (*)       |                   |
+</span><span style="font-style:italic"> *    0 ------------&gt;  +------------------------------+                 --+
+</span><span style="font-style:italic"> *
+</span><span style="font-style:italic"> * (*) Note: The kernel ensures that &#34;Invalid Memory&#34; is *never* mapped.
+</span><span style="font-style:italic"> *     &#34;Empty Memory&#34; is normally unmapped, but user programs may map pages
+</span><span style="font-style:italic"> *     there if desired.  JOS user programs map pages temporarily at UTEMP.
+</span><span style="font-style:italic"> */</span>
+
+</code></pre></div><p>首先是执行 i386_detect_memory() 探测内存，分别调用了3次读取CMOS寄存器的函数：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">	basemem = nvram_read(NVRAM_BASELO);
+	extmem = nvram_read(NVRAM_EXTLO);
+	ext16mem = nvram_read(NVRAM_EXT16LO) * 64;
+</code></pre></div><p>追踪到  kclock.h 注释</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">#define	MC_NVRAM_START	0xe	/* start of NVRAM: offset 14 */
+
+...
+
+/* NVRAM bytes 7 &amp; 8: base memory size */
+#define NVRAM_BASELO	(MC_NVRAM_START + 7)	/* low byte; RTC off. 0x15 */
+#define NVRAM_BASEHI	(MC_NVRAM_START + 8)	/* high byte; RTC off. 0x16 */
+
+/* NVRAM bytes 9 &amp; 10: extended memory size (between 1MB and 16MB) */
+#define NVRAM_EXTLO	(MC_NVRAM_START + 9)	/* low byte; RTC off. 0x17 */
+#define NVRAM_EXTHI	(MC_NVRAM_START + 10)	/* high byte; RTC off. 0x18 */
+
+/* NVRAM bytes 38 and 39: extended memory size (between 16MB and 4G) */
+#define NVRAM_EXT16LO	(MC_NVRAM_START + 38)	/* low byte; RTC off. 0x34 */
+#define NVRAM_EXT16HI	(MC_NVRAM_START + 39)	/* high byte; RTC off. 0x35 */
+</code></pre></div><p>可以看到内存探测可以分为三部分</p>
+<ul>
+<li>base memory 0 ~ 1MB</li>
+<li>extended memory 1MB ~ 16MB</li>
+<li>extended memory 16MB ~ 4G</li>
+</ul>
+<p>内存的初始化可以完成一部分，引导用的内存页分配函数以及准备为每一个页准备一个 PageInfo 结构体进行管理。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">boot_alloc():
+    <span style="font-style:italic">// before the page_init(), it&#39;s a temple allocater .
+</span><span style="font-style:italic"></span>    result = nextfree;
+    nextfree = ROUNDUP(nextfree + n, PGSIZE);
+    <span style="font-weight:bold">if</span>((uint32_t )nextfree - KERNBASE &gt;= 0xfffffff)
+            panic(<span style="font-style:italic">&#34;out of ranges&#34;</span>);
+    <span style="font-weight:bold">return</span> result;
+
+mem_init():
+    <span style="font-style:italic">//为每一个4K页面准备一个结构体进行管理。
+</span><span style="font-style:italic"></span>    pages = (<span style="font-weight:bold">struct</span> PageInfo *)boot_alloc(npages * <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> PageInfo));
+    memset(pages, 0, npages * <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> PageInfo));
+</code></pre></div><p>根据 page_init() 注释，内存未使用情况应该如下图（白色部分）：</p>
+<p><img src="/images/operating-system/6.828/lab2/mem-layout.png" alt="mem-layout.png"></p>
+<p>在 boot_alloc() 函数中，内存是从 <strong>end</strong> 这个位置开始分配的：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">extern char end[];
+nextfree = ROUNDUP((char *) end, PGSIZE);
+</code></pre></div><p><strong>end</strong> 是由链接器自动产生的符号，指向内核的 .bss 段的结尾，所以 boot_alloc() 分配的内存都是从内核elf的bss段后开始分配的。</p>
+<p>以下内存不可以被分配（灰色部分）：</p>
+<ol>
+<li>实模式下的 IDT 和 BIOS 数据结构 (page 0)</li>
+<li>IO hole （IOPHYSMEM ~ EXTPHYSMEM）</li>
+<li>之前通过 boot_alloc() 分配掉用于存储页目录和页管理结构体的内存。</li>
+</ol>
+<p>于是在初始化的时候，就将不可再分配的页的引用次数计为1。代码中出现的 basemem 实际上指 0 ~ 640K (从CMOS中读取出来的值)，而不是指广义上的 0 ~ 1MB。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+page_init(<span style="">void</span>)
+{
+    size_t i;
+    size_t IOhole_pages = (EXTPHYSMEM - IOPHYSMEM) / PGSIZE;
+    size_t allocated_pages = ((uint32_t)boot_alloc(0) - KERNBASE) / PGSIZE;
+    <span style="font-weight:bold">for</span> (i = 0; i &lt; npages; i++) {
+		<span style="font-weight:bold">if</span> (i == 0)
+			pages[i].pp_ref = 1;
+		<span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (i &gt;= npages_basemem &amp;&amp;
+				i &lt; npages_basemem + IOhole_pages + allocated_pages) {
+			pages[i].pp_ref = 1;
+		} <span style="font-weight:bold">else</span> {
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &amp;pages[i];
+		}
+    }
+}
+</code></pre></div><p>页的分配和回收实现为单链表插入与删除。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">struct</span> PageInfo *
+page_alloc(<span style="">int</span> alloc_flags)
+{
+    <span style="font-weight:bold">if</span> (page_free_list == NULL)
+        <span style="font-weight:bold">return</span> NULL;
+
+    <span style="font-weight:bold">struct</span> PageInfo *newpage = page_free_list;
+    page_free_list = page_free_list-&gt;pp_link;
+    newpage-&gt;pp_link = NULL;
+
+    <span style="font-weight:bold">if</span> (alloc_flags &amp; ALLOC_ZERO)
+    	memset(page2kva(newpage), 0, PGSIZE);
+
+    <span style="font-weight:bold">return</span> newpage;
+}
+
+<span style="">void</span>
+page_free(<span style="font-weight:bold">struct</span> PageInfo *pp)
+{
+	<span style="font-weight:bold">if</span>(pp-&gt;pp_link != NULL || pp-&gt;pp_ref != 0)
+		panic(<span style="font-style:italic">&#34;cann&#39;t free or it&#39;s free&#34;</span>);
+	<span style="font-weight:bold">else</span> {
+		pp-&gt;pp_link = page_free_list;
+		page_free_list = pp;
+	}
+}
+</code></pre></div><p>这部分做到 <code>check_page_free_list(1);</code></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+</code></pre></div><h2 id="练习2">练习2</h2>
+<p>了解x86保护机制和段页翻译.</p>
+<p>参考资料：</p>
+<blockquote>
+<ul>
+<li><a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/toc.htm">Intel 80386 Reference Manual: chapters 5 and 6</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></li>
+</ul>
+</blockquote>
+<p>保护机制的产生实际上是为了探测和找到程序中可能出现的bug。</p>
+<h2 id="练习3">练习3</h2>
+<h3 id="使用qemu和gdb查看内存">使用QEMU和GDB查看内存</h3>
+<p>进入保护模式后可以通过</p>
+<pre><code>ctrl+a c
+</code></pre>
+<p>进入QEMU的监视器，查看内存情况。</p>
+<pre><code>(QEMU) xp phisical address
+</code></pre>
+<p>查看物理地址信息</p>
+<pre><code>(gdb) x/x virtual address
+</code></pre>
+<p>查看虚拟地址信息</p>
+<h2 id="练习4">练习4</h2>
+<p>JOS中定义了两种针对于不同地址的数据类型,<code>uintptr_t</code>代表虚拟地址,<code>physaddr_t</code>表示物理地址,宏定义都为<code>uint32_t</code>。解引用(dereference)都要通过段页机制实现，所以如果对物理地址进行解引用，会有非预期的结果。</p>
+<p><strong>Question</strong></p>
+<ul>
+<li>Assuming that the following JOS kernel code is correct, what type should variable x have, uintptr_t or physaddr_t?
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    mystery_t x;
+    <span style="">char</span>* value = return_a_pointer();
+    *value = 10;
+    x = (mystery_t) value;
+</code></pre></div></li>
+</ul>
+<p>根据上述对类型的描述，因为有解引用操作，x的类型应该为<code>uintptr_t</code>。</p>
+<h3 id="引用计数">引用计数</h3>
+<p>每一个 struct PageInfo 对应一个4KB物理页，对应一个页，如果计数到达了 0，说明这块内存将不再使用，一般来说，引用计数的值应该等于在 UTOP 以下的页表中出现的次数。因为高于 UTOP 的页表一般被内核所使用，不应该释放。</p>
+<h3 id="page-table-management">Page Table Management</h3>
+<p>因为此时内核已经开启了页机制，所以不可能绕过这个机制，所使用的地址必须映射在页目录中的地址。</p>
+<p><strong>PADDR(va)</strong> : virtual address - KERNELBASE， va 如果小于 KERNELBASE 则 panic。</p>
+<p><strong>KADDR(pa)</strong> : physical address + KERNELBASE，pa 如果超出实际内存大小 则 panic。</p>
+<p>*<em>page2kva(struct PageInfo <em>)</em></em> : struct PageInfo pointer -&gt; virtual address</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">
+pte_t *
+pgdir_walk(pde_t *pgdir, <span style="font-weight:bold">const</span> <span style="">void</span> *va, <span style="">int</span> create)
+{
+    size_t pgdir_index = PDX(va);
+    size_t page_offset = PTX(va);
+    pde_t dir_entry = pgdir[pgdir_index];
+
+	<span style="font-weight:bold">if</span> (!(dir_entry &amp; PTE_P)) {
+        <span style="font-style:italic">// get page table address which a pointer point to .
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">if</span>(create){
+            <span style="font-weight:bold">struct</span> PageInfo *allocated_page = page_alloc(ALLOC_ZERO);
+		   	<span style="font-weight:bold">if</span>(allocated_page == NULL) <span style="font-weight:bold">return</span> NULL;
+			<span style="font-style:italic">// increment reference count
+</span><span style="font-style:italic"></span>            allocated_page-&gt;pp_ref++;
+            <span style="font-style:italic">// the page physical address
+</span><span style="font-style:italic"></span>			physaddr_t pg_phyaddr = page2pa(allocated_page) ;
+			<span style="font-style:italic">// fill page table entry
+</span><span style="font-style:italic"></span>            pgdir[pgdir_index] = pg_phyaddr | PTE_P | PTE_W | PTE_U;
+		} <span style="font-weight:bold">else</span> {
+           <span style="font-weight:bold">return</span> NULL;
+		}
+    }
+
+	<span style="font-style:italic">// point to a page table
+</span><span style="font-style:italic"></span>    pte_t *pt_base = KADDR(PTE_ADDR(pgdir[pgdir_index]));
+    <span style="font-weight:bold">return</span> &amp;(pt_base[page_offset]);
+}
+
+<span style="font-weight:bold">static</span> <span style="">void</span>
+boot_map_region(pde_t *pgdir, uintptr_t va,
+                  size_t size, physaddr_t pa, <span style="">int</span> perm)
+{
+    pte_t *pte;
+	<span style="font-style:italic">// &#39;size&#39; is a multiple of PGSIZE.
+</span><span style="font-style:italic"></span>    size_t page_num = size / PGSIZE;
+    uint32_t i;
+
+    <span style="font-weight:bold">for</span>(i = 0; i &lt; page_num; i++)
+    {
+        pte = pgdir_walk(pgdir, (<span style="">void</span> *)va, true);
+        <span style="font-weight:bold">if</span> (pte == NULL) <span style="font-weight:bold">return</span>;
+		*pte = pa | perm | PTE_P;
+        pa += PGSIZE;
+        va += PGSIZE;
+    }
+}
+
+<span style="font-weight:bold">struct</span> PageInfo *
+page_lookup(pde_t *pgdir, <span style="">void</span> *va, pte_t **pte_store)
+{
+    <span style="font-weight:bold">struct</span> PageInfo *ret = NULL;
+    pte_t *pte = pgdir_walk(pgdir, va, false);
+    <span style="font-weight:bold">if</span>(pte == NULL)
+    	<span style="font-weight:bold">return</span> NULL;
+    <span style="font-weight:bold">if</span>((*pte &amp; PTE_P) == 0)
+    	<span style="font-weight:bold">return</span> NULL;
+
+    ret = pa2page(PTE_ADDR(*pte));
+    <span style="font-weight:bold">if</span>(pte_store != NULL)
+    {
+    	*pte_store = pte;
+    }
+    <span style="font-weight:bold">return</span> ret;
+}
+
+<span style="">void</span>
+page_remove(pde_t *pgdir, <span style="">void</span> *va)
+{
+	<span style="font-style:italic">// get page table entry and PageInfo.
+</span><span style="font-style:italic"></span>	pte_t *pte = NULL;
+	<span style="font-weight:bold">struct</span> PageInfo* upage = page_lookup(pgdir, va, &amp;pte);
+
+	<span style="font-weight:bold">if</span>(upage == NULL) <span style="font-weight:bold">return</span>;
+
+	<span style="font-style:italic">// decrement reference count
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// freeing it if there are no more refs
+</span><span style="font-style:italic"></span>	page_decref(upage);
+
+	<span style="font-style:italic">// flush page-translation cache about this page
+</span><span style="font-style:italic"></span>	tlb_invalidate(pgdir, va);
+
+	<span style="font-style:italic">// clean pte
+</span><span style="font-style:italic"></span>	*pte = 0 ;
+}
+
+<span style="">int</span>
+page_insert(pde_t *pgdir, <span style="font-weight:bold">struct</span> PageInfo *pp, <span style="">void</span> *va, <span style="">int</span> perm)
+{
+	<span style="font-style:italic">// modify pde
+</span><span style="font-style:italic"></span>	pte_t *entry = pgdir_walk(pgdir, va, true);
+	<span style="font-weight:bold">if</span> (entry == NULL)
+		<span style="font-weight:bold">return</span> -E_NO_MEM;
+
+	<span style="font-style:italic">// page colides
+</span><span style="font-style:italic"></span>	pp-&gt;pp_ref++;
+	<span style="font-weight:bold">if</span> (*entry &amp; PTE_P) {
+		<span style="font-style:italic">// decrement and free
+</span><span style="font-style:italic"></span>		<span style="font-style:italic">// page invalidate in page_remove()
+</span><span style="font-style:italic"></span>		page_remove(pgdir, va);
+	}
+
+	<span style="font-style:italic">// modify pte
+</span><span style="font-style:italic"></span>	*entry = page2pa(pp) | perm | PTE_P;
+
+	<span style="font-weight:bold">return</span> 0;
+}
+</code></pre></div><p>Intel TLB 无效技术有两种方法：</p>
+<ul>
+<li>向CR3寄存器写入值时，所有处理器自动刷新相对于非全局TLB表项</li>
+<li>在Pentium Pro及以后的处理器中，invlpg 指令能使映射指定线性地址的单个TLB表项无效</li>
+</ul>
+<p>练习4到此完成。</p>
+<h2 id="练习5">练习5</h2>
+<p><code>Kernal Address Space</code></p>
+<p>JOS把线性地址分为两部分，低地址的用户环境(User enviroment - Processes)和高地址的内核，用户部分在Lab3中加载使用。内存分给内核从<code>KERNBASE</code>开始到内存结束共大约256MB。</p>
+<h3 id="权限和错误隔离">权限和错误隔离</h3>
+<p>为了防止用户代码的bug覆盖写内核数据或者代码导致崩溃，使用权限bit位限制用户代码的权限，使其只能访问其内存空间。对于用户级代码来说大于ULIM的是不允许访问的，属于内核的空间。内存地址[UTOP,ULIM) 对于User和Kernal都是只读的，用于内核暴露一部分只读数据结构给用户。</p>
+<p>完成 mem_init() 剩余的代码：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-style:italic">// Map &#39;pages&#39; read-only by the user at linear address UPAGES
+</span><span style="font-style:italic"></span>boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U | PTE_P);
+
+<span style="font-style:italic">// Use the physical memory that &#39;bootstack&#39; refers to as the kernel
+</span><span style="font-style:italic"></span>boot_map_region(kern_pgdir, (KSTACKTOP-KSTKSIZE), KSTKSIZE, PADDR(bootstack), PTE_W | PTE_P);
+
+<span style="font-style:italic">// Map all of physical memory at KERNBASE.
+</span><span style="font-style:italic"></span>boot_map_region(kern_pgdir, KERNBASE, 0xFFFFFFF, 0, PTE_W | PTE_P);
+
+</code></pre></div><p>通过剩下几个测试</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">$ make qemu-nox
+...
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+check_page() succeeded!
+check_kern_pgdir() succeeded!
+check_page_free_list() succeeded!
+check_page_installed_pgdir() succeeded!
+</code></pre></div><p>然后将新填写的页目录地址重新加载到CR3寄存器内，在开启剩余一些CR0寄存器位。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">lcr3(PADDR(kern_pgdir));
+cr0 = rcr0();
+cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
+cr0 &amp;= ~(CR0_TS|CR0_EM);
+lcr0(cr0);
+</code></pre></div><p>|PE|</p>
+<hr>
+<h3 id="question">Question</h3>
+<ul>
+<li>Q2:What entries (rows) in the page directory have been filled in at this point? What addresses do they map and where do they point?</li>
+</ul>
+<p><img src="/images/operating-system/6.828/lab2/virtualaddress.jpg" alt="virtualaddress.png"></p>
+<ul>
+<li>
+<p>Q3:We have placed the kernel and user environment in the same address space. Why will user programs not be able to read or write the kernel&rsquo;s memory? What specific mechanisms protect the kernel memory?</p>
+<p>与页目录和页表中的 User/supervisor flag 和 Read/write flag 有关</p>
+<blockquote>
+<p>“ When the processor is in user mode, it can write only to usermode pages that are read/write accessible. User-mode pages which are read/write or read-only are readable; supervisor-mode pages are neither readable nor writable from user mode. ”</p>
+</blockquote>
+<blockquote>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual</a></p>
+</blockquote>
+<blockquote>
+<p><strong>4.11.3</strong> Page Type</p>
+</blockquote>
+<p>可以看到 jos 只有 UPAGES 以上 PTSIZE 的内存设置了 PTE_U，除了这个部分对于用户级别可以读，其他的部分都是不可读或写的。</p>
+</li>
+<li>
+<p>Q5:How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory? How is this overhead broken down?</p>
+<p>2G</p>
+</li>
+<li>
+<p>Q6: Revisit the page table setup in kern/entry.S and kern/entrypgdir.c. Immediately after we turn on paging, EIP is still a low number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above KERNBASE? Why is this transition necessary?</p>
+<pre><code>  mov     $relocated, %eax
+  jmp     *%eax
+</code></pre>
+<p>jmp 完后就到了高地址，在临时的内核页目录中，同时将虚拟地址 [0 ~ 4MB) 和 [KERNELBASE ~ KERNELBASE+4MB) 映射了物理内存 [0 ~ 4MB)，所以即使 PE 置位后仍然能正常执行。在 lab2 中重新加载了新映射的 kern_pgdir，里面并没有映射 [0 ~ 4MB) 这一部分，继续在低地址执行但是页表里面并没有相应的项。</p>
+</li>
+</ul>
+<p>答案参考: <a href="https://github.com/Clann24/jos/tree/master/lab2">https://github.com/Clann24/jos/tree/master/lab2</a></p>
+<h2 id="challenge-2">Challenge 2</h2>
+<hr>
+<p>这个给JOS增加一个调试器，很有必要做一下，方便之后的学习。</p>
+<h3 id="辅助函数-str2ptr">辅助函数 str2ptr()</h3>
+<p>JOS中没有包含标准库，需要自己写一下字符串到整形的转换。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">pde_t *
+str2ptr(<span style="">char</span> *str)
+{
+    pde_t ptr;
+    <span style="">int</span> temp, i;
+    size_t length;
+
+    length = strlen(str) ;
+    ptr = 0;
+    <span style="font-weight:bold">for</span> (i = 2; str[i] != 0; i++) {
+
+        <span style="font-weight:bold">if</span>(str[i] &lt;= <span style="font-style:italic">&#39;9&#39;</span>)
+            temp = str[i] - <span style="font-style:italic">&#39;0&#39;</span>;
+        <span style="font-weight:bold">else</span>
+            temp = str[i] - <span style="font-style:italic">&#39;a&#39;</span> + 10;
+        ptr += temp * ( 1 &lt;&lt; (length - i - 1) * 4 );
+    }
+    <span style="font-weight:bold">return</span> (pde_t *)ptr;
+}
+</code></pre></div><h3 id="mon_mapinfo">mon_mapinfo()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">int</span>
+mon_mapinfo(<span style="">int</span> argc, <span style="">char</span> **argv, <span style="font-weight:bold">struct</span> Trapframe *tf)
+{
+    <span style="font-weight:bold">extern</span> pde_t *kern_pgdir;
+    pde_t *pg_pa, *pg_va, size, iter;
+    <span style="font-weight:bold">extern</span> pte_t * pgdir_walk(pde_t *,<span style="font-weight:bold">const</span> <span style="">void</span> *, <span style="">int</span>);
+
+
+    <span style="font-weight:bold">if</span> (argc &lt; 3) {
+        cprintf(<span style="font-style:italic">&#34;too few argument  </span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+        <span style="font-weight:bold">return</span> 0;
+    }
+
+    <span style="font-weight:bold">if</span> (argv[1][0] == <span style="font-style:italic">&#39;0&#39;</span> &amp;&amp; argv[1][1] == <span style="font-style:italic">&#39;x&#39;</span>) {       <span style="font-style:italic">/* show address */</span>
+
+        <span style="font-style:italic">/*initialize some variables*/</span>
+        size = str2ptr(argv[2]) - str2ptr(argv[1]);
+        pg_va = str2ptr(argv[1]);
+
+        <span style="font-style:italic">/* use pgdir_walk function to get page entry */</span>
+        <span style="font-weight:bold">for</span> (iter = (pde_t)pg_va; iter &lt;= (pde_t)str2ptr(argv[2]); iter += PGSIZE) {
+
+            pg_pa = pgdir_walk(kern_pgdir, (<span style="">void</span> *)iter, false);
+
+            <span style="font-weight:bold">if</span> (pg_pa == (<span style="">void</span> *)0)
+                cprintf(<span style="font-style:italic">&#34;0x%x: None</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, iter);
+            <span style="font-weight:bold">else</span>
+                cprintf(<span style="font-style:italic">&#34;0x%x: %x</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, iter, *pg_pa &amp; ~0xFFF);
+
+        }
+    } <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (strcmp(<span style="font-style:italic">&#34;set&#34;</span>, argv[1]) == 0) {       <span style="font-style:italic">/* set flag to Page Entry */</span>
+        pte_t flag;
+
+        pg_va = str2ptr(argv[2]);
+        pg_pa = pgdir_walk(kern_pgdir, (<span style="">void</span> *)pg_va, false);
+        <span style="font-weight:bold">if</span> (pg_pa == (<span style="">void</span> *)0) {
+            cprintf(<span style="font-style:italic">&#34;Error: Unallocated page&#34;</span>);
+            <span style="font-weight:bold">return</span> 0;
+        }
+        <span style="font-weight:bold">else</span> {
+            flag = (pte_t) str2ptr(argv[3]);
+
+            cprintf(<span style="font-style:italic">&#34;set physical address %x: flag = %x -&gt;&#34;</span>, *pg_pa &amp; ~0xFFF, *pg_pa);
+
+            flag &amp;= 0xFFF;          <span style="font-style:italic">/* promise that the flag cann&#39;t affect the address */</span>
+            *pg_pa &amp;= ~0xFFF;
+            *pg_pa |=  flag;
+
+            cprintf(<span style="font-style:italic">&#34; %x</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, *pg_pa &amp; 0xFFF);
+        }
+
+    } <span style="font-weight:bold">else</span> {
+        cprintf(<span style="font-style:italic">&#34;Usage error: showmapings &#34;</span>);
+        cprintf(<span style="font-style:italic">&#34;smp 0xff00ff00 0xff00ff00</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+        cprintf(<span style="font-style:italic">&#34;smp set 0xff00ff00 0x1</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+    }
+    <span style="font-weight:bold">return</span> 0;
+}
+
+</code></pre></div><h3 id="show">show</h3>
+<pre><code>K&gt; smp 0xf0000000 0xf01000000
+0xf0000000: 0
+0xf0001000: 1000
+0xf0002000: 2000
+0xf0003000: 3000
+0xf0004000: 4000
+0xf0005000: 5000
+0xf0006000: 6000
+0xf0007000: 7000
+0xf0008000: 8000
+0xf0009000: 9000
+...
+0xf00fe000: fe000
+0xf00ff000: ff000
+0xf0100000: 100000
+</code></pre>
+<p>正好说明虚拟地址__KERNBASE~0xFFFFFFFF__被映射到了__0x00000000~0x0FFFFFFF__</p>
+<h3 id="set">set</h3>
+<pre><code>K&gt; smp set 0xf0000000 0x1
+set physical address 0: flag = 3 -&gt; 1</code></pre>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/os/">
+                OS
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

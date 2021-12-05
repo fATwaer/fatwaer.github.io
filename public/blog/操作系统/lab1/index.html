@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/" />
+  <link rel="canonical" href="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/" /><link rel="alternate" type="application/atom+xml" href="https://www.fatwae.store/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/www.fatwae.store\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6.828-操作系统工程-Lab1:Booting a PC",
+      "headline" : "6.828-操作系统工程-Lab1:Booting a PC",
+      "description" : "Exercise 1: 内存分布和相关启动信息  memory layout\n 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：\nphysical address = 16 * segment \u002b offset\nintel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low\/conventional memory，以上叫extended memory\n因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。\n参考来源：Phil Storrs I\/O Ports Description\nExercise 2: 追踪 BIOS 部分指令 启动两个终端，分别运行：\n$ make qemu-nox-gdb\n$ make gdb\nBIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。\n跳转到fe05b [f000:fff0] 0xffff0:\tljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:\tcmpl $0x0,%cs:0x6ac8 [f000:e062] 0xfe062:\tjne 0xfd2e1 dx置为0 [f000:e066] 0xfe066:\txor %dx,%dx ss置为0 [f000:e068] 0xfe068:\tmov %dx,%ss esp置为0x7000 [f000:e06a] 0xfe06a:\tmov $0x7000,%esp edx置为$0xf34c2 [f000:e070] 0xfe070:\tmov $0xf34c2,%edx 跳转到0xfd15c [f000:e076] 0xfe076:\tjmp 0xfd15c 将eax值保存在ecx中 [f000:d15c] 0xfd15c:\tmov %eax,%ecx Clear Interupt [f000:d15f] 0xfd15f:\tcli DF(direction flag)esi和edi自动\u002b1； 类似std指令可以将df置为1; [f000:d160] 0xfd160:\tcld 0x8F(‭10001111‬)写入IO端口0x70， 根据bochs，bit 7\t= 1 NMI disable, 剩下7位为偏移，1111(0xF)对应 shutdown status byte。 [f000:d161] 0xfd161:\tmov $0x8f,%eax [f000:d167] 0xfd167:\tout %al,$0x70 从0x71中读取shutdown status byte， 其中用gdb指令info reigster可以看到eax值为0， 查看bochs, “normal execution of POST”， 其中POST是指Power-on self-test，代表BIOS自检正常执行。 [f000:d169] 0xfd169:\tin $0x71,%al IO端口0x92中的值 |= 0x10，即激活A20地址线 [f000:d16b] 0xfd16b:\tin $0x92,%al [f000:d16d] 0xfd16d:\tor $0x2,%al [f000:d16f] 0xfd16f:\tout %al,$0x92 加载idt和gdt f000:d171] 0xfd171:\tlidtw %cs:0x6ab8 [f000:d177] 0xfd177:\tlgdtw %cs:0x6a74 cr0寄存器PE(page enable)置位，即代表开启保护模式 [f000:d17d] 0xfd17d:\tmov %cr0,%eax [f000:d180] 0xfd180:\tor $0x1,%eax [f000:d184] 0xfd184:\tmov %eax,%cr0 CS 段选择子切换 CS 寄存器会在执行一些段控制指令时被 隐式地改变，例如CALL，JMP，中断，异常等。 [f000:d187] 0xfd187:\tljmpl $0x8,$0xfd18f 将ds,ss,fs,gs段寄存器设置为0x10 =\u0026gt; 0xfd18f:\tmov $0x10,%eax =\u0026gt; 0xfd194:\tmov %eax,%ds =\u0026gt; 0xfd198:\tmov %eax,%ss =\u0026gt; 0xfd19a:\tmov %eax,%fs =\u0026gt; 0xfd19c:\tmov %eax,%gs =\u0026gt; 0xfd19e:\tmov %ecx,%eax 跳转到寄存器edx中的地址：0xf34c2  in\/out 指令",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-03-14 21:08:44 \u002b0000 UTC",
+      "dateModified" : "2018-03-14 21:08:44 \u002b0000 UTC",
+      "url" : "https:\/\/www.fatwae.store\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/lab1\/",
+      "keywords" : [ "OS", ]
+  }
+</script>
+<title>6.828-操作系统工程-Lab1:Booting a PC</title>
+  <meta property="og:title" content="6.828-操作系统工程-Lab1:Booting a PC" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="Exercise 1: 内存分布和相关启动信息  memory layout
+ 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：
+physical address = 16 * segment &#43; offset
+intel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low/conventional memory，以上叫extended memory
+因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。
+参考来源：Phil Storrs I/O Ports Description
+Exercise 2: 追踪 BIOS 部分指令 启动两个终端，分别运行：
+$ make qemu-nox-gdb
+$ make gdb
+BIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。
+跳转到fe05b [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6ac8 [f000:e062] 0xfe062:	jne 0xfd2e1 dx置为0 [f000:e066] 0xfe066:	xor %dx,%dx ss置为0 [f000:e068] 0xfe068:	mov %dx,%ss esp置为0x7000 [f000:e06a] 0xfe06a:	mov $0x7000,%esp edx置为$0xf34c2 [f000:e070] 0xfe070:	mov $0xf34c2,%edx 跳转到0xfd15c [f000:e076] 0xfe076:	jmp 0xfd15c 将eax值保存在ecx中 [f000:d15c] 0xfd15c:	mov %eax,%ecx Clear Interupt [f000:d15f] 0xfd15f:	cli DF(direction flag)esi和edi自动&#43;1； 类似std指令可以将df置为1; [f000:d160] 0xfd160:	cld 0x8F(‭10001111‬)写入IO端口0x70， 根据bochs，bit 7	= 1 NMI disable, 剩下7位为偏移，1111(0xF)对应 shutdown status byte。 [f000:d161] 0xfd161:	mov $0x8f,%eax [f000:d167] 0xfd167:	out %al,$0x70 从0x71中读取shutdown status byte， 其中用gdb指令info reigster可以看到eax值为0， 查看bochs, “normal execution of POST”， 其中POST是指Power-on self-test，代表BIOS自检正常执行。 [f000:d169] 0xfd169:	in $0x71,%al IO端口0x92中的值 |= 0x10，即激活A20地址线 [f000:d16b] 0xfd16b:	in $0x92,%al [f000:d16d] 0xfd16d:	or $0x2,%al [f000:d16f] 0xfd16f:	out %al,$0x92 加载idt和gdt f000:d171] 0xfd171:	lidtw %cs:0x6ab8 [f000:d177] 0xfd177:	lgdtw %cs:0x6a74 cr0寄存器PE(page enable)置位，即代表开启保护模式 [f000:d17d] 0xfd17d:	mov %cr0,%eax [f000:d180] 0xfd180:	or $0x1,%eax [f000:d184] 0xfd184:	mov %eax,%cr0 CS 段选择子切换 CS 寄存器会在执行一些段控制指令时被 隐式地改变，例如CALL，JMP，中断，异常等。 [f000:d187] 0xfd187:	ljmpl $0x8,$0xfd18f 将ds,ss,fs,gs段寄存器设置为0x10 =&amp;gt; 0xfd18f:	mov $0x10,%eax =&amp;gt; 0xfd194:	mov %eax,%ds =&amp;gt; 0xfd198:	mov %eax,%ss =&amp;gt; 0xfd19a:	mov %eax,%fs =&amp;gt; 0xfd19c:	mov %eax,%gs =&amp;gt; 0xfd19e:	mov %ecx,%eax 跳转到寄存器edx中的地址：0xf34c2  in/out 指令" />
+  <meta name="description" content="Exercise 1: 内存分布和相关启动信息  memory layout
+ 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：
+physical address = 16 * segment &#43; offset
+intel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low/conventional memory，以上叫extended memory
+因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。
+参考来源：Phil Storrs I/O Ports Description
+Exercise 2: 追踪 BIOS 部分指令 启动两个终端，分别运行：
+$ make qemu-nox-gdb
+$ make gdb
+BIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。
+跳转到fe05b [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6ac8 [f000:e062] 0xfe062:	jne 0xfd2e1 dx置为0 [f000:e066] 0xfe066:	xor %dx,%dx ss置为0 [f000:e068] 0xfe068:	mov %dx,%ss esp置为0x7000 [f000:e06a] 0xfe06a:	mov $0x7000,%esp edx置为$0xf34c2 [f000:e070] 0xfe070:	mov $0xf34c2,%edx 跳转到0xfd15c [f000:e076] 0xfe076:	jmp 0xfd15c 将eax值保存在ecx中 [f000:d15c] 0xfd15c:	mov %eax,%ecx Clear Interupt [f000:d15f] 0xfd15f:	cli DF(direction flag)esi和edi自动&#43;1； 类似std指令可以将df置为1; [f000:d160] 0xfd160:	cld 0x8F(‭10001111‬)写入IO端口0x70， 根据bochs，bit 7	= 1 NMI disable, 剩下7位为偏移，1111(0xF)对应 shutdown status byte。 [f000:d161] 0xfd161:	mov $0x8f,%eax [f000:d167] 0xfd167:	out %al,$0x70 从0x71中读取shutdown status byte， 其中用gdb指令info reigster可以看到eax值为0， 查看bochs, “normal execution of POST”， 其中POST是指Power-on self-test，代表BIOS自检正常执行。 [f000:d169] 0xfd169:	in $0x71,%al IO端口0x92中的值 |= 0x10，即激活A20地址线 [f000:d16b] 0xfd16b:	in $0x92,%al [f000:d16d] 0xfd16d:	or $0x2,%al [f000:d16f] 0xfd16f:	out %al,$0x92 加载idt和gdt f000:d171] 0xfd171:	lidtw %cs:0x6ab8 [f000:d177] 0xfd177:	lgdtw %cs:0x6a74 cr0寄存器PE(page enable)置位，即代表开启保护模式 [f000:d17d] 0xfd17d:	mov %cr0,%eax [f000:d180] 0xfd180:	or $0x1,%eax [f000:d184] 0xfd184:	mov %eax,%cr0 CS 段选择子切换 CS 寄存器会在执行一些段控制指令时被 隐式地改变，例如CALL，JMP，中断，异常等。 [f000:d187] 0xfd187:	ljmpl $0x8,$0xfd18f 将ds,ss,fs,gs段寄存器设置为0x10 =&amp;gt; 0xfd18f:	mov $0x10,%eax =&amp;gt; 0xfd194:	mov %eax,%ds =&amp;gt; 0xfd198:	mov %eax,%ss =&amp;gt; 0xfd19a:	mov %eax,%fs =&amp;gt; 0xfd19c:	mov %eax,%gs =&amp;gt; 0xfd19e:	mov %ecx,%eax 跳转到寄存器edx中的地址：0xf34c2  in/out 指令" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="https://pawer.io" target="_blank">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="" target="_blank">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6.828-操作系统工程-Lab1:Booting a PC</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-03-14 21:08:44 UTC">
+                14 Mar 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https://pwaer.io/">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="exercise-1-内存分布和相关启动信息">Exercise 1: 内存分布和相关启动信息</h2>
+<blockquote>
+<p>memory layout</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/lab1/memory-layout.png" alt="memory layout"></p>
+<p>8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：</p>
+<p>physical address = 16 * segment + offset</p>
+<p>intel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low/conventional memory，以上叫extended memory</p>
+<p>因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。</p>
+<p>参考来源：<a href="http://web.archive.org/web/20040404164813/members.iweb.net.au/~pstorr/pcbook/book2/book2.htm">Phil Storrs I/O Ports Description</a></p>
+<h2 id="exercise-2-追踪-bios-部分指令">Exercise 2: 追踪 BIOS 部分指令</h2>
+<p>启动两个终端，分别运行：</p>
+<p>$ make qemu-nox-gdb</p>
+<p>$ make gdb</p>
+<p>BIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-asm" data-lang="asm"><span style="">跳转到</span>fe05b
+<span style="">[</span>f000:fff0]    0xffff0:	ljmp   $0xf000,$0xe05b 
+
+[f000:e05b]    0xfe05b:	cmpl   $0x0,%cs:0x6ac8
+<span style="">[</span>f000:e062]    0xfe062:	jne    0xfd2e1
+
+dx置为0
+<span style="">[</span>f000:e066]    0xfe066:	xor    %dx,%dx
+
+ss置为0
+<span style="">[</span>f000:e068]    0xfe068:	mov    %dx,%ss
+
+esp置为0x7000
+<span style="">[</span>f000:e06a]    0xfe06a:	mov    $0x7000,%esp
+
+edx置为$0xf34c2
+<span style="">[</span>f000:e070]    0xfe070:	mov    $0xf34c2,%edx
+
+<span style="">跳转到0</span>xfd15c
+<span style="">[</span>f000:e076]    0xfe076:	jmp    0xfd15c
+
+<span style="">将</span>eax值保存在ecx中
+<span style="">[</span>f000:d15c]    0xfd15c:	mov    %eax,%ecx
+
+ Clear Interupt
+<span style="">[</span>f000:d15f]    0xfd15f:	cli    
+
+DF(direction flag)esi和edi自动<span style="">+</span>1<span style="">；</span> 
+<span style="">类似</span>std指令可以将df置为1<span style="font-style:italic">;
+</span><span style="font-style:italic"></span>[f000:d160]    0xfd160:	cld    
+
+0x8F(<span style="">‭</span>10001111<span style="">‬</span>)<span style="">写入</span>IO端口0x70<span style="">，</span>
+<span style="">根据</span>bochs<span style="">，</span>bit 7	 <span style="">=</span> 1  NMI disable, 
+<span style="">剩下</span>7<span style="">位为偏移，</span>1111(0xF)<span style="">对应</span> shutdown status byte<span style="">。</span>
+<span style="">[</span>f000:d161]    0xfd161:	mov    $0x8f,%eax
+<span style="">[</span>f000:d167]    0xfd167:	out    %al,$0x70
+
+<span style="">从0</span>x71中读取shutdown status byte<span style="">，</span>
+<span style="">其中用</span>gdb指令info reigster可以看到eax值为0<span style="">，</span>
+<span style="">查看</span>bochs, <span style="">“</span>normal execution of POST<span style="">”，</span> 
+<span style="">其中</span>POST是指Power-on self-test<span style="">，代表</span>BIOS自检正常执行<span style="">。</span>
+<span style="">[</span>f000:d169]    0xfd169:	in     $0x71,%al
+
+IO端口0x92中的值 <span style="">|=</span> 0x10<span style="">，即激活</span>A20地址线
+<span style="">[</span>f000:d16b]    0xfd16b:	in     $0x92,%al
+<span style="">[</span>f000:d16d]    0xfd16d:	or     $0x2,%al
+<span style="">[</span>f000:d16f]    0xfd16f:	out    %al,$0x92
+
+<span style="">加载</span>idt和gdt
+f000:d171]    0xfd171:	lidtw  %cs:0x6ab8
+<span style="">[</span>f000:d177]    0xfd177:	lgdtw  %cs:0x6a74
+
+cr0寄存器PE(page enable)<span style="">置位，即代表开启保护模式</span>
+<span style="">[</span>f000:d17d]    0xfd17d:	mov    %cr0,%eax
+<span style="">[</span>f000:d180]    0xfd180:	or     $0x1,%eax
+<span style="">[</span>f000:d184]    0xfd184:	mov    %eax,%cr0
+
+CS <span style="">段选择子切换</span>
+CS <span style="">寄存器会在执行一些段控制指令时被</span>
+<span style="">隐式地改变，例如</span>CALL<span style="">，</span>JMP<span style="">，中断，异常等。</span>
+<span style="">[</span>f000:d187]    0xfd187:	ljmpl  $0x8,$0xfd18f
+
+<span style="">将</span>ds,ss,fs,gs段寄存器设置为0x10
+<span style="">=&gt;</span> <span style="">0</span>xfd18f:	mov    $0x10,%eax
+<span style="">=&gt;</span> <span style="">0</span>xfd194:	mov    %eax,%ds
+<span style="">=&gt;</span> <span style="">0</span>xfd198:	mov    %eax,%ss
+<span style="">=&gt;</span> <span style="">0</span>xfd19a:	mov    %eax,%fs
+<span style="">=&gt;</span> <span style="">0</span>xfd19c:	mov    %eax,%gs
+<span style="">=&gt;</span> <span style="">0</span>xfd19e:	mov    %ecx,%eax
+<span style="">跳转到寄存器</span>edx中的地址<span style="">：</span>0xf34c2
+
+</code></pre></div><blockquote>
+<p><a href="https://stackoverflow.com/questions/3215878/what-are-in-out-instructions-in-x86-used-for">in/out 指令</a></p>
+</blockquote>
+<p>当初始化完PCI总线后，BIOS自检到所有重要的设备，并且寻找可以进行启动的设备，最终找到可以可引导的磁盘，将boot loader从磁盘第一个扇区中读取出来，并且移交控制。</p>
+<p>磁盘最小传输粒度单位是512字节即一个扇区sector，读写操作必须对512字节进行对齐。</p>
+<p>引导资料：<a href="https://pdos.csail.mit.edu/6.828/2018/readings/boot-cdrom.pdf">El Torito&quot; Bootable CD-ROM Format Specification</a></p>
+<p>6.828使用传统的硬盘引导机制，即 boot loader 必须小于 512bytes，对应代码 boot/boot.S 和 boot/main.c。boot loader主要做两件事情，一是将处理器从实模式切换至32位保护模式，二是通过直接访问 IDE 将内核从硬盘中读取出来。</p>
+<p>PS：利用 obj/boot/boot.asm 和 obj/kern/kernel.asm 设置断点，调试boot loader。</p>
+<h2 id="exercise-3-追踪内核加载过程">Exercise 3: 追踪内核加载过程</h2>
+<p>追踪boot/main.c中的 readsect()，找到循环终止条件。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">关闭中断，更改字符串传送增长方向。
+0x7c00:	cli
+0x7c01:	cld 
+
+将ax置为0，传送到ds,es,ss寄存器中，使得
+段基址为0。
+0x7c02:	xor    %ax,%ax
+0x7c04:	mov    %ax,%ds
+0x7c06:	mov    %ax,%es
+0x7c08:	mov    %ax,%ss
+
+读取IO端口0x64第2个bit，判断缓冲区是否满了，
+如果满了，重新读取直至空闲。
+   0x7c0a:	in     $0x64,%al
+   0x7c0c:	test   $0x2,%al
+   0x7c0e:	jne    0x7c0a
+
+先往0x64端口写入0xd1
+   0x7c10:	mov    $0xd1,%al
+   0x7c12:	out    %al,$0x64
+
+继续等待总线空闲
+   0x7c14:	in     $0x64,%al
+   0x7c16:	test   $0x2,%al
+   0x7c18:	jne    0x7c14
+
+往0x60写入0xdf，bochs上对应0x64端口中的command是
+激活A20地址线。
+  0x7c1a:	mov    $0xdf,%al
+   0x7c1c:	out    %al,$0x60
+
+</code></pre></div><p>Intel 8086, Intel 8088, 和 Intel 80186 处理器有20根地址线（从A0 ~ A19），处理器最高寻址到1MB（2^20），但是处理器又只有16位，于是有了16位段基地址加上16位段偏移物理地址。 为了向前兼容软件，默认情况下A20是没有激活的，当访问超过1MB的内存的时候，自动回卷到0，于是这里将A20地址线开启。</p>
+<ul>
+<li>
+<p>通过Bochs查看端口信息的时候，有一个很有意思的点，为什么激活A20端口在一个名为“键盘控制器”(keyboard controller)的设备上?</p>
+<p>因为刚好keyboard controller这个设备上面刚好有一根闲置的引脚。答案中提到一点，现代CPU的A20地址线是默认启用的并且不能被关闭。</p>
+<p><a href="https://stackoverflow.com/questions/43953391/why-a20-line-is-on-a-keyboard-controller">Why A20 line is on a keyboard controller?</a></p>
+</li>
+</ul>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/LGDT.htm">LGDT指令</a></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">0x7c1e:	lgdtw  0x7c64&lt;gdtdesc&gt;
+</code></pre></div><p>LGDT将读取操作数上的6个字节，其中前面16bits作为界限，后面32bits作为基址。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">gdtdesc:
+  .word   0x17             
+  .long   gdt                             
+</code></pre></div><p>看下gdtdesc， 其中.word为2字节，存放gdt表的大小，.long为四字节，存放gdt的地址。</p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/s05_01.htm">段转换机制</a></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c">gdt:
+  SEG_NULL				<span style="">#</span> null seg
+  SEG(STA_X|STA_R, 0x0, 0xffffffff)	<span style="">#</span> code seg
+  SEG(STA_W, 0x0, 0xffffffff)	        <span style="">#</span> data seg
+</code></pre></div><p>利用inc/mmu.h中的两段宏，在静态区定义了三个GDT，其中第一个默认为NULL，已经另外两个分别指代代码段和数据段。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">  0x7c23:	mov    %cr0,%eax
+   0x7c26:	or     $0x1,%eax
+   0x7c2a:	mov    %eax,%cr0
+CR0控制寄存器PE位置为1
+</code></pre></div><p>到现在就已经进入了保护模式，可以看到为了进入保护模式主要有三个步骤：</p>
+<ol>
+<li>激活A20地址线，开放寻址</li>
+<li>设置好GDT寄存器，即设置好一个描述表</li>
+<li>CR0寄存器PE位置为1</li>
+</ol>
+<p>相关资料: <a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-3A.pdf">IA32-3A : 9.9.1 Switching to Protected Mode</a></p>
+<p>保护模式开启后，虚拟地址就将通过段机制转换为线性地址，以及<a href="https://en.wikipedia.org/wiki/Protected_mode">其他保护机制</a></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">CS寄存器只能通过长call或者长跳进行切换，
+ljmp将CS设置为0x8并且跳转到下一条指令。
+=&gt; 0x7c2d:	ljmp   $0x8,$0x7c32
+此时CS段已经被设置好了，开始执行第一条保护模式下的指令。
+将ax设置为0x10并且赋值到ds,es,fs,gs,ss段寄存器。
+=&gt; 0x7c32:	mov    $0x10,%ax
+=&gt; 0x7c36:	mov    %eax,%ds
+=&gt; 0x7c38:	mov    %eax,%es
+=&gt; 0x7c3a:	mov    %eax,%fs
+=&gt; 0x7c3c:	mov    %eax,%gs
+=&gt; 0x7c3e:	mov    %eax,%ss
+直接对esp寄存器进行值传送，设置栈顶指针，从0x7c00向下增长
+=&gt; 0x7c40:	mov    $0x7c00,%esp
+</code></pre></div><p>首先值得注意的是设置到CS段寄存器的0x8和赋值到其他段寄存器的0x10，该值由下图三个部分组成，前13位为在描述符中的索引，TI（Table Indicator）指代使用GDT（0）还是IDT（1），以及RPL（Requested Privilege Level）用于后面分离用户和内核的权限等级。</p>
+<blockquote>
+<p>段寄存器结构</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/lab1/segment-register-format.png" alt="段寄存器结构"></p>
+<p>所以0x8和0x16像下面这样翻译，即分别使用GDT表中第一个和第二个描述符，RPL都为0</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">value</th>
+<th style="text-align:center">Index</th>
+<th style="text-align:center">TI</th>
+<th style="text-align:right">RPI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">0x8</td>
+<td style="text-align:center">000 0000 0000 1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:right">00</td>
+</tr>
+<tr>
+<td style="text-align:left">0x16</td>
+<td style="text-align:center">000 0000 0001 0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:right">00</td>
+</tr>
+</tbody>
+</table>
+<p>相关资料： <a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/s05_01.htm">段寄存器的赋值</a></p>
+<p>在这个资料的最后需要注意，段寄存器虽然看上去像8086处理器时代只有16bit，但实际上只有16位可见，每当程序使用相应指令设置完段寄存器后，会自动从描述符中拉取基地址，地址界限，段类型等其他信息到段寄存器不可见部分，进行段机制转换的时候，是利用寄存器来求线性地址的，所以没有额外的开销。</p>
+<blockquote>
+<p>段寄存器隐藏部分</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/lab1/segment-register.png" alt="段寄存器隐藏部分"></p>
+<p>bootmain.c的工作主要是将内核elf文件从磁盘中读取到 0x10000(1MB) 这个地址移交控制。追踪readsect这个函数，根据 obj/boot.asm 中的地址，先在在调用 readseg 函数入口下一个断点。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">将offset,cnt,pa依次保存到edi,esi,ebx中。
+0x7ce1:	mov    0x10(%ebp),%edi
+0x7ce4:	push   %ebx
+0x7ce5:	mov    0xc(%ebp),%esi
+0x7ce8:	mov    0x8(%ebp),%ebx
+
+
+...
+
+
+跳转到快调用readsect处，此时将edi和ebx寄存器压栈，
+分别对应偏移和物理地址。
+=&gt; 0x7cfb:	push   %edi
+=&gt; 0x7cfc:	push   %ebx
+=&gt; 0x7cfd:	inc    %edi
+=&gt; 0x7cfe:	add    $0x200,%ebx
+=&gt; 0x7d04:	call   0x7c7c
+
+
+将offset放到ecx中 
+0x7c7c:	push   %ebp
+0x7c7d:	mov    %esp,%ebp
+0x7c7f:	push   %edi
+0x7c80:	mov    0xc(%ebp),%ecx
+0x7c83:	call   0x7c6a &lt;waitdisk&gt;
+</code></pre></div><p>到目前为止，就追到了readsect里面了，接下来是部分磁盘的操作。首先是调用waitdisk()，作用就是读取磁盘控制器寄存器的值，判断磁盘是否空闲。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback"># 来源于bochs
+# 01F2	r/w	sector count
+   outb(0x1F2, 1);		// count = 1
+# 01F3	r/w	sector number    
+   outb(0x1F3, offset);
+# 01F4	r/w	cylinder low
+   outb(0x1F4, offset &gt;&gt; 8);
+# 01F5	r/w	cylinder high    
+   outb(0x1F5, offset &gt;&gt; 16);
+# 01F6	r/w	drive/head    
+   outb(0x1F6, (offset &gt;&gt; 24) | 0xE0);
+# 01F7	w	command register    
+   outb(0x1F7, 0x20);	// cmd 0x20 - read sectors
+</code></pre></div><p>这段代码的目的是将逻辑块号(offset)发送给磁盘控制器，并且最后在总线上发送读指令，其中逻辑块号被分解成<a href="https://en.wikipedia.org/wiki/Cylinder-head-sector">盘面，磁道，扇区</a>三元组，唯一标识物理扇区，控制器将读写头移动到适当的柱面，然后把需要读取的数据放到控制器的缓冲区中。</p>
+<p>这段对应的汇编比较简单，不过有涉及C内联汇编。</p>
+<p><a href="http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html">GNU内联汇编</a></p>
+<p>利用waitdisk()直至磁盘闲置，然后读取出缓冲区中的数据</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback"># edi设置为栈上第一个参数pa，即需要被写入的物理地址
+    0x7cc9:	mov    0x8(%ebp),%edi
+# ecx设置为128(SECTSIZE/4)
+    0x7ccc:	mov    $0x80,%ecx
+# edx寄存器设置为磁盘控制器上数据寄存器的端口号
+    0x7cd1:	mov    $0x1f0,%edx
+# DF设置为0
+0x7cd6:	cld    
+# 从磁盘中复制数据。
+0x7cd7:	repnz insl (%dx),%es:(%edi)
+</code></pre></div><blockquote>
+<p><a href="http://faydoc.tripod.com/cpu/rep.htm">repnz 指令</a></p>
+</blockquote>
+<p>repnz 即 repeat while not zero, 每重复执行一次就会使得 count register ((E)CX)的值递减，结束条件一是 CX 寄存器的值降到0了，二是ZF位为0。</p>
+<blockquote>
+<p><a href="http://faydoc.tripod.com/cpu/insd.htm">insl 指令</a></p>
+</blockquote>
+<p>insl 这个指令其实并没有找到，查一下 stackoverflow 得到的<a href="https://stackoverflow.com/questions/38410829/why-cant-find-the-insl-instruction-in-x86-document">结果</a>，insl 应该被理解为 ins + l(ong)，即这里为4字节（两个字），对应 ins + <strong>d</strong>(ouble words)。</p>
+<p>ins 指令的作用就是，从对应IO端口读出数据后，复制到es:edi的位置处，并且让edi寄存器增加或者减少 ins 后缀数据大小的值，这里为4字节。而前面一条指令将DF（direction flag）设置为0，即增长edi寄存器。所以最后这一行的意思是，从磁盘控制器数据缓冲区中读4字节到edi的物理地址处，edi每次增加4字节，重复ecx寄存器中值（128）的次数，也就是512字节的数据。</p>
+<p>读取完elf文件后，最后一条指令跳转到elf的entry处，开始执行内核代码。</p>
+<ol>
+<li>
+<p>At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?</p>
+<p>CR0 PE置位的时候，进行长跳后开始执行32位的代码，因为ljmp会加载GDT中的描述符。</p>
+</li>
+<li>
+<p>What is the last instruction of the boot loader executed, and what is the first instruction of the kernel it just loaded?</p>
+<p>通过elf中entry字段的地址。</p>
+<p>加载后的第一条指令：</p>
+<p>=&gt; 0x7d6b:	call   *0x10018</p>
+</li>
+<li>
+<p>Where is the first instruction of the kernel?</p>
+<p>=&gt; 0x10000c:	movw   $0x1234,0x472</p>
+</li>
+<li>
+<p>How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?</p>
+<p>elf中的程序头表(program header table)，首先通过elf的加载地址(0x10000)加上规定偏移 ELFHDR-&gt;e_phoff ，终止地址为起始地址 + 偏移ELFHDR-&gt;e_phoff + ELFHDR-&gt;e_phnum * sizeof(struct ph)。</p>
+</li>
+</ol>
+<h2 id="exercise-4-c-pointer">Exercise 4: C pointer</h2>
+<p>熟悉 C 语言 （ 基础</p>
+<hr>
+<h3 id="elf-文件">ELF 文件</h3>
+<p>ELF文件起始由固定长度的 ELF头，接下来是变长的 <em>program header</em> ，并且都需要被加载到内存，定义在 inc/elf.h，主要关心以下几种 <em>program sections</em>:</p>
+<ul>
+<li>.text: 存放指令的代码段</li>
+<li>.rodata: Read-Only data，例如字符串</li>
+<li>.data: 被初始化的全局变量等</li>
+<li>.bss: 未被初始化的全局变量</li>
+</ul>
+<p>在ELF文件中，并不会保存.bss的数据，一般由 <em>program header</em> 中加载到内存中的大小来生成这个段数据，全部初始化为0。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">$ objdump -h obj/kern/kernel
+
+obj/kern/kernel:     file format elf32-i386
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000019e9  f0100000  00100000  00001000  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       000006c0  f0101a00  00101a00  00002a00  2**5
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .stab         00003b95  f01020c0  001020c0  000030c0  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  3 .stabstr      00001948  f0105c55  00105c55  00006c55  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  4 .data         00009300  f0108000  00108000  00009000  2**12
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .got          00000008  f0111300  00111300  00012300  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .got.plt      0000000c  f0111308  00111308  00012308  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  7 .data.rel.local 00001000  f0112000  00112000  00013000  2**12
+                  CONTENTS, ALLOC, LOAD, DATA
+  8 .data.rel.ro.local 00000044  f0113000  00113000  00014000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  9 .bss          00000648  f0113060  00113060  00014060  2**5
+                  CONTENTS, ALLOC, LOAD, DATA
+ 10 .comment      0000002b  00000000  00000000  000146a8  2**0
+                  CONTENTS, READONLY
+
+</code></pre></div><p>加载地址&quot;LMA&quot; (load address)： 代表这个 <em>section</em> 需要被加载到内存的位置。
+链接地址&quot;VMA&quot; (link address)： 代表这个 <em>section</em> 期待在内存中某个位置被使用，例如正式执行时，代码段期待在某个位置开始执行。</p>
+<p>当然，也有可能缺少这样的绝对地址的情况，比如两个程序需要被加载到同一个地址，这个时候就需要通过产生地址无关码（position-independent code）来应对，gcc中的 -fPIC 选项可以做到。</p>
+<h2 id="exercise-5-链接地址和加载地址">Exercise 5: 链接地址和加载地址</h2>
+<p>这里需要修改链接地址，修改 boot/Makefrag 中的 -Ttext 参数就可以修改 boot loader 的链接地址。尝试几次后可以发现，比如将链接地址从原本的0x7c00修改到0x7c02，后面例如CS寄存器切换的时候需要原地跳转一下，但是加载地址并没有发生改变，跳转的地址缺增加了2，所以可能被解释成其他指令，直至无法正常执行。</p>
+<h2 id="exercise-6-加载内核到内存">Exercise 6: 加载内核到内存</h2>
+<p>执行完bootloader后，内核被加载到了0x10000这个物理地址。</p>
+<p>其中，kern/kernel.ld 可以设置内核的LMA和VMA。加载完成后，进入entry.S，主要是加载一下内核的页表和页目录。在kern/entrypgdir.c中，可以看到定义了一个数组，用于在kern/entry.S中加载到CR3寄存器中去。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">pde_t entry_pgdir[NPDENTRIES] = {
+	// Map VA&#39;s [0, 4MB) to PA&#39;s [0, 4MB)
+	[0]
+		= ((uintptr_t)entry_pgtable - KERNBASE) + PTE_P,
+	// Map VA&#39;s [KERNBASE, KERNBASE+4MB) to PA&#39;s [0, 4MB)
+	[KERNBASE&gt;&gt;PDXSHIFT]
+		= ((uintptr_t)entry_pgtable - KERNBASE) + PTE_P + PTE_W
+};
+</code></pre></div><p>该数组有NPDENTRIES个元素，但是只有两个元素进行了初始化，第0号元素和另一个特殊的元素，第一个为了在开启页映射后，部分代码可能还会使用一些低内存地址进行访问，第二个才是将物理内存的0~4MB映射到KERNBASE~KERNBASE+4MB上。而数组中的内容就是紧随该数组定义的一个 entry_pgtable，里面包含一整个页表PTE(PageTableEntry)，大小一共4MB。</p>
+<p>其次是entry.S中置位了CR0寄存器的PG位，一旦PG位设置了，当内存引用虚拟地址时就会通过虚拟内存硬件转换到物理地址。</p>
+<p>所以当entry.S执行完后，所有想尝试访问虚拟内存[0,4MB)和[KERNBASE,KERNBASE+4MB)，都会通过这两个数组转换到实际物理地址的[0,4MB)上。但是注意，仅有这两个部分的虚拟地址可以被转换，其他部分因为页目录中为空，尝试访问会发生错误。</p>
+<h2 id="exercise-7-内核页映射">Exercise 7: 内核页映射</h2>
+<p>entry.S中会有一共指令会跳转到一个高地址:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">	mov	$relocated, %eax
+	jmp	*%eax
+</code></pre></div><p>如果此时没有开启页映射，那么物理高地址内存实际上什么有没有，发生错误。</p>
+<h2 id="exercise-8-打印函数">Exercise 8: 打印函数</h2>
+<p>阅读三个文件：
+<strong>kern/printf.c
+lib/printfmt.c
+kern/console.c</strong></p>
+<p>从文件名上猜测，printf文件应该是实现输出的主体，printfmt.c应该是一个写满方法的库，console.c应该和shell类似，输出内容和交互的主体。</p>
+<h3 id="consolec">console.c</h3>
+<h4 id="cons_putc">cons_putc()</h4>
+<p>先从cons_putc()函数开始，代码注释为输出字符到console界面，跟随这个走应该能了解到字符的输出过程。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">void</span>
+cons_putc(<span style="">int</span> c)
+{
+        serial_putc(c);
+        lpt_putc(c);
+        cga_putc(c);
+}
+</code></pre></div><p>跟随子程序：</p>
+<h4 id="serial_putc">serial_putc()</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">void</span>
+serial_putc(<span style="">int</span> c)
+{
+	<span style="">int</span> i;
+
+	<span style="font-weight:bold">for</span> (i = 0;
+	     !(inb(COM1 + COM_LSR) &amp; COM_LSR_TXRDY) &amp;&amp; i &lt; 12800;
+	     i++)
+		delay();
+
+	outb(COM1 + COM_TX, c);
+}
+</code></pre></div><p>COM1 + COM_LSR = 0x03FD ，COM_LSR_TXRDY = 0x20 = 0010 0000
+根据<a href="http://bochs.sourceforge.net/techspec/PORTS.LST">bochs</a>查询端口，(inb(COM1 + COM_LSR) &amp; COM_LSR_TXRDY)这一个判断条件就是取串口寄存器的第五位，判断transmitter holding register是否为空。
+COM1 + COM_TX = 0X03F8
+用for循环最多12800次来等待串口寄存器为空，然后执行outb，将参数 c 写入到串口transmitter holding register保存数据。</p>
+<h4 id="lpt_putc">lpt_putc()</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c"><span style="font-weight:bold">static</span> <span style="">void</span>
+lpt_putc(<span style="">int</span> c)
+{
+	<span style="">int</span> i;
+
+	<span style="font-weight:bold">for</span> (i = 0; !(inb(0x378+1) &amp; 0x80) &amp;&amp; i &lt; 12800; i++)
+		delay();
+	outb(0x378+0, c);
+	outb(0x378+2, 0x08|0x04|0x01);
+	outb(0x378+2, 0x08);
+}
+</code></pre></div><p>0378-037A : 并行打印端口（parallel printer port）</p>
+<p>0x378 : 数据端口</p>
+<p>0x37A : 控制端口</p>
+<p>!(inb(0x378+1) &amp; 0x80) 用来判断端口是否闲置</p>
+<p>outb(0x378+0, c) 写进数据端口</p>
+<h4 id="cga_putc">cga_putc()</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c"><span style="font-weight:bold">static</span> <span style="">void</span>
+cga_putc(<span style="">int</span> c)
+{
+	<span style="font-style:italic">// if no attribute given, then use black on white
+</span><span style="font-style:italic"></span>	<span style="font-weight:bold">if</span> (!(c &amp; ~0xFF))
+		c |= 0x0700;
+
+	<span style="font-weight:bold">switch</span> (c &amp; 0xff) {
+	...
+	}
+}
+</code></pre></div><p>这种形式和颜色表示有关，一部分比特位控制背景颜色，一部分控制前景颜色，还有一部分负责字符数据。</p>
+<p><strong>相关资料</strong>：</p>
+<p><a href="https://github.com/chyyuu/ucore_os_lab/blob/master/labcodes/lab1/kern/driver/console.c">cga的相关注释</a></p>
+<p><a href="https://stackoverflow.com/questions/43221509/what-is-the-function-of-0x0700-in-cga-putc">what-is-the-function-of-0x0700-in-cga-putc</a></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c"><span style="font-weight:bold">if</span> (crt_pos &gt;= CRT_SIZE) {
+	<span style="">int</span> i;
+
+	memmove(crt_buf, crt_buf + CRT_COLS, (CRT_SIZE - CRT_COLS) * <span style="font-weight:bold">sizeof</span>(uint16_t));
+	<span style="font-weight:bold">for</span> (i = CRT_SIZE - CRT_COLS; i &lt; CRT_SIZE; i++)
+		crt_buf[i] = 0x0700 | <span style="font-style:italic">&#39; &#39;</span>;
+	crt_pos -= CRT_COLS;
+}
+</code></pre></div><p>这段代码的作用当显示坐标超出了整个console的大小时进行的操作，先用memmove函数crt_buf + CRT_COLS复制crt_buf处，复制长度为CRT_SIZE - CRT_COLS，也就是把页面往上推了一行。然后在for循环中，将最后一行清空。</p>
+<h4 id="vprintfmt">vprintfmt</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
+void (*putch)(int, void*): void (int, void* ) 类型函数指针
+</code></pre></div><p>putdat: 输出字符地址的指针</p>
+<p>fmt : 指向格式化字符串</p>
+<p>ap：  额外的参数</p>
+<h3 id="printc">print.c</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c"><span style="">#include</span> <span style="">&lt;inc/types.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;inc/stdio.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;inc/stdarg.h&gt;</span><span style="">
+</span><span style=""></span>
+
+<span style="font-weight:bold">static</span> <span style="">void</span>
+putch(<span style="">int</span> ch, <span style="">int</span> *cnt)
+{
+        cputchar(ch);
+        *cnt++;
+}
+
+<span style="">int</span>
+vcprintf(<span style="font-weight:bold">const</span> <span style="">char</span> *fmt, va_list ap)
+{
+        <span style="">int</span> cnt = 0;
+
+        vprintfmt((<span style="">void</span>*)putch, &amp;cnt, fmt, ap);
+        <span style="font-weight:bold">return</span> cnt;
+}
+
+<span style="">int</span>
+cprintf(<span style="font-weight:bold">const</span> <span style="">char</span> *fmt, ...)
+{
+        va_list ap;
+        <span style="">int</span> cnt;
+
+        va_start(ap, fmt);
+        cnt = vcprintf(fmt, ap);
+        va_end(ap);
+
+        <span style="font-weight:bold">return</span> cnt;
+}
+</code></pre></div><p>cprintf(&ldquo;string&rdquo;, arg1, arg2)这个函数的调用方法和printf相似，应该就是最终调用函数。
+关于ap这个变量，由下面这个程序：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-c" data-lang="c"><span style="">#include</span> <span style="">&lt;stdarg.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> sum(<span style="">int</span>, ...);
+
+<span style="">int</span> main()
+{
+   printf(<span style="font-style:italic">&#34;sum :%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>,  sum(4, 15, 56, 10, 22) );
+   <span style="font-weight:bold">return</span> 0;
+}
+
+<span style="">int</span> sum(<span style="">int</span> num_args, ...)
+{
+   <span style="">int</span> val = 0;
+   va_list ap;
+   <span style="">int</span> i;
+   printf(<span style="font-style:italic">&#34;%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, num_args);
+
+   va_start(ap, num_args);
+   <span style="font-weight:bold">for</span>(i = 0; i &lt; num_args; i++) 
+   {
+      val += va_arg(ap, <span style="">int</span>);
+   }
+   va_end(ap);
+ 
+   <span style="font-weight:bold">return</span> val;
+}
+</code></pre></div><ul>
+<li>补充十进制输出符号 “%o” 的代码片段</li>
+</ul>
+<p>根据之前10进制的修改即可:</p>
+<pre><code>num = getuint(&amp;ap, lflag);
+base = 8;
+goto number
+</code></pre>
+<p>题目:</p>
+<ol>
+<li>
+<p>Explain the interface between printf.c and console.c. Specifically, what function does console.c export? How is this function used by printf.c?</p>
+<p>printer.c中的函数是三个主要函数，cprintf()基本上算是c语言中printf()的复刻版，调用顺序：cprintf() -&gt; vcprintf() -&gt; putch() ,调用putch的时候就会发现会要用到console.c中接触底层的函数	serial_putc(c)判断串口为空，lpt_putc(c)判断并行读写？cga_putc(c)负责最后的输出。</p>
+</li>
+<li>
+<p>Explain the following from console.c:</p>
+<p>已分析。</p>
+</li>
+<li>
+<p>For the following questions you might wish to consult the notes for Lecture 2. These notes cover GCC&rsquo;s calling convention on the x86.</p>
+<ul>
+<li>In the call to cprintf(), to what does fmt point? To what does ap point?</li>
+<li>List (in order of execution) each call to cons_putc, va_arg, and vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. For vcprintf list the values of its two arguments.</li>
+</ul>
+<p>1.fmt-&gt; &ldquo;x %d, y %x, z %d\n&rdquo; , ap 应该是 x,y,z的集合</p>
+<p>2.va_arg这个调用,是每次从ap这个list中取一个值，比如原来参数列表中有x, y, z三个参数, va_arg(ap, int)调用一次，就会取出一个参数x，原列表a中只剩y, z了</p>
+</li>
+<li>
+<p>Run the following code.
+unsigned int i = 0x00646c72;
+cprintf(&ldquo;H%x Wo%s&rdquo;, 57616, &amp;i);
+What is the output?
+The output depends on that fact that the x86 is little-endian. If the x86 were instead big-endian what would you set i to in order to yield the same output? Would you need to change 57616 to a different value?</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">while</span> (1) {
+    <span style="font-weight:bold">while</span> ((ch = *(<span style="">unsigned</span> <span style="">char</span> *) fmt++) != <span style="font-style:italic">&#39;%&#39;</span>) {
+        <span style="font-weight:bold">if</span> (ch == <span style="font-style:italic">&#39;\0&#39;</span>)
+            <span style="font-weight:bold">return</span>;
+        putch(ch, putdat);
+    }
+</code></pre></div><p>``</p>
+<ol>
+<li>
+<p>首先这一个循环输出所有普通字符，直到fmt指到 %(开始switch) 和 \0(结束输出) 符号，</p>
+</li>
+<li>
+<p>先是&rsquo;x'16进制格式</p>
+</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">        case &#39;x&#39;:
+            num = getuint(&amp;ap, lflag);
+            base = 16;
+</code></pre></div><p>``
+getuint函数:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">unsigned</span> <span style="">long</span> <span style="">long</span>
+getuint(va_list *ap, <span style="">int</span> lflag) {
+    <span style="font-weight:bold">if</span> (lflag &gt;= 2)
+        <span style="font-weight:bold">return</span> va_arg(*ap, <span style="">unsigned</span> <span style="">long</span> <span style="">long</span>);
+    <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (lflag)
+        <span style="font-weight:bold">return</span> va_arg(*ap, <span style="">unsigned</span> <span style="">long</span>);
+    <span style="font-weight:bold">else</span>
+        <span style="font-weight:bold">return</span> va_arg(*ap, <span style="">unsigned</span> <span style="">int</span>);
+}
+</code></pre></div><p>``
+返回一个根据ap列表中的参数,类型由flag控制。flag的值由&rsquo;l&rsquo;来自增,例如: &ldquo;ld&rdquo; ,&ldquo;lld&rdquo;
+再调用
+printnum(putch, putdat, num, base, width, padc);
+这是个递归函数，根据base进制等参数输出数字。</p>
+<ol start="3">
+<li>再是'%s&rsquo;格式,输出参数i所在地址的字符串。</li>
+</ol>
+<p>57616 = 0xe110 ,所以会输出He110
+x86是little-endian, i = 0x00646c72 , 实际在内存中存储是 72 6c 64 00 ,即 &lsquo;r&rsquo;, &lsquo;l&rsquo;, &rsquo;d', &lsquo;\0&rsquo;
+最后的输出结果应该为: &ldquo;He110 Worlds&rdquo;</p>
+</li>
+<li>
+<p>In the following code, what is going to be printed after &lsquo;y=&rsquo;? (note: the answer is not a specific value.) Why does this happen?
+cprintf(&ldquo;x=%d y=%d&rdquo;, 3);</p>
+<p>这个问题和va_arg调用有关</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#include</span> <span style="">&lt;stdarg.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> out_range(<span style="">int</span>, ...);
+
+<span style="">int</span> main()
+{
+out_range(2,11,2);
+<span style="font-weight:bold">return</span> 0;
+}
+
+<span style="">int</span> out_range(<span style="">int</span> num, ...)
+{
+    <span style="">int</span> val = 0;
+    <span style="">int</span> i;
+    va_list ap;
+    va_start(ap, num);
+    <span style="font-weight:bold">for</span>(i = 0; i &lt; 3; ++i)
+    {
+        val = va_arg(ap, <span style="">int</span>);
+        printf(<span style="font-style:italic">&#34;%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>,val);
+    }
+
+    va_end(ap);
+}
+
+<span style="">### result
+</span><span style=""></span>11
+2
+1577856
+
+</code></pre></div><p>``</p>
+</li>
+</ol>
+<h2 id="exercise-9-内核初始化内核栈">Exercise 9: 内核初始化内核栈</h2>
+<p>在执行 boot loader 的时候，栈是从0x7c00往下增长，所以将0x7c00以下作为栈空间。</p>
+<p>entry.S 进入 i386_init 的时候执行初始化 relocate，将 bootstacktop 值赋值给esp。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">relocated:
+	movl	$0x0,%ebp			
+	# Set the stack pointer
+	movl	$(bootstacktop),%esp
+	call	i386_init
+</code></pre></div><p>然后进入 i386_init 后：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">f01000a6:	55                   	push   %ebp
+f01000a7:	89 e5                	mov    %esp,%ebp
+f01000a9:	53                   	push   %ebx
+f01000aa:	83 ec 08             	sub    $0x8,%esp
+</code></pre></div><p>首先将原先的ebp(0)压栈，将esp赋值给ebp，后面就是开始使用新的栈，例如push和sub减少esp的值。于是栈空间就被设置到了 bootstacktop 往下。</p>
+<h2 id="exercise-10-栈帧跟踪">Exercise 10: 栈帧跟踪</h2>
+<p>跟踪 kern/init.c 中 test_backtrace，观察栈帧情况。每个函数调用时，父函数先将参数压栈，使用call命令的时候，将eip压栈。然后进入子函数的时候，将原来的ebp压栈，把esp赋值给ebp，此时两寄存器都指向同一个地址。接下来，子函数为程序分配内存空间，栈向下增长，即将esp减去一个值。</p>
+<p>内存结构就是：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">+-----+
+| ... |
++-----+
+| arg3|
++-----+
+| arg2|
++-----+
+| arg1|
++-----+
+| eip |
++-----+
+| ebp |
++-----+&lt;-(ebp)
+|unkn |
++-----+&lt;-(esp)
+</code></pre></div><h2 id="exercise-11-打印栈帧">Exercise 11: 打印栈帧</h2>
+<p>利用 read_ebp() 函数将栈上信息打印出来。</p>
+<p>因为 ebp 在 entry.S 中第一次赋值为 0，所以循环终止条件即判断 ebp 是否为 0 即可。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">int
+mon_backtrace(int argc, char **argv, struct Trapframe *tf)
+{
+	uint32_t *ebp = (uint32_t *)read_ebp();
+	for (; ebp != 0; ebp = (uint32_t *)*ebp) {
+		cprintf(&#34;  ebp %x  eip %x  args %08x %08x %08x %08x %08x\n&#34;,
+				ebp, *(ebp + 1), *(ebp + 2), *(ebp + 3), 
+				*(ebp + 4), *(ebp + 5), *(ebp + 6));
+            
+	return 0;
+}
+
+</code></pre></div><h2 id="exercise-12-提供调试信息">Exercise 12: 提供调试信息</h2>
+<p>首先给出了这些提示：</p>
+<ul>
+<li>
+<p><em><em>查看 kern/kernel.ld 的  _<em>STAB</em></em> 相关信息</em>*。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">/* Link the kernel at this address: 
+&#34;.&#34; means the current address */
+
+    . = 0xF0100000;
+
+...
+
+
+/* Include debugging information 
+in kernel memory */
+
+    .stab : {
+        PROVIDE(__STAB_BEGIN__ = .);
+        *(.stab);
+        PROVIDE(__STAB_END__ = .);
+        BYTE(0)		
+    }
+
+    .stabstr : {
+        PROVIDE(__STABSTR_BEGIN__ = .);
+        *(.stabstr);
+        PROVIDE(__STABSTR_END__ = .);
+        BYTE(0)		
+    }
+
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback"> 链接脚本中，提供了两个stab相关的内容，也就是ELF文件中的stab信息的确被加载到链接地址加上一段偏移的某个地址上面。
+
+
+</code></pre></div></li>
+<li>
+<p><strong>利用 objdump -h obj/kern/kernel</strong></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">$ objdump -h obj/kern/kernel 
+
+obj/kern/kernel:     file format elf32-i386
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+0 .text         00001b19  f0100000  00100000  00001000  2**4
+                CONTENTS, ALLOC, LOAD, READONLY, CODE
+1 .rodata       00000708  f0101b20  00101b20  00002b20  2**5
+                CONTENTS, ALLOC, LOAD, READONLY, DATA
+2 .stab         00003ccd  f0102228  00102228  00003228  2**2
+                CONTENTS, ALLOC, LOAD, READONLY, DATA
+3 .stabstr      0000197e  f0105ef5  00105ef5  00006ef5  2**0
+                CONTENTS, ALLOC, LOAD, READONLY, DATA
+4 .data         00009300  f0108000  00108000  00009000  2**12
+
+...
+
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">   
+ stab和stabstr段的属性为  ALLOC, LOAD ，即会被加载和分配空间。
+
+</code></pre></div></li>
+<li>
+<p><strong>利用 objdump -G obj/kern/kernel</strong></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">$ objdump -G obj/kern/kernel
+
+obj/kern/kernel:     file format elf32-i386
+
+Contents of .stab section:
+
+Symnum n_type n_othr n_desc n_value  n_strx String
+
+-1     HdrSym 0      1296   0000197d 1     
+0      SO     0      0      f0100000 1      {standard input}
+1      SOL    0      0      f010000c 18     kern/entry.S
+2      SLINE  0      44     f010000c 0      
+3      SLINE  0      57     f0100015 0      
+4      SLINE  0      58     f010001a 0   
+
+...
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">
+ 会发现左侧是一个递增的索引Symnum，以及n_type代表符号类型例如SO（动态链接库），FUNC（函数）等，n_value 用于获取某个地址对应在 .stabstr 节中的偏移，n_strx代表在在 .stabstr 对应文件的偏移。
+
+</code></pre></div></li>
+<li>
+<p><strong>运行 gcc -pipe -nostdinc -O2 -fno-builtin -I. -MD -Wall -Wno-format -DJOS_KERNEL -gstabs -c -S kern/init.c，查看 init.s。</strong></p>
+</li>
+<li>
+<p><strong>查看 boot loader 是否将符号表作为内核ELF的一部分加载到了内存中。</strong></p>
+</li>
+</ul>
+<p>首先可以先看看 kern/kdebug.c 中寻找符号的过程：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">int lfile, rfile, lfun, rfun, lline, rline;
+
+lfile = 0;
+rfile = (stab_end - stabs) - 1;
+
+stab_binsearch(stabs, &amp;lfile, &amp;rfile, N_SO, addr);
+stab_binsearch(stabs, &amp;lfun, &amp;rfun, N_FUN, addr);
+stab_binsearch(stabs, &amp;lline, &amp;rline, N_SLINE, addr);
+</code></pre></div><p>在 debuginfo_eip() 函数中，首先最前面声明了几个二分法需要用到的变量，然后利用三个 stab_binsearch() 搜索。这里用 eip(addr) 值作为 n_value 的对照值，依次获得 eip 所指向文件对应在符号表中偏移，函数在文件中的偏移，以及该行在函数中的偏移，最后存入一个 Eipdebuginfo 结构体中。</p>
+<p>stab_binsearch() 也就是二分查找的过程，对照上下完成即可。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">   // Your code here
+   stab_binsearch(stabs, &amp;lline, &amp;rline, N_SLINE, addr);
+   if(lline &lt;= rline) {
+         info-&gt;eip_line = stabs[lline].n_desc;
+   } else {
+         return -1;
+   }
+
+</code></pre></div><p>mon_backtrace() 也可以被修改为带有调试信息的版本：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">int
+mon_backtrace(int argc, char **argv, struct Trapframe *tf)
+{
+	// Your code here.
+	uint32_t *ebp = (uint32_t *)read_ebp();
+	struct Eipdebuginfo info;
+	for (; ebp != 0; ebp = (uint32_t *)*ebp) {
+		cprintf(&#34;  ebp %x  eip %x  args %08x %08x %08x %08x %08x\n&#34;,
+				ebp, *(ebp + 1), *(ebp + 2), *(ebp + 3), 
+				*(ebp + 4), *(ebp + 5), *(ebp + 6));
+
+		if(debuginfo_eip(*(ebp+1),&amp;info) == 0) {
+			cprintf(&#34;    %s:%d: %.*s+%d\n&#34;,
+					info.eip_file,
+					info.eip_line, 
+					info.eip_fn_namelen, 
+					info.eip_fn_name, 
+					*(ebp+1) - info.eip_fn_addr);
+	
+
+		}
+	}
+	
+	return 0;
+}
+</code></pre></div><p>最后加入一个指令到 monitor 里面，便可以直接在 qemu 控制台调用 backtrace 进行调试。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">static struct Command commands[] = {
+	{ &#34;help&#34;, &#34;Display this list of commands&#34;, mon_help },
+	{ &#34;kerninfo&#34;, &#34;Display information about the kernel&#34;, mon_kerninfo },
+	{ &#34;backtrace&#34;, &#34;Display stack backtrace&#34;, mon_backtrace },
+};
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">K&gt; backtrace
+  ebp f010ff58  eip f0100a72  args 00000001 f010ff80 00000000 f0100ad6 f0100a85
+    kern/monitor.c:142: monitor+332
+  ebp f010ffd8  eip f0100101  args 00000000 00001aac 00000640 00000000 00000000
+    kern/init.c:43: i386_init+91
+  ebp f010fff8  eip f010003e  args 00000003 00001003 00002003 00003003 00004003
+    kern/entry.S:83: &lt;unknown&gt;+0
+</code></pre></div><p>最后 $ make grade</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">running JOS: (0.8s) 
+  printf: OK 
+  backtrace count: OK 
+  backtrace arguments: OK 
+  backtrace symbols: OK 
+  backtrace lines: OK 
+Score: 50/50
+</code></pre></div><hr>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/os/">
+                OS
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

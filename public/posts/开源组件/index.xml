@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tech Internals on Pok</title>
+    <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/</link>
+    <description>Recent content in Tech Internals on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 26 Aug 2021 22:37:19 +0800</lastBuildDate><atom:link href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ElasticSearch（6）：执行分布式搜索</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/</link>
+      <pubDate>Thu, 26 Aug 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（5）：高可用保证</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/</link>
+      <pubDate>Sun, 15 Aug 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（4）：相关性计算</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/</link>
+      <pubDate>Sat, 07 Aug 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（3）：文档如何被实时索引</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/</link>
+      <pubDate>Sat, 31 Jul 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（2）：文档分词原理</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/</link>
+      <pubDate>Sat, 24 Jul 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（1）：基础查询</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/</link>
+      <pubDate>Fri, 16 Jul 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title>ElasticSearch（0）：快速搭建</title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/</link>
+      <pubDate>Thu, 08 Jul 2021 22:37:19 +0800</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/</guid>
+      <description>包括 Elasticsearch 的CRUD和基础检索方式</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/</guid>
+      <description>elasticsearch 文档创建和删除 创建和更新文档 官方提供的接口:
+PUT /&amp;lt;target&amp;gt;/_doc/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_doc/ PUT /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; 下面的例子利用PUT方法创建一个 id 为1的文档：
+PUT /index-001/_doc/1 { &amp;quot;title&amp;quot;: &amp;quot;Elasticsearch: The Definitive Guide&amp;quot;, &amp;quot;authors&amp;quot;: [ &amp;quot;clinton gormley&amp;quot;, &amp;quot;zachary tong&amp;quot; ], &amp;quot;summary&amp;quot;: &amp;quot;A distibuted real-time search and analytics engine&amp;quot;, &amp;quot;publish_date&amp;quot;: &amp;quot;2015-02-07&amp;quot;, &amp;quot;num_reviews&amp;quot;: 20, &amp;quot;publisher&amp;quot;: &amp;quot;oreilly&amp;quot; } 响应结构为：
+{ &amp;quot;_index&amp;quot; : &amp;quot;index-001&amp;quot;, &amp;quot;_type&amp;quot; : &amp;quot;_doc&amp;quot;, &amp;quot;_id&amp;quot; : &amp;quot;1&amp;quot;, &amp;quot;_version&amp;quot; : 1, &amp;quot;result&amp;quot; : &amp;quot;created&amp;quot;, &amp;quot;_shards&amp;quot; : { &amp;quot;total&amp;quot; : 2, &amp;quot;successful&amp;quot; : 1, &amp;quot;failed&amp;quot; : 0 }, &amp;quot;_seq_no&amp;quot; : 18, &amp;quot;_primary_term&amp;quot; : 1 } 其中，version字段为1，并且result的值为created。</description>
+    </item>
+    
+  </channel>
+</rss>

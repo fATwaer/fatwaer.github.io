@@ -1,0 +1,131 @@
+# baseURL = "https://example.com"
+# title = "Pwaer"
+# theme = "yinyang"
+# copyright = "©2019 Notepadium."
+
+# languageCode = "zh-cn"
+# hasCJKLanguage = true
+
+# enableRobotsTXT = true
+
+# # Enable Disqus
+# disqusShortname = "fatwaer"
+
+# # Google Analytics
+# googleAnalytics = "G-LGMCE8D1GT"
+
+# [markup.highlight]
+# codeFences = true
+# noClasses = false
+
+# [markup.goldmark.renderer]
+# unsafe = true  # enable raw HTML in Markdown
+
+# [params]
+# style = "auto"  # default: auto. light: light theme, dark: dark theme, auto: based on system.
+
+# logo = "/images/whoami/1.jpg"  # if you have a logo png
+# slogan = "Being learning machine..."
+# license = "CC"  # CC License
+# fullRss = false # Puts entire HTML post into rss 'description' tag. If unset, default is false.
+# ipv6ready = true # Show IPV6Ready logo on footer.
+# Summary = false
+# headTitle = "Pwaer"
+
+
+# [params.comments]
+# enable = true  # En/Disable comments globally, default: false. You can always enable comments on per page.
+
+# [params.math]
+# enable = false  # optional: true, false. Enable globally, default: false. You can always enable math on per page.
+# use = "katex"  # option: "katex", "mathjax". default: "katex"
+
+# [params.syntax]
+# use = "none"  # builtin: "prismjs", "hljs". "none" means Chroma
+# theme = "xcode"
+# darkTheme = "xcode-dark"  # apply this theme in dark mode
+
+# [params.share]
+# enable = true
+# addThisId = ""
+# inlineToolId = ""
+
+# [params.nav]
+# showCategories = true       # /categories/
+# showTags = true             # /tags/
+
+# # custom navigation items
+
+# [[params.nav.custom]]
+# title = "About"
+# url = "/about"
+
+# [[params.nav.custom]]
+# title = "Hugo"
+# url = "https://gohugo.io/"
+
+# [[params.socials]]
+# name = "About Me"
+# link = "https://joway.io"
+# [[params.socials]]
+# name = "Github"
+# link = "https://github.com/joway"
+
+# # for chinese
+# [params.beian]
+#   icp = ""     # example: 粤ICP备20056596号-1
+#   gongan = ""  # example: 粤公网安备 44030502005645号
+#   code = ""    # example: 44030502005645
+
+
+
+baseURL = "https://pwaer.ink/"
+languageCode = "en-us"
+title = "Pwaer's Blog"
+theme = "yinyang"
+DefaultContentLanguage = "cn"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    guessSyntax = true
+    noClasses = true
+    style = "bw"
+    tabWidth = 2
+
+[author]
+  name = "pwaer"
+  homepage = "https//github.com/fatwaer"
+
+# [languages]
+#   # [languages.en]
+#   #   contentDir = "content/en"
+#   #   languageName = "English"
+#   #   weight = 1
+#   [languages.cn]
+#     contentDir = "content"
+#     languageName = "Chinese"
+#     weight = 2
+
+[params]
+mainSections = ["blog", "about"]
+headTitle = "Learning machine"
+disqus = "fatwaer" # disqus account name
+extraHead = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>'
+IndexPostDateFormat = "01-02"  # if unset, default is "2006-01-02"
+
+[[params.socials]]
+name = "About Me"
+link = "/about"
+[[params.socials]]
+name = "World"
+link = "/path"
+[[params.socials]]
+name = "Github"
+link = "https://github.com/fatwaer"
+postHeaderContent = "Ddont"
+# postFooterContent = "<br/><br/><p>Subscribe to：<a target='_blank' href='https://mailchi.mp/a1a0d59e7a19/joway'>Joway's Blog</a></p>"
+# extraCSSFiles = ["css/foo.css", "css/bar.css"]
+extraCSSFiles = []

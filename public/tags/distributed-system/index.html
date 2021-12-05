@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>distributed system</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="distributed system" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/tags/distributed-system/" />
+
+
+
+    
+    
+    <link rel="stylesheet" href="/css/layouts/list.css">
+    <link rel="stylesheet" href="/css/navigators/sidebar.css">
+    
+    <link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  
+  
+
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/tags" data-filter="all">Tags</a></li>
+            <div class="subtree taxonomy-terms">
+              
+              
+
+
+
+  
+  
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/algorithm/" data-taxonomy-term="algorithm"><span class="taxonomy-label">algorithm</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/assembly/" data-taxonomy-term="assembly"><span class="taxonomy-label">Assembly</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/b-tree/" data-taxonomy-term="b-tree"><span class="taxonomy-label">B-tree</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/c/c&#43;&#43;/" data-taxonomy-term="c/c&#43;&#43;"><span class="taxonomy-label">c/c&#43;&#43;</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/config/" data-taxonomy-term="config"><span class="taxonomy-label">config</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/debug/" data-taxonomy-term="debug"><span class="taxonomy-label">debug</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term active" href="/tags/distributed-system/" data-taxonomy-term="distributed-system"><span class="taxonomy-label">distributed system</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/file/" data-taxonomy-term="file"><span class="taxonomy-label">file</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/globbing/" data-taxonomy-term="globbing"><span class="taxonomy-label">globbing</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/i/o/" data-taxonomy-term="i/o"><span class="taxonomy-label">I/O</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/java/" data-taxonomy-term="java"><span class="taxonomy-label">Java</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/lsm-tree/" data-taxonomy-term="lsm-tree"><span class="taxonomy-label">LSM-tree</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/os/" data-taxonomy-term="os"><span class="taxonomy-label">OS</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/profiling/" data-taxonomy-term="profiling"><span class="taxonomy-label">profiling</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/shell/" data-taxonomy-term="shell"><span class="taxonomy-label">shell</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/tags/unix/" data-taxonomy-term="unix"><span class="taxonomy-label">unix</span></a></li>
+        
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content container-fluid" id="content">
+    <div class="container-fluid post-card-holder" id="post-card-holder">
+      
+      
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/rpc-and-grpc/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Golang原生RPC与gPRC</h5>
+        <p class="card-text post-summary">前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。
+RPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。
+虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。
+RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。
+原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。
+客户端代码 package main import ( &#34;fmt&#34; &#34;log&#34; &#34;net/rpc&#34; ) // // Common RPC request/reply definitions //  const ( OK = &#34;OK&#34; ErrNoKey = &#34;ErrNoKey&#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } // // Client //  func connect() *rpc.</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">February 26, 2020</span>
+        <a
+        href="/posts/sys/rpc-and-grpc/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/course-notes/6.824-notesmapreducegfsraft/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">6.824 Notes：MapReduce、GFS、Raft</h5>
+        <p class="card-text post-summary">最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。
+分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。
+分布式系统的优点是能够组织物理上分离的实体，通过isolation取得系统安全，通过replication获取容错机制，通过并行CPUs/mem/disk/net来比例提升系统速度。
+当然也有些缺点，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。
+MapReduce(2004) input is divided into M files [diagram: maps generate rows of K-V pairs, reduces consume columns] Input1 -&gt; Map -&gt; a,1 b,1 c,1 Input2 -&gt; Map -&gt; b,1 Input3 -&gt; Map -&gt; a,1 c,1 | | | | | -&gt; Reduce -&gt; c,2 | -----&gt; Reduce -&gt; b,2 ---------&gt; Reduce -&gt; a,2  对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 &lt;k2, v2&gt;键值对(图中的一行)作为中间数据。
+MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 &lt;k2, v3&gt; 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">January 15, 2019</span>
+        <a
+        href="/posts/course-notes/6.824-notesmapreducegfsraft/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/data-intensive-system/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Data-Intensive System</h5>
+        <p class="card-text post-summary">数据组件   消息队列
+Redis: https://github.com/antirez/redis
+Apache Kafka
+  主数据库
+//todo
+  全文索引
+Elasticsearch: https://github.com/elastic/elasticsearch
+Apache Solr
+  内存缓存
+Memcached: https://github.com/memcached/memcached
+  </p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">January 11, 2019</span>
+        <a
+        href="/posts/sys/data-intensive-system/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/effective-go/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Effective Go</h5>
+        <p class="card-text post-summary">goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &lt;- 1 go func() { process(req) &lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">January 10, 2019</span>
+        <a
+        href="/posts/sys/effective-go/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+    </div>
+    <div class="paginator">
+      
+    </div>
+  </div>
+</section>
+
+
+      
+       
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+    <script src="/js/list.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>汇编语言</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="汇编语言" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" />
+
+
+
+    
+    
+    <link rel="stylesheet" href="/css/layouts/list.css">
+    <link rel="stylesheet" href="/css/navigators/sidebar.css">
+    
+    <link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  
+  
+
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/categories" data-filter="all">Categories</a></li>
+            <div class="subtree taxonomy-terms">
+              
+              
+
+
+
+  
+  
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/algorithm/" data-taxonomy-term="algorithm"><span class="taxonomy-label">algorithm</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/env/" data-taxonomy-term="env"><span class="taxonomy-label">env</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/language/" data-taxonomy-term="language"><span class="taxonomy-label">language</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/notes/" data-taxonomy-term="notes"><span class="taxonomy-label">notes</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/sys/" data-taxonomy-term="sys"><span class="taxonomy-label">sys</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term active" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" data-taxonomy-term="%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80"><span class="taxonomy-label">汇编语言</span></a></li>
+        
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content container-fluid" id="content">
+    <div class="container-fluid post-card-holder" id="post-card-holder">
+      
+      
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab11</h5>
+        <p class="card-text post-summary"><p>为了循环方便，我们设置<strong>SI</strong>为**-1**</p></p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 22, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab10</h5>
+        <p class="card-text post-summary"><p>实验10 一共3个小实验，分别完成三个函数。</p></p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 21, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab8</h5>
+        <p class="card-text post-summary">assume cs:codesg codesg segment mov ax,4c00h int 21h start: mov ax,0 s: nop nop mov di,offset s mov si,offset s2 mov ax,cs:[si] mov cs:[di],ax s0: jmp short s s1: mov ax,0 int 21h mov ax,0 s2: jmp short s1 nop codesg ends end start 其中
+jmp short s 命令占用两个字节</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 17, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">DOS实模式的搭建</h5>
+        <p class="card-text post-summary">前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。
+安装 安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。
+接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。
+然后会提示重新启动，跟着提示来，会提示一个错误：
+这应该是DOS支持的磁盘格式为FAT32，而现在的windows支持的硬盘格式是NTFS，两者格式不兼容导致的。 我们关闭虚拟机重新启动下，在下面这个界面按F2进入BIOS设置首先启动项：
+修改启动项 跟着以下步骤操作： img [class names] 1. → 移动选项卡至 &lsquo;boot&rsquo; 2. ↓ 移动选项至 &lsquo;CD-ROM Drive&rsquo; 3. 按住 &lsquo;shift&rsquo; 和 &lsquo;+&rsquo; 将选中的CD-ROM Drive向上移动 4. 按F10保存退出
+此时该虚拟机会重新启动，然后重新进入安装界面。 根据提示，一步一步按确定，基本都是肯定选项。 [注意]直到提示关于 &lsquo;Adds-On&rsquo; 额外的软件安装，在这里我们选择 &lsquo;Cancel&rsquo; 取消，不进行额外的操作。
+如图可见，安装成功，重新启动。 重新启动后发现，还是进入的安装界面，这是因为之前在BIOS内设置过优先启动项的缘故。 和之前的操作一样，在vmware动画界面按F2进入BIOS，用组合键 shift 和 - 将CD-ROM Drive恢复到原来的位置(默认是第三个)。
+好了，到现在完成了DOS的安装了，但是还有个问题，就是VMware并没有给DOS提供vmtools，所以物理机和虚拟机之间传输文件并不方便。
+文件传输 首先，我们先关闭DOS虚拟机，然后在左侧硬件配置处点击硬盘。
+根据红色箭头提示，点击映射。
+然后把**&ldquo;以只读文件模式打开文件&rdquo;**前面的勾去掉，然后关闭警告，打开我的电脑，可以发现本地多出一个磁盘
+打开后可以看到DOS的实际文件，也就是说，我们可以直接对DOS的文件进行操作。 我们可以把自己的要编译的汇编代码放进去。(图中&quot;lab8.asm&quot;)
+再断开连接，否则DOS将无法启动。 最后，我们再验证一下。
+如图，纯DOS系统里已经有了自己放进去的文件。
+ DOS 7.10.iso 云盘链接 : http://pan.baidu.com/s/1slPZQot 密码: x0ht
+ </p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 17, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab6</h5>
+        <p class="card-text post-summary">datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends 将数据段前四个字母改为大写字母 &amp;nbsp代码如下:
+assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg ends datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends codesg segment start: mov ax,stacksg mov ss,ax mov sp,16 mov ax,datasg mov ds,ax mov cx,4h mov bx,0 s1:	push cx mov cx,4 mov si,0 s2:	mov al,[bx+3+si] and al,11011111b mov [bx+3+si],al inc si loop s2 add bx,16 pop cx loop s1 mov ax,4c00h int 21h codesg ends end start	</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 13, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab5</h5>
+        <p class="card-text post-summary">根据程序编译连接并用Debug加载、跟踪，然后回答问题。
+(1) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h,0789h,0abch,0defh,0fedh,0cbah,0987h data ends stack segment dw 0,0,0,0,0,0,0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start CS=0B4A;SS=0B49;DS=0B4B
+(2) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h data ends stack segment dw 0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start CS=0B4A;SS=0B49;DS=0B48</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 13, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">《汇编语言》 Lab1</h5>
+        <p class="card-text post-summary">assume cs:codesg codesg segment mov ax,2000 mov ss,ax mov sp,0 add sp,10 pop ax pop bx push ax push bx pop ax pop bx move ax,4c00 int 21 codesg ends end </p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 13, 2017</span>
+        <a
+        href="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+    </div>
+    <div class="paginator">
+      
+    </div>
+  </div>
+</section>
+
+
+      
+       
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+    <script src="/js/list.js"></script>
+
+  </body>
+</html>

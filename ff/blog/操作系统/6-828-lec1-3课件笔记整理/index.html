@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>6.828-操作系统工程-Lec1-3课件笔记和作业&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="6.828-操作系统工程-Lec1-3课件笔记和作业" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">6.828-操作系统工程-Lec1-3课件笔记和作业</h1><p class="article date">Friday, April 6, 2018</p></section><article class="article markdown-body"><h1 id="笔记">笔记</h1>
+<hr>
+<h2 id="函数的开场和结束">函数的开场和结束</h2>
+<pre><code>               +------------+   |
+               | arg 2      |   \
+               +------------+    &gt;- previous function's stack frame
+               | arg 1      |   /
+               +------------+   |
+               | ret %eip   |   /
+               +============+   
+               | saved %ebp |   \
+        %ebp-&gt; +------------+   |
+               |            |   |
+               |   local    |   \
+               | variables, |    &gt;- current function's stack frame
+               |    etc.    |   /
+               |            |   |
+               |            |   |
+        %esp-&gt; +------------+   /
+</code></pre><h2 id="函数调用和汇编对应">函数调用和汇编对应</h2>
+<p><img  src="/images/operating-system/6.828/lab1/note1.png"
+        alt="note1.png"/></p>
+<p>其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。</p>
+<h2 id="c源文件编译过程">C源文件编译过程</h2>
+<p><img  src="/images/operating-system/6.828/lab1/note2.png"
+        alt="note2.png"/></p>
+<hr>
+<h2 id="pc-模拟器实现">PC 模拟器实现</h2>
+<hr>
+<h3 id="cpu寄存器">CPU寄存器</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#存储在全局变量中
+</span><span class="cp"></span><span class="n">int32_t</span> <span class="n">regs</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="cp">#define REG_EAX 1;
+</span><span class="cp">#define REG_EBX 2;
+</span><span class="cp">#define REG_ECX 3;
+</span><span class="cp"></span><span class="p">...</span>
+<span class="n">int32_t</span> <span class="n">eip</span><span class="p">;</span>
+<span class="n">int16_t</span> <span class="n">segregs</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+<span class="p">...</span>
+</code></pre></div><h3 id="物理内存">物理内存</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">char</span> <span class="n">mem</span><span class="p">[</span><span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">];</span>
+</code></pre></div><h3 id="执行">执行</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+        <span class="n">read_instruction</span><span class="p">();</span>
+        <span class="k">switch</span> <span class="p">(</span><span class="n">decode_instruction_opcode</span><span class="p">())</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nl">OPCODE_ADD</span><span class="p">:</span>
+            <span class="kt">int</span> <span class="n">src</span> <span class="o">=</span> <span class="n">decode_src_reg</span><span class="p">();</span>
+            <span class="kt">int</span> <span class="n">dst</span> <span class="o">=</span> <span class="n">decode_dst_reg</span><span class="p">();</span>
+            <span class="n">regs</span><span class="p">[</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">regs</span><span class="p">[</span><span class="n">dst</span><span class="p">]</span> <span class="o">+</span> <span class="n">regs</span><span class="p">[</span><span class="n">src</span><span class="p">];</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="k">case</span> <span class="nl">OPCODE_SUB</span><span class="p">:</span>
+            <span class="kt">int</span> <span class="n">src</span> <span class="o">=</span> <span class="n">decode_src_reg</span><span class="p">();</span>
+            <span class="kt">int</span> <span class="n">dst</span> <span class="o">=</span> <span class="n">decode_dst_reg</span><span class="p">();</span>
+            <span class="n">regs</span><span class="p">[</span><span class="n">dst</span><span class="p">]</span> <span class="o">=</span> <span class="n">regs</span><span class="p">[</span><span class="n">dst</span><span class="p">]</span> <span class="o">-</span> <span class="n">regs</span><span class="p">[</span><span class="n">src</span><span class="p">];</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">...</span>
+        <span class="p">}</span>
+        <span class="n">eip</span> <span class="o">+=</span> <span class="n">instruction_length</span><span class="p">;</span>
+</code></pre></div><h3 id="物理内存布局">物理内存布局</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#define KB      1024
+</span><span class="cp"></span>    <span class="cp">#define MB      1024*1024
+</span><span class="cp"></span>
+    <span class="cp">#define LOW_MEMORY  640*KB
+</span><span class="cp"></span>    <span class="cp">#define EXT_MEMORY  10*MB
+</span><span class="cp"></span>
+    <span class="n">uint8_t</span> <span class="n">low_mem</span><span class="p">[</span><span class="n">LOW_MEMORY</span><span class="p">];</span>
+    <span class="n">uint8_t</span> <span class="n">ext_mem</span><span class="p">[</span><span class="n">EXT_MEMORY</span><span class="p">];</span>
+    <span class="n">uint8_t</span> <span class="n">bios_rom</span><span class="p">[</span><span class="mi">64</span><span class="o">*</span><span class="n">KB</span><span class="p">];</span>
+
+    <span class="n">uint8_t</span> <span class="nf">read_byte</span><span class="p">(</span><span class="n">uint32_t</span> <span class="n">phys_addr</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="n">LOW_MEMORY</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">low_mem</span><span class="p">[</span><span class="n">phys_addr</span><span class="p">];</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&gt;=</span> <span class="mi">960</span><span class="o">*</span><span class="n">KB</span> <span class="o">&amp;&amp;</span> <span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rom_bios</span><span class="p">[</span><span class="n">phys_addr</span> <span class="o">-</span> <span class="mi">960</span><span class="o">*</span><span class="n">KB</span><span class="p">];</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span> <span class="o">&amp;&amp;</span> <span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="o">+</span><span class="n">EXT_MEMORY</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">ext_mem</span><span class="p">[</span><span class="n">phys_addr</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="p">];</span>
+        <span class="k">else</span> <span class="p">...</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">write_byte</span><span class="p">(</span><span class="n">uint32_t</span> <span class="n">phys_addr</span><span class="p">,</span> <span class="n">uint8_t</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="n">LOW_MEMORY</span><span class="p">)</span>
+            <span class="n">low_mem</span><span class="p">[</span><span class="n">phys_addr</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&gt;=</span> <span class="mi">960</span><span class="o">*</span><span class="n">KB</span> <span class="o">&amp;&amp;</span> <span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="p">)</span>
+            <span class="p">;</span> <span class="cm">/* ignore attempted write to ROM! */</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">phys_addr</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span> <span class="o">&amp;&amp;</span> <span class="n">phys_addr</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="o">+</span><span class="n">EXT_MEMORY</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">ext_mem</span><span class="p">[</span><span class="n">phys_addr</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">MB</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">;</span>
+        <span class="k">else</span> <span class="p">...</span>
+    <span class="p">}</span>
+</code></pre></div><h3 id="外围设备">外围设备</h3>
+<ul>
+<li>Hard disk: using a file of the host</li>
+<li>VGA display: draw in a host window</li>
+<li>Keyboard: hostsʼs keyboard API</li>
+<li>Clock chip: hostʼs clock</li>
+<li>Etc.</li>
+</ul>
+<hr>
+<h1 id="homework">Homework</h1>
+<hr>
+<h2 id="implement-shell">Implement Shell</h2>
+<p><a href="https://github.com/fATwaer/Operating-System-Engineering-Code/tree/master/homework1"target="_blank" rel="noopener noreferrer">注释好的shell code和最后完成的shell code</a>
+</p>
+<h3 id="代码片段1">代码片段1</h3>
+<p>实现shell的执行命令</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">case</span> <span class="sc">&#39; &#39;</span><span class="o">:</span>
+    <span class="n">ecmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">execcmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">_exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="kt">char</span> <span class="n">path</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">access</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">F_OK</span><span class="p">)</span> <span class="p">){</span>  <span class="c1">//argv[0]为要执行的命令
+</span><span class="c1"></span>        <span class="n">execv</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;executed in home dictory</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span> 
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">strcpy</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s">&#34;/bin/&#34;</span><span class="p">);</span>
+        <span class="n">strcat</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">access</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">F_OK</span><span class="p">)</span> <span class="p">)</span>
+                <span class="n">execv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">);</span>
+        <span class="k">else</span>
+                <span class="nf">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="s">&#34;</span><span class="se">\&#34;</span><span class="s">%s</span><span class="se">\&#34;</span><span class="s"> command not found</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">path</span><span class="p">);</span>
+</code></pre></div><hr>
+<h4 id="access和execv">access和execv</h4>
+<pre><code>int access(const char *pathname, int mode);
+</code></pre>
+<p>判断用户是否能使用pathname这个文件或者目录。
+mode有4种:</p>
+<ol>
+<li>
+<p>F_OK tests  for  the  existence  of  the file.</p>
+</li>
+<li>
+<p>R_OK,  W_OK,  and  X_OK test whether the file exists and grants read, write, and execute permissions</p>
+<p>int execv(const char *path, char *const argv[]);
+执行path下的命令</p>
+</li>
+</ol>
+<h3 id="代码片段2">代码片段2</h3>
+<hr>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">  <span class="k">case</span> <span class="sc">&#39;&gt;&#39;</span><span class="o">:</span>
+  <span class="k">case</span> <span class="sc">&#39;&lt;&#39;</span><span class="o">:</span>
+    <span class="n">rcmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">redircmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="c1">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span class="c1"></span>    <span class="c1">// Your code here ...
+</span><span class="c1"></span>    <span class="n">close</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">open</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">,</span> <span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span> <span class="mi">777</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;open file error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">runcmd</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">);</span>
+    <span class="k">break</span><span class="p">;</span>
+</code></pre></div><h4 id="open">open()</h4>
+<pre><code>int open(constchar* pathname,int flags,[mode_t mode]);
+</code></pre>
+<p><code>返回值</code> : 成功则返回文件描述符，否则返回-1
+<code>flags</code> : 参数用来描述打开文件的方法:</p>
+<pre><code>O_RDONLY 只读模式
+O_WRONLY 只写模式
+O_RDWR 读写模式
+O_APPEND 每次写操作都写入文件的末尾
+O_CREAT 如果指定文件不存在，则创建这个文件
+O_EXCL 如果要创建的文件已存在，则返回-1，并且修改errno的值
+O_TRUNC 如果文件存在，并且以只写/读写方式打开，则清空文件全部内容(即将其长度截短为0)
+O_NOCTTY 如果路径名指向终端设备，不要把这个设备用作控制终端。
+O_NONBLOCK 如果路径名指向FIFO/块文件/字符文件，则把文件的打开和后继I/O
+</code></pre><p>代码测试片段</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span> <span class="n">fd</span><span class="p">;</span>
+<span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;test.c&#34;</span><span class="p">,</span><span class="n">O_RDONLY</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">fd</span><span class="p">);</span>
+<span class="c1">//close(fd);
+</span><span class="c1"></span><span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;test1.c&#34;</span><span class="p">,</span><span class="n">O_WRONLY</span><span class="p">);</span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">fd</span><span class="p">);</span>
+
+<span class="cp"># result:
+</span><span class="cp"></span><span class="mi">3</span>
+<span class="mi">4</span>
+</code></pre></div><h3 id="代码片段3">代码片段3</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">  <span class="k">case</span> <span class="sc">&#39;|&#39;</span><span class="o">:</span>
+    <span class="n">pcmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">pipecmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="c1">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span class="c1"></span>    <span class="c1">// Your code here ...
+</span><span class="c1"></span>    <span class="k">if</span><span class="p">((</span><span class="n">pipe</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="n">perror</span><span class="p">(</span><span class="s">&#34;pipe&#34;</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">fork1</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">STDOUT_FILENO</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">runcmd</span><span class="p">(</span><span class="n">pcmd</span><span class="o">-&gt;</span><span class="n">left</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">STDIN_FILENO</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">runcmd</span><span class="p">(</span><span class="n">pcmd</span><span class="o">-&gt;</span><span class="n">right</span><span class="p">);</span>
+    <span class="k">break</span><span class="p">;</span>
+</code></pre></div><h4 id="pipe">pipe()</h4>
+<pre><code>int pipe(int pipefd[2]);
+</code></pre>
+<p>Dscpt:
+<code>pipefd[0]</code> : pipe的读取端
+<code>pipefd[1]</code> : pipe的写入端
+<code>The read  end</code> is  opened using the O_RDONLY flag;
+<code>The write end</code> is opened using the O_WRONLY flag.</p>
+<h4 id="使用fork和pipe进行进程之间的通信">使用fork和pipe进行进程之间的通信</h4>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span><span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+        <span class="kt">int</span> <span class="n">fd</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+        <span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+
+        <span class="n">pipe</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+        <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">pid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;parent process:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+            <span class="kt">char</span> <span class="n">sp</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;string is waiting for being loaded&#34;</span><span class="p">;</span>
+            <span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sp</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">sp</span><span class="p">));</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">80</span><span class="p">];</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;child process:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+            <span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">));</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;loaded: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;fork error&#34;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+</code></pre></div><hr>
+<h4 id="dup和fcntl">dup和fcntl</h4>
+<pre><code>int  dup(int oldfd)
+</code></pre>
+<p>新复制的fd和旧的fd共享文件位移(offset)和文件状态标识符(file status flags),不共享文件描述符标识(file descriptor flags),文件描述符标识只有一个the close-on-exec flag,用来指示fork的子进程在执行之前,要不要关闭这个文件描述符。</p>
+<p>每个文件描述符都有一个close-on-exec标志。在系统默认情况下，这个标志最后一位被设置为0。而FD_CLOEXEC则用来设置文件的close-on-exec，FD_CLOEXEC的值为1，所以在设置close-on-exec位时可以使用FD_CLOEXEC也可以直接的使用0或1数字对close-on-exec位进行设置,FD_CLOEXEC可以用fcntl()来设置。当将close-on-exec标志置为1时，即开启此标志。那么当子进程调用exec函数之前，系统就已经让子进程将此文件描述符关闭了。当close-on-exec标志置为0时，即关闭了此标志。那么当子进程调用exec函数，子进程将不会关闭该文件描述符。此时，父子进程将共享该文件，它们具有同一个文件表项，也就有了同一个文件偏移量等。</p>
+<pre><code>int dup2( int fd, int new_fd )
+</code></pre>
+<p>同样，函数返回一个新的文件描述符，若出错则返回 -1。与 dup 不同的是，dup2 可以用 filedes2 参数指定新描述符的数值。如果 filedes2 已经打开,则先将其关闭。如若 filedes 等于 filedes2 , 则 dup2 返回 filedes2 , 而不关闭它。返回的新文件描述符与参数 filedes 共享同一个文件数据结构。</p>
+<p>比如,<code>dup2(p[1], STDOUT_FILENO)</code>,p[1]为pipe的写入口</p>
+<ol>
+<li>
+<p>把进程的标准输出关闭</p>
+</li>
+<li>
+<p>复制一个大于等于<code>STDOUT_FILENO</code>的文件描述符FD</p>
+</li>
+<li>
+<p>这时候新的FD共享<code>STDOUT_FILENO</code>的文件内容。</p>
+</li>
+<li>
+<p>原本进程的输出，就转移到了pipe管道的写入口。</p>
+<p>int fcntl(int filedes,int cmd,&hellip;);
+<code>cmd = F_DUPFD</code>, 复制一个现有的文件描述符,返回值为新文件描述符。相当于<code>dup(oldfd)</code>
+<code>cmd = F_SETFL</code> : 设置状态标志
+<code>cmd = F_GETFL</code> : 获取状态标志
+状态标志就是open是的oflag(O_RDONLY,O_WRONLY,O_RDWR,O_NONBLOCK,O_APPEND,O_SYNC（异步I/O）,O_ASYNC（等待写完成）
+可以更改的标志是O_APPEND，O_NONBLOCK，O_SYNC,O_ASYNC。)
+<code>FD_CLOEXEC</code>:fcntl调用的一个宏定义，填在fcntl第三个参数处。
+<code>O_CLOEXEC</code>:open()调用的一个宏定义</p>
+</li>
+</ol>
+<h4 id="用fcntl复制一个fd">用fcntl复制一个fd</h4>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">80</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;a1&#34;</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">fd_new</span> <span class="o">=</span> <span class="n">fcntl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">F_DUPFD</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;fd_new : %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">fd_new</span><span class="p">);</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">read</span><span class="p">(</span><span class="n">fd_new</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">)))</span>
+    <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></div><p>关于<a href="https://fatwaer.github.io/2018/04/09/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/FD-CLOEXEC%E6%A0%87%E5%BF%97/"target="_blank" rel="noopener noreferrer">FD_CLOEXEC flag</a>
+ , 是指在FD在被exec()函数族被调用的时候,自动关闭。</p>
+<hr>
+<h4 id="结构体强制转换">结构体强制转换</h4>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="k">struct</span> <span class="n">a1</span><span class="p">{</span>
+    <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">c</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">b1</span><span class="p">{</span>
+    <span class="kt">int</span> <span class="n">c</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">cc</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">interger</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">a1</span><span class="o">*</span>
+<span class="nf">b1</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+    <span class="k">struct</span> <span class="n">b1</span><span class="o">*</span> <span class="n">temp</span><span class="p">;</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="o">*</span><span class="n">b1</span><span class="p">));</span>
+    <span class="n">temp</span><span class="o">-&gt;</span><span class="n">c</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">temp</span><span class="o">-&gt;</span><span class="n">cc</span> <span class="o">=</span> <span class="sc">&#39;c&#39;</span><span class="p">;</span>
+    <span class="n">temp</span><span class="o">-&gt;</span><span class="n">interger</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">struct</span> <span class="n">a1</span><span class="o">*</span><span class="p">)</span> <span class="n">temp</span><span class="p">;</span>
+<span class="p">}</span> 
+
+
+<span class="kt">int</span> 
+<span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">a1</span> <span class="o">*</span><span class="n">a</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">b1</span> <span class="o">*</span><span class="n">b</span><span class="p">;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">b1</span><span class="p">();</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d , %c&#34;</span><span class="p">,</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">-&gt;</span><span class="n">c</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><h4 id="获取环境变量">获取环境变量</h4>
+<p>获得一个环境变量的字符串数组</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define MAX_PATH 20
+</span><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">s_ptr</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">pa</span><span class="p">,</span> <span class="o">*</span><span class="n">pb</span><span class="p">,</span> <span class="o">*</span><span class="n">buf</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">];</span>
+    <span class="n">s_ptr</span> <span class="o">=</span> <span class="n">getenv</span><span class="p">(</span><span class="s">&#34;PATH&#34;</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">s_ptr</span><span class="p">);</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">strlen</span><span class="p">(</span><span class="n">s_ptr</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>  
+    <span class="n">strcpy</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">s_ptr</span><span class="p">);</span>
+    
+    <span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">pa</span> <span class="o">=</span> <span class="n">pb</span> <span class="o">=</span> <span class="n">buf</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span><span class="p">){</span>
+        <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">pa</span><span class="o">++</span> <span class="o">!=</span> <span class="sc">&#39;:&#39;</span><span class="p">)</span>  <span class="p">;</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">pa</span> <span class="o">-</span> <span class="n">pb</span><span class="p">;</span>
+        <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">length</span><span class="p">);</span>
+        <span class="n">strncpy</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pb</span><span class="p">,</span> <span class="n">length</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">pa</span><span class="o">-</span><span class="n">pb</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        
+        <span class="n">i</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">pb</span> <span class="o">=</span> <span class="n">pa</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span> <span class="p">)</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">j</span><span class="p">]);</span>    
+<span class="p">}</span>
+</code></pre></div><h3 id="最后完成的runcmd">最后完成的runcmd()</h3>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">runcmd</span><span class="p">(</span><span class="k">struct</span> <span class="n">cmd</span> <span class="o">*</span><span class="n">cmd</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">r</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">execcmd</span> <span class="o">*</span><span class="n">ecmd</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">pipecmd</span> <span class="o">*</span><span class="n">pcmd</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">redircmd</span> <span class="o">*</span><span class="n">rcmd</span><span class="p">;</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="n">cmd</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">_exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  
+  <span class="k">switch</span><span class="p">(</span><span class="n">cmd</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">){</span>
+  <span class="k">default</span><span class="o">:</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;unknown runcmd</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="n">_exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="k">case</span> <span class="sc">&#39; &#39;</span><span class="o">:</span>
+    <span class="n">ecmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">execcmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">_exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="c1">// fprintf(stderr, &#34;exec not implemented\n&#34;);
+</span><span class="c1"></span>    <span class="c1">// Your code here ...
+</span><span class="c1"></span>    
+    <span class="kt">char</span> <span class="n">pathbuf</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">access</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">F_OK</span><span class="p">)</span> <span class="p">){</span>
+        <span class="n">execv</span><span class="p">(</span><span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">);</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;executed in home dictory</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kt">char</span><span class="o">*</span> <span class="n">s_ptr</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="o">*</span><span class="n">pa</span><span class="p">,</span> <span class="o">*</span><span class="n">pb</span><span class="p">,</span> <span class="o">*</span><span class="n">buf</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+        <span class="kt">char</span><span class="o">*</span> <span class="n">path</span><span class="p">[</span><span class="n">MAX_PATH</span><span class="p">];</span>
+        <span class="n">s_ptr</span> <span class="o">=</span> <span class="n">getenv</span><span class="p">(</span><span class="s">&#34;PATH&#34;</span><span class="p">);</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">strlen</span><span class="p">(</span><span class="n">s_ptr</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>  
+        <span class="n">strcpy</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">s_ptr</span><span class="p">);</span>
+    
+        <span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">pa</span> <span class="o">=</span> <span class="n">pb</span> <span class="o">=</span> <span class="n">buf</span><span class="p">;</span>
+        <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span><span class="p">){</span>
+            <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">pa</span><span class="o">++</span> <span class="o">!=</span> <span class="sc">&#39;:&#39;</span><span class="p">)</span>  <span class="p">;</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">pa</span> <span class="o">-</span> <span class="n">pb</span><span class="p">;</span>
+            <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">length</span><span class="p">);</span>
+            <span class="n">strncpy</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pb</span><span class="p">,</span> <span class="n">length</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">pa</span><span class="o">-</span><span class="n">pb</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+ 
+            <span class="n">i</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pb</span> <span class="o">=</span> <span class="n">pa</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="n">ji</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">ji</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">ji</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">;</span> <span class="n">ji</span><span class="o">++</span><span class="p">){</span>
+        <span class="n">strcpy</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="n">ji</span><span class="p">]);</span>
+        <span class="n">strcat</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="s">&#34;/&#34;</span><span class="p">);</span>
+        <span class="n">strcat</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="c1">//printf(&#34;path-&gt; %s\n&#34;, pathbuf);
+</span><span class="c1"></span>        <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">access</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="n">F_OK</span><span class="p">)</span> <span class="p">){</span>
+            <span class="n">execv</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">);</span>
+        <span class="p">}</span>
+        
+        <span class="n">memset</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">pathbuf</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">ji</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34; </span><span class="se">\&#34;</span><span class="s">%s</span><span class="se">\&#34;</span><span class="s">command not found</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">ecmd</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="p">}</span>   
+    <span class="k">break</span><span class="p">;</span>
+
+  <span class="k">case</span> <span class="sc">&#39;&gt;&#39;</span><span class="o">:</span>
+  <span class="k">case</span> <span class="sc">&#39;&lt;&#39;</span><span class="o">:</span>
+    <span class="n">rcmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">redircmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="c1">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span class="c1"></span>    <span class="c1">// Your code here ...
+</span><span class="c1"></span>    <span class="n">close</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">open</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">file</span><span class="p">,</span> <span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">flags</span><span class="p">,</span> <span class="mi">777</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
+    <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;open file error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">runcmd</span><span class="p">(</span><span class="n">rcmd</span><span class="o">-&gt;</span><span class="n">cmd</span><span class="p">);</span>
+    <span class="k">break</span><span class="p">;</span>
+
+  <span class="k">case</span> <span class="sc">&#39;|&#39;</span><span class="o">:</span>
+    <span class="n">pcmd</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">pipecmd</span><span class="o">*</span><span class="p">)</span><span class="n">cmd</span><span class="p">;</span>
+    <span class="c1">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span class="c1"></span>    <span class="c1">// Your code here ...
+</span><span class="c1"></span>    <span class="k">if</span><span class="p">((</span><span class="n">pipe</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="n">perror</span><span class="p">(</span><span class="s">&#34;pipe&#34;</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">fork1</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="n">dup2</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">STDOUT_FILENO</span><span class="p">);</span>  
+        <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>                     <span class="c1">// &lt;- 关闭p[1],防止fd泄露
+</span><span class="c1"></span>        <span class="n">runcmd</span><span class="p">(</span><span class="n">pcmd</span><span class="o">-&gt;</span><span class="n">left</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">dup2</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">STDIN_FILENO</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="n">runcmd</span><span class="p">(</span><span class="n">pcmd</span><span class="o">-&gt;</span><span class="n">right</span><span class="p">);</span>
+    <span class="k">break</span><span class="p">;</span>
+  <span class="p">}</span>    
+  <span class="n">_exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="结果">结果</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">moonlight@ubuntu:~/homework$ ./a.out &lt; t.sh
+     <span class="m">15</span>      <span class="m">15</span>      <span class="m">82</span>
+     <span class="m">15</span>      <span class="m">15</span>      <span class="m">82</span>
+</code></pre></div><h3 id="pipedup重定向文章">pipe、dup重定向文章</h3>
+<p>[I/O重定向和管道：使用pipe、fork、exec详解。] :https://blog.csdn.net/skyroben/article/details/71513385#
+[进程间的通信方式] : <a href="https://blog.csdn.net/yake25/article/details/7447086">https://blog.csdn.net/yake25/article/details/7447086</a><br>
+[dup2后close] : <a href="http://blog.51cto.com/keren/170892">http://blog.51cto.com/keren/170892</a></p>
+<p>_* 挑战题目未完成_</p>
+<blockquote>
+<p>获取环境变量的时候造了个轮子.</p>
+</blockquote>
+</article><section class="article labels"><a class="category" href=/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/>操作系统</a><a class="tag" href=/tags/os/>OS</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/"><span class="iconfont icon-article"></span>6-828-操作系统工程-Lec4-7课件笔记整理</a></p><p><a class="link" href="/blog/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/"><span class="iconfont icon-article"></span>hexo 配置</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

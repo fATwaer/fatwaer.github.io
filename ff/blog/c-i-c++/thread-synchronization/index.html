@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>线程同步&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="线程同步" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">线程同步</h1><p class="article date">Monday, October 15, 2018</p></section><article class="article markdown-body"><p>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。</p>
+<p><img  src="/images/apue/c11/threadop.png"
+        alt="thread"/></p>
+<p>在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">j_next</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">j_prev</span><span class="p">;</span>
+    <span class="n">pthread_t</span>   <span class="n">j_id</span><span class="p">;</span>
+    <span class="cm">/** job */</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">j_add</span><span class="p">)(</span><span class="kt">int</span><span class="p">);</span>
+    <span class="kt">int</span>         <span class="n">j_num</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><p>然后写一个简单的作业函数，完成<code>j_num</code>的累加工作，已经初始化结构体<code>job</code>的作业分配函数，并且将这个作业加入到作业队列中去：</p>
+<ul>
+<li>累加函数</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">sum</span><span class="p">;</span>
+
+    <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">sum</span> <span class="o">+=</span> <span class="n">i</span><span class="o">--</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">sum</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>作业分配</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span>
+<span class="nf">job_alloc</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">jp</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">job</span><span class="p">)))</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_add</span> <span class="o">=</span> <span class="n">add</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_num</span> <span class="o">=</span> <span class="n">num</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">=</span> <span class="n">pthread_self</span><span class="p">();</span>
+    <span class="n">job_insert</span><span class="p">(</span><span class="n">qp</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">jp</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p>然后可以创建一个线程去完成作业分配工作，生成一个待执行的作业队列，虽然在这里使用主线程来创建会更好。</p>
+<ul>
+<li>开启线程以及队列初始化</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="k">struct</span> <span class="n">queue</span> <span class="n">qn</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">;</span>
+   
+    <span class="n">queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+
+    <span class="n">setbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</code></pre></div><ul>
+<li>线程例程</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span> <span class="o">*</span>
+<span class="nf">th_func1</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">9</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">8</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">7</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p>题目中有提到，需要将线程挂起然后修改作业对应的线程ID，之后要继续执行进行验证，在这里先排除信号量，因为信号量是用在多进程同步，异常的一种机制；所以选择条件变量实现线程的唤醒操作，然后定义一个枚举量来判断多线程处于挂起还是运行状态，如果线程发现这个全局枚举量是处于运行状态，从作业队列中用<code>job_find</code>找到一个作业，并且使用<code>job_remove</code>从作业队列中移除。</p>
+<ul>
+<li>条件变量和枚举量</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cm">/** thread suspend mutex*/</span>
+<span class="n">pthread_cond_t</span> <span class="n">jready</span> <span class="o">=</span> <span class="n">PTHREAD_COND_INITIALIZER</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">statmtx</span> <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">;</span>
+<span class="n">pthread_barrier_t</span> <span class="n">b</span><span class="p">;</span>
+<span class="k">enum</span> <span class="n">status</span> <span class="p">{</span>
+    <span class="n">STOP</span>    <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">};</span>
+<span class="k">static</span> <span class="k">enum</span> <span class="n">status</span> <span class="n">t1st</span> <span class="o">=</span> <span class="n">STOP</span><span class="p">;</span>
+</code></pre></div><ul>
+<li>作业线程例程</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span> <span class="o">*</span>
+<span class="nf">th_func2</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">sum</span><span class="p">;</span>
+
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">t1st</span> <span class="o">==</span> <span class="n">STOP</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu is waiting resource..</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>  
+
+        <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jready</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+
+        <span class="cm">/** when the pthread recived the signal, it will test the while loop confidion fisrt*/</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu is going to run</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+
+
+
+    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="cm">/** processing job */</span>
+    <span class="n">sum</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_add</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_num</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu caculate %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">(),</span> <span class="n">sum</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;return = %d, tid = %lu</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">),</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+
+</code></pre></div><p>全局枚举量已经将状态设置为了暂停状态，所以线程一进入例程，就将挂起等待条件变量发生改变，恢复函数应该将枚举量提前设置为运行状态，因为当<code>pthread_cond_wait()</code>函数在接收到条件变量发生变化时，只是唤醒线程，不能跳出while循环。</p>
+<ul>
+<li>修改线程ID</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">modify_tid</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">tid2</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">jp</span> <span class="o">=</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">;</span> <span class="n">jp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">jp</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_equal</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="n">tid1</span><span class="p">))</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">=</span> <span class="n">tid2</span><span class="p">;</span>
+
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>在线程唤醒之前，将ID修改为tid2指定的数值，让新创建的线程能在工作队列中找到设置好的对应作业。</p>
+<ul>
+<li>线程恢复</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">th_resume</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">t1st</span> <span class="o">==</span> <span class="n">STOP</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+        <span class="n">t1st</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+        <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jready</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread resume signal send..</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>简单地把状态设置为运行，并且广播条件变量已经发生了改变。</p>
+<ul>
+<li>多线程创建和恢复运行线程</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">pthread_barrier_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+
+        <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+    <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-preposition.c"target="_blank" rel="noopener noreferrer">11-2-preposition.c</a>
+</p>
+<p><img  src="/images/apue/c11/11-2-1.png"
+        alt="线程工作"/></p>
+<p>多个线程按照想象中的情况从作业队列中取出不同的作业，然后从队列中删去通过<code>job_find()</code>找到的作业，并且调用登记在结构体中的函数进行累加，最后在<code>pthread_barrier_wait()</code>处进行同步。值得注意的是，虽然在这里一共开了4个线程，但是调用<code>pthread_barrier_init()</code>进行初始化的时候，将屏障需要等待的线程数设置为5，因为是把主线程也算了进去。还有一个有意思的地方是，总有一个线程在到达屏障的时候返回<code>-1</code>，是因为这个值实际上代表的是<code>PTHREAD_BARRIER_SERIAL_THREAD</code>宏，说明这个线程来执行多个线程的归并操作。</p>
+<p>通过书上给的代码，已经实现了一个多线程处理作业队列的操作，并且修改了暂停线程的ID，使得对应线程能从工作队列中得到作业。那么回到题目问到的问题上，这样会对<code>job_remove</code>产生什么影响？试想这样一种情况，当一个线程已经被唤醒了，然后去调用<code>job_find</code>函数寻找相应ID的作业，使得线程的工作指针<code>jp</code>指向改结构体，但是此时发生了调度或者系统拥塞事件，这时调用了修改之前修改线程id的函数<code>modify_tid</code>，使得描述该作业的结构体的线程ID被填写为另外一个线程的线程ID，现在的情况就变成两个线程的工作指针<code>jp</code>都指向了同一个结构体，并且准备执行<code>job_remove</code>，这时候任意一个线程先执行，后者都会产生段错误（一般是对NULL指针解引用）。现在修改之前代码来模拟这种情况:</p>
+<p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-expt.c"target="_blank" rel="noopener noreferrer">11-2-exception.c</a>
+</p>
+<ul>
+<li>模拟拥塞或者调度</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+</code></pre></div><ul>
+<li>修改ID</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+
+    <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">);</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>  <span class="cm">/** important here*/</span>
+    <span class="n">th_suspend</span><span class="p">();</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid3</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid2</span><span class="p">,</span> <span class="n">tid3</span><span class="p">);</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+</code></pre></div><p>结果和前面所述的情况一样，两次<code>remove</code>引发了段错误。</p>
+<p><img  src="/images/apue/c11/11-2-2.png"
+        alt="引发的段错误"/></p>
+<p>根据提示，可以使用引用计数和一个嵌入结构体的互斥量来解决这个问题，在<code>job_find()</code>的时候对引用计数进行加一，在<code>job_remove</code>的时候检查引用计数，知道引用计数为0才实际从作业队列中移除。</p>
+<ul>
+<li>修改结构体</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span>     <span class="o">*</span><span class="n">j_next</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">job</span>     <span class="o">*</span><span class="n">j_prev</span><span class="p">;</span>
+    <span class="n">pthread_t</span>       <span class="n">j_id</span><span class="p">;</span>
+    <span class="cm">/**mutex and reference count*/</span>
+    <span class="n">pthread_mutex_t</span> <span class="n">j_mtx</span><span class="p">;</span>
+    <span class="kt">int</span>             <span class="n">j_count</span><span class="p">;</span>
+    <span class="cm">/** job */</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">j_add</span><span class="p">)(</span><span class="kt">int</span><span class="p">);</span>
+    <span class="kt">int</span>             <span class="n">j_num</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><ul>
+<li>job_find</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span>
+<span class="nf">job_find</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pthread_rwlock_rdlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">jp</span> <span class="o">=</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">;</span> <span class="n">jp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">jp</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;head %p now %p </span><span class="se">\n</span><span class="s">  |-job_id %lu cur_id %lu</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">,</span> <span class="n">jp</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">id</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_equal</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">jp</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>job_remove</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">job_remove</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/** avoid deadlock*/</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+        <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">jp</span> <span class="o">==</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">==</span> <span class="n">jp</span><span class="p">)</span>
+                <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+            <span class="k">else</span>
+                <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">jp</span> <span class="o">==</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">--</span><span class="p">;</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>并且稍微修改下线程的例程，重新检测线程ID是否发生了改变：</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">==</span> <span class="n">pthread_self</span><span class="p">())</span>
+        <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span> 
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2.c"target="_blank" rel="noopener noreferrer">11-2.c</a>
+</p>
+<p>运行结果如下，现在两个线程可以正常的从作业队列中取作业页并且执行工作了，但是这并不是最好调度方式，如果发生了这样的问题，很大程度上是接口没有设计好，应对这样的问题书中也做了提醒，要为结构体的空间留下空位，以便以后进行拓展。</p>
+<p><img  src="/images/apue/c11/11-2-3.png"
+        alt="修复后的结果"/></p>
+</article><section class="article labels"><a class="category" href=/categories/c-i-c&#43;&#43;/>C I C&#43;&#43;</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/"><span class="iconfont icon-article"></span>Core Java for DataBase</a></p><p><a class="link" href="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/"><span class="iconfont icon-article"></span>算法与数据结构总结</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

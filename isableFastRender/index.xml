@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on fatwaer</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content in Posts on fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 15 Jan 2019 15:49:46 +0000</lastBuildDate>
+    
+	<atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hugo is comming !</title>
+      <link>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
+      <description> 末尾两个空格换行
+6 organization content 7 front matter 8 archetypes 9 shortcodes 10 taxonomies 11 template basic 12 list template 13 single template 14 homepage template 15 section template 16 base template https://discourse.gohugo.io/t/baseof-html-block-templates-and-list-types-results-in-empty-pages/5612&amp;gt;   </description>
+    </item>
+    
+    <item>
+      <title>6.824 distributed system notes</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</link>
+      <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</guid>
+      <description>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。
+分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。
+分布式系统的优点是能够组织物理上分离的实体，通过isolation取得系统安全，通过replication获取容错机制，通过并行CPUs/mem/disk/net来比例提升系统速度。
+当然也有些缺点，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。
+MapReduce(2004) input is divided into M files [diagram: maps generate rows of K-V pairs, reduces consume columns] Input1 -&amp;gt; Map -&amp;gt; a,1 b,1 c,1 Input2 -&amp;gt; Map -&amp;gt; b,1 Input3 -&amp;gt; Map -&amp;gt; a,1 c,1 | | | | | -&amp;gt; Reduce -&amp;gt; c,2 | -----&amp;gt; Reduce -&amp;gt; b,2 ---------&amp;gt; Reduce -&amp;gt; a,2  对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 键值对(图中的一行)作为中间数据。
+MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：
+map(k1, v1) -&amp;gt; list(k2, v2) reduce(k2, list(v2) -&amp;gt; list(k2, v3)]  MapReduce 隐藏了很多关键的细节，l如启动处于服务器上的软件，跟踪任务是否完成，数据的移动，从错误中恢复等。</description>
+    </item>
+    
+    <item>
+      <title>Data-Intensive System</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</link>
+      <pubDate>Fri, 11 Jan 2019 11:57:29 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</guid>
+      <description> 数据组件  消息队列
+Redis: https://github.com/antirez/redis
+Apache Kafka
+ 主数据库
+//todo
+ 全文索引
+Elasticsearch: https://github.com/elastic/elasticsearch
+Apache Solr
+ 内存缓存
+Memcached: https://github.com/memcached/memcached
+  </description>
+    </item>
+    
+    <item>
+      <title>Effective Go</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</link>
+      <pubDate>Thu, 10 Jan 2019 12:48:14 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</guid>
+      <description>goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &amp;lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &amp;lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &amp;lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &amp;lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &amp;lt;- 1 go func() { process(req) &amp;lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</description>
+    </item>
+    
+    <item>
+      <title>Core Java for DataBase</title>
+      <link>http://localhost:1313/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
+      <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
+      <description>前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。
+这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
+基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
+字符串 字符串判断为空：
+if (str.length() == 0) or if (str.equals(&amp;quot;&amp;quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:
+StringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。
+数组 JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：
+JAVA中的:
+int[] a = new int[100];  等同于C/C++中的:
+int* a = new int[100];  不同于:
+int a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():
+newArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：
+Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性： - 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 - 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 - 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab6-Network Driver(Final)</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</link>
+      <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</guid>
+      <description>准备 git
+$ git add . $ git commit -am &amp;quot;lab 5 done&amp;quot; $ make handin $ git pull $ git checkout -b lab6 origin/lab6 $ git merge lab5 Auto-merging lib/fd.c Auto-merging kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c Auto-merging inc/lib.h Auto-merging fs/serv.c Merge made by the &#39;recursive&#39; strategy. boot/main.c | 1 - fs/bc.c | 22 +- fs/fs.c | 73 +- .... user/faultio.c | 2 +- user/forktree.c | 1 + user/sh.c | 9 +- user/testfile.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab5-File system, Spawn and Shell</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</link>
+      <pubDate>Sun, 20 May 2018 18:37:16 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</guid>
+      <description>这个实验主要是实现spawn库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库 ，使得足以在控制台上运行shell。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。
+准备 git
+ $ find . -name &amp;quot;*.swp&amp;quot; | xargs rm $ git add . $ git commit -m &amp;quot;lab4 done&amp;quot; $ git pull $ git merge lab4 Auto-merging kern/trap.c CONFLICT (content): Merge conflict in kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c CONFLICT (content): Merge conflict in kern/init.c Auto-merging kern/env.c CONFLICT (content): Merge conflict in kern/env.c Auto-merging inc/lib.h Automatic merge failed; fix conflicts and then commit the result.  解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab4:Preemptive Multitasking</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</link>
+      <pubDate>Mon, 07 May 2018 19:28:03 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</guid>
+      <description>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab3:User Environments</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</link>
+      <pubDate>Sun, 22 Apr 2018 23:01:09 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</guid>
+      <description>4月22日 - 5月2日
+ PART A 这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。 这是关于这章节代码文件的介绍
+inc/env.h Public definitions for user-mode environments trap.h Public definitions for trap handling syscall.h Public definitions for system calls from user environments to the kernel lib.h Public definitions for the user-mode support library kern/env.h Kernel-private definitions for user-mode environments env.c Kernel code implementing user-mode environments trap.h Kernel-private trap handling definitions trap.c Trap handling code trapentry.S Assembly-language trap handler entry-points syscall.h Kernel-private definitions for system call handling syscall.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab2:Memory Management</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</link>
+      <pubDate>Thu, 12 Apr 2018 19:18:13 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</guid>
+      <description>练习1 page-translation open : cr0 和 PG bit page : 4k-byte 连续的内存单元 linear address : DIR | PAGE | OFFSET DIR是page directory的索引，PAGE是page table的索引。
+寻址过程:
+段部件输出一个线性地址（Linear address） Linear address(LA)
+// A linear address &#39;la&#39; has a three-part structure as follows: // // +--------10------+-------10-------+---------12----------+ // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // +----------------+----------------+---------------------+ // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lec4-7课件笔记整理</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Wed, 11 Apr 2018 10:59:57 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>Lec4 shell / OS https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space + thread app -&amp;gt; printf() -&amp;gt; write() -&amp;gt; SYSTEM CALL -&amp;gt; sys_write() -&amp;gt; ..
+Homework2
+ exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()
+ redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。
+ pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls &amp;gt; temp1 ; sort temp1 &amp;gt; temp2; uniq temp2 &amp;gt; temp3; wc temp3 &amp;gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lec1-3课件笔记和作业</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Fri, 06 Apr 2018 22:58:48 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>笔记 函数的开场和结束  +------------+ | | arg 2 | \ +------------+ &amp;gt;- previous function&#39;s stack frame | arg 1 | / +------------+ | | ret %eip | / +============+ | saved %ebp | \ %ebp-&amp;gt; +------------+ | | | | | local | \ | variables, | &amp;gt;- current function&#39;s stack frame | etc. | / | | | | | | %esp-&amp;gt; +------------+ /  函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。
+C源文件编译过程 PC 模拟器实现 CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; .</description>
+    </item>
+    
+    <item>
+      <title>hexo 配置</title>
+      <link>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Thu, 05 Apr 2018 15:17:47 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。&lt;/p&gt;
+
+&lt;h2 id=&#34;categories和tags&#34;&gt;categories和tags&lt;/h2&gt;
+
+&lt;p&gt;themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;type: &amp;quot;categories&amp;quot;
+layout: &amp;quot;categories&amp;quot;
+comments: false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;type: &amp;quot;tags&amp;quot;
+layout: &amp;quot;tags&amp;quot;
+comments: false
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab1:Booting a PC</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</link>
+      <pubDate>Wed, 14 Mar 2018 21:08:44 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</guid>
+      <description>3月14日 - 3月28日
+ Exercise 1 熟悉x86汇编和AT&amp;amp;T汇编
+16-bit intel 8088 1MB = 1048576bit 内存地址: 0x00000 ~ 0xFFFFF 640KB(0x00000 ~ 0xA0000) 用户可用 参考资料
+GDB启动过程 首先打开一个终端到目的lab根文件夹
+$ make qemu-nox-gdb
+再打开一个新的终端窗口执行以下命令进行监听
+$ make gdb
+以及一些常用的gdb命令 b: 0xffff: 在0xffff出下断点 c: continue to breakpoint si: 单步前进 x/5: 0xFFFFF 从0xFFFFF开始的5个命令
+Exercise 2 第一条指令: [f000:fff0] 0xffff0: ljmp $0xf000,$0xe05b 当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。 这个地址与BIOS的结束位置0x100000差16bytes。
+启动后追踪BIOS的部分代码 [f000:e05b] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较 [f000:e062] 0xfe062:	jne 0xfd2e1 ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转 [f000:e066] 0xfe066:	xor %dx,%dx ;dx清0 [f000:e068] 0xfe068:	mov %dx,%ss ;ss置0,AT&amp;amp;T汇编mov指令反向 [f000:e06a] 0xfe06a:	mov $0x7000,%esp ;esp设置为0x7000,实模式引导区位置 [f000:e070] 0xfe070:	mov $0xf3691,%executed ;edx设置为0xf3691 [f000:e076] 0xfe076:	jmp 0xfd165 ;跳转 0xfd165 [f000:d165] 0xfd165:	mov %eax,%ecx [f000:d168] 0xfd168:	cli ;屏蔽中断 [f000:d169] 0xfd169:	cld ;DF设置为0，指在每次传送一次将esi和edi自动+1;std将DF设置为1,传送自减 [f000:d16a] 0xfd16a:	mov $0x8f,%eax [f000:d170] 0xfd170:	out %al,$0x70 ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1 [f000:d172] 0xfd172:	in $0x71,%al ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0 ;A20地址线使能,进入保护模式 [f000:d174] 0xfd174:	in $0x92,%al [f000:d176] 0xfd176:	or $0x2,%al [f000:d178] 0xfd178:	out %al,$0x92 ;加载6个字节 [f000:d17a] 0xfd17a:	lidtw %cs:0x6c38 ;加载中断向量表 -&amp;gt;idt寄存器 [f000:d180] 0xfd180:	lgdtw %cs:0x6bf4 ;加载全局描述符表-&amp;gt;gdt寄存器 ;cr0寄存器置为1，进入保护模式 [f000:d186] 0xfd186:	mov %cr0,%eax [f000:d189] 0xfd189:	or $0x1,%eax [f000:d18d] 0xfd18d:	mov %eax,%cr0 ;重新加载全局描述符GDT 0xfd190:	ljmpl $0x8,$0xfd198 0xfd198:	mov $0x10,%ax 0xfd19b:	add %al,(%bx,%si) 0xfd19d:	mov %ax,%ds 0xfd19f:	mov %ax,%es 0xfd1a1:	mov %ax,%ss 0xfd1a3:	mov %ax,%fs   重新加载的 x86汇编复习 外围设备端口  软盘硬盘 磁盘的最小传输单元(sector)： 512bytes</description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab11</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</link>
+      <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</guid>
+      <description>&lt;p&gt;为了循环方便，我们设置&lt;strong&gt;SI&lt;/strong&gt;为&lt;strong&gt;-1&lt;/strong&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab10</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</link>
+      <pubDate>Tue, 21 Nov 2017 22:41:02 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</guid>
+      <description>&lt;p&gt;实验10 一共3个小实验，分别完成三个函数。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab8</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</link>
+      <pubDate>Fri, 17 Nov 2017 12:15:41 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</guid>
+      <description>assume cs:codesg codesg segment mov ax,4c00h int 21h start: mov ax,0 s: nop nop mov di,offset s mov si,offset s2 mov ax,cs:[si] mov cs:[di],ax s0: jmp short s s1: mov ax,0 int 21h mov ax,0 s2: jmp short s1 nop codesg ends end start  其中
+jmp short s  命令占用两个字节</description>
+    </item>
+    
+    <item>
+      <title>DOS实模式的搭建</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</link>
+      <pubDate>Fri, 17 Nov 2017 00:17:04 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</guid>
+      <description> 前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。
+安装 安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。
+接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。
+然后会提示重新启动，跟着提示来，会提示一个错误：
+这应该是DOS支持的磁盘格式为FAT32，而现在的windows支持的硬盘格式是NTFS，两者格式不兼容导致的。 我们关闭虚拟机重新启动下，在下面这个界面按F2进入BIOS设置首先启动项：
+修改启动项 跟着以下步骤操作： img [class names] 1. → 移动选项卡至 &amp;lsquo;boot&amp;rsquo; 2. ↓ 移动选项至 &amp;lsquo;CD-ROM Drive&amp;rsquo; 3. 按住 &amp;lsquo;shift&amp;rsquo; 和 &amp;lsquo;+&amp;rsquo; 将选中的CD-ROM Drive向上移动 4. 按F10保存退出
+此时该虚拟机会重新启动，然后重新进入安装界面。 根据提示，一步一步按确定，基本都是肯定选项。 [注意]直到提示关于 &amp;lsquo;Adds-On&amp;rsquo; 额外的软件安装，在这里我们选择 &amp;lsquo;Cancel&amp;rsquo; 取消，不进行额外的操作。
+如图可见，安装成功，重新启动。 重新启动后发现，还是进入的安装界面，这是因为之前在BIOS内设置过优先启动项的缘故。 和之前的操作一样，在vmware动画界面按F2进入BIOS，用组合键 shift 和 - 将CD-ROM Drive恢复到原来的位置(默认是第三个)。
+好了，到现在完成了DOS的安装了，但是还有个问题，就是VMware并没有给DOS提供vmtools，所以物理机和虚拟机之间传输文件并不方便。
+文件传输 首先，我们先关闭DOS虚拟机，然后在左侧硬件配置处点击硬盘。
+根据红色箭头提示，点击映射。
+然后把&amp;ldquo;以只读文件模式打开文件&amp;rdquo;前面的勾去掉，然后关闭警告，打开我的电脑，可以发现本地多出一个磁盘
+打开后可以看到DOS的实际文件，也就是说，我们可以直接对DOS的文件进行操作。 我们可以把自己的要编译的汇编代码放进去。(图中&amp;rdquo;lab8.asm&amp;rdquo;)
+再断开连接，否则DOS将无法启动。 最后，我们再验证一下。
+如图，纯DOS系统里已经有了自己放进去的文件。
+ DOS 7.10.iso 云盘链接 : http://pan.baidu.com/s/1slPZQot 密码: x0ht
+ </description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab6</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</link>
+      <pubDate>Mon, 13 Nov 2017 23:11:53 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</guid>
+      <description>datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends  将数据段前四个字母改为大写字母 &amp;amp;nbsp代码如下:
+assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg ends datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends codesg segment start: mov ax,stacksg mov ss,ax mov sp,16 mov ax,datasg mov ds,ax mov cx,4h mov bx,0 s1:	push cx mov cx,4 mov si,0 s2:	mov al,[bx+3+si] and al,11011111b mov [bx+3+si],al inc si loop s2 add bx,16 pop cx loop s1 mov ax,4c00h int 21h codesg ends end start	 </description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab5</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</link>
+      <pubDate>Mon, 13 Nov 2017 22:49:40 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</guid>
+      <description>根据程序编译连接并用Debug加载、跟踪，然后回答问题。
+(1) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h,0789h,0abch,0defh,0fedh,0cbah,0987h data ends stack segment dw 0,0,0,0,0,0,0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start  CS=0B4A;SS=0B49;DS=0B4B
+(2) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h data ends stack segment dw 0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start  CS=0B4A;SS=0B49;DS=0B48</description>
+    </item>
+    
+    <item>
+      <title>《汇编语言》 Lab1</title>
+      <link>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</link>
+      <pubDate>Mon, 13 Nov 2017 22:05:05 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</guid>
+      <description>assume cs:codesg codesg segment mov ax,2000 mov ss,ax mov sp,0 add sp,10 pop ax pop bx push ax push bx pop ax pop bx move ax,4c00 int 21 codesg ends end  </description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/about/</guid>
+      <description>Proficient: C/C++
+Familiar with: Go, Java, python
+Platform: Unix API
+Interested in OS, Distributed System, Compiler
+GitHub: @fatwaer
+Twitter: @fatqaq
+Mail: fatwaer#gmail.com (replace # to @)
+Classic music :  Symphony No. 7 in A, Op. 92:II composed by Beethoven Symphony no.9 - &amp;ldquo;From the New World &amp;rdquo; composed by Dvorak  an anime fans, want to be a NEET, favorite idol is Miku
+Bangumi: @fatqaq</description>
+    </item>
+    
+    <item>
+      <title>Todo</title>
+      <link>http://localhost:1313/todo/</link>
+      <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/todo/</guid>
+      <description>Something in progress:
+ 图片上传图床 微博+chrome插件 全部403了 https://www.cnblogs.com/Dozeer/p/10965508.html hugo markdown格式修正 &amp;lt;code&amp;gt;属性的样式 域名fatwaer.me以及cflowerth.com重定向 home页面跳转到post Analytics back to top button CORS policy 加载错误 跨域访问禁止   </description>
+    </item>
+    
+  </channel>
+</rss>

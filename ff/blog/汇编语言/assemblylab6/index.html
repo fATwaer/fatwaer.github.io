@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>《汇编语言》 Lab6&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="《汇编语言》 Lab6" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">《汇编语言》 Lab6</h1><p class="article date">Monday, November 13, 2017</p></section><article class="article markdown-body"><div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm"><span class="nf">datasg</span> <span class="no">segment</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">1</span><span class="p">.</span> <span class="no">display</span>      <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">2</span><span class="p">.</span> <span class="no">brows</span>        <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">3</span><span class="p">.</span> <span class="no">replace</span>      <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">4</span><span class="p">.</span> <span class="no">modify</span>       <span class="err">&#39;</span>
+<span class="nf">datasg</span> <span class="no">ends</span>
+</code></pre></div><p>将数据段前四个字母改为大写字母
+&amp;nbsp代码如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm"><span class="nf">assume</span> <span class="no">cs</span><span class="p">:</span><span class="no">codesg</span><span class="p">,</span><span class="no">ss</span><span class="p">:</span><span class="no">stacksg</span><span class="p">,</span><span class="no">ds</span><span class="p">:</span><span class="no">datasg</span>
+
+<span class="nf">stacksg</span> <span class="no">segment</span>
+	<span class="nf">dw</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span>
+<span class="nf">stacksg</span> <span class="no">ends</span>
+
+<span class="nf">datasg</span> <span class="no">segment</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">1</span><span class="p">.</span> <span class="no">display</span>      <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">2</span><span class="p">.</span> <span class="no">brows</span>        <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">3</span><span class="p">.</span> <span class="no">replace</span>      <span class="err">&#39;</span>
+	<span class="nf">db</span> <span class="err">&#39;</span><span class="mi">4</span><span class="p">.</span> <span class="no">modify</span>       <span class="err">&#39;</span>
+<span class="nf">datasg</span> <span class="no">ends</span>
+
+<span class="nf">codesg</span> <span class="no">segment</span>
+
+<span class="nl">start:</span>  <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="no">stacksg</span>
+		<span class="nf">mov</span> <span class="no">ss</span><span class="p">,</span><span class="no">ax</span>
+		<span class="nf">mov</span> <span class="no">sp</span><span class="p">,</span><span class="mi">16</span>
+		
+		<span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="no">datasg</span>
+		<span class="nf">mov</span> <span class="no">ds</span><span class="p">,</span><span class="no">ax</span>
+		
+		<span class="nf">mov</span> <span class="no">cx</span><span class="p">,</span><span class="mi">4</span><span class="no">h</span>
+		<span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="mi">0</span>
+
+<span class="nl">s1:</span>		<span class="nf">push</span> <span class="no">cx</span>
+		
+		<span class="nf">mov</span> <span class="no">cx</span><span class="p">,</span><span class="mi">4</span>
+		
+		<span class="nf">mov</span> <span class="no">si</span><span class="p">,</span><span class="mi">0</span>
+
+<span class="nl">s2:</span>		<span class="nf">mov</span> <span class="no">al</span><span class="p">,[</span><span class="no">bx</span><span class="err">+</span><span class="mi">3</span><span class="err">+</span><span class="no">si</span><span class="p">]</span>
+		<span class="nf">and</span> <span class="no">al</span><span class="p">,</span><span class="mi">11011111</span><span class="no">b</span>
+		<span class="nf">mov</span> <span class="p">[</span><span class="no">bx</span><span class="err">+</span><span class="mi">3</span><span class="err">+</span><span class="no">si</span><span class="p">],</span><span class="no">al</span>
+		<span class="nf">inc</span> <span class="no">si</span>
+		<span class="nf">loop</span> <span class="no">s2</span>
+		
+		<span class="nf">add</span> <span class="no">bx</span><span class="p">,</span><span class="mi">16</span>
+		<span class="nf">pop</span> <span class="no">cx</span>
+		<span class="nf">loop</span> <span class="no">s1</span>
+		
+		
+		<span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">4</span><span class="no">c00h</span>
+		<span class="nf">int</span> <span class="mi">21</span><span class="no">h</span>
+		
+
+<span class="nf">codesg</span> <span class="no">ends</span>
+
+<span class="nf">end</span> <span class="no">start</span>		
+		
+</code></pre></div></article><section class="article labels"><a class="category" href=/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/>汇编语言</a><a class="tag" href=/tags/assembly/>Assembly</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/"><span class="iconfont icon-article"></span>DOS实模式的搭建</a></p><p><a class="link" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/"><span class="iconfont icon-article"></span>《汇编语言》 Lab5</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

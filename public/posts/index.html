@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Posts</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Posts" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/" />
+
+
+
+    
+    
+    <link rel="stylesheet" href="/css/layouts/list.css">
+    <link rel="stylesheet" href="/css/navigators/sidebar.css">
+    
+    <link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  
+  
+
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content container-fluid" id="content">
+    <div class="container-fluid post-card-holder" id="post-card-holder">
+      
+      
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/lt_top100_array/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">Lt_top100_array</h5>
+        <p class="card-text post-summary">15. 三数之和 class Solution { public: vector&lt;vector&lt;int&gt;&gt; threeSum(vector&lt;int&gt;&amp; nums) { vector&lt;vector&lt;int&gt;&gt; res; std::sort(nums.begin(), nums.end()); for (int i = 0; i &lt; nums.size(); ++i) { int first = nums[i]; if (first &gt; 0) { continue; } if (i &gt; 0 &amp;&amp; nums[i-1] == first) { continue; } int target = -1 * first; int j = i + 1; int k = nums.size() - 1; while (j &lt; k) { int second = nums[j]; int third = nums[k]; if (second + third &gt; target) { k--; continue; } else if (second + third &lt; target) { j++; continue; } else { res.</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">November 18, 2021</span>
+        <a
+        href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/lt_top100_array/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（6）：执行分布式搜索</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 26, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（5）：高可用保证</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 15, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（4）：相关性计算</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 7, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（3）：文档如何被实时索引</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 31, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（2）：文档分词原理</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 24, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（1）：基础查询</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 16, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（0）：快速搭建</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 8, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/google-benchmark/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">google benchmark：利用 perf 工具查看程序热点</h5>
+        <p class="card-text post-summary">前言 准确的度量系统的开销是很重要的, 系统级别比较出名的是 Latency Numbers Every Programmer Should Know, 而在各种变成语言中, 需要依赖基准测试来判断程序实际的耗时。
+Latency Comparison Numbers (~2012) ---------------------------------- L1 cache reference 0.5 ns Branch mispredict 5 ns L2 cache reference 7 ns 14x L1 cache Mutex lock/unlock 25 ns Main memory reference 100 ns 20x L2 cache, 200x L1 cache Compress 1K bytes with Zippy 3,000 ns 3 us Send 1K bytes over 1 Gbps network 10,000 ns 10 us Read 4K randomly from SSD* 150,000 ns 150 us ~1GB/sec SSD Read 1 MB sequentially from memory 250,000 ns 250 us Round trip within same datacenter 500,000 ns 500 us Read 1 MB sequentially from SSD* 1,000,000 ns 1,000 us 1 ms ~1GB/sec SSD, 4X memory Disk seek 10,000,000 ns 10,000 us 10 ms 20x datacenter roundtrip Read 1 MB sequentially from disk 20,000,000 ns 20,000 us 20 ms 80x memory, 20X SSD Send packet CA-&gt;Netherlands-&gt;CA 150,000,000 ns 150,000 us 150 ms Notes ----- 1 ns = 10^-9 seconds 1 us = 10^-6 seconds = 1,000 ns 1 ms = 10^-3 seconds = 1,000 us = 1,000,000 ns Credit ------ By Jeff Dean: http://research.</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">April 30, 2021</span>
+        <a
+        href="/posts/sys/google-benchmark/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">利用Jemalloc进行内存泄漏的调试</h5>
+        <p class="card-text post-summary">内存不符预期的不断上涨，可能的原因是内存泄漏，例如new出来的对象未进行delete就重新进行复制，使得之前分配的内存块被悬空，应用程序没办法访问到那部分内存，并且也没有办法释放；在C++中，STL容器都会有clear()方法并且伴随RAII原则对容器里元素进行清理，但除了STL还有可能是字符串不断地在进行累加，不断的分配出新的内存块存放增长的字符串。
+在cppzh 群 内看到讨论利用jemalloc对内存占用的调试，能够清楚的 dump 出内存的使用情况，便尝试了下。
+安装 # 用于生成 pdf yum -y install graphviz ghostscript wget https://github.com/jemalloc/jemalloc/archive/5.1.0.tar.gz tar zxvf 5.1.0.tar.gz cd jemalloc-5.1.0/ ./autogen.sh ./configure --prefix=/usr/local/jemalloc-5.1.0 --enable-prof make -j make install 程序退出时的用例和检查 # run MALLOC_CONF=prof_leak:true,lg_prof_sample:0,prof_final:true LD_PRELOAD=/usr/local/jemalloc-5.1.0/lib/libjemalloc.so.2 ./a.out # 查看内存占用情况 /usr/local/jemalloc-5.1.0/bin/jeprof a.out jeprof.34447.0.f.heap &gt; top 长时间运行-测试用例 对于长时间运行的程序，例如服务端程序通常不能够退出，jemalloc提供每增长指定大小进行一次内存dump。
+下面这个例子mock长时间运行的程序，分别测试顺序容器(vector)和关联容器(map)，string 和最基本的new，并且每100ms执行1000次，代表服务端的运行情况。
+#include &lt;iostream&gt;#include &lt;string&gt;#include &lt;vector&gt;#include &lt;map&gt;#include &lt;chrono&gt;#include &lt;thread&gt; int main() { std::vector&lt;int&gt; vec; std::map&lt;int, int&gt; mp; std::string s; for (;;) { for (int i = 0; i &lt; 1000; ++i) { vec.</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">December 18, 2020</span>
+        <a
+        href="/posts/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">gRPC：复用CompletionQueue</h5>
+        <p class="card-text post-summary">异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。
+异步请求流程应该如下：
+在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，
+// struct for keeping state and data information  struct AsyncClientCall { // Container for the data we expect from the server.  HelloReply reply; // Context for the client. It could be used to convey extra information to  // the server and/or tweak certain RPC behaviors.  ClientContext context; // Storage for the status of the RPC upon completion.  Status status; std::unique_ptr&lt;ClientAsyncResponseReader&lt;HelloReply&gt;&gt; response_reader; }; void SayHello(const std::string&amp; user) { // Data we are sending to the server.</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">October 19, 2020</span>
+        <a
+        href="/posts/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/notes/programatic2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">实效性软件构建的途径-下</h5>
+        <p class="card-text post-summary">前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。
+1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。
+无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。
+2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。
+花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。
+3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。
+那么如何合理地进行重构？
+ 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。
+另外测试都应该具有以下功能：
+ setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。
+而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。
+6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。
+7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。
+8. 管理知识资产 对于金融资产的管理：
+ 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：
+ 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：
+ 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">April 15, 2020</span>
+        <a
+        href="/posts/notes/programatic2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+    </div>
+    <div class="paginator">
+      
+    <ul class="pagination pagination-default">
+      <li class="page-item disabled">
+        <a href="#" aria-disabled="true" aria-label="First" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&laquo;&laquo;</span></a>
+      </li>
+      <li class="page-item disabled">
+        <a href="#" aria-disabled="true" aria-label="Previous" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&laquo;</span></a>
+      </li>
+      <li class="page-item active">
+        <a href="#" aria-current="page" aria-label="Page 1" class="page-link" role="button">1</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/2/" aria-label="Page 2" class="page-link" role="button">2</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/3/" aria-label="Page 3" class="page-link" role="button">3</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/4/" aria-label="Page 4" class="page-link" role="button">4</a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/2/" aria-label="Next" class="page-link" role="button"><span aria-hidden="true">&raquo;</span></a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/page/4/" aria-label="Last" class="page-link" role="button"><span aria-hidden="true">&raquo;&raquo;</span></a>
+      </li>
+    </ul>
+    </div>
+  </div>
+</section>
+
+
+      
+       
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+    <script src="/js/list.js"></script>
+
+  </body>
+</html>

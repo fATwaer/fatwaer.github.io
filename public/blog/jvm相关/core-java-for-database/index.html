@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "Core Java for DataBase",
+      "headline" : "Core Java for DataBase",
+      "description" : "前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C\u002b\u002b来实现的，并且课件PPT和视频都非常良心。\n这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C\/C\u002b\u002b程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。\n基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。\n字符串 字符串判断为空：\nif (str.length() == 0) or if (str.equals(\u0026quot;\u0026quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:\nStringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C\/C\u002b\u002b不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。\n数组 JAVA的数组都是分配在堆上，这又是和C\/C\u002b\u002b不同的一点：\nJAVA中的:\nint[] a = new int[100];  等同于C\/C\u002b\u002b中的:\nint* a = new int[100];  不同于:\nint a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():\nnewArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：\nArr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性：\n 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。  通过下面的方法实例化一个类：",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-11-18 16:36:16 \u002b0000 UTC",
+      "dateModified" : "2018-11-18 16:36:16 \u002b0000 UTC",
+      "url" : "https:\/\/pwaer.ink\/blog\/jvm%E7%9B%B8%E5%85%B3\/core-java-for-database\/",
+      "keywords" : [ "Java", ]
+  }
+</script>
+<title>Core Java for DataBase</title>
+  <meta property="og:title" content="Core Java for DataBase" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C&#43;&#43;来实现的，并且课件PPT和视频都非常良心。
+这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C&#43;&#43;程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
+基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
+字符串 字符串判断为空：
+if (str.length() == 0) or if (str.equals(&amp;quot;&amp;quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:
+StringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C/C&#43;&#43;不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。
+数组 JAVA的数组都是分配在堆上，这又是和C/C&#43;&#43;不同的一点：
+JAVA中的:
+int[] a = new int[100];  等同于C/C&#43;&#43;中的:
+int* a = new int[100];  不同于:
+int a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():
+newArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：
+Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性：
+ 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。  通过下面的方法实例化一个类：" />
+  <meta name="description" content="前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C&#43;&#43;来实现的，并且课件PPT和视频都非常良心。
+这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C&#43;&#43;程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
+基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
+字符串 字符串判断为空：
+if (str.length() == 0) or if (str.equals(&amp;quot;&amp;quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:
+StringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C/C&#43;&#43;不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。
+数组 JAVA的数组都是分配在堆上，这又是和C/C&#43;&#43;不同的一点：
+JAVA中的:
+int[] a = new int[100];  等同于C/C&#43;&#43;中的:
+int* a = new int[100];  不同于:
+int a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():
+newArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：
+Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性：
+ 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。  通过下面的方法实例化一个类：" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">Core Java for DataBase</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-11-18 16:36:16 UTC">
+                18 Nov 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h1 id="前言">前言</h1>
+<p>最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。</p>
+<p>这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。</p>
+<h1 id="基本结构">基本结构</h1>
+<p>基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。</p>
+<h2 id="字符串">字符串</h2>
+<p>字符串判断为空：</p>
+<pre><code>if (str.length() == 0)
+or 
+if (str.equals(&quot;&quot;))    
+</code></pre>
+<p>虽然可以进行字符串拼接，但是效率比较低，可以使用<code>StringBuilder</code>类:</p>
+<pre><code>StringBuilder builder = new StringBuilder();
+builder.append(ch);
+builder.append(str);
+builder.toString();
+</code></pre>
+<h2 id="作用域">作用域</h2>
+<p>JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用<code>this</code>指针来指定变量。</p>
+<h2 id="数组">数组</h2>
+<p>JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：</p>
+<p>JAVA中的:</p>
+<pre><code>int[] a = new int[100];
+</code></pre>
+<p>等同于C/C++中的:</p>
+<pre><code>int* a = new int[100];
+</code></pre>
+<p>不同于:</p>
+<pre><code>int a[100];
+</code></pre>
+<p>并且数组的完整拷贝通过方法<code>Arrays.copyOf()</code>:</p>
+<pre><code>newArr = Arrays.copyOf(oldArr, oldArr.lenght());
+</code></pre>
+<p>也可以通过这个方法来扩展数组：</p>
+<pre><code>Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());
+</code></pre>
+<h1 id="对象与类">对象与类</h1>
+<p>OO应该是JAVA的重点，OOP三个特性：</p>
+<ul>
+<li>封装：用一个类将实现和使用分开，只保留接口与外部进行联系。</li>
+<li>继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。</li>
+<li>多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</li>
+</ul>
+<p>通过下面的方法实例化一个类：</p>
+<pre><code>new Date();
+</code></pre>
+<p>如果想使用类中的一个方法：</p>
+<pre><code>System.out.println(new Date().toString());
+</code></pre>
+<h2 id="final-关键字">final 关键字</h2>
+<p><code>const</code>关键字相当于<code>const</code>关键字即不可变的意思，并且在构造一个类的时候必须要被初始化。</p>
+<h2 id="static-关键字">static 关键字</h2>
+<p><code>static</code>关键字其实也很类似，将<code>static</code>理解为类的方法和域即可而不是对象的方法和域。
+例如:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">class</span> <span style="font-weight:bold">Employee</span> {
+    ...
+    <span style="font-weight:bold">public</span> <span style="font-weight:bold">static</span> currentId;
+    
+    <span style="font-weight:bold">public</span> <span style="font-weight:bold">static</span> <span style="">int</span> getId() {
+        <span style="font-weight:bold">return</span> currentId;
+    }
+    ...
+}
+</code></pre></div><p>调用使用</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">    <span style="">int</span> id = Employee.curremtID;
+    <span style="">int</span> id = Employee.getId();
+</code></pre></div><h2 id="main方法">main方法</h2>
+<p>有意思的是java的每一个类里面都可以有main函数，这方便了java为每一个类做单元测试，自己在coding的时候也确实经常用到类的main函数进行测试。</p>
+<h2 id="初始化块">初始化块</h2>
+<p>初始化块也非常有意思，直接在类域里面输入大括号就能在调用构造器的时候执行。例如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">class</span> <span style="font-weight:bold">Employee</span> {
+    <span style="font-weight:bold">private</span> <span style="">int</span> id;
+
+    <span style="font-style:italic">// initializeation block
+</span><span style="font-style:italic"></span>    {
+        id = 1;
+    }
+}
+</code></pre></div><h1 id="类继承">类继承</h1>
+<p>java中继承的关键字是<code>extends</code>,并且注意子类中的方法不能直接访问超类中的<code>private</code>域，所以需要通过在超类中准备<code>访问器</code>，利用<code>super</code>关键字来获取<code>private</code>域，构造函数也是如此。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">class</span> <span style="font-weight:bold">Manager</span> <span style="font-weight:bold">extends</span> Employee{
+    <span style="font-weight:bold">public</span> Manager(String name) {
+        <span style="font-weight:bold">super</span>(name);
+        ... <span style="font-style:italic">// other initialization
+</span><span style="font-style:italic"></span>    }
+}
+</code></pre></div><h2 id="强制转化">强制转化</h2>
+<p><code>强制转化</code>可以发生在类的子类和超类转化中，进行类型转化的唯一原因是：<strong>在暂时忽视对象的实际类型后，使用对象的全部功能</strong>。并且，将一个子类的引用赋值给超类的时候，编译器是允许的，但是将一个超类赋值给一个子类变量，必须进行类型转化。</p>
+<p>对于测试强制类型转化，可以使用下面的tricks:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">if</span> (staff <span style="font-weight:bold">instanceof</span> Manager)
+{
+    boss = (Manager) staff;
+    ...
+}
+</code></pre></div><p>意思是，如果staff是<code>Manager</code>的一个实例，那么可以发生强制转化，当然必须是一个继承链才能成立。</p>
+<h2 id="抽象类">抽象类</h2>
+<p>抽象类的意义是提供一个较高层次的抽象，作为基类的存在，关键词是<code>abstract</code>。抽象类中的方法只是充当占位的角色，真正对方法的实现发生在子类中，并且抽象类不能被实例化。</p>
+<p>如果子类实现了全部的抽象方法，那么子类就不是抽象的。但若子类只定义了部分抽象类或不定义抽象类的方法，子类也必须标记为抽象类。</p>
+<h2 id="受保护访问">受保护访问</h2>
+<p><code>protected</code>关键词可以使得子类能够访问该域，但是外部代码不行，不过通常都是谨慎使用protected类，因为违背了OOP提倡的数据封装原则。</p>
+<h2 id="继承的设计技巧">继承的设计技巧</h2>
+<ol>
+<li>将公共操作和域放在超类中</li>
+<li>不使用<code>protected</code></li>
+<li>使用继承实现&quot;is-a&quot;关系</li>
+<li>除非所有的继承方法都有意义，否则不使用继承</li>
+<li>覆盖方法时，不要改变预期行为</li>
+<li>使用多态，而非类型信息</li>
+</ol>
+<h1 id="接口lambda内部类">接口、lambda、内部类</h1>
+<p>java提供的这三种机制是用来弥补类和类继承一些地方的不灵活性而创立的高级技术。</p>
+<h2 id="接口">接口</h2>
+<p>书上给了一个很好的理解接口的解释：”如果类遵从某个特定的接口，那么就履行这项服务“。即如果要调用数组的排序服务，那么这个数组中的类需要提供一个不同对象之间进行比较的接口。</p>
+<p>比如，用<code>Employee</code>类提供接口,关键词是<code>implements</code>，之后跟随的是要提供的接口:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">class</span> <span style="font-weight:bold">Employee</span> <span style="font-weight:bold">implements</span> Compareble&lt;Employee&gt; {
+    <span style="font-weight:bold">public</span> <span style="">int</span> compareTo(Employee other) {
+        ... <span style="font-style:italic">// implements
+</span><span style="font-style:italic"></span>    }
+    ...
+}
+</code></pre></div><p>当然，在某一处提供了接口的代码，类似于声明的作用：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">public</span> <span style="font-weight:bold">interface</span> <span style="font-weight:bold">Comparable</span> {
+    <span style="">int</span> compareTo&lt;Object other&gt;
+}
+</code></pre></div><p>其中<code>Object</code>类是所有类的超类。</p>
+<p>接口不是类，所以不能被实例化，但是可以声明接口的变量：</p>
+<pre><code>Comparable x;
+</code></pre>
+<p>然后引用实现了接口的类对象：</p>
+<pre><code>x = new Employee(...);
+</code></pre>
+<p>接口不能包含实例域和静态方法，但是可以包含常量。</p>
+<p>接口概念对于抽象类来说是不同的，抽象类只能用在继承链之中，每个子类只能继承一个超类，但是接口可以实现多个，提高了代码复用。</p>
+<h3 id="深拷贝和浅拷贝">深拷贝和浅拷贝</h3>
+<p>java每个变量其实可以理解为一个指针或者引用，它们引用一个内存空间作为对象实例的存储位置，但是对象实例中也可能引用了其他的对象。</p>
+<p>浅拷贝就是单单拷贝该变量引用的内存部分，但是深拷贝会将该对象内部所引用的对象也拷一份。</p>
+<p>比如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">class</span> <span style="font-weight:bold">Employee</span> <span style="font-weight:bold">implements</span> Cloneable {
+    ...
+    <span style="font-weight:bold">public</span> Employee clone() {
+        Employee cloned = (Employee) <span style="font-weight:bold">super</span>.clone();
+        cloned.hireDay = (Date) hireDay.clone();
+    }
+}
+</code></pre></div><p>这样就是深拷贝，在拷贝完本身的内容后还会递归拷贝所引用对象的内存。</p>
+<h2 id="lambda表达式">lambda表达式</h2>
+<p>lambda就是一个代码块，表达形式为 (参数) -&gt; 表达式。
+例如:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">Comparator&lt;String&gt; comp = (first, second)
+        -&gt; first.length() - second.length();
+</code></pre></div><hr>
+<p>如果出现如下类似的lambda表达式:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">x-&gt;System.out.println(x)
+</code></pre></div><p>那么可以简写为:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">System.out::println
+</code></pre></div><p>lambda表达式中的一些限制：</p>
+<ol>
+<li>只能引用不会改变的变量</li>
+<li>表达式捕获的变量必须是实际上的最终变量</li>
+<li>lambda中的局部变量不能与外部变量重名</li>
+</ol>
+<p>可以使用<code>Runable</code>来保存一个lambda,类似于回调：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">Runable an = (<span style="">int</span> a, <span style="">int</span> b)-&gt;System.out.println(a+b);
+...
+...
+an.run();
+</code></pre></div><h2 id="内部类">内部类</h2>
+<p>顾名思义，内部类就是定义在一个class内部的类，使用原因：</p>
+<ul>
+<li>内部类方法可以访问该类定义所在作用域中的数据，包括私有数据</li>
+<li>内部类可以对同一类中的其他类隐藏起来</li>
+<li>若想定义一个回调函数，使用匿名内部类会比较便捷</li>
+</ul>
+<p>内部类其实是相对于所在类的一个独立的类，当<code>new</code>操作符新建一个实体的时候，并不会实体化内部类，内部类需要独立进行实例化。不过，内部类和所在类建立了一定的联系使得内部类可以访问外围类的数据。</p>
+<p>内部类的初始化语法稍微有点复杂：</p>
+<pre><code>outerObject.new InnerClass(construction parmeter)
+</code></pre>
+<p>例如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">TalkingClock jabberer = <span style="font-weight:bold">new</span> TalkingClock(1000, <span style="font-weight:bold">true</span>);
+TalkingClock.TimePrinter listener = jabberer.new TimerPrinter();
+</code></pre></div><p>内部类的一些限制：</p>
+<ul>
+<li>内部类声明所有的静态域必须要<code>final</code>，对于每一个外围类只需要有一个静态域的实例，若不是<code>final</code>，则分别会有单独的内部类实例。</li>
+<li>类似于lambda，访问外围局部变量也需要保证被引用的局部变量是事实上的<code>final</code>,内部类引用的时候，实际上创建了一份备份，防止外围类被垃圾回收的时候，引用出错，并且声明为<code>final</code>使得内部类和外围类引用的同一个实体。</li>
+</ul>
+<p>有一种方法来绕过这个限制，使用长度为1的数组：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="">int</span>[] conuter <span style="font-weight:bold">new</span> <span style="">int</span>[1];
+<span style="font-weight:bold">for</span> (<span style="">int</span> i = 0; i &lt; dates.length; i++)
+    dates[i] = <span style="font-weight:bold">new</span> Date()
+        {
+            <span style="font-weight:bold">public</span> <span style="">int</span> compareTo(Date other);
+            <span style="font-weight:bold">return</span> <span style="font-weight:bold">super</span>.compareTo(other);
+        };
+</code></pre></div><h2 id="匿名内部类">匿名内部类</h2>
+<p>匿名内部类是一种很方便的工具来扩充某个接口，它的语法如下：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java"><span style="font-weight:bold">new</span> SuperType(construction parameters)
+    {
+        inner <span style="font-weight:bold">class</span> <span style="font-weight:bold">methods</span> and data
+    }
+</code></pre></div><p>常用的使用方式为</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-java" data-lang="java">Person queen = <span style="font-weight:bold">new</span> Person(<span style="font-style:italic">&#34;Mary&#34;</span>);
+    <span style="font-style:italic">// normal object
+</span><span style="font-style:italic"></span>Person count = <span style="font-weight:bold">new</span> Person(<span style="font-style:italic">&#34;Dracula&#34;</span>) 
+    {
+        ...
+    };
+    <span style="font-style:italic">// a object extending Person
+</span></code></pre></div>
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/java/">
+                Java
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

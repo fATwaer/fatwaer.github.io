@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>6.824 Lab3 Fault-tolerant Key/Value Service&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="6.824 Lab3 Fault-tolerant Key/Value Service" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">6.824 Lab3 Fault-tolerant Key/Value Service</h1><p class="article date">Wednesday, February 12, 2020</p></section><article class="article markdown-body"><h2 id="强一致性keyvalue服务">强一致性Key/Value服务</h2>
+<p>其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如<code>map[string]string</code>）即可，但是实际上在跑3A测试的时候还是出现了很多问题。</p>
+<h3 id="并发concurrency">并发(Concurrency)</h3>
+<p>虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。</p>
+<h3 id="网络不可靠unreliable">网络不可靠(Unreliable)</h3>
+<p>这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&gt;&ldquo;2&rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。</p>
+<h3 id="服务器主机崩溃crash">服务器主机崩溃(Crash)</h3>
+<p>服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。</p>
+<h3 id="网络分区partition">网络分区(Partition)</h3>
+<p>由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为<a href="https://en.wikipedia.org/wiki/Linearizability"target="_blank" rel="noopener noreferrer">线性化</a>
+。</p>
+<p>最先碰到网络分区和检查一致性是<code>TestOnePartition3A</code>，这个测试中做了如下几件事情：</p>
+<ol>
+<li>创建一个5个server的kv服务器集群</li>
+<li>客户端请求: <code>Put:1 -&gt; 13</code></li>
+<li>建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。</li>
+<li>往majority中提交<code>Put:1-&gt;14</code></li>
+<li>检查majority</li>
+<li>往minority中提交操作<code>Put:1 -&gt; 15</code>和<code>Get:1</code></li>
+<li>检测6中两个操作是否会成功</li>
+<li>往majority提交<code>Put:1-&gt;16</code>并检查</li>
+<li>合并两个分区，检查最后Key 1的值。</li>
+</ol>
+<p>最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。</p>
+<p>当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：<code>Put:1 -&gt; 15</code>和<code>Get:1</code>，使客户端重定向到新的leader。</p>
+<p>而<code>Get</code>什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。</p>
+<h3 id="标识操作uniqueid">标识操作(UniqueID)</h3>
+<p>如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：</p>
+<ol>
+<li>seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。</li>
+<li>Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。</li>
+<li>Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。</li>
+</ol>
+<p>每当启用一个新的客户端并且提交操作时，先自增seriesN，如果<code>Client ID</code>为-1，就会向服务端注册自己，即请求一个可用的<code>Client ID</code>，并设置<code>Server ID</code>。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。</p>
+<p>当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。</p>
+<p>考虑下面这种情景：</p>
+<pre><code class="language-code" data-lang="code">s1 | x = 0 | x += 1
+同步到其他server
+s2 | x = 0 | x += 1
+s3 | x = 0 | x += 1
+s4 | x = 0 | x += 1
+s5 | x = 0 | nil
+</code></pre><hr>
+<ol>
+<li>leader s1 提交了一个 x += 1 的操作后，并同步到了s2, s3, s4，然后发生分区。</li>
+<li>s2 当选新一轮的leader，并同步完成</li>
+<li>s1 恢复到该分区中，被s2的心跳转变为follower</li>
+<li>client对s1的rpc被返回，重定向到s2，重复的op被提交。</li>
+</ol>
+<p>这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x += 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x += 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。</p>
+<p>既然服务端要分配client ID，那么如何记住这些id以应对服务器崩溃，比较简单的办法是分配一个client ID后就做一次持久化，因为真正进行提交操作的client并不是很多也并不频繁。另外一种方法是根据raft的applyMsg会带有Sid，Cid，SeriesN三者，所以当服务crash后重启时，会随着一致性检查恢复之前自己已经分配过的Cid。</p>
+<p>Part A内容的大致就是这些，还剩一些优化的细节，比如client在找到server后就记住server的索引，没必要每次都向集群所有服务器发送请求。关于RPC，配置到服务器上时，没必要为每次RPC都新建一次连接，应该维护住这个连接直到主动断开或者发生错误。</p>
+<h2 id="快照snapshot">快照(Snapshot)</h2>
+<p>快照机制主要作用是两点:</p>
+<ul>
+<li>一是压缩日志，实际系统中，日志不能在内存中无限增长，如果没有相关机制清理陈旧的信息，那么会产生可用性的问题。日志压缩除了利用快照机制外，在Raft论文中还有提到了利用LSM-Tree对Raft的日志进行增量压缩的方法，由于保证日志的增长是顺序的，在这里利用日志结构树能承受住更高的I/O吞吐量。</li>
+<li>第二点是在写Lab中发现的，拥有快照机制的Raft能够更快地使落后的(发生了崩溃或者网络分区)follower恢复到同步水平。</li>
+</ul>
+<h3 id="snapshot要做什么">Snapshot要做什么</h3>
+<p><img  src="/images/distributed-system/6.824/lab3/snapshot.png"
+        alt="snapshot"/></p>
+<p>快照所做的事情也比较简单，主要针对的是那些已经提交过的条目(即在大多是中达成共识)进行压缩，让这些条目所应用后的状态有一个备份，然后再将这些进行截断即可。因为没有必要每应用一个条目就执行一次快照，所以在应用到状态机后，可以设置一个阈值与当前在内存中的raft log进行比较，当超过这个阈值后执行日志压缩，这也就是3b主要需要做的事情。</p>
+<p>3B部分最难处理也就是如何进行日志截断、什么时候进行日志截断、截断后需要重新设置哪些值，在想好这三个问题后动手会减少大量的debug工作。</p>
+<h3 id="什么时候进行截断">什么时候进行截断</h3>
+<p>截断的时间是发生在应用到状态机后检测到raft log的大小已经增长超过了阈值，于是kv服务将自己的状态<code>map[string]string</code>进行保存，随着logIndex一起递交给自己的raft，raft根据index获取到最后条目的term，进行持久化，然后截断自己的日志。</p>
+<h3 id="如何进行日志截断">如何进行日志截断</h3>
+<p>截断首先要考虑到截断后对其他操作的影响：</p>
+<ol>
+<li>raft负责发送appendEntry的操作，对于落后的机器可能会读取到陈旧的条目</li>
+<li>raft收到appendEntry，常常发生于旧leader对最新的服务器(leader和follower)发送的心跳</li>
+<li>raft收到InstallSnapshot后，会有log的截断操作</li>
+</ol>
+<blockquote>
+<p>InstallSnapshot RPC: 6. If existing log entry has same index and term as snapshot’s last included entry, retain log entries following it and reply</p>
+</blockquote>
+<p>这些操作本质上都是数组下标界限的问题，需要根据实际逻辑进行判断。</p>
+<p>另外一点就是关于Golang的切片内存模型，因为在这里raft log是以切片进行保存，所以类似于<code>arr[beg:end]</code>的操作只是移动指向底层的指针和长度，所以这里得需要新分配一个切片给rf.log。</p>
+<p><img  src="/images/distributed-system/6.824/lab3/slice.png"
+        alt="slice"/></p>
+<h3 id="截断后需要重新设置哪些值">截断后需要重新设置哪些值</h3>
+<p>首先是在论文里的LastIncludeIndex和LastIncludeTerm，这两个变量可以维护在raft的状态里，以免每次都需要进行一次I/O读取这两个变量。因为需要维护这两个变量，所以每当要<code>读取和写入</code>快照时都需要更新。</p>
+<p>另外一对重要的值是commitIndex和applyIndex，根据raft论文:</p>
+<blockquote>
+<p>If commitIndex &gt; lastApplied: increment lastApplied, apply log[lastApplied] to state machine</p>
+</blockquote>
+<p>这种情况在InstallSnapshot内要着重考虑，因为InstallSnapshot的LastIncludeIndex会大于当前的commitIndex，当某台follower还在apply到状态机的时候，收到了快照，需要做的事情是，应用完上一个快照后，检查自己的applyIndex和commitIndex。而在InstallSnapshot内需要做的事情除了设置LastIncludeIndex和LastIncludeTerm，还同时提高applyIndex和commitIndex。</p>
+<p>中断的之前的apply过程并不会导致不一致，在安装完快照后，需要重置kv的状态机，所以不用担心同步问题。</p>
+<h3 id="快照与kv服务">快照与K/V服务</h3>
+<p>3A部分中的kv服务是通过一致性检查后，一个一个地从0开始恢复状态，把以前的操作重新做一遍来恢复自己已分配掉的client ID，因为这个ID是会保存在raft的log中，对日志压缩也就会造成这些信息丢失，所以将当前已经分配掉的client ID写入到快照是有必要的。</p>
+<h2 id="部署后的-kv-服务">部署后的 K/V 服务</h2>
+<ul>
+<li>Server 1:
+state: <a href="http://fatwaer.store/kv/state.html">http://fatwaer.store/kv/state.html</a>
+log  : <a href="http://fatwaer.store/kv/log.html">http://fatwaer.store/kv/log.html</a></li>
+<li>Server 2:
+state: <a href="http://106.13.211.207/kv/state.html">http://106.13.211.207/kv/state.html</a>
+log  : <a href="http://106.13.211.207/kv/log.html">http://106.13.211.207/kv/log.html</a></li>
+<li>Server 3:
+state: <a href="http://18.162.39.157/kv/state.html">http://18.162.39.157/kv/state.html</a>
+log  : <a href="http://18.162.39.157/kv/log.html">http://18.162.39.157/kv/log.html</a></li>
+</ul>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li>《Unix网络编程：卷1》</li>
+<li><a href="https://blog.golang.org/go-slices-usage-and-internals">https://blog.golang.org/go-slices-usage-and-internals</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf">https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf</a></li>
+</ul>
+</article><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/"><span class="iconfont icon-article"></span>Shell Tools and Scripting</a></p><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/"><span class="iconfont icon-article"></span>Protection Mechanism on 80386</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

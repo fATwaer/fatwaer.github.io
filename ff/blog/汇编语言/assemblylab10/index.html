@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>《汇编语言》 Lab10&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="《汇编语言》 Lab10" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">《汇编语言》 Lab10</h1><p class="article date">Tuesday, November 21, 2017</p></section><article class="article markdown-body"><p>实验10 一共3个小实验，分别完成三个函数。</p>
+<h3 id="显示字符串">显示字符串</h3>
+<p>第一个很简单，详细可见<strong>Lab9</strong></p>
+<p>代码如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm">
+<span class="nf">assume</span> <span class="no">cs</span><span class="p">:</span><span class="no">codesg</span>
+
+<span class="nf">data</span> <span class="no">segment</span>
+	<span class="nf">db</span> <span class="err">&#34;</span><span class="no">welcome</span> <span class="no">to</span> <span class="no">masm</span><span class="p">!</span><span class="err">&#34;</span><span class="p">,</span><span class="mi">0</span>
+<span class="nf">data</span> <span class="no">ends</span>
+
+
+
+<span class="nf">codesg</span> <span class="no">segment</span>
+
+<span class="nl">start:</span> <span class="nf">mov</span> <span class="no">dh</span><span class="p">,</span><span class="mi">8</span>
+       <span class="nf">mov</span> <span class="no">dl</span><span class="p">,</span><span class="mi">3</span>
+	   <span class="nf">mov</span> <span class="no">cl</span><span class="p">,</span><span class="mi">2</span>
+	   <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="no">data</span>
+	   <span class="nf">mov</span> <span class="no">ds</span><span class="p">,</span><span class="no">ax</span>
+	   <span class="nf">mov</span> <span class="no">si</span><span class="p">,</span><span class="mi">0</span>
+	   <span class="nf">call</span> <span class="no">show_str</span>
+	   
+	   <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">4</span><span class="no">c00h</span>
+	   <span class="nf">int</span> <span class="mi">21</span><span class="no">h</span>
+
+<span class="nl">show_str:</span>
+
+		<span class="nf">mov</span> <span class="no">al</span><span class="p">,</span><span class="no">dh</span>
+		<span class="nf">mov</span> <span class="no">bl</span><span class="p">,</span><span class="mi">160</span>
+		<span class="nf">mul</span> <span class="no">bl</span>
+		<span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="no">ax</span>        <span class="c">;行数
+</span><span class="c"></span>		<span class="no">mov</span> <span class="no">al</span><span class="p">,</span><span class="mi">2</span>
+		<span class="nf">mul</span> <span class="no">dl</span>
+		<span class="nf">mov</span> <span class="no">di</span><span class="p">,</span><span class="no">ax</span>        <span class="c">;列数       
+</span><span class="c"></span>		<span class="no">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">0</span><span class="no">B800h</span>
+		<span class="nf">mov</span> <span class="no">es</span><span class="p">,</span><span class="no">ax</span>
+		
+	<span class="nl">s:</span>  <span class="nf">mov</span> <span class="no">cl</span><span class="p">,</span><span class="no">ds</span><span class="p">:[</span><span class="no">si</span><span class="p">]</span>
+		<span class="nf">mov</span> <span class="no">ch</span><span class="p">,</span><span class="mi">0</span>
+		<span class="nf">jcxz</span> <span class="no">short</span> <span class="no">break</span>
+		<span class="nf">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">es</span><span class="p">:[</span><span class="no">bx</span><span class="err">+</span><span class="no">di</span><span class="p">],</span><span class="no">cl</span>
+		<span class="nf">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">es</span><span class="p">:[</span><span class="no">bx</span><span class="err">+</span><span class="no">di</span><span class="err">+</span><span class="mi">1</span><span class="p">],</span><span class="mi">01110010</span><span class="no">b</span>
+		<span class="nf">inc</span> <span class="no">si</span>
+		<span class="nf">add</span> <span class="no">di</span><span class="p">,</span><span class="mi">2</span>
+		<span class="nf">loop</span> <span class="no">s</span>
+		
+		
+		
+<span class="nl">break:</span>  <span class="nf">nop</span>	
+		<span class="no">ret</span>
+		
+		
+<span class="nf">codesg</span> <span class="no">ends</span>
+<span class="nf">end</span> <span class="no">start</span>
+
+</code></pre></div><p>程序编译执行后的结果:</p>
+<p><img  src="http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.1.png"
+        alt="lab10.1.png"/></p>
+<h3 id="解决除法溢出问题">解决除法溢出问题</h3>
+<p><strong>计算公式:int(H/N)*65536 + [rem(H/N)+L]/N</strong>
+H:高八位
+L:低八位
+N:除数
+int():取商
+rem():取余</p>
+<p>代码如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm">
+<span class="nf">assume</span> <span class="no">cs</span><span class="p">:</span><span class="no">codesg</span><span class="p">,</span><span class="no">ss</span><span class="p">:</span><span class="no">stack</span>
+
+<span class="nf">stack</span> <span class="no">segment</span>
+    <span class="nf">dw</span> <span class="mi">0</span>
+<span class="nf">stack</span> <span class="no">ends</span>
+
+
+<span class="nf">codesg</span> <span class="no">segment</span>
+
+
+<span class="nl">start:</span> <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">4240</span><span class="no">h</span>
+	   <span class="nf">mov</span> <span class="no">dx</span><span class="p">,</span><span class="mi">000</span><span class="no">Fh</span>
+	   <span class="nf">mov</span> <span class="no">cx</span><span class="p">,</span><span class="mi">0</span><span class="no">Ah</span>
+	   <span class="nf">call</span> <span class="no">divdw</span>
+	   
+	   <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">4</span><span class="no">c00h</span>
+	   <span class="nf">int</span> <span class="mi">21</span><span class="no">h</span>
+
+<span class="nl">divdw:</span> <span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="no">stack</span>
+	   <span class="nf">mov</span> <span class="no">ss</span><span class="p">,</span><span class="no">bx</span>
+	   <span class="nf">mov</span> <span class="no">sp</span><span class="p">,</span><span class="mi">2</span>
+	   <span class="nf">push</span> <span class="no">ax</span>    <span class="c">;先完成高八位的除法
+</span><span class="c"></span>	   <span class="no">mov</span> <span class="no">ax</span><span class="p">,</span><span class="no">dx</span>
+	   <span class="nf">mov</span> <span class="no">dx</span><span class="p">,</span><span class="mi">0</span>
+	   <span class="nf">div</span> <span class="no">cx</span>     <span class="c">;此时，dx中为余数，ax中为高位的商.
+</span><span class="c"></span>	   
+	   <span class="no">pop</span> <span class="no">bx</span> 
+	   <span class="no">push</span> <span class="no">ax</span>
+	   <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="no">bx</span>  <span class="c">;ax为低八位的数值，dx为H/N的余数
+</span><span class="c"></span>	   <span class="no">div</span> <span class="no">cx</span>     <span class="c">;进行16位除法 
+</span><span class="c"></span>	   
+	              <span class="c">;此时，dx最终结果的余数，ax中为低位的商
+</span><span class="c"></span> 	   <span class="no">pop</span> <span class="no">bx</span>
+	   <span class="nf">mov</span> <span class="no">cx</span><span class="p">,</span><span class="no">dx</span>  
+	   <span class="no">mov</span> <span class="no">dx</span><span class="p">,</span><span class="no">bx</span>
+	   
+	   <span class="nf">ret</span>
+
+
+<span class="nf">codesg</span> <span class="no">ends</span>
+
+
+<span class="nf">end</span> <span class="no">start</span>
+
+</code></pre></div><p>实验结果如下:
+** DX = 0001H , AX = 86A0H , CX = 0 **</p>
+<p><img  src="http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.2.png"
+        alt="lab10.2.png"/></p>
+<h3 id="数据显示">数据显示</h3>
+<p>仔细观察下数据12666，在除法操作后，商为1266 &gt; 2^8，所以得进行**16位除法 **</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm">	<span class="nf">mov</span> <span class="no">dx</span><span class="p">,</span><span class="mi">0</span>
+	<span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="mi">10</span>
+	<span class="nf">div</span> <span class="no">bx</span>  
+
+</code></pre></div><p>整除后，<strong>dx为余数，ax中为商</strong>。
+因为除10，余数为个位数，用dl的大小可传送数值.</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm">   <span class="nf">add</span> <span class="no">dl</span><span class="p">,</span><span class="mi">30</span><span class="no">h</span> 
+   <span class="no">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">ds</span><span class="p">:[</span><span class="no">si</span><span class="p">],</span><span class="no">dl</span> 
+</code></pre></div><p>由于进行除法后，余数是顺序存储，所以字符串是逆序的。
+字符串尾是ds的开头，开始时，我们需要设置 ** si=1 ** 。</p>
+<p>除法的循环不是用的loop指令，而是直接用jmp指令是因为loop指令会对cx操作
+而这段代码中，cx是来判断最后的商是否为0。
+如果cx被传送的商为1，<strong>loop操作会使cx减1</strong>，此时cx变为0，直接结束了循环操作。</p>
+<p>全部代码如下:</p>
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm"><span class="nf">assume</span> <span class="no">cs</span><span class="p">:</span><span class="no">code</span>
+
+<span class="nf">data</span> <span class="no">segment</span>
+    <span class="nf">db</span> <span class="mi">10</span> <span class="no">dup</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nf">data</span> <span class="no">ends</span>
+
+<span class="nf">code</span> <span class="no">segment</span>
+
+<span class="nl">start:</span> <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">12666</span>
+	   <span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="no">data</span>
+	   <span class="nf">mov</span> <span class="no">ds</span><span class="p">,</span><span class="no">bx</span>
+	   <span class="nf">mov</span> <span class="no">si</span><span class="p">,</span><span class="mi">1</span>     
+	   <span class="no">call</span> <span class="no">dtoc</span>
+	   
+	   <span class="nf">mov</span> <span class="no">dh</span><span class="p">,</span><span class="mi">8</span>
+	   <span class="nf">mov</span> <span class="no">dl</span><span class="p">,</span><span class="mi">3</span> 
+	   <span class="no">mov</span> <span class="no">cl</span><span class="p">,</span><span class="mi">2</span>
+	   <span class="nf">call</span> <span class="no">show_str</span>
+	   
+	   <span class="nf">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">4</span><span class="no">c00h</span>
+	   <span class="nf">int</span> <span class="mi">21</span><span class="no">h</span>
+	   
+	   
+<span class="nl">dtoc:</span>  <span class="nf">mov</span> <span class="no">dx</span><span class="p">,</span><span class="mi">0</span>
+	   <span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="mi">10</span>
+<span class="nl">sd:</span>	   <span class="nf">div</span> <span class="no">bx</span>      <span class="c">;进行16位除法，dx为余数，ax中为商
+</span><span class="c"></span>	   <span class="no">add</span> <span class="no">dl</span><span class="p">,</span><span class="mi">30</span><span class="no">h</span>  <span class="c">;数字加上30h为ASCII的值
+</span><span class="c"></span>	   <span class="no">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">ds</span><span class="p">:[</span><span class="no">si</span><span class="p">],</span><span class="no">dl</span>       
+	   <span class="no">mov</span> <span class="no">cx</span><span class="p">,</span><span class="no">ax</span>
+	   <span class="nf">jcxz</span> <span class="no">short</span> <span class="no">break</span>
+	   <span class="nf">mov</span> <span class="no">dx</span><span class="p">,</span><span class="mi">0</span>
+	   <span class="nf">inc</span> <span class="no">si</span>
+       <span class="nf">jmp</span> <span class="no">short</span> <span class="no">sd</span> <span class="c">; 在这使用jmp而不适用loop
+</span><span class="c"></span>
+<span class="nl">break:</span> <span class="nf">ret</span>
+
+
+
+<span class="nl">show_str:</span>
+
+		<span class="nf">mov</span> <span class="no">al</span><span class="p">,</span><span class="no">dh</span>
+		<span class="nf">mov</span> <span class="no">bl</span><span class="p">,</span><span class="mi">160</span>
+		<span class="nf">mul</span> <span class="no">bl</span>
+		<span class="nf">mov</span> <span class="no">bx</span><span class="p">,</span><span class="no">ax</span>        <span class="c">;行数
+</span><span class="c"></span>		<span class="no">mov</span> <span class="no">al</span><span class="p">,</span><span class="mi">2</span>
+		<span class="nf">mul</span> <span class="no">dl</span>
+		<span class="nf">mov</span> <span class="no">di</span><span class="p">,</span><span class="no">ax</span>        <span class="c">;列数       
+</span><span class="c"></span>		<span class="no">mov</span> <span class="no">ax</span><span class="p">,</span><span class="mi">0</span><span class="no">B800h</span>
+		<span class="nf">mov</span> <span class="no">es</span><span class="p">,</span><span class="no">ax</span>
+		<span class="nf">mov</span> <span class="no">al</span><span class="p">,</span><span class="no">cl</span>
+		
+   <span class="nl">s3:</span>  <span class="nf">mov</span> <span class="no">cl</span><span class="p">,</span><span class="no">ds</span><span class="p">:[</span><span class="no">si</span><span class="p">]</span>
+		<span class="nf">jcxz</span> <span class="no">short</span> <span class="no">break2</span>
+		<span class="nf">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">es</span><span class="p">:[</span><span class="no">bx</span><span class="err">+</span><span class="no">di</span><span class="p">],</span><span class="no">cl</span>
+		<span class="nf">mov</span> <span class="no">byte</span> <span class="no">ptr</span> <span class="no">es</span><span class="p">:[</span><span class="no">bx</span><span class="err">+</span><span class="no">di</span><span class="err">+</span><span class="mi">1</span><span class="p">],</span><span class="no">al</span>
+		<span class="nf">sub</span> <span class="no">si</span><span class="p">,</span><span class="mi">1</span>         <span class="c">;逆序输出
+</span><span class="c"></span>		<span class="no">add</span> <span class="no">di</span><span class="p">,</span><span class="mi">2</span>
+		<span class="nf">loop</span> <span class="no">s3</span>
+		
+		
+		
+<span class="nl">break2:</span>  <span class="nf">nop</span>	
+		 <span class="no">ret</span>
+
+<span class="nf">code</span> <span class="no">ends</span>
+
+
+<span class="nf">end</span> <span class="no">start</span>
+</code></pre></div><p>如图，测试结果</p>
+<p><img  src="http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.3.png"
+        alt="lab10.3.png"/></p></article><section class="article labels"><a class="category" href=/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/>汇编语言</a><a class="tag" href=/tags/assembly/>Assembly</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/"><span class="iconfont icon-article"></span>《汇编语言》 Lab11</a></p><p><a class="link" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/"><span class="iconfont icon-article"></span>《汇编语言》 Lab8</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

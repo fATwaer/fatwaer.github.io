@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Effective Go&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Effective Go" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Effective Go</h1><p class="article date">Thursday, January 10, 2019</p></section><article class="article markdown-body"><h2 id="goroutine部分">goroutine部分</h2>
+<p>goroutine的一些tricks，比如</p>
+<pre><code>func Announce(message string, delay time.Duration) {
+    go func() {
+        time.Sleep(delay)
+        fmt.Println(message)
+    }()  // 注意括号 - 必须调用该函数。
+}
+</code></pre>
+<p>直接在<code>go</code>关键字后面接一个lambada表达式作为例程。</p>
+<p><code>goroutine</code>通常和<code>channal</code>一起使用，Unix的管道是基于生产-消费者模型，而channal则使用<a href="https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf"target="_blank" rel="noopener noreferrer">CSP</a>
+(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。</p>
+<pre><code>var sem = make(chan int, MaxOutstanding)
+
+func handle(r *Request) {
+    sem &lt;- 1 // 等待活动队列清空。
+    process(r)  // 可能需要很长时间。
+    &lt;-sem    // 完成；使下一个请求可以运行。
+}
+
+func Serve(queue chan *Request) {
+    for {
+        req := &lt;-queue
+        go handle(req)  // 无需等待 handle 结束。
+    }
+}
+</code></pre>
+<p>例如这样一段代码可以实现最大接受请求数量为<code>MaxOutstanding</code>,当新的请求到达时，<code>req := &lt;-queue</code>从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。</p>
+<pre><code>func Serve(queue chan *Request) {
+    for req := range queue {
+        req := req // 为该Go程创建 req 的新实例。
+        sem &lt;- 1
+        go func() {
+            process(req)
+            &lt;-sem
+        }()
+    }
+}
+</code></pre>
+<p>解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉<code>req := req</code>这一行，<code>req</code>变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</p>
+<blockquote>
+<p>Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once.</p>
+</blockquote>
+<p>另外，<code>并发(concurrency)</code>和<code>并行(parallelism)</code>是两种单独的意思，并发是多个独立地执行程序的组合，即一次性解决大量的事情，而并行是同时执行某些相关连的计算。</p>
+<h2 id="反射相关">反射相关</h2>
+<p>变量的最基本信息就是类型和值：反射包的 Type 用来表示一个 Go 类型，反射包的 Value 为 Go 值提供了反射接口。这对于没有源代码的包尤其有用。这是一个强大的工具，除非真得有必要，否则应当避免使用或小心使用。</p>
+<p>实际上，反射是通过检查一个接口的值，变量首先被转换成空接口。这从下面两个函数签名能够很明显的看出来：</p>
+<pre><code>func TypeOf(i interface{}) Type
+func ValueOf(i interface{}) Value
+</code></pre>
+<p>接口的值包含一个 type 和 value。</p>
+<h2 id="结构体集合设计">结构体，集合设计</h2>
+<p><a href="https://go.fdos.me/11.14.html">https://go.fdos.me/11.14.html</a> (golang中一些关于结构体的设计技巧)</p>
+<h2 id="常见错误">常见错误</h2>
+<p><a href="http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/"target="_blank" rel="noopener noreferrer">50种常见错误</a>
+ (在awesome-go仓库里面翻到的，有空可以看看)</p>
+<p><a href="https://wuyin.io/2018/03/07/50-shades-of-golang-traps-gotchas-mistakes/"target="_blank" rel="noopener noreferrer">翻译版本</a>
+</p>
+<h2 id="并发控制库">并发控制库</h2>
+<p><a href="https://www.flysnow.org/2017/05/12/go-in-action-go-context.html"target="_blank" rel="noopener noreferrer">Context库</a>
+ (该作者其他的帖子也可以看看，干货较多)</p>
+</article><section class="article labels"><a class="tag" href=/tags/distributed-system/>distributed system</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/"><span class="iconfont icon-article"></span>Data-Intensive System</a></p><p><a class="link" href="/blog/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/"><span class="iconfont icon-article"></span>Core Java for DataBase</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

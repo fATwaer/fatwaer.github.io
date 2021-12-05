@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Java on Pok</title>
+    <link>/tags/java/</link>
+    <description>Recent content in Java on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 18 Nov 2018 16:36:16 +0000</lastBuildDate><atom:link href="/tags/java/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Core Java for DataBase</title>
+      <link>/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</link>
+      <pubDate>Sun, 18 Nov 2018 16:36:16 +0000</pubDate>
+      
+      <guid>/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/</guid>
+      <description>前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。
+这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
+基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
+字符串 字符串判断为空：
+if (str.length() == 0) or if (str.equals(&amp;quot;&amp;quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:
+StringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。
+数组 JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：
+JAVA中的:
+int[] a = new int[100];  等同于C/C++中的:
+int* a = new int[100];  不同于:
+int a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():
+newArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：
+Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性：
+ 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。  通过下面的方法实例化一个类：</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6.828-操作系统工程-Lab4:Preemptive Multitasking",
+      "headline" : "6.828-操作系统工程-Lab4:Preemptive Multitasking",
+      "description" : "在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。\n part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。\n 准备开始 git\n#git rest --hard FETCH_HEAD git add -u git commit -m \u0026quot;\u0026quot; git pull git checkout -b lab4 origin\/lab4 git merge lab3  confilcts in file config\/lab.mk\n源文件描述 kern\/cpu.h Kernel-private definitions for multiprocessor support kern\/mpconfig.c Code to read the multiprocessor configuration kern\/lapic.c Kernel code driving the local APIC unit in each processor kern\/mpentry.S Assembly-language entry code for non-boot CPUs kern\/spinlock.",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-05-07 19:28:03 \u002b0000 UTC",
+      "dateModified" : "2018-05-07 19:28:03 \u002b0000 UTC",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking\/",
+      "keywords" : [ "OS", ]
+  }
+</script>
+<title>6.828-操作系统工程-Lab4:Preemptive Multitasking</title>
+  <meta property="og:title" content="6.828-操作系统工程-Lab4:Preemptive Multitasking" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock." />
+  <meta name="description" content="在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock." />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6.828-操作系统工程-Lab4:Preemptive Multitasking</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-05-07 19:28:03 UTC">
+                07 May 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <p>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。</p>
+<blockquote>
+<p>part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。
+part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。
+part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。</p>
+</blockquote>
+<h1 id="准备开始">准备开始</h1>
+<p><code>git</code></p>
+<pre><code>#git rest --hard FETCH_HEAD
+git add -u
+git commit -m &quot;&quot;
+git pull
+git checkout -b lab4 origin/lab4
+git merge lab3
+</code></pre>
+<p>confilcts in file <code>config/lab.mk</code></p>
+<h1 id="源文件描述">源文件描述</h1>
+<pre><code>kern/cpu.h  Kernel-private definitions for multiprocessor support
+kern/mpconfig.c Code to read the multiprocessor configuration
+kern/lapic.c    Kernel code driving the local APIC unit in each processor
+kern/mpentry.S  Assembly-language entry code for non-boot CPUs
+kern/spinlock.h Kernel-private definitions for spin locks, including the big kernel lock
+kern/spinlock.c Kernel code implementing spin locks
+kern/sched.c    Code skeleton of the scheduler that you are about to implement
+</code></pre>
+<h1 id="part-a-多处理器支持multiprocessor-support-和协作式多任务cooperative-multitasking">PART A: 多处理器支持(Multiprocessor Support )和协作式多任务(Cooperative Multitasking)</h1>
+<p>首先，会扩展JOS，使其能在多处理器系统上运行。然后实现一些JOS内核的系统调用，使得用户环境能创建额外的环境。通过实现cooperative round-robin scheduling，允许内核能切换到不同的用户环境，使用户环境自身让出CPU资源。
+然后再part C中，将会实现 preemptive scheduling，这种调度算法允许内核从一个超出分配时间片的用户环境重新获取CPU的控制权。</p>
+<h1 id="multiprocessor-support">Multiprocessor Support</h1>
+<p>JOS将会支持对称多处理SMP(symmetric multiprocessing)，这种多处理模型使得CPU能有对例如内存和IO总线等系统资源拥有平等的访问权。虽然所有的CPU在SMP中都一样，但是在执行启动进程期间，处理器会被分成两种。</p>
+<ol>
+<li>引导处理器BSP(bootstrap processor)在启动操作系统的时候，初始化系统的时候使用。</li>
+<li>应用程序处理器APs(application processos)仅当在操作系统已经启动好后，被BSP激活。
+BSP处理器的选择取决于硬件和BIOS，到目前为止，JOS的代码都是运行在BSP处理器上的。</li>
+</ol>
+<p>在SMP系统中，每个CPU都有一个附随的<a href="https://en.wikipedia.org/wiki/Advanced_Programmable_Interrupt_Controller">LAPIC单元</a>(local APIC unit)，这些单元通过系统分发中断，LAPIC为其相关的CPU提供一个独一无二的标识符。
+在这个实验中，将会使用LAPIC的以下功能：</p>
+<ul>
+<li>通过读取APIC ID(LAPICT identifier)获取当前正在运行的CPU(<code>cpunum()</code>)</li>
+<li>发送处理器之间的__STARTUP__中断IPI(interprocessor interrupt)当BSP启动APs的时候。</li>
+<li>在part C中，LAPIC内置计时器去触发时钟中断，来支持抢占式多任务。</li>
+</ul>
+<p>APIC(Adavanced Programmable Interrupt Controller)
+chapter 8:https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf
+Local APIC主要的作用分成两部分:</p>
+<ul>
+<li>接收来自其他LAPIC的中断和外部的I/O APIC中断，或者发送中断。</li>
+<li>在MP(multiple processor)系统中，在system bus发送接收处理器间中断IPI。</li>
+</ul>
+<p><img src="/images/operating-system/6.828/lab4/figure8-4.png" alt="figure8-4.png"></p>
+<p>处理器访问它自己的LAPIC通过MMIO(memory-mapped I/O)，在MMIO中，一部分物理内存直接与IO设备的寄存器相连接，所以类似于ld/store的指令通常被用作间接访问外围设备的寄存器。Lab2为IO hole在物理地址0xA0000留了一部分内存空间用作VAG显示缓冲。LAPIC位于内存地址<code>0xFE000000</code>(4GB - 32MB)处，这个地址很高，所以不能直接通过KERNBASE映射。JOS的虚拟内存为MMIOBASE保留了4MB的空间，所以可以用来映射设备的内存。
+另外Lapic所使用的内存应该是被设计为strong uncacheable的，而在<code> kern/lapic.c</code>预先定义的ID，Version等信息可以在IA-32 Table8.1中查到。</p>
+<p><img src="/images/operating-system/6.828/lab4/uncacheable.png" alt="strong uncacheable"></p>
+<p>接下来的实验中将会介绍更多MMIO的区域，并且为外围设备实现一些基础的内存分配和映射。</p>
+<h2 id="练习1">练习1</h2>
+<blockquote>
+<p>实现<code>kern/pmap.c</code>中的<code>mmio_map_region()</code>
+研究<code>kern/lapic.c</code>中的<code>lapic_init()</code></p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span> *
+mmio_map_region(physaddr_t pa, size_t size)
+{
+    <span style="font-weight:bold">static</span> uintptr_t base = MMIOBASE;
+
+    <span style="font-weight:bold">if</span> (base + size &gt; MMIOLIM)
+        panic(<span style="font-style:italic">&#34;mmio memory space is not enough .&#34;</span>);
+
+    uint32_t va = base;
+    pa = ROUNDDOWN((uint32_t)pa, PGSIZE);
+    size = ROUNDUP((uint32_t)size, PGSIZE);
+
+    boot_map_region(kern_pgdir, base, size, pa, PTE_PCD|PTE_PWT|PTE_W);
+
+    base += size;
+
+    <span style="font-weight:bold">return</span> (<span style="">void</span> *)va;
+    <span style="font-style:italic">//panic(&#34;mmio_map_region not implemented&#34;);
+</span><span style="font-style:italic"></span>}
+</code></pre></div><p>可以发现这个函数的页权限的设计是使用了PTE_PCD|PTE_PWT，当CPU采用高速缓存时，它的写内存操作有两种模式，一种称为“穿透”(Write-Through)模式，在这种模式中高速缓存对于写操作就好像不存在一样，每次写时都直接写到内存中，所以实际上只是对读操作使用高速缓存，因而效率相对较低。另一种称为“回写”(Write-Back)模式，写的时候先写入高速缓存，然后由高速缓存的硬件在周转使用缓冲线时自动写入内存，或者由软件主动地“冲刷”有关的缓冲线。另外一点就是Cache Disable，防止这里的内存被CPU缓存，就是为了保证LAPIC被映射在内存上的寄存器值能够准确地被读取。</p>
+<p>注意<code>lapic_init()</code>开头几步，需要返回一个<code>MMIO</code>的地址</p>
+<h1 id="application-processor-bootstrap">Application Processor Bootstrap</h1>
+<p>在启动APs之前，BSP首先需要收集关于多处理器系统的信息，比如CPU的数量，它们的APIC ID以及这些LAPIC单元对应的MMIO地址。<code>kern/mpconfig.c</code>中<code>mp_init()</code>通过读取BIOS内存块的MP configuration table获取这些信息。</p>
+<p><code>kern/init.c</code>中的<code>boot_aps()</code>函数驱动AP的启动引导进程，APs在实模式下开始工作，就像之前的内核引导程序(<code>boot/boot.S</code>,)，<code>boot_aps</code>在实模式下复制一份AP entry code(<code>kern/mpentry.S</code>)到一个内存可以寻址的地方，所以一定程度上可以控制AP开始执行的内存地址；现在将把entry code复制到<code>0x7000(MPENTRY_PADDR)</code>，但实际上低于640KB未使用的页对齐的物理地址都可用。</p>
+<p>之后，<code>boot_aps()</code>一个一个激活应用处理器，通过发送<code>STARTUP</code>中断信号到这些处理器对应的LAPIC单元，并且初始化CS:IP(指向MPENTRY_PADDR)。安装完后，使得AP开启保护模式，分页机制，并调用启动例程<code>mp_main()</code>。<code>boot_aps()</code>等待AP发送一个<code>Cpuinfo</code>结构体中的<code>CPU_STARTED</code>flag，然后再启动接下来的处理器。</p>
+<hr>
+<h2 id="练习2">练习2</h2>
+<blockquote>
+<p>将MPENTRY_PADDR从free_list中删除</p>
+</blockquote>
+<p>boot_aps():将MPENTRY的代码安装到内核中去，为每一个cpu准备相应的栈区。然后通过一个for循环初始化所以cpu，在循环体内用while循环等待cpu被启动好的信号。
+lapic_startup(id, addr)然后发送IPI到APIC bus上，让相应AP的LAPIC收到这个中断，开始执行mpentry.S中的内容，开启保护模式，分页；加载数据段，代码段等。</p>
+<p>当mpentry执行到最后，调用mp_init()函数，初始化该AP的寄存器。
+lapic_init():从处理器中获取lapic的相关信息
+env_init_percpu():初始化每个处理器的段寄存器
+trap_init_percpu():读取TSS和IDT
+在最后，xchg()即发送<code>CPU_STARTED</code>信号给boot_aps()，完成一个cpu寄存器的初始化。
+<img src="/images/operating-system/6.828/lab4/figure8-5.png" alt="figure8-5.png"></p>
+<p>前面说过，部分设备的寄存器与内存是直接映射的，这里也是，lapic与内存直接相连，所以在lapic_startup函数中可以看到，向cpu发送命令都是通过在特定内存区域读写。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+page_init(<span style="">void</span>)
+{
+    size_t i;
+    size_t allocated_pages = ((uint32_t)boot_alloc(0) - KERNBASE) / PGSIZE;
+    size_t IOhole_pages = (EXTPHYSMEM - IOPHYSMEM) /PGSIZE;
+    <span style="font-weight:bold">for</span> (i = 1; i &lt; npages; i++) {
+        <span style="font-weight:bold">if</span>(i == MPENTRY_PADDR/PGSIZE)
+            <span style="font-weight:bold">continue</span>;                  <span style="font-style:italic">// BIOS
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (i &gt;= npages_basemem &amp;&amp; i &lt; npages_basemem + allocated_pages + IOhole_pages){
+            <span style="font-weight:bold">continue</span>;                  <span style="font-style:italic">// see figure
+</span><span style="font-style:italic"></span>        } <span style="font-weight:bold">else</span> {
+            pages[i].pp_ref = 0;
+            pages[i].pp_link = page_free_list;             <span style="font-style:italic">// a linkedlist for
+</span><span style="font-style:italic"></span>            page_free_list = &amp;pages[i];                    <span style="font-style:italic">// that the pages is free .
+</span><span style="font-style:italic"></span>        }
+    }
+
+}
+</code></pre></div><p>练习就是把MPENTRY_PADDR从<code>free_list</code>中去除即可。</p>
+<blockquote>
+<p>Compare kern/mpentry.S side by side with boot/boot.S. Bearing in mind that kern/mpentry.S is compiled and linked to run above KERNBASE just like everything else in the kernel, what is the purpose of macro MPBOOTPHYS? Why is it necessary in kern/mpentry.S but not in boot/boot.S? In other words, what could go wrong if it were omitted in kern/mpentry.S?</p>
+</blockquote>
+<p><code>MPBOOTPHYS</code>是用来计算传递进去参数的绝对地址，这段代码在boot_aps内就被复制到了内存高地址，AP读取gdt的命令<code>ldgdt</code>是在开启保护模式之前，所以，需要使用物理地址来读取全局表，否则不能读取到。但是在boot.S中，代码就是工作在实模式下，可以直接读取。</p>
+<hr>
+<h1 id="per-cpu-state-and-initialization">Per-cpu State and Initialization</h1>
+<p>(manual 8.4.4)
+在实现多处理系统的时候， 弄清每一个CPU所私有的部分和整个系统的共享是很重要的。<code>kern/cpu.h</code>中定义了cpu状态的结构体<code>struct CpuInfo</code>。<code>cpunnum</code>返回当前正在使用的ID，可以用作cpus数组的下标，当然也可以用宏<code>thiscpu</code>表示当前CPU结构体。</p>
+<p>需要关注的CPU状态：</p>
+<ul>
+<li>
+<p>内核栈</p>
+<ul>
+<li>由于CPU能同时陷入内核，所以需要分离每一个CPU所对应的内核栈，阻止处理器对其他处理器在执行任务时相互影响，数组<code>percpu_kstacks[NCPU][KSTKSIZE]</code>存储了多个处理器所对应的内核栈地址。</li>
+<li>Lab2中，已经将bootstack映射到KSTACKTOP，在这个实验中，需要映射每一个CPU的内核栈到这个区域，并且使用一个<code>guard pages</code>作为缓冲。CPU0使用KSTACKTOP，CPU1将使用KSTACKTOP - KSTKGAP，等等。<code>inc/memlayout.h</code>中有内存排布情况。</li>
+</ul>
+</li>
+<li>
+<p>TSS和TSS descriptor
+每个CPU的任务状态段TSS(task state segement)也需要被确认，CPU的TSS存储在<code>cpus[i].cpu_ts</code>中，TSS descriptor存储在GDT entry <code>gdt[(GD_TSS0 &gt;&gt; 3) + i]</code>中。</p>
+</li>
+<li>
+<p>当前环境指针
+因为每个CPU都同时运行着不同的用户进程，所以使用重新定义的curenv。使用thiscpu-&gt;cpuenv来指向当前正在执行的环境。</p>
+</li>
+<li>
+<p>系统寄存器
+所有的寄存器，都是每一个CPU私有的，所都需要通过指令初始化，<code>lcr3()</code>,<code>ltr()</code>,<code>lgdt()</code>,<code>lidt</code>等都需要在每个CPU上执行一次。函数<code>env_init_percpu</code>和<code>trap_init_percpu</code>用来完成这项工作。</p>
+</li>
+</ul>
+<hr>
+<h2 id="练习3">练习3</h2>
+<blockquote>
+<p>完成内核栈的内存映射</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">void</span>
+mem_init_mp(<span style="">void</span>)
+{
+    size_t i;
+    uint32_t kstacktop_i = KSTACKTOP;
+
+    <span style="font-weight:bold">for</span> (i = 0; i &lt; NCPU; i++) {
+        <span style="font-style:italic">/*stack*/</span>
+        boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_P);
+        kstacktop_i -= KSTKSIZE;
+
+        <span style="font-style:italic">/*guard gap*/</span>
+        kstacktop_i -= KSTKGAP;
+    }
+}
+</code></pre></div><hr>
+<h2 id="练习4">练习4</h2>
+<blockquote>
+<p>修改trap_init_percpu()，使得每个CPU都能使用。</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">    thiscpu-&gt;cpu_ts.ts_esp0 = (uint32_t)percpu_kstacks[thiscpu-&gt;cpu_id];
+    thiscpu-&gt;cpu_ts.ts_ss0 = GD_KD;
+    thiscpu-&gt;cpu_ts.ts_iomb = sizeof(struct Taskstate);
+
+    // Initialize the TSS slot of the gdt.
+    gdt[(GD_TSS0 &gt;&gt; 3) + thiscpu-&gt;cpu_id] = SEG16(STS_T32A, (uint32_t) (&amp;(thiscpu-&gt;cpu_ts)),
+                    sizeof(struct Taskstate) - 1, 0);
+    gdt[(GD_TSS0 &gt;&gt; 3) + thiscpu-&gt;cpu_id].sd_s = 0;
+
+    // Load the TSS selector (like other segment selectors, the
+    // bottom three bits are special; we leave them 0)
+    ltr(GD_TSS0 + (thiscpu-&gt;cpu_id &lt;&lt; 3));
+
+    // Load the IDT
+    lidt(&amp;idt_pd);
+
+</code></pre></div><p>根据之前ts全局变量的过程，为每一个CPU都初始化任务状态。
+<strong>位移运算3位是因为每个描述符的大小是8字节(struct Segdesc)</strong></p>
+<p>完成这里后，利用<code>make qemu-nox CPUS=4</code>可以发现其他cpu的成功启动</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">$ make qemu-nox CPUS=4
+***
+*** Use Ctrl-a x to exit qemu
+***
+qemu-system-i386 -nographic -drive file=obj/kern/kernel.img,index=0,media=disk,format=raw -serial mon:stdio -gdb tcp::26000 -D qemu.log -smp 4
+6828 decimal is 15254 octal!
+Physical memory: 131072K available, base = 640K, extended = 130432K
+check_page_free_list() succeeded!
+check_page_alloc() succeeded!
+check_page() succeeded!
+check_kern_pgdir() succeeded!
+check_page_free_list() succeeded!
+check_page_installed_pgdir() succeeded!
+SMP: CPU 0 found 4 CPU(s)
+enabled interrupts: 1 2
+SMP: CPU 1 starting
+SMP: CPU 2 starting
+SMP: CPU 3 starting
+[00000000] new env 00001000
+kernel panic on CPU 0 at kern/trap.c:295: kernel page fault
+Welcome to the JOS kernel monitor!
+Type <span style="font-style:italic">&#39;help&#39;</span> <span style="font-weight:bold">for</span> a list of commands.
+K&gt;
+</code></pre></div><h1 id="自旋锁">自旋锁</h1>
+<p>现在代码在执行mp_main()最后的for死循环，在AP继续运行之前，首先要解决多个CPU同时执行内核代码的条件竞争的问题。最简单的方法是使用big kernel lock，一种当一个环境进入了内核态开启的全局锁，当退回到用户态的时候解锁。在这个模式下，用户态都能同时正确地使用可用的CPU，但是只能有一个环境能运行在用户态，其他尝试进入内核态的环境都会被强制等待。</p>
+<p>自旋锁(spinlock)是互斥(mutual exclusive)锁的一种实现形式，通过不断访问所需资源来判断临界资源资源是否被释放，优点是非常高效，临界资源一释放，等待的CPU将马上获得这份临界资源，所以适合那些保持锁时间短的情况，缺点是会持续占用CPU，浪费CPU时间。面对那些长时间占用临界资源的，应该使用信号量(semaphore)机制。</p>
+<p>前段时间专业课上提到了<code>Swap</code>，就算一个基本的自旋锁。
+代码实现如下:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+Swap(boolean &amp;a, boolean &amp;b)
+{
+    boolean temp = a;
+    a = b;
+    b = temp;
+}
+
+<span style=""># entry
+</span><span style=""></span><span style="font-weight:bold">do</span> {
+    Key = true;
+    <span style="font-weight:bold">while</span> (Key == ture)
+        Swap(Lock, Key);
+    critical Section;
+    Lock = false;
+    non critical Section
+} <span style="font-weight:bold">while</span>(1)
+
+</code></pre></div><p>JOS自旋锁的实现是在<code>kern/spinlock</code>的spin_lock()中:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    <span style="font-weight:bold">while</span> (xchg(&amp;lk-&gt;locked, 1) != 0)
+        <span style="font-weight:bold">asm</span> <span style="font-weight:bold">volatile</span> (<span style="font-style:italic">&#34;pause&#34;</span>);
+</code></pre></div><p>在<code>xchg()</code>中，这段代码的意思就是将数值“1”和<code>lk-&gt;locked</code>的值交换。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">    asm volatile(&#34;lock; xchgl %0, %1&#34;
+             : &#34;+m&#34; (*addr), &#34;=a&#34; (result)
+             : &#34;1&#34; (newval)
+             : &#34;cc&#34;);
+    return result;
+</code></pre></div><p><code>lock</code> : 将下个访问内存指令所引用的内存空间上锁</p>
+<pre><code>xchgl %0, %1: &quot;+m&quot; (*addr), &quot;=a&quot; (result): &quot;1&quot; (newval)
+</code></pre>
+<p>*addr替代占位符%0，限定符&quot;+m&quot;代表可read-modify-write的内存变量，限定符&quot;1&quot;代表其后面的操作数去描述占位符%1。所以这句指令是将 *addr的值与 1进行交换，并且把结果输出到 *addr和result中。</p>
+<p><code>cc</code> ：GNU文档解释，“As the condition codes will be changed, we are adding &ldquo;cc&rdquo; to clobberlist.”</p>
+<p>在while循环体内，<code>pause</code>指令只是减少处理器执行太快引起的电力损耗，类似与一个延时语句。</p>
+<hr>
+<h2 id="练习5">练习5</h2>
+<blockquote>
+<p>给合适的地方上锁</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style=""># i386_init()
+</span><span style=""></span>    <span style="font-style:italic">// Acquire the big kernel lock before waking up APs
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here:
+</span><span style="font-style:italic"></span>    lock_kernel();
+    <span style="font-style:italic">// Starting non-boot CPUs
+</span><span style="font-style:italic"></span>    boot_aps();
+
+<span style=""># mp_main()
+</span><span style=""></span>    <span style="font-style:italic">// Now that we have finished some basic setup, call sched_yield()
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// to start running processes on this CPU.  But make sure that
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// only one CPU can enter the scheduler at a time!
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here:
+</span><span style="font-style:italic"></span>    lock_kernel();
+
+    sched_yield();
+<span style=""># trap()
+</span><span style=""></span>   <span style="font-weight:bold">if</span> ((tf-&gt;tf_cs &amp; 3) == 3) {
+        <span style="font-style:italic">// Trapped from user mode.
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// Acquire the big kernel lock before doing any
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// serious kernel work.
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>        assert(curenv);
+        lock_kernel();
+        ...
+    }
+<span style=""># env_run()
+</span><span style=""></span>    <span style="font-style:italic">//switch to user&#39;s address space.
+</span><span style="font-style:italic"></span>    lcr3(PADDR(curenv-&gt;env_pgdir));
+
+    <span style="font-style:italic">//following operation will not implement the kernel
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//data, releasing the kernel resources here.
+</span><span style="font-style:italic"></span>    unlock_kernel();
+
+    <span style="font-style:italic">// pop trap frame , the environment return to the user mode.
+</span><span style="font-style:italic"></span>    env_pop_tf(&amp;(curenv-&gt;env_tf));
+</code></pre></div><p>完成这部分上锁的时候，可以看见在启动AP之前，内核是被BSP给锁定的，其他的CPU都还卡在自旋锁处进行循环。</p>
+<blockquote>
+<p>Q2:It seems that using the big kernel lock guarantees that only one CPU can run the kernel code at a time. Why do we still need separate kernel stacks for each CPU? Describe a scenario in which using a shared kernel stack will go wrong, even with the protection of the big kernel lock.</p>
+</blockquote>
+<p>当一个CPU陷入内核还在进行保存状态信息的时候，另一个CPU刚好发生中断，此时内核还未被上锁，在只有一个栈的情况下，会发生混乱。</p>
+<h2 id="challenge">Challenge</h2>
+<p>// fine-grained locking</p>
+<hr>
+<h2 id="练习6">练习6</h2>
+<blockquote>
+<p>实现Round-Robin Scheduling调度算法</p>
+</blockquote>
+<hr>
+<p>这个调度算法就是在envs全局变量中找到第一个可以运行的程序，观察<code>user/yield.c</code>的程序，代码每一次循环产生一次系统调用，让CPU执行下一个env。
+实现这个调度算法就是利用循环队列来做。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+sched_yield(<span style="">void</span>)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="">int</span> i, cur_id, nxt;
+
+    <span style="font-weight:bold">if</span> (curenv)
+        cur_id = ENVX(curenv-&gt;env_id);
+    <span style="font-weight:bold">else</span>
+        cur_id = 0;
+<span style="">#ifdef SELF_DEBUG_INFO
+</span><span style=""></span>    cprintf(<span style="font-style:italic">&#34;cpuid %d </span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, thiscpu-&gt;cpu_id);
+<span style="">#endif
+</span><span style=""></span>    <span style="font-weight:bold">for</span> (i = 0; i &lt; NENV; i++) {
+        nxt = (i + cur_id) % NENV;
+        <span style="font-weight:bold">if</span> (envs[nxt].env_status == ENV_RUNNABLE)
+            env_run(envs + nxt);
+    }
+
+    <span style="font-style:italic">// there are no others environment to run.
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (curenv &amp;&amp; curenv-&gt;env_status == ENV_RUNNING)
+        env_run(curenv);
+        <span style="font-style:italic">// sched_halt never returns
+</span><span style="font-style:italic"></span>        sched_halt();
+}
+
+</code></pre></div><p>添加新的系统调用和创建多个这样的用户环境</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style=""># syscall_dispatch()
+</span><span style=""></span>    <span style="font-weight:bold">case</span> SYS_yield:
+        sys_yield();
+        <span style="font-weight:bold">return</span> 0;
+<span style=""># i386_init()
+</span><span style="">#if defined(TEST)
+</span><span style=""></span>    <span style="font-style:italic">// Don&#39;t touch -- used by grading script!
+</span><span style="font-style:italic"></span>    ENV_CREATE(TEST, ENV_TYPE_USER);
+<span style="">#else
+</span><span style=""></span>    <span style="font-style:italic">// Touch all you want.
+</span><span style="font-style:italic"></span>    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+<span style="">#endif </span><span style="font-style:italic">// TEST*
+</span></code></pre></div><blockquote>
+<p>Q3:In your implementation of env_run() you should have called lcr3(). Before and after the call to lcr3(), your code makes references (at least it should) to the variable e, the argument to env_run. Upon loading the %cr3 register, the addressing context used by the MMU is instantly changed. But a virtual address (namely e) has meaning relative to a given address context&ndash;the address context specifies the physical address to which the virtual address maps. Why can the pointer e be dereferenced both before and after the addressing switch?</p>
+</blockquote>
+<p><code>e</code>在创建的时候会从<code>kern_pgdir</code>处复制一份，所以<code>lcr3</code>指令执行前后页表项是一样的。</p>
+<blockquote>
+<p>Q4:Whenever the kernel switches from one environment to another, it must ensure the old environment&rsquo;s registers are saved so they can be restored properly later. Why? Where does this happen?</p>
+</blockquote>
+<p><code>env_run()</code>通过pop<code>task frame</code>，而在调用trap()的时候就已经保存了相关寄存器信息。</p>
+<h2 id="challenge-1">Challenge</h2>
+<p>// stride scheduling 和 lottery scheduling</p>
+<h1 id="system-calls-for-environment-creation">System Calls for Environment Creation</h1>
+<p>虽然代码能在不同的用户环境中切换了，但是是依靠的内核初始化创建的环境。现在要做的就是实现在用户环境下创建和开始另一个新的用户环境。</p>
+<p>Unix中提供了最原始的fork()函数进行创建ixnd进程，<code>fork</code>复制整个父进程的内存空间去新建一个进程，唯一不同的就是它们的返回值，子进程返回0.</p>
+<p>在这个练习中，将为JOS实现更为原始的方法去创建新用户空间。</p>
+<hr>
+<h2 id="练习7">练习7</h2>
+<blockquote>
+<p>完成syscall.c</p>
+</blockquote>
+<hr>
+<h3 id="sys_exofork">sys_exofork</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> envid_t
+sys_exofork(<span style="">void</span>)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="">int</span> r;
+    <span style="font-weight:bold">struct</span> Env *new_env;
+
+    <span style="font-weight:bold">if</span> ((r = env_alloc(&amp;new_env, sys_getenvid())) &lt; 0)
+        <span style="font-weight:bold">return</span> r;
+
+    new_env-&gt;env_tf = curenv-&gt;env_tf;
+    new_env-&gt;env_status = ENV_NOT_RUNNABLE;
+    <span style="font-style:italic">// child env return 0
+</span><span style="font-style:italic"></span>    new_env-&gt;env_tf.tf_regs.reg_eax = 0;
+
+    <span style="font-weight:bold">return</span> new_env-&gt;env_id;
+</code></pre></div><h3 id="sys_env_set_status">sys_env_set_status</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_env_set_status(envid_t envid, <span style="">int</span> status)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_env_set_status not implemented&#34;);
+</span><span style="font-style:italic"></span>
+    <span style="font-weight:bold">struct</span> Env *e;
+    <span style="">int</span> ret;
+
+    <span style="font-style:italic">/* must be ENV_RUNNABLE or ENV_NOT_RUNNABLE*/</span>
+    <span style="font-weight:bold">if</span> (status == ENV_RUNNABLE ||
+        status == ENV_NOT_RUNNABLE)
+        ;
+    <span style="font-weight:bold">else</span>
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/* check whether the caller env is env to be set*/</span>
+    <span style="font-weight:bold">if</span> ((ret = envid2env(envid, &amp;e, 1)) &lt; 0)
+        <span style="font-weight:bold">return</span> ret;
+
+    e-&gt;env_status = status;
+
+    <span style="font-weight:bold">return</span> 0;
+
+}
+</code></pre></div><h3 id="sys_page_alloc">sys_page_alloc</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_page_alloc(envid_t envid, <span style="">void</span> *va, <span style="">int</span> perm)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_page_alloc not implemented&#34;);
+</span><span style="font-style:italic"></span>    <span style="">int</span> ret;
+    <span style="font-weight:bold">struct</span> PageInfo *pg;
+    <span style="font-weight:bold">struct</span> Env *e;
+
+    <span style="font-style:italic">/*
+</span><span style="font-style:italic">    *   regist the page in the page directory
+</span><span style="font-style:italic">    */</span>
+
+    <span style="font-style:italic">/*check envid*/</span>
+    <span style="font-weight:bold">if</span> (envid2env(envid, &amp;e, 1) &lt; 0)
+        <span style="font-weight:bold">return</span> -E_BAD_ENV;
+
+    <span style="font-style:italic">/*check va*/</span>
+    <span style="font-weight:bold">if</span> ((uint32_t)va &gt;= UTOP || (uint32_t)va % PGSIZE)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/* permission check */</span>
+    <span style="font-weight:bold">if</span> (perm &amp; ~(PTE_U | PTE_P | PTE_AVAIL | PTE_W))
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/*allocating page and mapping*/</span>
+    pg = page_alloc(ALLOC_ZERO);
+    <span style="font-weight:bold">if</span> (!pg)
+        <span style="font-weight:bold">return</span> -E_NO_MEM;
+
+    <span style="font-weight:bold">if</span> ((ret = page_insert(e-&gt;env_pgdir, pg, va, perm ))) {
+        page_free(pg);  <span style="font-style:italic">// failed, free page;
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">return</span> ret;
+    }
+    <span style="font-weight:bold">return</span> 0;
+}
+
+</code></pre></div><h3 id="sys_page_map">sys_page_map</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_page_map(envid_t srcenvid, <span style="">void</span> *srcva,
+         envid_t dstenvid, <span style="">void</span> *dstva, <span style="">int</span> perm)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_page_map not implemented&#34;);
+</span><span style="font-style:italic"></span>
+    <span style="font-style:italic">/*
+</span><span style="font-style:italic">    *   mapping
+</span><span style="font-style:italic">    */</span>
+
+    pte_t *pte; <span style="font-style:italic">// page table entry;
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">struct</span> Env *src, *dst;
+    <span style="font-weight:bold">struct</span> PageInfo *pp;
+
+    <span style="font-style:italic">/*check env*/</span>
+    <span style="font-weight:bold">if</span> (envid2env(srcenvid, &amp;src, 1) &lt; 0 ||
+        envid2env(dstenvid, &amp;dst, 1) &lt; 0)
+        <span style="font-weight:bold">return</span> -E_BAD_ENV;
+
+    <span style="font-style:italic">/* check va */</span>
+    <span style="font-weight:bold">if</span> ((uint32_t)srcva &gt;= UTOP || (uint32_t)srcva % PGSIZE ||
+        (uint32_t)dstva &gt;= UTOP || (uint32_t)dstva % PGSIZE)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/* check address space*/</span>
+    <span style="font-weight:bold">if</span> ((pp = page_lookup(src-&gt;env_pgdir, srcva, &amp;pte)) == NULL)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/* check parameter permission */</span>
+    <span style="font-weight:bold">if</span> (perm &amp; ~(PTE_P | PTE_U | PTE_AVAIL | PTE_W))
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">/* pte permission check*/</span>
+    <span style="font-weight:bold">if</span> (!(*pte &amp; PTE_W) &amp;&amp; (perm &amp; PTE_W))
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-weight:bold">return</span> page_insert(dst-&gt;env_pgdir, pp, dstva, perm );
+
+}
+</code></pre></div><h3 id="sys_page_unmap">sys_page_unmap</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_page_unmap(envid_t envid, <span style="">void</span> *va)
+{
+    <span style="font-weight:bold">struct</span> Env *e;
+    <span style="font-style:italic">/*check env*/</span>
+    <span style="font-weight:bold">if</span> (envid2env(envid, &amp;e, 1))
+        <span style="font-weight:bold">return</span> -E_BAD_ENV;
+
+    <span style="font-weight:bold">if</span> ((uint32_t)va &gt;= UTOP || (uint32_t)va % PGSIZE)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    page_remove(e-&gt;env_pgdir, va);
+
+    <span style="font-weight:bold">return</span> 0;
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_page_unmap not implemented&#34;);
+</span><span style="font-style:italic"></span>}
+</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">int32_t
+syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
+{
+<span style="">#define SELF_DEBUG_INFO
+</span><span style="">#ifdef SELF_DEBUG_INFO
+</span><span style=""></span>    cprintf(<span style="font-style:italic">&#34;call number:%d  </span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, syscallno);
+<span style="">#endif
+</span><span style=""></span>    <span style="font-weight:bold">switch</span> (syscallno) {
+
+    <span style="font-weight:bold">case</span> SYS_cputs:
+        sys_cputs((<span style="">char</span> *)a1, a2);
+        <span style="font-weight:bold">return</span> 0;
+
+    <span style="font-weight:bold">case</span> SYS_cgetc:
+        <span style="font-weight:bold">return</span> sys_cgetc();
+
+    <span style="font-weight:bold">case</span> SYS_getenvid:
+        <span style="font-weight:bold">return</span> sys_getenvid();
+
+    <span style="font-weight:bold">case</span> SYS_env_destroy:
+        <span style="font-weight:bold">return</span> sys_env_destroy(a1);
+
+    <span style="font-weight:bold">case</span> SYS_yield:
+        sys_yield();
+        <span style="font-weight:bold">return</span> 0;
+
+    <span style="font-weight:bold">case</span> SYS_exofork:
+        <span style="font-weight:bold">return</span> sys_exofork();
+
+    <span style="font-weight:bold">case</span> SYS_page_alloc:
+        <span style="font-weight:bold">return</span> sys_page_alloc(a1, (<span style="">void</span> *)a2, a3);
+
+    <span style="font-weight:bold">case</span> SYS_page_map:
+        <span style="font-weight:bold">return</span> sys_page_map(a1, (<span style="">void</span> *)a2, a3, (<span style="">void</span> *)a4, a5);
+
+    <span style="font-weight:bold">case</span> SYS_page_unmap:
+        <span style="font-weight:bold">return</span> sys_page_unmap(a1, (<span style="">void</span> *)a2);
+
+    <span style="font-weight:bold">case</span> SYS_env_set_status:
+        <span style="font-weight:bold">return</span> sys_env_set_status(a1 ,a2);
+
+    <span style="font-weight:bold">default</span>:
+        <span style="font-weight:bold">return</span> -E_INVAL;
+    }
+}
+
+</code></pre></div><p>两点问题:</p>
+<ol>
+<li>注意在设置status的时候的逻辑短路问题。</li>
+<li>exofork()中新的用户环境的eax应该置为0，以证明是子进程。</li>
+</ol>
+<p>用户环境的代码执行完后，一个CPU会执行kernel monitor一直占用内核，而另外3个CPU都在卡在了trap中的那个自旋锁中。</p>
+<p>PART A done.</p>
+<hr>
+<h1 id="part-b-copy-on-write-fork">Part B: Copy-On-Write Fork</h1>
+<p>最初Unix提供最基础的fork()系统调用去创建新的进程，forK()通过复制整个父进程的内存空间到子进程的内存中去，然而复制父进程到子进程是fork()操作开销最大的一个操作。通常情况下，fork()后子进程一般会马上调用exec()函数，用新的程序去替代子进程的内存空间。在这种情况下，复制父进程内存空间的时间开销很大程度上是不需要的，因为子进程仅有非常小的一部分被exec()所使用。</p>
+<p>在之后的版本中，Unix采用虚拟内存硬件这一机制，允许父子进程共享分别被映射到它们各自内存空间的内存，直到其中一个进程确实修改了这部分共享的内存，被称之为__copy on write__。为了这个机制，fork()不是复制被实际映射的页，而是复制描述内存空间的映射情况的页，同时标记这个页为只读。一旦这两个进程之一尝试去修改这部分被共享的页，该进程将会产生页错误。此时，Unix内核意识到这个页是一个&quot;copy-on-write&quot;的页需要被拷贝，于是分配一个新的私有的可写的页拷贝给这个产生页错误的进程。通过这种方式，这些分开的页的内容实际不会复制除非这些页确实别尝试写入。这个优化使得fork()后在子进程中执行exec()的开销更小，子进程可能只需要复制一个页(stack page)在调用exec()前。</p>
+<h1 id="user-level-page-fault-handling">User-level page fault handling</h1>
+<p>首先实现写时拷贝的fork()，需要知道被写保护的页。copy-on-write是多种可能处理页错误的方法之一。</p>
+<p>一种通用做法就是建立起一个内存空间指出当发生页错误的时候确定一些操作。比如，大多数Unix内核只为新进程的栈区映射一个单页面，分配和映射额外的栈页仅在该新进程栈增长和在栈地址中发生了未映射的栈区域时处理。通常unix内核需要确定对应处理方法当页错误发生在进程的不同区域。页错误发生在栈区通常分配和映射一个新的页帧给这个进程；页错误发生在程序的BSS区域通常分配一个新的页，并且将页内容全部置为0，并且映射到页表中去；页错误发生在可执行文件的.text区域将会从磁盘中读取相应的二进制文件，并且映射。</p>
+<p>这种处理办法虽然需要内核追踪一大堆信息，但是大大增加了程序的灵活性。</p>
+<h1 id="normal-and-exception-stacks-in-user-environments">Normal and Exception Stacks in User Environments</h1>
+<p>正常执行过程中，用户环境将会运行在正常用户栈中：即ESP寄存器最开始就指向了USTACKTOP，栈区数据被压入到<code>USTACKTOP-PGSIZE</code>和<code>USTACKTOP-1</code>这个范围中。当页错误发生在用户态下，内核将会重启这个用户环境，并且运行在一个被设计好的用户级别页错误解决办法(page fault handler)在一个不同的栈上，被称之为用户异常栈。大体上来说，JOS实现了在用户模式下的栈自动切换，同时，x86处理器已经实现了栈切换当发生从用户态到内核态发生转换的时候。</p>
+<p>JOS的异常栈也是只有PGSIZE，但是定义在了虚拟内存地址的UXSTACKTOP，所以在栈区<code>UXSTACKTOP</code>到<code>UXSTACKTOP-1</code>都是合法的。当运行在异常栈，用户级页错误handler能用普通的系统调用去映射新的页，调节映射情况并且修复这个导致页错误的问题。然后，这个handler将会return，通过汇编语言stub返回到发生页错误的代码处。</p>
+<p>任何一个用户程序需要支持用户级页错误将会需要去分配页给异常栈。</p>
+<h1 id="invoking-the-user-page-fault-handler">Invoking the User Page Fault Handler</h1>
+<p>为了解决来自用户态的页错误，现在需要调用用户态在发送页错误时的trap-time状态。
+如果没有页错误的handler被登记，JOS内核将会销毁这个用户进程，不然的话，内核将要设置下面这样的trap frame在该用户环境的异常栈上。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">                    &lt;-- UXSTACKTOP
+trap-time esp
+trap-time eflags
+trap-time eip
+trap-time eax       start of <span style="font-weight:bold">struct</span> PushRegs
+trap-time ecx
+trap-time edx
+trap-time ebx
+trap-time esp
+trap-time ebp
+trap-time esi
+trap-time edi       end of <span style="font-weight:bold">struct</span> PushRegs
+tf_err (error code)
+fault_va            &lt;-- %esp when handler is run
+(_pgfault_handler argument)
+(eip pushed by call instruction)
+reserved 4-bytes    &lt;-- to ret, reserved <span style="font-weight:bold">for</span> eip
+trap-time esp       &lt;-- we should adjust the esp(esp = esp-4)
+trap-time eflags
+trap-time eip
+...                new trap-time frame
+trap-time esi
+trap-time edi
+tf_err (error code)
+fault_va            &lt;-- esp
+
+</code></pre></div><p>系统内核需要准备用户在异常栈上面执行page fault handler的准备，<code>fault_va</code>是导致页错误的虚拟地址。</p>
+<p>如果用户环境在执行异常处理的时候发生页错误，那么将要将trap-time frame压栈在tf-&gt;tf_esp之下，而不是UXSTACKTOP。在这里，需要压入1个空的32-bit字，然后压入trap-time帧。</p>
+<p>为了确定tf-&gt;tf_esp是否已经在用户异常栈了，只需要检查它是否在范围<code>UXSTACKTOP-PGSIZE</code>和<code>UXSTACKTOP-1</code>这个范围内即可。</p>
+<hr>
+<h2 id="练习9">练习9</h2>
+<blockquote>
+<p>实现<code>page_fault_handler</code>中的代码</p>
+</blockquote>
+<hr>
+<p>程序的执行流梳理下：</p>
+<ol>
+<li>首先用户程序使用<code>sys_set_env_pgfault_handler()</code>系统调用设置好页错误处理方法。</li>
+<li>当用户程序发生页错误的时候，此时trap进入内核，通过<code>trapdispatch()</code>的分发错误机制，单独处理页错误。</li>
+<li>因为是在用户环境下发生的页错误，内核将该用户环境的运行栈改成异常栈，</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+page_fault_handler(<span style="font-weight:bold">struct</span> Trapframe *tf)
+{
+    ...
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">struct</span> UTrapframe *utf;
+    uint32_t uesp;
+
+    cprintf(<span style="font-style:italic">&#34;user page fault</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+
+    <span style="font-weight:bold">if</span> (tf-&gt;tf_esp &lt;= UXSTACKTOP-1 &amp;&amp; tf-&gt;tf_esp &gt;= UXSTACKTOP-PGSIZE)
+        uesp = tf-&gt;tf_esp - <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> UTrapframe) - 4;
+    <span style="font-weight:bold">else</span>
+        uesp = UXSTACKTOP - <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> UTrapframe);
+
+    <span style="font-style:italic">/* call upcall if current env has handler*/</span>
+    <span style="font-weight:bold">if</span> (curenv-&gt;env_pgfault_upcall != NULL) {
+
+        user_mem_assert(curenv, (<span style="">void</span> *)uesp, <span style="font-weight:bold">sizeof</span>(<span style="font-weight:bold">struct</span> UTrapframe), PTE_U|PTE_P|PTE_W);
+
+        <span style="font-style:italic">/*locates to the exception stack*/</span>
+        utf = (<span style="font-weight:bold">struct</span> UTrapframe *)uesp;
+
+        <span style="font-style:italic">/*construct User trap frame*/</span>
+        utf-&gt;utf_fault_va = fault_va;
+        utf-&gt;utf_err = tf-&gt;tf_err;
+        utf-&gt;utf_regs = tf-&gt;tf_regs;
+        utf-&gt;utf_eflags = tf-&gt;tf_eflags;
+        utf-&gt;utf_eip = tf-&gt;tf_eip;
+        utf-&gt;utf_esp = tf-&gt;tf_esp;
+
+        <span style="font-style:italic">/*ready for handler paremeter*/</span>
+        tf-&gt;tf_esp = uesp;
+
+        <span style="font-style:italic">/*after trap , execute the handler routine*/</span>
+        tf-&gt;tf_eip = (uint32_t)curenv-&gt;env_pgfault_upcall;
+
+        env_run(curenv);
+    }
+    ...
+}
+</code></pre></div><h2 id="练习10">练习10</h2>
+<blockquote>
+<p>当发生页错误的时候，内核通过设置eip指向_pgfault_upcall来调用汇编代码，并且调用已经注册好的handler，该练习的任务就是当handler执行完后，用户如何返回到错误时的状态去。</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-asm" data-lang="asm">.globl _pgfault_upcall
+_pgfault_upcall:
+    <span style="">//</span> Call the C page fault handler.
+    pushl %esp          <span style="">//</span> function argument: pointer to UTF
+    movl _pgfault_handler, %eax
+    call *%eax
+    addl $4, %esp
+
+    <span style="">//</span> LAB 4: Your code here.
+    subl $0x4, 0x30(%esp) <span style="font-style:italic"># for push eip
+</span><span style="font-style:italic"></span>    movl 0x30(%esp), %ebx <span style="font-style:italic">#regular esp
+</span><span style="font-style:italic"></span>    movl 0x28(%esp), %eax <span style="font-style:italic">#eip
+</span><span style="font-style:italic"></span>    movl %eax, (%ebx)
+
+    <span style="">//</span> Restore the trap-time registers.  After you do this, you
+    <span style="">//</span> can no longer modify any general-purpose registers.
+    <span style="">//</span> LAB 4: Your code here.
+    addl $0x8, %esp
+    popal <span style="font-style:italic">#regular registers
+</span><span style="font-style:italic"></span>
+    <span style="">//</span> Restore eflags from the stack.  After you do this, you can
+    <span style="">//</span> no longer use arithmetic operations or anything else that
+    <span style="">//</span> modifies eflags.
+    <span style="">//</span> LAB 4: Your code here.
+    addl $0x4, %esp
+    popfl
+
+    <span style="">//</span> Switch back to the adjusted trap-time stack.
+    <span style="">//</span> LAB 4: Your code here.
+    popl %esp
+    <span style="">//</span> Return to re-execute the instruction that faulted.
+    <span style="">//</span> LAB 4: Your code here.
+    ret
+</code></pre></div><h2 id="练习11">练习11</h2>
+<blockquote>
+<p>完成set_pgfault_handler()</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">
+<span style="">void</span>
+set_pgfault_handler(<span style="">void</span> (*handler)(<span style="font-weight:bold">struct</span> UTrapframe *utf))
+{
+    <span style="">int</span> r;
+
+    <span style="font-weight:bold">if</span> (_pgfault_handler == 0) {
+        <span style="font-style:italic">// First time through!
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>        <span style="font-style:italic">//panic(&#34;set_pgfault_handler not implemented&#34;);
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">if</span> (sys_page_alloc(0, (<span style="">void</span> *)UXSTACKTOP-PGSIZE, PTE_W|PTE_U|PTE_P) &lt; 0)
+            panic(<span style="font-style:italic">&#34;memory allocation failed: On UXSTACKTOP&#34;</span>);
+    }
+
+    <span style="font-style:italic">// Save handler pointer for assembly to call.
+</span><span style="font-style:italic"></span>    _pgfault_handler = handler;
+    <span style="font-weight:bold">if</span> (sys_env_set_pgfault_upcall(0, _pgfault_upcall) &lt; 0)
+        panic(<span style="font-style:italic">&#34;bad env&#34;</span>);
+}
+</code></pre></div><p>通过一个callback function登记需要运行的handler，实现对不同情况的异常分发。</p>
+<p>#Implementing Copy-on-Write Fork
+与之前练习中的<code>dumbfork()</code>不同的是，<code>dumbfork()</code>复制了整个父环境中的所有的页，但是fork()仅仅只会复制一个关于页映射的页，其他的页会在用户环境往这些被标记的页写入内容的时候，发生页错误，并且分配新页，复制页内容。</p>
+<p>fork()的控制流如下：</p>
+<ol>
+<li>父环境安装<code>pgfault()</code>作为page fault handler，利用set_pgfault_handler()可以做到。</li>
+<li>父环境调用<code>sys_exofork()</code>来创建子环境。</li>
+<li>将每一个地址低于<code>UTOP</code>的状态为<code>可写</code>或者<code>copy-on-write</code>的页，使用<code>duppage</code>函数，映射到子环境的内存空间去，并且把<em>自己</em>的和子内存空间的页状态都标记<code>COW</code>状态。</li>
+</ol>
+<ul>
+<li>异常栈不需要被映射，取而代之的是，父环境需要为子环境异常栈分配一个新的页。</li>
+</ul>
+<ol start="4">
+<li>为子环境设置页错误入口</li>
+<li>将子环境标记为可运行状态。</li>
+</ol>
+<p>每当父环境或者子环境尝试写入状态为cow的页时，将会引发页错误，页错误处理程序的控制流如下：</p>
+<ol>
+<li>内核传递也错给_pgfault_，然后调用pgfault()来处理</li>
+<li><code>pgfault()</code>检查页错误的错误代码(FEC_WR)，并且页是否被标记为PTE_COW，如果不是，panic。</li>
+<li><code>pgfault()</code>分配一个新的页映射到一个临时位置，然后复制发生错误的页到临时页位置，然后再将这个临时位置映射到一个合适的位置，并且标记为可读可写，代替之前只读的映射。</li>
+</ol>
+<h2 id="练习12">练习12</h2>
+<blockquote>
+<p>实现fork,duppage,pgfault</p>
+</blockquote>
+<hr>
+<h3 id="fork">fork()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">envid_t
+fork(<span style="">void</span>)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;fork not implemented&#34;);
+</span><span style="font-style:italic"></span>    set_pgfault_handler(pgfault);
+
+    <span style="">int</span> r;
+    envid_t envid;
+    int32_t va;
+
+    envid = sys_exofork();
+    <span style="font-weight:bold">if</span> (envid &lt; 0)
+        panic(<span style="font-style:italic">&#34;sys_exofork error&#34;</span>);
+    <span style="font-weight:bold">if</span> (envid == 0) {
+    <span style="font-style:italic">//  panic(&#34;child&#34;);
+</span><span style="font-style:italic"></span>        thisenv = &amp;envs[ENVX(sys_getenvid())];
+        cprintf(<span style="font-style:italic">&#34;child: %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, thisenv-&gt;env_id);
+        <span style="font-weight:bold">return</span> 0;
+    }
+
+    cprintf(<span style="font-style:italic">&#34;parent fork:%d -&gt; %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, thisenv-&gt;env_id, envid);
+    <span style="font-weight:bold">for</span> (va = 0; va &lt; USTACKTOP; va += PGSIZE)
+        <span style="font-weight:bold">if</span> ((uvpd[PDX(va)] &amp; PTE_P) &amp;&amp; (uvpt[PGNUM(va)] &amp; (PTE_P|PTE_U)) )
+                duppage(envid, (uint32_t)PGNUM(va));
+    <span style="font-style:italic">//panic(&#34;1&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> ((r = sys_page_alloc(envid, (<span style="">void</span> *)UXSTACKTOP-PGSIZE, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        <span style="font-weight:bold">return</span> r;
+
+    <span style="font-weight:bold">extern</span> <span style="">void</span> _pgfault_upcall(<span style="">void</span>);
+    sys_env_set_pgfault_upcall(envid, _pgfault_upcall);
+
+    <span style="font-weight:bold">if</span> ((r = sys_env_set_status(envid, ENV_RUNNABLE)) &lt; 0)
+        <span style="font-weight:bold">return</span> r;
+
+    <span style="font-weight:bold">return</span> envid;
+}
+</code></pre></div><h3 id="duppage">duppage()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+duppage(envid_t envid, <span style="">unsigned</span> pn)
+{
+    <span style="">int</span> r;
+    uint32_t va;
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;duppage not implemented&#34;);
+</span><span style="font-style:italic"></span>    va = pn*PGSIZE;
+    <span style="font-style:italic">//cprintf(&#34;%x\n&#34;, va);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (uvpt[pn] &amp; PTE_COW || uvpt[pn] &amp; PTE_W) {
+        <span style="font-weight:bold">if</span> ((r = sys_page_map(thisenv-&gt;env_id, (<span style="">void</span> *)va, envid, (<span style="">void</span> *)va, PTE_P|PTE_U|PTE_COW)) &lt; 0)
+            panic(<span style="font-style:italic">&#34;2&#34;</span>);
+        <span style="font-weight:bold">if</span> ((r = sys_page_map(thisenv-&gt;env_id, (<span style="">void</span> *)va, thisenv-&gt;env_id, (<span style="">void</span> *)va, PTE_P|PTE_U|PTE_COW)) &lt; 0)
+            panic(<span style="font-style:italic">&#34;3&#34;</span>);
+    } <span style="font-weight:bold">else</span>
+        <span style="font-weight:bold">if</span> ((r = sys_page_map(thisenv-&gt;env_id, (<span style="">void</span> *)va, envid, (<span style="">void</span> *)va, PTE_U|PTE_P)) &lt; 0)
+            panic(<span style="font-style:italic">&#34;4&#34;</span>);
+    <span style="font-weight:bold">return</span> 0;
+}
+</code></pre></div><h3 id="pgfault">pgfault()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">void</span>
+pgfault(<span style="font-weight:bold">struct</span> UTrapframe *utf)
+{
+    <span style="">void</span> *addr = (<span style="">void</span> *) utf-&gt;utf_fault_va;
+    uint32_t err = utf-&gt;utf_err;
+    <span style="">int</span> r;
+
+    <span style="font-style:italic">//cprintf(&#34;%d\n&#34;, err);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (!(err &amp; FEC_WR) || !(uvpt[PGNUM(addr)] &amp; PTE_COW))
+        panic(<span style="font-style:italic">&#34;user page fault: write to non-copy-on-write page&#34;</span>);
+
+
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;pgfault not implemented&#34;);
+</span><span style="font-style:italic"></span>    addr = (<span style="">void</span> *)ROUNDDOWN((uint32_t)addr, PGSIZE);
+    <span style="font-style:italic">//cprintf(&#34;thisenv-&gt;envid : %d\n&#34;, thisenv-&gt;env_id);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> ((r = sys_page_alloc(0, (<span style="">void</span> *)PFTEMP, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        panic(<span style="font-style:italic">&#34;handler fault :haven&#39;t memory &#34;</span>);
+    memmove((<span style="">void</span> *)PFTEMP, addr, PGSIZE);
+    <span style="font-weight:bold">if</span> ((r = sys_page_map(0, (<span style="">void</span> *)PFTEMP, 0, addr, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        panic(<span style="font-style:italic">&#34;handler fault: sys_page_map&#34;</span>);
+
+    <span style="font-weight:bold">if</span> ((r = sys_page_unmap(0, PFTEMP)) &lt; 0)
+        panic(<span style="font-style:italic">&#34;handler fault: sys_page_unmap&#34;</span>);
+
+}
+
+</code></pre></div><p>两个问题：
+1.在这，fork()是设置好子环境的相关上下文才调度到子环境中去的。</p>
+<ol start="2">
+<li>
+<p><code>thisenv-&gt;env</code>在<code>duppage()</code>中使用正常，但是在<code>pgfault()</code>会panic，于是观察系统调用信息：这个fork二叉树的根节点会在设置完子进程的信息后销毁，然后cpu调度新的任务。fork()函数中Hint告诉我注意修改子进程中的<code>thienv</code>的值。</p>
+<p>thisenv = &amp;envs[ENVX(sys_getenvid())];</p>
+</li>
+</ol>
+<p><code>thisenv</code>是一个全局(静态)变量，被放在程序的.data域，父环境已经标记这个页为cow状态，所以这个赋值写操作会引发页错误。然后页错误处理程序来为这个页做一个拷贝到该子环境内存空间中。所以当我使用三个系统调用<code>sys_page_alloc</code>,<code>sys_page_map</code>,<code>sys_page_unmap</code>并且传递<code>thisenv-&gt;env_id</code>的时候，是被标记为cow的页发送读请求，结果读到的是父环境的内存内容。父环境已经被销毁了，所以程序在这儿被panic。
+<img src="/images/operating-system/6.828/lab4/debuginfo.png" alt="debuginfo.png">
+PS:父环境销毁的时候并不会回收实际页帧，每个页帧都要一个引用计数器，引用计数器的值在fork()的情境下，应该为2，所以不会被会受到free_list中去</p>
+<p>PART B done</p>
+<hr>
+<h1 id="part-c-preemptive-multitasking-and-inter-process-communication-ipc">Part C: Preemptive Multitasking and Inter-Process communication (IPC)</h1>
+<h1 id="clock-interrupts-and-preemption">Clock Interrupts and Preemption</h1>
+<p>运行<code>user/spin</code>测试程序，这个程序fork出一个子进程，子进程一旦接手CPU后只是简单地永久循环。父进程和内核都不能再获得CPU，这对保护操作系统防范恶意代码和bug的影响当然不是个好情况，因为任何用户态的进程都能接管整个系统去执行一个死循环。为了允许内核去抢占一个正在执行的环境，强制地重新获取CPU，必须为JOS提供来自时钟硬件的外部硬件中断。</p>
+<h1 id="interrput-discipline">Interrput discipline</h1>
+<p>外部中断又被称作IRQ(Interrupt Request Line)，有16种可能的IRQ，从0-15。<code>picirq.c</code>中的<code>pic_init()</code>映射IRQ 0-15映射到IDT的IRQ_OFFSET~IRQ_OFFSET+15。</p>
+<p><code>inc/trap.h</code>文件中，IRQ_OFFSET 被定义为十进制的23，用IDT表的32-47对应IRQ的0~15中断。例如，时钟中断是IRQ的0号，IDT[IRQ_OFFSET+0]包含了再内核中的时钟的历程。<code>IRQ_OFFSET</code>，选用<code>IRQ_OFFSET</code>这个值是为了不覆盖处理器异常。</p>
+<p>JOS做了一个相对于<code>xv6</code>来说关键性的简化，外部中断_总是_在内核态的时候总是被关闭的。外部中断被<code>eflags</code>寄存器的IF位所控制。当这个bit位被置1时，外部中断被打开。当然这个flag值能被多种方法修改，但是由于JOS的简化，保存和恢复<code>eflags</code>寄存器只有一种单独的方式进入和离开用户态。</p>
+<p>在外部中断来临之前，必须保证<code>FL_IF</code>的标志位被设置，中断号通过处理器获得。否则，中断会被屏蔽，或者会被忽略直到中断位被重新开启。在bootloader的时候，就已经屏蔽了中断，并且到现在都没有重新开启它们。</p>
+<hr>
+<h2 id="练习13">练习13</h2>
+<blockquote>
+<p>修改<code>kern/trapentry.S</code>和<code>kern/trap.c</code>，在IDT中去初始化合适的入口，并且为IRQ提供合适的handler。
+然后修改env_alloc()保证用户环境总是开启了中断响应。
+去掉sti(set interrupt-enable flag)指令的注释，使得这个闲置CPU取消屏蔽中断。
+处理器对于硬件中断不会push错误代码(通过CPU针脚和lapic的都不会)</p>
+</blockquote>
+<hr>
+<blockquote>
+<blockquote>
+<p>for example, it is possible to invoke the page-fault handler through the
+INTR pin (by means of vector 14); however, this is not a true page-fault exception. It is an interrupt.</p>
+</blockquote>
+</blockquote>
+<p>也就是说，之前的异常是通过中断产生的，在这个练习中，需要为每一个env都开启IF标志位，所以需要修改之前的handler，使得用户环境发生中断的时候，将IF清0，屏蔽中断。</p>
+<h3 id="trapc">trap.c</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    <span style="font-style:italic">//irq
+</span><span style="font-style:italic"></span>    <span style="">void</span> irq_handler0();
+    <span style="">void</span> irq_handler1();
+    <span style="">void</span> irq_handler2();
+    <span style="">void</span> irq_handler3();
+    <span style="">void</span> irq_handler4();
+    <span style="">void</span> irq_handler5();
+    <span style="">void</span> irq_handler6();
+    <span style="">void</span> irq_handler7();
+    <span style="">void</span> irq_handler8();
+    <span style="">void</span> irq_handler9();
+    <span style="">void</span> irq_handler10();
+    <span style="">void</span> irq_handler11();
+    <span style="">void</span> irq_handler12();
+    <span style="">void</span> irq_handler13();
+    <span style="">void</span> irq_handler14();
+    <span style="">void</span> irq_handler15();
+    SETGATE(idt[T_DIVIDE], 0, GD_KT, divid_entry, 0);
+    SETGATE(idt[T_DEBUG], 0, GD_KT, debug_entry, 3);
+    SETGATE(idt[T_NMI], 0, GD_KT, nmi_entry, 0);
+    SETGATE(idt[T_BRKPT], 0, GD_KT, brkpt_entry, 3);
+    SETGATE(idt[T_OFLOW], 0, GD_KT, oflow_entry, 0);
+    SETGATE(idt[T_BOUND], 0, GD_KT, bound_entry, 0);
+    SETGATE(idt[T_ILLOP], 0, GD_KT, illop_entry, 0);
+    SETGATE(idt[T_DEVICE], 0, GD_KT, device_entry, 0);
+    SETGATE(idt[T_DBLFLT], 0, GD_KT, dblflt_entry, 0);
+    SETGATE(idt[T_TSS], 0, GD_KT, tss_entry, 0);
+    SETGATE(idt[T_SEGNP], 0, GD_KT, segnp_entry, 0);
+    SETGATE(idt[T_STACK], 0, GD_KT, stack_entry, 0);
+    SETGATE(idt[T_GPFLT], 0, GD_KT, gpflt_entry, 0);
+    SETGATE(idt[T_PGFLT], 0, GD_KT, pgflt_entry, 0);
+    SETGATE(idt[T_FPERR], 0, GD_KT, fperr_entry, 0);
+    SETGATE(idt[T_SYSCALL], 0, GD_KT, syscall_entry, 3);
+    <span style="font-style:italic">//irq handler mapping
+</span><span style="font-style:italic"></span>    SETGATE(idt[IRQ_OFFSET+0], 0, GD_KT, irq_handler0, 3);
+    SETGATE(idt[IRQ_OFFSET+1], 0, GD_KT, irq_handler1, 3);
+    SETGATE(idt[IRQ_OFFSET+2], 0, GD_KT, irq_handler2, 3);
+    SETGATE(idt[IRQ_OFFSET+3], 0, GD_KT, irq_handler3, 3);
+    SETGATE(idt[IRQ_OFFSET+4], 0, GD_KT, irq_handler4, 3);
+    SETGATE(idt[IRQ_OFFSET+5], 0, GD_KT, irq_handler5, 3);
+    SETGATE(idt[IRQ_OFFSET+6], 0, GD_KT, irq_handler6, 3);
+    SETGATE(idt[IRQ_OFFSET+7], 0, GD_KT, irq_handler7, 3);
+    SETGATE(idt[IRQ_OFFSET+8], 0, GD_KT, irq_handler8, 3);
+    SETGATE(idt[IRQ_OFFSET+9], 0, GD_KT, irq_handler9, 3);
+    SETGATE(idt[IRQ_OFFSET+10], 0, GD_KT, irq_handler10, 3);
+    SETGATE(idt[IRQ_OFFSET+11], 0, GD_KT, irq_handler11, 3);
+    SETGATE(idt[IRQ_OFFSET+12], 0, GD_KT, irq_handler12, 3);
+    SETGATE(idt[IRQ_OFFSET+13], 0, GD_KT, irq_handler13, 3);
+    SETGATE(idt[IRQ_OFFSET+14], 0, GD_KT, irq_handler14, 3);
+    SETGATE(idt[IRQ_OFFSET+15], 0, GD_KT, irq_handler15, 3);
+
+</code></pre></div><h3 id="trapentrys">trapentry.S</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">TRAPHANDLER_NOEC(irq_handler0, 32);
+TRAPHANDLER_NOEC(irq_handler1, 33);
+TRAPHANDLER_NOEC(irq_handler2, 34);
+TRAPHANDLER_NOEC(irq_handler3, 35);
+TRAPHANDLER_NOEC(irq_handler4, 36);
+TRAPHANDLER_NOEC(irq_handler5, 37);
+TRAPHANDLER_NOEC(irq_handler6, 38);
+TRAPHANDLER_NOEC(irq_handler7, 39);
+TRAPHANDLER_NOEC(irq_handler8, 40);
+TRAPHANDLER_NOEC(irq_handler9, 41);
+TRAPHANDLER_NOEC(irq_handler10, 42);
+TRAPHANDLER_NOEC(irq_handler11, 43);
+TRAPHANDLER_NOEC(irq_handler12, 44);
+TRAPHANDLER_NOEC(irq_handler13, 45);
+TRAPHANDLER_NOEC(irq_handler14, 46);
+TRAPHANDLER_NOEC(irq_handler15, 47);
+</code></pre></div><h3 id="envc">env.c</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    <span style="font-style:italic">// Enable interrupts while in user mode.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    e-&gt;env_tf.tf_eflags |= FL_IF;
+
+</code></pre></div><p>此时为每一个用户进程响应外部中断。</p>
+<hr>
+<h1 id="handing-clock-interrupts">Handing Clock Interrupts</h1>
+<p>在<code>user/spin</code>程序中，在子程序一开始运行时就仅仅是一直循环，内核不能取回控制权，所以现在需要生成周期性的时钟中断，强制性地取回内核的控制权，并且切换到不同的用户环境。</p>
+<h2 id="练习14">练习14</h2>
+<blockquote>
+<p>修改<code>trap_dispatch()</code>，使得当发生时钟中断的时候，调用不同的用户环境。</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    <span style="font-style:italic">// Handle clock interrupts. Don&#39;t forget to acknowledge the
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// interrupt using lapic_eoi() before calling the scheduler!
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (tf-&gt;tf_trapno == IRQ_OFFSET + 0) {
+        lapic_eoi();
+        sched_yield();
+    }
+</code></pre></div><p><strong>eoi</strong>(end of interrupt):置为0表示该中断例程已经结束了。</p>
+<hr>
+<h1 id="inter-process-communication-ipc">Inter-Process communication (IPC)</h1>
+<p>之前都是关注的操作系统的独立性，这种方式使得每个程序看似独占一台机器。另外一个重要的操作系统服务就是允许程序与其他的程序进行交互。Unix中的pipe模型就是一个很典型的例子。</p>
+<p>还有很多模型提供了IPC，关于这些模型哪个最好仍在争议中，取而代之的实现一个简单的IPC机制。</p>
+<p>首先为JOS kernel提供几个的系统调用(<code>sys_ipc_recv</code>和<code>sys_ipc_try_send</code>)提供一个简单的IPC机制，然后实现两个库函数包装系统调用。</p>
+<p>用户环境能发送给其他环境的“消息”由两部分组成：一个32-bit的值和一个可选的单页映射。相比单个32位整形，提供了一种更高效的通过传递页映射信息的方式，允许环境更方便设置共享内存。</p>
+<h1 id="sending-and-receiving-messages">Sending and Receiving Messages</h1>
+<p>为了接收信息，一个用户环境调用<code>sys_ipc_recv</code>。系统调用放弃CPU当前执行的用户环境，并且直到接收到信息之前不会再运行。当一个用户环境正在等待一个消息，任何其他的环境能给它发送消息(不需要特定的用户环境，不需要父子进程等)。换句话说，PART A中的检查对IPC不适用，因为IPC系统调用被设计得很安全：一个用户进程不会因为被接收消息而发生失灵。</p>
+<p>为了尝试发送一个值，用户环境调用<code>sys_ipc_try_send</code>发送接收者的环境id和需要发送的值。如果该id所指的环境确实在接收状态，那么发送方发送消息并且返回0。否则发送方返回<code>-E_IPC_NOT_RECV</code>指出目标环境现在不期望获得一个值。</p>
+<p>用户空间的库函数<code>ipc_recv</code>将会调用<code>sys_ipc_recv</code>并且寻找相关被接收的值。同样地，<code>ipc_send</code>将会重复地调用<code>sys_ipc_try_send</code>直到成功。</p>
+<h1 id="transferring-pages">Transferring Pages</h1>
+<p>当一个用户环境调用<code>sys_ipc_recv</code>使用了一个合法的<code>dstva</code>参数，那么这个环境将会愿意去接受一个页的映射。如果发送方发送了一个页，那么这个页将会被映射到接收方的<code>dstva</code>这个地址空间去。 如果接收方已经映射了页帧在<code>dstva</code>，那么先前的页映射将会被取消。</p>
+<p>当一个用户环境调用<code>sys_ipc_try_send</code>传递小于<code>UTOP</code>的参数<code>srcva</code>，这意味着发送方想将这个页映射到接收方的内存空间，并且设置权限位<code>perm</code>。成功IPC后，发送方保持之前的页映射，但是接收方映射了与发送方相同的页帧到<code>dstva</code>，这使得双方能共享同一个页。如果发送方或者接收方没有指出哪个页需要被发送，那么就没有页被发送。</p>
+<h2 id="练习15">练习15</h2>
+<blockquote>
+<p>先实现<code>sys_ipc_recv</code>和<code>sys_ipc_try_send</code>,checkperm需要被置0，因为不一定需要父子关系才能引用。
+实现<code>ipc_recv</code>和<code>ipc_send</code>，这是对系统调用的一个封装。
+用user/pingpong和user/primes测试IPC机制。</p>
+</blockquote>
+<hr>
+<h3 id="sys_ipc_recv">sys_ipc_recv()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_ipc_recv(<span style="">void</span> *dstva)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_ipc_recv not implemented&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> ((uint32_t)dstva &lt; UTOP &amp;&amp; (uint32_t)dstva % PGSIZE)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">//mapping
+</span><span style="font-style:italic"></span>
+    <span style="font-style:italic">//set status
+</span><span style="font-style:italic"></span>    curenv-&gt;env_ipc_recving = true;
+    curenv-&gt;env_ipc_dstva = dstva;
+    curenv-&gt;env_status = ENV_NOT_RUNNABLE;
+    sched_yield();
+    <span style="font-weight:bold">return</span> 0;
+}
+</code></pre></div><h3 id="sys_ipc_try_send">sys_ipc_try_send()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">static</span> <span style="">int</span>
+sys_ipc_try_send(envid_t envid, uint32_t value, <span style="">void</span> *srcva, <span style="">unsigned</span> perm)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;sys_ipc_try_send not implemented&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">struct</span> Env *dstenv;
+    <span style="font-weight:bold">struct</span> PageInfo *pp;
+    pte_t *pte;
+
+    <span style="font-style:italic">//cprintf(&#34;%x, val: %d\n&#34;, srcva, value);
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (envid2env(envid, &amp;dstenv, 0) &lt; 0)
+        <span style="font-weight:bold">return</span> -E_BAD_ENV;
+    <span style="font-weight:bold">if</span> (!dstenv-&gt;env_ipc_recving)
+        <span style="font-weight:bold">return</span> -E_IPC_NOT_RECV;
+    <span style="font-weight:bold">if</span> (perm &amp; ~PTE_SYSCALL)
+        <span style="font-weight:bold">return</span> -E_INVAL;
+
+    <span style="font-style:italic">// for page mapping checks //
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> ((uint32_t)srcva &lt; UTOP) {
+        <span style="font-weight:bold">if</span> ((uint32_t)srcva % PGSIZE)
+            <span style="font-weight:bold">return</span> -E_INVAL;
+        <span style="font-weight:bold">if</span> (!(pp = page_lookup(curenv-&gt;env_pgdir, srcva, &amp;pte)))
+            <span style="font-weight:bold">return</span> -E_INVAL;
+        <span style="font-weight:bold">if</span> (perm &amp; PTE_W &amp;&amp; !(*pte &amp; PTE_W))
+            <span style="font-weight:bold">return</span> -E_INVAL;
+        <span style="font-weight:bold">if</span> (page_insert(dstenv-&gt;env_pgdir, pp,  dstenv-&gt;env_ipc_dstva, perm) &lt; 0)
+            <span style="font-weight:bold">return</span> -E_NO_MEM;
+    }
+    <span style="font-style:italic">// update target env fields
+</span><span style="font-style:italic"></span>    dstenv-&gt;env_ipc_recving = false;
+    dstenv-&gt;env_ipc_from = curenv-&gt;env_id;
+    dstenv-&gt;env_ipc_value = value;
+    dstenv-&gt;env_ipc_perm = perm;
+    dstenv-&gt;env_status = ENV_RUNNABLE;
+    dstenv-&gt;env_tf.tf_regs.reg_eax = 0;
+    <span style="font-weight:bold">return</span> 0;
+
+
+}
+
+</code></pre></div><h3 id="ipc_recv">ipc_recv()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">int32_t
+ipc_recv(envid_t *from_env_store, <span style="">void</span> *pg, <span style="">int</span> *perm_store)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;ipc_recv not implemented&#34;);
+</span><span style="font-style:italic"></span>    <span style="">int</span> r;
+    <span style="">void</span> *va;
+
+
+    <span style="font-weight:bold">if</span> (pg != NULL)
+        va = pg;
+    <span style="font-weight:bold">if</span> (pg == NULL)
+        va = (<span style="">void</span> *)-1;
+
+    <span style="font-style:italic">//system call failed
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (sys_ipc_recv(va) &lt; 0) {
+        *from_env_store = 0;
+        *perm_store = 0;
+    }
+
+    <span style="font-style:italic">//store infomation for caller
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span> (from_env_store)
+        *from_env_store = thisenv-&gt;env_ipc_from;
+    <span style="font-weight:bold">if</span> (perm_store)
+        *perm_store =  thisenv-&gt;env_ipc_perm;
+
+    <span style="font-weight:bold">return</span> thisenv-&gt;env_ipc_value;
+}
+</code></pre></div><h3 id="ipc_send">ipc_send()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+ipc_send(envid_t to_env, uint32_t val, <span style="">void</span> *pg, <span style="">int</span> perm)
+{
+    <span style="font-style:italic">// LAB 4: Your code here.
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">//panic(&#34;ipc_send not implemented&#34;);
+</span><span style="font-style:italic"></span>    <span style="">int</span> r;
+    <span style="">void</span> *va;
+
+    <span style="font-weight:bold">if</span> (!pg)
+        va = (<span style="">void</span> *)-1;
+    <span style="font-weight:bold">else</span>
+        va = pg;
+
+    <span style="font-weight:bold">while</span> (1) {
+        r = sys_ipc_try_send(to_env, val, va, perm);
+        <span style="font-weight:bold">if</span> (r == 0)
+            <span style="font-weight:bold">break</span>;
+        <span style="font-weight:bold">if</span> (r &lt; 0 &amp;&amp; r != -E_IPC_NOT_RECV)
+            panic(<span style="font-style:italic">&#34;error on send ipc_send, %e&#34;</span>, r);
+        <span style="font-weight:bold">if</span> (r == -E_IPC_NOT_RECV)
+            sys_yield();
+    }
+
+}
+</code></pre></div><p>梳理一个过程(pingpong程序)：
+<code>sys_ipc_recv</code>将当前env设置为不可运行状态后调用调度程序，发送方开始执行检查并且配置自己和接收方内存空间的页映射等相关信息，设置完后通过return返回到<code>trap()</code>函数，通过env_run()返回用户态，准备执行<code>ipc_recv</code>接收刚才接收方的消息，执行调度。接收方的用户环境已经设置为可运行状态，从而开始执行<code>env_run</code>，此时这个环境中eax的值还是之前系统调用号<code>12</code>，如果运行<code>env_tf_pop</code>会直接回到调用的地点引发错误。所以，发送方应该将接收方的eax置为0表示接收成功。</p>
+<h1 id="make-grade">make grade</h1>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">make[1]: Leaving directory <span style="">&#39;</span>/home/moonlight/lab<span style="">&#39;</span>
+dumbfork: OK (1.4s)
+Part A score: 5/5
+
+faultread: OK (0.9s)
+faultwrite: OK (1.0s)
+faultdie: OK (2.0s)
+faultregs: OK (2.0s)
+faultalloc: OK (1.0s)
+faultallocbad: OK (1.8s)
+faultnostack: OK (1.1s)
+faultbadhandler: OK (1.9s)
+faultevilhandler: OK (2.2s)
+forktree: OK (2.0s)
+Part B score: 50/50
+
+spin: OK (1.9s)
+stresssched: OK (3.4s)
+sendpage: OK (1.8s)
+    (Old jos.out.sendpage failure log removed)
+pingpong: OK (2.0s)
+    (Old jos.out.pingpong failure log removed)
+primes: OK (13.9s)
+    (Old jos.out.primes failure log removed)
+Part C score: 25/25
+
+Score: 80/80
+moonlight<span style="">@</span>ubuntu:~/lab<span style="">$</span>
+</code></pre></div><blockquote>
+<p>Challenge 1:solute the <code>ipc_send</code> loop</p>
+</blockquote>
+<p>//todo here , reading IA32</p>
+<ol>
+<li>ipc_send use <code>ipc_find_env</code> firstly to find corrsponding env whose status is runnable</li>
+<li>call <code>sys_ipc_try_send</code></li>
+<li>for the status of target env is running ,I should send an IPC interrupt using  <code>lapic_ipi()</code> function in the file <code>lapic.c</code>.</li>
+<li>makes it runnable</li>
+<li>call <code>sys_ipc_try_send</code></li>
+</ol>
+<hr>
+<blockquote>
+<p>thread introduction : <a href="http://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-35.pdf">http://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-35.pdf</a></p>
+</blockquote>
+<blockquote>
+<p>kernel design : <a href="https://github.com/fATwaer/fatwaer.github.io/tree/master/pdf/os/SRC-RR-35.pdf">https://github.com/fATwaer/fatwaer.github.io/tree/master/pdf/os/SRC-RR-35.pdf</a></p>
+</blockquote>
+<h1 id="总结">总结</h1>
+<p>上面两篇paper非常值得一看，JOS到目前为止都没用到thread这个概念，但是在接下来的学习中是非常重要的，另外一直没有看完的是IA32手册，这份手册提供了很多操作系统的细节，虽然没必要全部读完，但是我觉得至少把个位数的章节读完是很有必要的。</p>
+<p>Lab4到这里已经结束了，从5.7到5.19大概花了两周的时间，不同部分的代码依赖很强，一点不小心就会引发非常严重的错误。不过在这个实验中，第一次听说了回归测试这个概念，应该与单元测试功能相同，是为大型程序阶段性检测的一种技巧。JOS替换了进程的叫法，称之为“用户环境”。在实验中可以体会到，一个用户环境的创建包括很多过程，页表，页映射，当前执行的CPU，错误处理机制，正常栈，异常栈等等信息都要提前准备好才把这个进程设置为可运行状态，所准备的一切都是为一个需要执行的任务做下铺垫。</p>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/os/">
+                OS
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+<div class="related-content">
+  <h3>Related Posts</h3>
+  <ul>
+    
+    <li><a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/">6.828-操作系统工程-Lab3:User Environments</a></li>
+    
+    <li><a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/">6.828-操作系统工程-Lab2:Memory Management</a></li>
+    
+  </ul>
+</div>
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

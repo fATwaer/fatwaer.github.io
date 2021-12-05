@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://www.fatwae.store/blog/c-i-c&#43;&#43;/programatic2/" />
+  <link rel="canonical" href="https://www.fatwae.store/blog/c-i-c&#43;&#43;/programatic2/" /><link rel="alternate" type="application/atom+xml" href="https://www.fatwae.store/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/www.fatwae.store\/"
+      },
+      "articleSection" : "blog",
+      "name" : "实效性软件构建的途径-下",
+      "headline" : "实效性软件构建的途径-下",
+      "description" : "前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。\n1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。\n无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。\n2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。\n花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。\n3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。\n那么如何合理地进行重构？\n 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。\n另外测试都应该具有以下功能：\n setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。\n而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。\n6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。\n7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。\n8. 管理知识资产 对于金融资产的管理：\n 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：\n 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：\n 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-04-15 19:32:10 \u002b0800 CST",
+      "dateModified" : "2020-04-15 19:32:10 \u002b0800 CST",
+      "url" : "https:\/\/www.fatwae.store\/blog\/c-i-c\u002b\u002b\/programatic2\/",
+      "keywords" : [  ]
+  }
+</script>
+<title>实效性软件构建的途径-下</title>
+  <meta property="og:title" content="实效性软件构建的途径-下" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。
+1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。
+无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。
+2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。
+花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。
+3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。
+那么如何合理地进行重构？
+ 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。
+另外测试都应该具有以下功能：
+ setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。
+而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。
+6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。
+7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。
+8. 管理知识资产 对于金融资产的管理：
+ 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：
+ 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：
+ 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。" />
+  <meta name="description" content="前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。
+1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。
+无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。
+2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。
+花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。
+3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。
+那么如何合理地进行重构？
+ 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。
+另外测试都应该具有以下功能：
+ setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。
+而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。
+6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。
+7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。
+8. 管理知识资产 对于金融资产的管理：
+ 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：
+ 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：
+ 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="https://pawer.io" target="_blank">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="" target="_blank">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">实效性软件构建的途径-下</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2020-04-15 19:32:10 CST">
+                15 Apr 2020
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https://pwaer.io/">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="前言">前言</h2>
+<p>如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。</p>
+<h2 id="1-养成估算的习惯">1. 养成估算的习惯</h2>
+<p>1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。</p>
+<p>无论什么时候有人需要你进行估算，你都可以给出答案。
+如果没有经验，估算通常可以去问问已经做过该事情的人。
+追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。</p>
+<h2 id="2-调试的过程">2. 调试的过程</h2>
+<p>这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。</p>
+<p>花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。</p>
+<h2 id="3-重构">3. 重构</h2>
+<p>不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。</p>
+<p>那么如何合理地进行重构？</p>
+<ol>
+<li>不要在重构同时新增功能</li>
+<li>开始重构前要有良好的测试，确保重构后能通过</li>
+<li>采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试</li>
+</ol>
+<h2 id="4-测试的一些建议">4. 测试的一些建议</h2>
+<p>根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。
+单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。</p>
+<p>另外测试都应该具有以下功能：</p>
+<ol>
+<li>setup和cleanup的标准途径</li>
+<li>可选择地选择可用测试方法</li>
+<li>分析输出结果的手段</li>
+<li>标准化故障报告的形式</li>
+</ol>
+<h2 id="5-曳光弹与原型开发">5. 曳光弹与原型开发</h2>
+<p>曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。</p>
+<p>而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。</p>
+<h2 id="6-做变化的催化剂">6. 做变化的催化剂</h2>
+<p>这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。</p>
+<h2 id="7-不要过度修饰和求精程序">7. 不要过度修饰和求精程序</h2>
+<p>这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。</p>
+<h2 id="8-管理知识资产">8. 管理知识资产</h2>
+<p>对于金融资产的管理：</p>
+<ul>
+<li>定期投资，形成习惯</li>
+<li>多元化是长期成功的关键</li>
+<li>在保守的投资和高风险，高回报的投资之间平衡资产</li>
+<li>设法低买高卖获取最大回报</li>
+<li>周期性的评估和平衡财产</li>
+</ul>
+<p>而程序员管理自己的知识资产可以类比：</p>
+<ul>
+<li>定投，周期性的学习</li>
+<li>多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣</li>
+<li>管理风险，不要把所学的技术都放在一个篮子里</li>
+<li>低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作</li>
+<li>重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。</li>
+</ul>
+<p>所以可以给自己设立一些周期性的目标，防止自己的脱节：</p>
+<ul>
+<li>定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。</li>
+<li>偶尔学习一些公开课</li>
+<li>参与一些组织，打听公司以外的人都在做什么</li>
+<li>试验不同的环境，技术或者非技术都是如此，逃离舒适区</li>
+<li>持续投入！</li>
+</ul>
+<h2 id="9-交流">9. 交流</h2>
+<p>交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。</p>
+<p>书中提到的最关键的几点：</p>
+<h3 id="了解听众">了解听众</h3>
+<ol>
+<li>你想让他们学到什么</li>
+<li>他们对你讲的什么感兴趣</li>
+<li>他们有多丰富的经验</li>
+<li>他们要多少细节</li>
+<li>你想要谁拥有这些信息</li>
+<li>你如何促使他们听你说话</li>
+</ol>
+<h3 id="认真倾听和及时回复">认真倾听和及时回复</h3>
+<p>对于前者，你不听别人讲话，别人也懒得听你的 ：）；及时回复这一点，在现代社会中其实很容易遗忘，但是即使简单回复，”我稍后回复你“，也会显得礼貌。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《The Programatic Programmer》</li>
+<li><a href="https://en.wikipedia.org/wiki/Law_of_Demeter">https://en.wikipedia.org/wiki/Law_of_Demeter</a></li>
+</ul>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

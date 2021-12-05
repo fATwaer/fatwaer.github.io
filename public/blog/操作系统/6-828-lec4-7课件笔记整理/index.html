@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" />
+  <link rel="canonical" href="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" /><link rel="alternate" type="application/atom+xml" href="https://www.fatwae.store/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/www.fatwae.store\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6-828-操作系统工程-Lec4-7课件笔记整理",
+      "headline" : "6-828-操作系统工程-Lec4-7课件笔记整理",
+      "description" : "Lec4 shell \/ OS  https:\/\/pdos.csail.mit.edu\/6.828\/2017\/lec\/l-shell.txt process = address space \u002b thread app -\u0026gt; printf() -\u0026gt; write() -\u0026gt; SYSTEM CALL -\u0026gt; sys_write() -\u0026gt; ..\nHomework2\n  exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()\n  redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。\n  pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls \u0026gt; temp1 ; sort temp1 \u0026gt; temp2; uniq temp2 \u0026gt; temp3; wc temp3 \u0026gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-04-11 10:59:57 \u002b0000 UTC",
+      "dateModified" : "2018-04-11 10:59:57 \u002b0000 UTC",
+      "url" : "https:\/\/www.fatwae.store\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86\/",
+      "keywords" : [ "OS", ]
+  }
+</script>
+<title>6-828-操作系统工程-Lec4-7课件笔记整理</title>
+  <meta property="og:title" content="6-828-操作系统工程-Lec4-7课件笔记整理" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="Lec4 shell / OS  https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space &#43; thread app -&amp;gt; printf() -&amp;gt; write() -&amp;gt; SYSTEM CALL -&amp;gt; sys_write() -&amp;gt; ..
+Homework2
+  exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()
+  redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。
+  pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls &amp;gt; temp1 ; sort temp1 &amp;gt; temp2; uniq temp2 &amp;gt; temp3; wc temp3 &amp;gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?" />
+  <meta name="description" content="Lec4 shell / OS  https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space &#43; thread app -&amp;gt; printf() -&amp;gt; write() -&amp;gt; SYSTEM CALL -&amp;gt; sys_write() -&amp;gt; ..
+Homework2
+  exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()
+  redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。
+  pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls &amp;gt; temp1 ; sort temp1 &amp;gt; temp2; uniq temp2 &amp;gt; temp3; wc temp3 &amp;gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="https://pawer.io" target="_blank">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="" target="_blank">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6-828-操作系统工程-Lec4-7课件笔记整理</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-04-11 10:59:57 UTC">
+                11 Apr 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https://pwaer.io/">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h1 id="lec4-shell--os">Lec4 shell / OS</h1>
+<hr>
+<p><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt</a>
+process = address space + thread
+app -&gt; printf() -&gt; write() -&gt; SYSTEM CALL -&gt; sys_write() -&gt; ..</p>
+<p><code>Homework2</code></p>
+<ul>
+<li>
+<p>exec:
+execv()一个参数是用来执行命令，另一个让函数知道参数的结束。
+exec程序结束后
+execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()</p>
+</li>
+<li>
+<p>redirect
+关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。</p>
+</li>
+<li>
+<p>pipe
+如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。
+reader不关掉写端，读不到数据。
+writer不关读段，正常执行。
+pipe的好处，例如 <code>ls | sort | uniq | wc</code>指令，如果没有pipe的话，指令则只能这样写<code>ls &gt; temp1 ; sort temp1 &gt; temp2; uniq temp2 &gt; temp3; wc temp3 &gt; temp4; cat temp4</code>
+<em>how does the kernel know when to free the pipe buffer?</em></p>
+</li>
+</ul>
+<p><code>fork</code></p>
+<p>sleep 5 | ls</p>
+<p>left | right | result
+unfork | fork | sleep -&gt; ls
+fork | fork | ls / not sleep
+fork | unfork | ls / not sleep</p>
+<p>linux 情况是 ls -&gt; sleep，最后发现父进程并没有等子进程完成就结束了。
+正常流程应该是 主进程-&gt;fork1()-&gt;fork2()-&gt;exec &lsquo;ls&rsquo;
+-&gt;exec &lsquo;sleep 5&rsquo;
+-&gt;wait(fork1()) -&gt; wait(fork2()) -&gt; 主进程回收。</p>
+<p><code>UNIX system call observations</code></p>
+<p>The fork/exec split looks wasteful &ndash; fork() copies mem, exec() discards.</p>
+<p>FDs hide specifics that may be important
+e.g. block size for on-disk files
+e.g. timing and size of network messages</p>
+<p>kernel:
+abstract resources rather than raw hardware
+File system, not raw disk
+Processes, not raw CPU/memory
+TCP, not ethernet packets
+abstractions often ease isolation, multiplexing and interaction
+also more convenient and portable</p>
+<ul>
+<li>Processors provide mechanisms that help with isolation
+<ul>
+<li>Hardware provides user mode and kernel mode
+<ul>
+<li>some instructions can only be executed in kernel mode
+device access, processor configuration, isolation mechanisms</li>
+</ul>
+</li>
+<li>Hardware forbids apps from executing privileged instructions
+<ul>
+<li>instead traps to kernel mode</li>
+<li>kernel can clean up (e.g., kill the process)</li>
+</ul>
+</li>
+<li>Hardware lets kernel mode configure various constraints on user mode
+most critical: page tables to limit user s/w to its own address space</li>
+</ul>
+</li>
+</ul>
+<h1 id="lecture-5-isolation-mechanisms">Lecture 5: Isolation mechanisms</h1>
+<h2 id="httpspdoscsailmitedu68282017lecl-internaltxt"><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt</a></h2>
+<ul>
+<li>
+<p>What is isolation?</p>
+<ol>
+<li>进程隔离内存空间</li>
+<li>阻止进程X破坏偷取进程Y内存空间，或者使用100%CPU，改变FD，进程状态等</li>
+<li>阻止进程影响操作系统</li>
+</ol>
+</li>
+<li>
+<p>the kernel uses hardware mechanisms as part of process isolation:</p>
+<ol>
+<li>user/kernel mode flag</li>
+<li>address spaces</li>
+<li>timeslicing</li>
+<li>system call interface</li>
+</ol>
+</li>
+</ul>
+<h2 id="implement-system-call">implement system call</h2>
+<ul>
+<li>how to do a system call &ndash; switching CPL
+Q: would this be an OK design for user programs to make a system call:
+set CPL=0
+jmp sys_open
+bad: user-specified instructions with CPL=0
+Q: how about a combined instruction that sets CPL=0,
+but <em>requires</em> an immediate jump to someplace in the kernel?
+bad: user might jump somewhere awkward in the kernel
+<em>the x86 answer</em>:
+<strong>there are only a few permissible kernel entry points (&ldquo;vectors&rdquo;) INT instruction sets CPL=0 and jumps to an entry point but user code can&rsquo;t otherwise modify CPL or jump anywhere else in kernel system call return sets CPL=3 before returning to user code also a combined instruction (can&rsquo;t separately set CPL and jmp)</strong></li>
+</ul>
+<p><strong>使用INT指令将CPL位置为0，存储少量用户寄存器的值（  err, eip, cs, eflags, esp, ss）到内核的栈中，并且跳转到内核空间，IRET指令相反。</strong></p>
+<ul>
+<li>how to create isolated address spaces?
+xv6 uses x86 &ldquo;paging hardware&rdquo; in the <em>memory management unit</em> (MMU)
+MMU translates (or &ldquo;maps&rdquo;) every address issued by program</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">    CPU -&gt; MMU -&gt; RAM
+            |
+         pagetable
+</code></pre></div><pre><code>VA -&gt; PA
+MMU translates all memory references: user and kernel, instructions and data
+instructions use only VAs, never PAs
+</code></pre>
+<p>kernel sets up a different page table for each process
+each process&rsquo;s page table allows access only to that process&rsquo;s RAM
+<strong>lab2中Page Table的实现就有关于虚拟内存到物理内存的映射</strong></p>
+<p><strong>虚拟内存模型</strong></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">  FFFFFFFF:
+            ...
+  80000000: kernel
+            user stack
+            user data
+  00000000: user instructions
+</code></pre></div><h2 id="fork出一个新的进程">Fork出一个新的进程</h2>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/os/">
+                OS
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+<div class="related-content">
+  <h3>Related Posts</h3>
+  <ul>
+    
+    <li><a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">6.828-操作系统工程-Lec1-3课件笔记和作业</a></li>
+    
+    <li><a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/">6.828-操作系统工程-Lab1:Booting a PC</a></li>
+    
+  </ul>
+</div>
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

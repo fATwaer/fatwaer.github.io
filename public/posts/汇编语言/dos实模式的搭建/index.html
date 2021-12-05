@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DOS实模式的搭建</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="DOS实模式的搭建" />
+<meta property="og:description" content="前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。
+安装 安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。
+接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。
+然后会提示重新启动，跟着提示来，会提示一个错误：
+这应该是DOS支持的磁盘格式为FAT32，而现在的windows支持的硬盘格式是NTFS，两者格式不兼容导致的。 我们关闭虚拟机重新启动下，在下面这个界面按F2进入BIOS设置首先启动项：
+修改启动项 跟着以下步骤操作： img [class names] 1. → 移动选项卡至 &lsquo;boot&rsquo; 2. ↓ 移动选项至 &lsquo;CD-ROM Drive&rsquo; 3. 按住 &lsquo;shift&rsquo; 和 &lsquo;&#43;&rsquo; 将选中的CD-ROM Drive向上移动 4. 按F10保存退出
+此时该虚拟机会重新启动，然后重新进入安装界面。 根据提示，一步一步按确定，基本都是肯定选项。 [注意]直到提示关于 &lsquo;Adds-On&rsquo; 额外的软件安装，在这里我们选择 &lsquo;Cancel&rsquo; 取消，不进行额外的操作。
+如图可见，安装成功，重新启动。 重新启动后发现，还是进入的安装界面，这是因为之前在BIOS内设置过优先启动项的缘故。 和之前的操作一样，在vmware动画界面按F2进入BIOS，用组合键 shift 和 - 将CD-ROM Drive恢复到原来的位置(默认是第三个)。
+好了，到现在完成了DOS的安装了，但是还有个问题，就是VMware并没有给DOS提供vmtools，所以物理机和虚拟机之间传输文件并不方便。
+文件传输 首先，我们先关闭DOS虚拟机，然后在左侧硬件配置处点击硬盘。
+根据红色箭头提示，点击映射。
+然后把**&ldquo;以只读文件模式打开文件&rdquo;**前面的勾去掉，然后关闭警告，打开我的电脑，可以发现本地多出一个磁盘
+打开后可以看到DOS的实际文件，也就是说，我们可以直接对DOS的文件进行操作。 我们可以把自己的要编译的汇编代码放进去。(图中&quot;lab8.asm&quot;)
+再断开连接，否则DOS将无法启动。 最后，我们再验证一下。
+如图，纯DOS系统里已经有了自己放进去的文件。
+ DOS 7.10.iso 云盘链接 : http://pan.baidu.com/s/1slPZQot 密码: x0ht
+ " />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2017-11-17T00:17:04+00:00" />
+<meta property="article:modified_time" content="2017-11-17T00:17:04+00:00" />
+
+
+
+    
+    
+<meta name="description" content="DOS实模式的搭建" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>November 17, 2017</p>
+        </div>
+
+        <div class="title">
+          <h1>DOS实模式的搭建</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h3 id="前言">前言</h3>
+<p>王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。
+之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。</p>
+<h3 id="安装">安装</h3>
+<p>安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/1.png" alt="1.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/2.png" alt="2.png"></p>
+<p>接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/3.png" alt="3.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/4.png" alt="4.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/5.png" alt="5.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/6.png" alt="6.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/7.png" alt="7.png"></p>
+<p>然后会提示重新启动，跟着提示来，会提示一个错误：</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/8.png" alt="8.png"></p>
+<p>这应该是DOS支持的磁盘格式为FAT32，而现在的windows支持的硬盘格式是NTFS，两者格式不兼容导致的。
+我们关闭虚拟机重新启动下，在下面这个界面按F2进入BIOS设置首先启动项：</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/9.png" alt="9.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/10.png" alt="10.png"></p>
+<h3 id="修改启动项">修改启动项</h3>
+<p>跟着以下步骤操作： img [class names]
+<strong>1. → 移动选项卡至 &lsquo;boot&rsquo;</strong>
+<strong>2. ↓ 移动选项至 &lsquo;CD-ROM Drive&rsquo;</strong>
+<strong>3. 按住 &lsquo;shift&rsquo; 和 &lsquo;+&rsquo; 将选中的CD-ROM Drive向上移动</strong>
+<strong>4. 按F10保存退出</strong></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/11.png" alt="11.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/12.png" alt="12.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/13.png" alt="13.png"></p>
+<p>此时该虚拟机会重新启动，然后重新进入安装界面。
+根据提示，一步一步按确定，基本都是肯定选项。
+<strong>[注意]直到提示关于 &lsquo;Adds-On&rsquo; 额外的软件安装，在这里我们选择 &lsquo;Cancel&rsquo; 取消，不进行额外的操作。</strong></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/14.png" alt="14.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/15.png" alt="15.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/16.png" alt="16.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/17.png" alt="17.png"></p>
+<p>如图可见，安装成功，重新启动。
+重新启动后发现，还是进入的安装界面，这是因为之前在BIOS内设置过优先启动项的缘故。
+和之前的操作一样，在vmware动画界面按F2进入BIOS，用<strong>组合键 shift 和 -  将CD-ROM Drive</strong>恢复到原来的位置(默认是第三个)。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/19.png" alt="19.png"></p>
+<p>好了，到现在完成了DOS的安装了，但是还有个问题，就是VMware并没有给DOS提供vmtools，所以物理机和虚拟机之间传输文件并不方便。</p>
+<h3 id="文件传输">文件传输</h3>
+<p>首先，我们先关闭DOS虚拟机，然后在<strong>左侧硬件配置</strong>处点击<strong>硬盘</strong>。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/20.png" alt="20.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/21.png" alt="21.png"></p>
+<p>根据红色箭头提示，点击<strong>映射</strong>。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/22.png" alt="22.png"></p>
+<p>然后把**&ldquo;以只读文件模式打开文件&rdquo;**前面的勾去掉，然后关闭警告，打开我的电脑，可以发现本地多出一个磁盘</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/3.png" alt="23.png"></p>
+<p>打开后可以看到DOS的实际文件，也就是说，我们可以直接对DOS的文件进行操作。
+我们可以把自己的要编译的汇编代码放进去。<strong>(图中&quot;lab8.asm&quot;)</strong></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/24.png" alt="24.png"></p>
+<p><strong>再断开连接，否则DOS将无法启动。</strong>
+最后，我们再验证一下。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/25.png" alt="25.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/assembly/dos/26.png" alt="26.png"></p>
+<p>如图，纯DOS系统里已经有了自己放进去的文件。</p>
+<blockquote>
+<p>DOS 7.10.iso 云盘链接  : <a href="http://pan.baidu.com/s/1slPZQot">http://pan.baidu.com/s/1slPZQot</a> 密码: x0ht</p>
+</blockquote>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/%e6%b1%87%e7%bc%96%e8%af%ad%e8%a8%80/DOS%e5%ae%9e%e6%a8%a1%e5%bc%8f%e7%9a%84%e6%90%ad%e5%bb%ba.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#前言">前言</a></li>
+        <li><a href="#安装">安装</a></li>
+        <li><a href="#修改启动项">修改启动项</a></li>
+        <li><a href="#文件传输">文件传输</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

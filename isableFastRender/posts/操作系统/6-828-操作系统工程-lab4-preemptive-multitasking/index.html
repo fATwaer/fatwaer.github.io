@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="generator" content="Hugo 0.57.2" />
+  <link rel="canonical" href="http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/">
+
+  
+
+  
+   
+   <link rel="shortcut icon" href="/11.jpeg" >
+   
+  <link rel="manifest" href="/site.webmanifest">
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/prism.css" media="none" onload="this.media='all';">
+
+  
+  
+  <link rel="stylesheet" type="text/css" href="http://localhost:1313/css/styles.css">
+
+  <style id="inverter" media="none">
+    html { filter: invert(100%) }
+    * { background-color: inherit }
+    img:not([src*=".svg"]), .colors, iframe, .demo-container { filter: invert(100%) }
+  </style>
+
+  
+  
+  <title>6.828-操作系统工程-Lab4:Preemptive Multitasking | fatwaer</title>
+</head>
+
+  <body>
+    <a href="#main">skip to content</a>
+    <svg style="display: none">
+  <symbol id="bookmark" viewBox="0 0 40 50">
+   <g transform="translate(2266 3206.2)">
+    <path style="stroke:currentColor;stroke-width:3.2637;fill:none" d="m-2262.2-3203.4-.2331 42.195 16.319-16.318 16.318 16.318.2331-42.428z"/>
+   </g>
+  </symbol>
+
+  <symbol id="w3c" viewBox="0 0 127.09899 67.763">
+   <text font-size="83" style="font-size:83px;font-family:Trebuchet;letter-spacing:-12;fill-opacity:0" letter-spacing="-12" y="67.609352" x="-26.782778">W3C</text>
+   <text font-size="83" style="font-size:83px;font-weight:bold;font-family:Trebuchet;fill-opacity:0" y="67.609352" x="153.21722" font-weight="bold">SVG</text>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m33.695.377 12.062 41.016 12.067-41.016h8.731l-19.968 67.386h-.831l-12.48-41.759-12.479 41.759h-.832l-19.965-67.386h8.736l12.061 41.016 8.154-27.618-3.993-13.397h8.737z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m91.355 46.132c0 6.104-1.624 11.234-4.862 15.394-3.248 4.158-7.45 6.237-12.607 6.237-3.882 0-7.263-1.238-10.148-3.702-2.885-2.47-5.02-5.812-6.406-10.022l6.82-2.829c1.001 2.552 2.317 4.562 3.953 6.028 1.636 1.469 3.56 2.207 5.781 2.207 2.329 0 4.3-1.306 5.909-3.911 1.609-2.606 2.411-5.738 2.411-9.401 0-4.049-.861-7.179-2.582-9.399-1.995-2.604-5.129-3.912-9.397-3.912h-3.327v-3.991l11.646-20.133h-14.062l-3.911 6.655h-2.493v-14.976h32.441v4.075l-12.31 21.217c4.324 1.385 7.596 3.911 9.815 7.571 2.22 3.659 3.329 7.953 3.329 12.892z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.21 0 1.414 8.6-5.008 9.583s-1.924-4.064-5.117-6.314c-2.693-1.899-4.447-2.309-7.186-1.746-3.527.73-7.516 4.938-9.258 10.13-2.084 6.21-2.104 9.218-2.178 11.978-.115 4.428.58 7.043.58 7.043s-3.04-5.626-3.011-13.866c.018-5.882.947-11.218 3.666-16.479 2.404-4.627 5.954-7.404 9.114-7.728 3.264-.343 5.848 1.229 7.841 2.938 2.089 1.788 4.213 5.698 4.213 5.698l4.94-9.837z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.82 48.674s-2.208 3.957-3.589 5.48c-1.379 1.524-3.849 4.209-6.896 5.555-3.049 1.343-4.646 1.598-7.661 1.306-3.01-.29-5.807-2.032-6.786-2.764-.979-.722-3.486-2.864-4.897-4.854-1.42-2-3.634-5.995-3.634-5.995s1.233 4.001 2.007 5.699c.442.977 1.81 3.965 3.749 6.572 1.805 2.425 5.315 6.604 10.652 7.545 5.336.945 9.002-1.449 9.907-2.031.907-.578 2.819-2.178 4.032-3.475 1.264-1.351 2.459-3.079 3.116-4.108.487-.758 1.276-2.286 1.276-2.286l-1.276-6.644z"/>
+  </symbol>
+
+  <symbol id="tag" viewBox="0 0 177.16535 177.16535">
+    <g transform="translate(0 -875.2)">
+     <path style="fill-rule:evenodd;stroke-width:0;fill:currentColor" d="m159.9 894.3-68.79 8.5872-75.42 77.336 61.931 60.397 75.429-76.565 6.8495-69.755zm-31.412 31.835a10.813 10.813 0 0 1 1.8443 2.247 10.813 10.813 0 0 1 -3.5174 14.872l-.0445.0275a10.813 10.813 0 0 1 -14.86 -3.5714 10.813 10.813 0 0 1 3.5563 -14.863 10.813 10.813 0 0 1 13.022 1.2884z"/>
+    </g>
+  </symbol>
+
+  <symbol id="balloon" viewBox="0 0 141.73228 177.16535">
+   <g transform="translate(0 -875.2)">
+    <g>
+     <path style="fill:currentColor" d="m68.156 882.83-.88753 1.4269c-4.9564 7.9666-6.3764 17.321-5.6731 37.378.36584 10.437 1.1246 23.51 1.6874 29.062.38895 3.8372 3.8278 32.454 4.6105 38.459 4.6694-.24176 9.2946.2879 14.377 1.481 1.2359-3.2937 5.2496-13.088 8.886-21.623 6.249-14.668 8.4128-21.264 10.253-31.252 1.2464-6.7626 1.6341-12.156 1.4204-19.764-.36325-12.93-2.1234-19.487-6.9377-25.843-2.0833-2.7507-6.9865-7.6112-7.9127-7.8436-.79716-.20019-6.6946-1.0922-6.7755-1.0248-.02213.0182-5.0006-.41858-7.5248-.22808l-2.149-.22808h-3.3738z"/>
+     <path style="fill:currentColor" d="m61.915 883.28-3.2484.4497c-1.7863.24724-3.5182.53481-3.8494.63994-2.4751.33811-4.7267.86957-6.7777 1.5696-.28598 0-1.0254.20146-2.3695.58589-5.0418 1.4418-6.6374 2.2604-8.2567 4.2364-6.281 7.6657-11.457 18.43-12.932 26.891-1.4667 8.4111.71353 22.583 5.0764 32.996 3.8064 9.0852 13.569 25.149 22.801 37.517 1.3741 1.841 2.1708 2.9286 2.4712 3.5792 3.5437-1.1699 6.8496-1.9336 10.082-2.3263-1.3569-5.7831-4.6968-21.86-6.8361-33.002-.92884-4.8368-2.4692-14.322-3.2452-19.991-.68557-5.0083-.77707-6.9534-.74159-15.791.04316-10.803.41822-16.162 1.5026-21.503 1.4593-5.9026 3.3494-11.077 6.3247-15.852z"/>
+     <path style="fill:currentColor" d="m94.499 885.78c-.10214-.0109-.13691 0-.0907.0409.16033.13489 1.329 1.0675 2.5976 2.0723 6.7003 5.307 11.273 14.568 12.658 25.638.52519 4.1949.24765 14.361-.5059 18.523-2.4775 13.684-9.7807 32.345-20.944 53.519l-3.0559 5.7971c2.8082.76579 5.7915 1.727 8.9926 2.8441 11.562-11.691 18.349-19.678 24.129-28.394 7.8992-11.913 11.132-20.234 12.24-31.518.98442-10.02-1.5579-20.876-6.7799-28.959-.2758-.4269-.57803-.86856-.89617-1.3166-3.247-6.13-9.752-12.053-21.264-16.131-2.3687-.86369-6.3657-2.0433-7.0802-2.1166z"/>
+     <path style="fill:currentColor" d="m32.52 892.22c-.20090-.13016-1.4606.81389-3.9132 2.7457-11.486 9.0476-17.632 24.186-16.078 39.61.79699 7.9138 2.4066 13.505 5.9184 20.562 5.8577 11.77 14.749 23.219 30.087 38.74.05838.059.12188.1244.18052.1838 1.3166-.5556 2.5965-1.0618 3.8429-1.5199-.66408-.32448-1.4608-1.3297-3.8116-4.4602-5.0951-6.785-8.7512-11.962-13.051-18.486-5.1379-7.7948-5.0097-7.5894-8.0586-13.054-6.2097-11.13-8.2674-17.725-8.6014-27.563-.21552-6.3494.13041-9.2733 1.775-14.987 2.1832-7.5849 3.9273-10.986 9.2693-18.07 1.7839-2.3656 2.6418-3.57 2.4409-3.7003z"/>
+     <path style="fill:currentColor" d="m69.133 992.37c-6.2405.0309-12.635.76718-19.554 2.5706 4.6956 4.7759 9.935 10.258 12.05 12.625l4.1272 4.6202h11.493l3.964-4.4516c2.0962-2.3541 7.4804-7.9845 12.201-12.768-8.378-1.4975-16.207-2.6353-24.281-2.5955z"/>
+     <rect style="stroke-width:0;fill:currentColor" ry="2.0328" height="27.746" width="22.766" y="1017.7" x="60.201"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="info" viewBox="0 0 41.667 41.667">
+   <g transform="translate(-37.035 -1004.6)">
+    <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m76.25 1030.2a18.968 18.968 0 0 1 -23.037 13.709 18.968 18.968 0 0 1 -13.738 -23.019 18.968 18.968 0 0 1 23.001 -13.768 18.968 18.968 0 0 1 13.798 22.984"/>
+    <g transform="matrix(1.1146 0 0 1.1146 -26.276 -124.92)">
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m75.491 1039.5v-8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" transform="scale(-1)" d="m-73.193-1024.5a2.3719 2.3719 0 0 1 -2.8807 1.7142 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="warning" viewBox="0 0 48.430474 41.646302">
+    <g transform="translate(-1.1273 -1010.2)">
+     <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:4.151;fill:none" d="m25.343 1012.3-22.14 37.496h44.28z"/>
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:4.1512;fill:none" d="m25.54 1027.7v8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" d="m27.839 1042.8a2.3719 2.3719 0 0 1 -2.8807 1.7143 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+  </symbol>
+
+  <symbol id="menu" viewBox="0 0 50 50">
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="0" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="20" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="40" x="0"/>
+   </symbol>
+
+   <symbol id="link" viewBox="0 0 50 50">
+    <g transform="translate(0 -1002.4)">
+     <g transform="matrix(.095670 0 0 .095670 2.3233 1004.9)">
+      <g>
+       <path style="stroke-width:0;fill:currentColor" d="m452.84 192.9-128.65 128.65c-35.535 35.54-93.108 35.54-128.65 0l-42.881-42.886 42.881-42.876 42.884 42.876c11.845 11.822 31.064 11.846 42.886 0l128.64-128.64c11.816-11.831 11.816-31.066 0-42.9l-42.881-42.881c-11.822-11.814-31.064-11.814-42.887 0l-45.928 45.936c-21.292-12.531-45.491-17.905-69.449-16.291l72.501-72.526c35.535-35.521 93.136-35.521 128.64 0l42.886 42.881c35.535 35.523 35.535 93.141-.001 128.66zm-254.28 168.51-45.903 45.9c-11.845 11.846-31.064 11.817-42.881 0l-42.884-42.881c-11.845-11.821-11.845-31.041 0-42.886l128.65-128.65c11.819-11.814 31.069-11.814 42.884 0l42.886 42.886 42.876-42.886-42.876-42.881c-35.54-35.521-93.113-35.521-128.65 0l-128.65 128.64c-35.538 35.545-35.538 93.146 0 128.65l42.883 42.882c35.51 35.54 93.11 35.54 128.65 0l72.496-72.499c-23.956 1.597-48.092-3.784-69.474-16.283z"/>
+      </g>
+     </g>
+    </g>
+  </symbol>
+
+  <symbol id="doc" viewBox="0 0 35 45">
+   <g transform="translate(-147.53 -539.83)">
+    <path style="stroke:currentColor;stroke-width:2.4501;fill:none" d="m149.38 542.67v39.194h31.354v-39.194z"/>
+    <g style="stroke-width:25" transform="matrix(.098003 0 0 .098003 133.69 525.96)">
+     <path d="m220 252.36h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path style="stroke:currentColor;stroke-width:25;fill:none" d="m220 409.95h200"/>
+     <path d="m220 488.74h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path d="m220 331.15h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+    </g>
+   </g>
+ </symbol>
+
+ <symbol id="tick" viewBox="0 0 177.16535 177.16535">
+  <g transform="translate(0 -875.2)">
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="155" width="40" y="702.99" x="556.82"/>
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="40" width="90.404" y="817.99" x="506.42"/>
+  </g>
+ </symbol>
+</svg>
+
+    <div class="wrapper">
+      <header class="intro-and-nav" role="banner">
+  <div>
+    <div class="intro">
+      <a class="logo" href="/" aria-label="fatwaer home page">
+        <img src="http://localhost:1313/images/11.jpeg" alt="">
+      </a>
+      <p class="library-desc">
+        
+          Here&rsquo;s fatwaer&rsquo;s blog, recording some technical problems and  notes about open-source courses
+        
+      </p>
+    </div>
+    <nav id="patterns-nav" class="patterns" role="navigation">
+  <h2 class="vh">Main navigation</h2>
+  <button id="menu-button" aria-expanded="false">
+    <svg viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+      <use xlink:href="#menu"></use>
+    </svg>
+    Menu
+  </button>
+  
+  <ul id="patterns-list">
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/posts/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Home</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/tags/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Tags</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/about/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">About</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/todo/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Todo</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/index.xml" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">RSS</span>
+      </a>
+    </li>
+  
+  </ul>
+</nav>
+  </div>
+</header>
+      <div class="main-and-footer">
+        <div>
+          
+  <main id="main">
+    <h1>
+      <svg class="bookmark-icon" aria-hidden="true" viewBox="0 0 40 50" focusable="false">
+        <use xlink:href="#bookmark"></use>
+      </svg>
+      6.828-操作系统工程-Lab4:Preemptive Multitasking
+    </h1>
+
+    <div class="date">
+      
+      
+      <strong aria-hidden="true">Publish date: </strong>5-7, 2018
+      
+        
+      
+    </div>
+
+    
+      <div class="tags">
+        <strong aria-hidden="true">Tags: </strong>
+        <ul aria-label="tags">
+          
+            <li>
+              <svg class="tag-icon" aria-hidden="true" viewBox="0 0 177.16535 177.16535" focusable="false">
+                <use xlink:href="#tag"></use>
+              </svg>
+              
+              <a href="http://localhost:1313/tags/os/">OS</a>
+            </li>
+          
+        </ul>
+      </div>
+    
+    
+    
+      
+
+  <nav class="toc" aria-labelledby="toc-heading">
+    <h2 id="toc-heading">Table of contents</h2>
+    <ol>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a01">
+            练习1
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a02">
+            练习2
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a03">
+            练习3
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a04">
+            练习4
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a05">
+            练习5
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%99%e5%90%88%e9%80%82%e7%9a%84%e5%9c%b0%e6%96%b9%e4%b8%8a%e9%94%81">
+            给合适的地方上锁
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#challenge">
+            Challenge
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a06">
+            练习6
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ae%9e%e7%8e%b0round-robin-scheduling%e8%b0%83%e5%ba%a6%e7%ae%97%e6%b3%95">
+            实现Round-Robin Scheduling调度算法
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#challenge-1">
+            Challenge
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a07">
+            练习7
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ae%8c%e6%88%90syscall-c">
+            完成syscall.c
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a09">
+            练习9
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ae%9e%e7%8e%b0-page-fault-handler-%e4%b8%ad%e7%9a%84%e4%bb%a3%e7%a0%81">
+            实现page_fault_handler中的代码
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a010">
+            练习10
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%bd%93%e5%8f%91%e7%94%9f%e9%a1%b5%e9%94%99%e8%af%af%e7%9a%84%e6%97%b6%e5%80%99-%e5%86%85%e6%a0%b8%e9%80%9a%e8%bf%87%e8%ae%be%e7%bd%aeeip%e6%8c%87%e5%90%91-pgfault-upcall%e6%9d%a5%e8%b0%83%e7%94%a8%e6%b1%87%e7%bc%96%e4%bb%a3%e7%a0%81-%e5%b9%b6%e4%b8%94%e8%b0%83%e7%94%a8%e5%b7%b2%e7%bb%8f%e6%b3%a8%e5%86%8c%e5%a5%bd%e7%9a%84handler-%e8%af%a5%e7%bb%83%e4%b9%a0%e7%9a%84%e4%bb%bb%e5%8a%a1%e5%b0%b1%e6%98%af%e5%bd%93handler%e6%89%a7%e8%a1%8c%e5%ae%8c%e5%90%8e-%e7%94%a8%e6%88%b7%e5%a6%82%e4%bd%95%e8%bf%94%e5%9b%9e%e5%88%b0%e9%94%99%e8%af%af%e6%97%b6%e7%9a%84%e7%8a%b6%e6%80%81%e5%8e%bb">
+            当发生页错误的时候，内核通过设置eip指向_pgfault_upcall来调用汇编代码，并且调用已经注册好的handler，该练习的任务就是当handler执行完后，用户如何返回到错误时的状态去。
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a011">
+            练习11
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ae%8c%e6%88%90set-pgfault-handler">
+            完成set_pgfault_handler()
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a012">
+            练习12
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ae%9e%e7%8e%b0fork-duppage-pgfault">
+            实现fork,duppage,pgfault
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a013">
+            练习13
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%a4%84%e7%90%86%e5%99%a8%e5%af%b9%e4%ba%8e%e7%a1%ac%e4%bb%b6%e4%b8%ad%e6%96%ad%e4%b8%8d%e4%bc%9apush%e9%94%99%e8%af%af%e4%bb%a3%e7%a0%81-%e9%80%9a%e8%bf%87cpu%e9%92%88%e8%84%9a%e5%92%8clapic%e7%9a%84%e9%83%bd%e4%b8%8d%e4%bc%9a">
+            处理器对于硬件中断不会push错误代码(通过CPU针脚和lapic的都不会)
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a014">
+            练习14
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e4%bf%ae%e6%94%b9-trap-dispatch-%e4%bd%bf%e5%be%97%e5%bd%93%e5%8f%91%e7%94%9f%e6%97%b6%e9%92%9f%e4%b8%ad%e6%96%ad%e7%9a%84%e6%97%b6%e5%80%99-%e8%b0%83%e7%94%a8%e4%b8%8d%e5%90%8c%e7%9a%84%e7%94%a8%e6%88%b7%e7%8e%af%e5%a2%83">
+            修改trap_dispatch()，使得当发生时钟中断的时候，调用不同的用户环境。
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%83%e4%b9%a015">
+            练习15
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%94%a8user-pingpong%e5%92%8cuser-primes%e6%b5%8b%e8%af%95ipc%e6%9c%ba%e5%88%b6">
+            用user/pingpong和user/primes测试IPC机制。
+          </a>
+        </li>
+      
+    </ol>
+  </nav>
+
+
+    
+
+    
+
+<p>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。</p>
+
+<blockquote>
+<p>part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。
+part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。
+part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。</p>
+</blockquote>
+
+<h1 id="准备开始">准备开始</h1>
+
+<p><code>git</code></p>
+
+<pre><code>#git rest --hard FETCH_HEAD
+git add -u
+git commit -m &quot;&quot;
+git pull
+git checkout -b lab4 origin/lab4
+git merge lab3
+</code></pre>
+
+<p>confilcts in file <code>config/lab.mk</code></p>
+
+<h1 id="源文件描述">源文件描述</h1>
+
+<pre><code>kern/cpu.h  Kernel-private definitions for multiprocessor support
+kern/mpconfig.c Code to read the multiprocessor configuration
+kern/lapic.c    Kernel code driving the local APIC unit in each processor
+kern/mpentry.S  Assembly-language entry code for non-boot CPUs
+kern/spinlock.h Kernel-private definitions for spin locks, including the big kernel lock
+kern/spinlock.c Kernel code implementing spin locks
+kern/sched.c    Code skeleton of the scheduler that you are about to implement
+</code></pre>
+
+<h1 id="part-a-多处理器支持-multiprocessor-support-和协作式多任务-cooperative-multitasking">PART A: 多处理器支持(Multiprocessor Support )和协作式多任务(Cooperative Multitasking)</h1>
+
+<p>首先，会扩展JOS，使其能在多处理器系统上运行。然后实现一些JOS内核的系统调用，使得用户环境能创建额外的环境。通过实现cooperative round-robin scheduling，允许内核能切换到不同的用户环境，使用户环境自身让出CPU资源。
+然后再part C中，将会实现 preemptive scheduling，这种调度算法允许内核从一个超出分配时间片的用户环境重新获取CPU的控制权。</p>
+
+<h1 id="multiprocessor-support">Multiprocessor Support</h1>
+
+<p>JOS将会支持对称多处理SMP(symmetric multiprocessing)，这种多处理模型使得CPU能有对例如内存和IO总线等系统资源拥有平等的访问权。虽然所有的CPU在SMP中都一样，但是在执行启动进程期间，处理器会被分成两种。
+1. 引导处理器BSP(bootstrap processor)在启动操作系统的时候，初始化系统的时候使用。
+2. 应用程序处理器APs(application processos)仅当在操作系统已经启动好后，被BSP激活。
+BSP处理器的选择取决于硬件和BIOS，到目前为止，JOS的代码都是运行在BSP处理器上的。</p>
+
+<p>在SMP系统中，每个CPU都有一个附随的<a href="https://en.wikipedia.org/wiki/Advanced_Programmable_Interrupt_Controller">LAPIC单元</a>(local APIC unit)，这些单元通过系统分发中断，LAPIC为其相关的CPU提供一个独一无二的标识符。
+在这个实验中，将会使用LAPIC的以下功能：
+- 通过读取APIC ID(LAPICT identifier)获取当前正在运行的CPU(<code>cpunum()</code>)
+- 发送处理器之间的<strong>STARTUP</strong>中断IPI(interprocessor interrupt)当BSP启动APs的时候。
+- 在part C中，LAPIC内置计时器去触发时钟中断，来支持抢占式多任务。</p>
+
+<p>APIC(Adavanced Programmable Interrupt Controller)
+chapter 8:<a href="https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf">https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf</a>
+Local APIC主要的作用分成两部分:
+- 接收来自其他LAPIC的中断和外部的I/O APIC中断，或者发送中断。
+- 在MP(multiple processor)系统中，在system bus发送接收处理器间中断IPI。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/figure8-4.png" alt="figure8-4.png" /></p>
+
+<p>处理器访问它自己的LAPIC通过MMIO(memory-mapped I/O)，在MMIO中，一部分物理内存直接与IO设备的寄存器相连接，所以类似于load/store的指令通常被用作间接访问外围设备的寄存器。Lab2为IO hole在物理地址0xA0000留了一部分内存空间用作VAG显示缓冲。LAPIC位于内存地址<code>0xFE000000</code>(4GB - 32MB)处，这个地址很高，所以不能直接映射在KERNBASE上(<code>?</code>)。JOS的虚拟内存为MMIOBASE保留了4MB的空间，所以可以用来映射设备的内存。
+接下来的实验中将会介绍更多MMIO的区域，并且为外围设备实现一些基础的内存分配和映射。</p>
+
+<h2 id="练习1">练习1</h2>
+
+<blockquote>
+<p>实现<code>kern/pmap.c</code>中的<code>mmio_map_region()</code>
+研究<code>kern/lapic.c</code>中的<code>lapic_init()</code></p>
+</blockquote>
+
+<hr />
+
+<pre><code class="language-C">void *
+mmio_map_region(physaddr_t pa, size_t size)
+{
+    static uintptr_t base = MMIOBASE;
+
+    if (base + size &gt; MMIOLIM)
+        panic(&quot;mmio memory space is not enough .&quot;);
+    
+    uint32_t va = base;
+    pa = ROUNDDOWN((uint32_t)pa, PGSIZE);
+    size = ROUNDUP((uint32_t)size, PGSIZE);
+
+    boot_map_region(kern_pgdir, base, size, pa, PTE_PCD|PTE_PWT|PTE_W);
+
+    base += size;
+
+    return (void *)va;
+    //panic(&quot;mmio_map_region not implemented&quot;);
+}
+</code></pre>
+
+<p>注意<code>lapic_init()</code>开头几步，需要返回一个<code>MMIO</code>的地址</p>
+
+<h1 id="application-processor-bootstrap">Application Processor Bootstrap</h1>
+
+<p>在启动APs之前，BSP首先需要收集关于多处理器系统的信息，比如CPU的数量，它们的APIC ID以及这些LAPIC单元对应的MMIO地址。<code>kern/mpconfig.c</code>中<code>mp_init()</code>通过读取BIOS内存块的MP configuration table获取这些信息。</p>
+
+<p><code>kern/init.c</code>中的<code>boot_aps()</code>函数驱动AP的启动引导进程，APs在实模式下开始工作，就像之前的内核引导程序(<code>boot/boot.S</code>,)，<code>boot_aps</code>在实模式下复制一份AP entry code(<code>kern/mpentry.S</code>)到一个内存可以寻址的地方，所以一定程度上可以控制AP开始执行的内存地址；现在将把entry code复制到<code>0x7000(MPENTRY_PADDR)</code>，但实际上低于640KB未使用的页对齐的物理地址都可用。</p>
+
+<p>之后，<code>boot_aps()</code>一个一个激活应用处理器，通过发送<code>STARTUP</code>中断信号到这些处理器对应的LAPIC单元，并且初始化CS:IP(指向MPENTRY_PADDR)。安装完后，使得AP开启保护模式，分页机制，并调用启动例程<code>mp_main()</code>。<code>boot_aps()</code>等待AP发送一个<code>Cpuinfo</code>结构体中的<code>CPU_STARTED</code>flag，然后再启动接下来的处理器。</p>
+
+<hr />
+
+<h2 id="练习2">练习2</h2>
+
+<blockquote>
+<p>将MPENTRY_PADDR从free_list中删除</p>
+</blockquote>
+
+<hr />
+
+<p>boot_aps():将MPENTRY的代码安装到内核中去，为每一个cpu准备相应的栈区。然后通过一个for循环初始化所以cpu，在循环体内用while循环等待cpu被启动好的信号。
+lapic_startup(id, addr)然后发送IPI到APIC bus上，让相应AP的LAPIC收到这个中断，开始执行mpentry.S中的内容，开启保护模式，分页；加载数据段，代码段等。</p>
+
+<p>当mpentry执行到最后，调用mp_init()函数，初始化该AP的寄存器。
+lapic_init():从处理器中获取lapic的相关信息
+env_init_percpu():初始化每个处理器的段寄存器
+trap_init_percpu():读取TSS和IDT
+在最后，xchg()即发送<code>CPU_STARTED</code>信号给boot_aps()，完成一个cpu寄存器的初始化。
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/figure8-5.png" alt="figure8-5.png" /></p>
+
+<p>前面说过，部分设备的寄存器与内存是直接映射的，这里也是，lapic与内存直接相连，所以在lapic_startup函数中可以看到，向cpu发送命令都是通过在特定内存区域读写。</p>
+
+<pre><code class="language-C">void
+page_init(void)
+{
+    size_t i;
+    size_t allocated_pages = ((uint32_t)boot_alloc(0) - KERNBASE) / PGSIZE;
+    size_t IOhole_pages = (EXTPHYSMEM - IOPHYSMEM) /PGSIZE;
+    for (i = 1; i &lt; npages; i++) {
+        if(i == MPENTRY_PADDR/PGSIZE)          
+            continue;                  // BIOS 
+        else if (i &gt;= npages_basemem &amp;&amp; i &lt; npages_basemem + allocated_pages + IOhole_pages){
+            continue;                  // see figure 
+        } else {
+            pages[i].pp_ref = 0;
+            pages[i].pp_link = page_free_list;             // a linkedlist for 
+            page_free_list = &amp;pages[i];                    // that the pages is free .
+        }
+    }
+    
+}
+</code></pre>
+
+<p>练习就是把MPENTRY_PADDR从<code>free_list</code>中去除即可。</p>
+
+<blockquote>
+<p>Compare kern/mpentry.S side by side with boot/boot.S. Bearing in mind that kern/mpentry.S is compiled and linked to run above KERNBASE just like everything else in the kernel, what is the purpose of macro MPBOOTPHYS? Why is it necessary in kern/mpentry.S but not in boot/boot.S? In other words, what could go wrong if it were omitted in kern/mpentry.S?</p>
+</blockquote>
+
+<p><code>MPBOOTPHYS</code>是用来计算传递进去参数的绝对地址，这段代码在boot_aps内就被复制到了内存高地址，AP读取gdt的命令<code>ldgdt</code>是在开启保护模式之前，所以，需要使用物理地址来读取全局表，否则不能读取到。但是在boot.S中，代码就是工作在实模式下，可以直接读取。</p>
+
+<hr />
+
+<h1 id="per-cpu-state-and-initialization">Per-cpu State and Initialization</h1>
+
+<p>(manual 8.4.4)
+在实现多处理系统的时候， 弄清每一个CPU所私有的部分和整个系统的共享是很重要的。<code>kern/cpu.h</code>中定义了cpu状态的结构体<code>struct CpuInfo</code>。<code>cpunnum</code>返回当前正在使用的ID，可以用作cpus数组的下标，当然也可以用宏<code>thiscpu</code>表示当前CPU结构体。</p>
+
+<p>需要关注的CPU状态：
+- 内核栈
+    + 由于CPU能同时陷入内核，所以需要分离每一个CPU所对应的内核栈，阻止处理器对其他处理器在执行任务时相互影响，数组<code>percpu_kstacks[NCPU][KSTKSIZE]</code>存储了多个处理器所对应的内核栈地址。
+    + Lab2中，已经将bootstack映射到KSTACKTOP，在这个实验中，需要映射每一个CPU的内核栈到这个区域，并且使用一个<code>guard pages</code>作为缓冲。CPU0使用KSTACKTOP，CPU1将使用KSTACKTOP - KSTKGAP，等等。<code>inc/memlayout.h</code>中有内存排布情况。</p>
+
+<ul>
+<li><p>TSS和TSS descriptor
+每个CPU的任务状态段TSS(task state segement)也需要被确认，CPU的TSS存储在<code>cpus[i].cpu_ts</code>中，TSS descriptor存储在GDT entry <code>gdt[(GD_TSS0 &gt;&gt; 3) + i]</code>中。</p></li>
+
+<li><p>当前环境指针
+因为每个CPU都同时运行着不同的用户进程，所以使用重新定义的curenv。使用thiscpu-&gt;cpuenv来指向当前正在执行的环境。</p></li>
+
+<li><p>系统寄存器
+所有的寄存器，都是每一个CPU私有的，所都需要通过指令初始化，<code>lcr3()</code>,<code>ltr()</code>,<code>lgdt()</code>,<code>lidt</code>等都需要在每个CPU上执行一次。函数<code>env_init_percpu</code>和<code>trap_init_percpu</code>用来完成这项工作。</p></li>
+</ul>
+
+<hr />
+
+<h2 id="练习3">练习3</h2>
+
+<blockquote>
+<p>完成内核栈的内存映射</p>
+</blockquote>
+
+<hr />
+
+<pre><code class="language-C">static void
+mem_init_mp(void)
+{
+    size_t i; 
+    uint32_t kstacktop_i = KSTACKTOP;
+
+    for (i = 0; i &lt; NCPU; i++) {
+        /*stack*/
+        boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_P);
+        kstacktop_i -= KSTKSIZE;
+
+        /*guard gap*/
+        kstacktop_i -= KSTKGAP;
+    }    
+}
+</code></pre>
+
+<hr />
+
+<h2 id="练习4">练习4</h2>
+
+<blockquote>
+<p>修改trap_init_percpu()，使得每个CPU都能使用。</p>
+</blockquote>
+
+<hr />
+
+<pre><code>    thiscpu-&gt;cpu_ts.ts_esp0 = (uint32_t)percpu_kstacks[thiscpu-&gt;cpu_id];
+    thiscpu-&gt;cpu_ts.ts_ss0 = GD_KD;
+    thiscpu-&gt;cpu_ts.ts_iomb = sizeof(struct Taskstate);
+    
+    // Initialize the TSS slot of the gdt.
+    gdt[(GD_TSS0 &gt;&gt; 3) + thiscpu-&gt;cpu_id] = SEG16(STS_T32A, (uint32_t) (&amp;(thiscpu-&gt;cpu_ts)),
+                    sizeof(struct Taskstate) - 1, 0);
+    gdt[(GD_TSS0 &gt;&gt; 3) + thiscpu-&gt;cpu_id].sd_s = 0;
+
+    // Load the TSS selector (like other segment selectors, the
+    // bottom three bits are special; we leave them 0)
+    ltr(GD_TSS0 + (thiscpu-&gt;cpu_id &lt;&lt; 3));
+
+    // Load the IDT
+    lidt(&amp;idt_pd);
+
+</code></pre>
+
+<p>根据之前ts全局变量的过程，为每一个CPU都初始化任务状态。
+<strong>位移运算3位是因为每个描述符的大小是8字节(struct Segdesc)</strong></p>
+
+<h1 id="自旋锁">自旋锁</h1>
+
+<p>现在代码在执行mp_main()最后的for死循环，在AP继续运行之前，首先要解决多个CPU同时执行内核代码的条件竞争的问题。最简单的方法是使用big kernel lock，一种当一个环境进入了内核态开启的全局锁，当退回到用户态的时候解锁。在这个模式下，用户态都能同时正确地使用可用的CPU，但是只能有一个环境能运行在用户态，其他尝试进入内核态的环境都会被强制等待。</p>
+
+<p>自旋锁(spinlock)是互斥(mutual exclusive)锁的一种实现形式，通过不断访问所需资源来判断临界资源资源是否被释放，优点是非常高效，临界资源一释放，等待的CPU将马上获得这份临界资源，所以适合那些保持锁时间短的情况，缺点是会持续占用CPU，浪费CPU时间。面对那些长时间占用临界资源的，应该使用信号量(semaphore)机制。</p>
+
+<p>前段时间专业课上提到了<code>Swap</code>，就算一个基本的自旋锁。
+代码实现如下:</p>
+
+<pre><code class="language-C">void
+Swap(boolean &amp;a, boolean &amp;b)
+{
+    boolean temp = a;
+    a = b;
+    b = temp;
+}
+
+# entry
+do {
+    Key = true;
+    while (Key == ture)
+        Swap(Lock, Key);
+    critical Section;
+    Lock = false;
+    non critical Section
+} while(1)
+
+</code></pre>
+
+<p>JOS自旋锁的实现是在<code>kern/spinlock</code>的spin_lock()中:</p>
+
+<pre><code class="language-C">    while (xchg(&amp;lk-&gt;locked, 1) != 0)
+        asm volatile (&quot;pause&quot;); 
+</code></pre>
+
+<p>在<code>xchg()</code>中，这段代码的意思就是将数值“1”和<code>lk-&gt;locked</code>的值交换。</p>
+
+<pre><code>    asm volatile(&quot;lock; xchgl %0, %1&quot;
+             : &quot;+m&quot; (*addr), &quot;=a&quot; (result)
+             : &quot;1&quot; (newval)
+             : &quot;cc&quot;);
+    return result;
+</code></pre>
+
+<p><code>lock</code> : 将下个访问内存指令所引用的内存空间上锁</p>
+
+<pre><code>xchgl %0, %1: &quot;+m&quot; (*addr), &quot;=a&quot; (result): &quot;1&quot; (newval)
+</code></pre>
+
+<p>*addr替代占位符%0，限定符&rdquo;+m&rdquo;代表可read-modify-write的内存变量，限定符&rdquo;1&rdquo;代表其后面的操作数去描述占位符%1。所以这句指令是将 *addr的值与 1进行交换，并且把结果输出到 *addr和result中。</p>
+
+<p><code>cc</code> ：GNU文档解释，“As the condition codes will be changed, we are adding &ldquo;cc&rdquo; to clobberlist.”</p>
+
+<p>在while循环体内，<code>pause</code>指令只是减少处理器执行太快引起的电力损耗，类似与一个延时语句。</p>
+
+<hr />
+
+<h2 id="练习5">练习5</h2>
+
+<blockquote>
+<h2 id="给合适的地方上锁">给合适的地方上锁</h2>
+</blockquote>
+
+<pre><code class="language-C"># i386_init()
+    // Acquire the big kernel lock before waking up APs
+    // Your code here:
+    lock_kernel();
+    // Starting non-boot CPUs
+    boot_aps();
+
+# mp_main()
+    // Now that we have finished some basic setup, call sched_yield()
+    // to start running processes on this CPU.  But make sure that
+    // only one CPU can enter the scheduler at a time!
+    //
+    // Your code here:
+    lock_kernel();
+
+    sched_yield();
+# trap()
+   if ((tf-&gt;tf_cs &amp; 3) == 3) {
+        // Trapped from user mode.
+        // Acquire the big kernel lock before doing any
+        // serious kernel work.
+        // LAB 4: Your code here.
+        assert(curenv);
+        lock_kernel();
+        ...
+    }
+# env_run()
+    //switch to user's address space.   
+    lcr3(PADDR(curenv-&gt;env_pgdir));
+
+    //following operation will not implement the kernel
+    //data, releasing the kernel resources here.
+    unlock_kernel();
+
+    // pop trap frame , the environment return to the user mode.
+    env_pop_tf(&amp;(curenv-&gt;env_tf));
+</code></pre>
+
+<p>完成这部分上锁的时候，可以看见在启动AP之前，内核是被BSP给锁定的，其他的CPU都还卡在自旋锁处进行循环。</p>
+
+<blockquote>
+<p>Q2:It seems that using the big kernel lock guarantees that only one CPU can run the kernel code at a time. Why do we still need separate kernel stacks for each CPU? Describe a scenario in which using a shared kernel stack will go wrong, even with the protection of the big kernel lock.</p>
+</blockquote>
+
+<p>当一个CPU陷入内核还在进行保存状态信息的时候，另一个CPU刚好发生中断，此时内核还未被上锁，在只有一个栈的情况下，会发生混乱。</p>
+
+<h2 id="challenge">Challenge</h2>
+
+<p>// fine-grained locking</p>
+
+<hr />
+
+<h2 id="练习6">练习6</h2>
+
+<blockquote>
+<h2 id="实现round-robin-scheduling调度算法">实现Round-Robin Scheduling调度算法</h2>
+</blockquote>
+
+<p>这个调度算法就是在envs全局变量中找到第一个可以运行的程序，观察<code>user/yield.c</code>的程序，代码每一次循环产生一次系统调用，让CPU执行下一个env。
+实现这个调度算法就是利用循环队列来做。</p>
+
+<pre><code class="language-C">void
+sched_yield(void)
+{
+    // LAB 4: Your code here.
+    int i, cur_id, iter;
+
+    if (curenv) cur_id = ENVX(curenv-&gt;env_id);
+        else cur_id = 0;
+#ifdef SELF_DEBUG_INFO
+    cprintf(&quot;cpuid %d \n&quot;, thiscpu-&gt;cpu_id);
+#endif
+
+    for (i = 0; i &lt; NENV; i++) {
+        iter = (i + cur_id) % NENV;
+        if (envs[iter].env_status == ENV_RUNNABLE)
+            env_run(envs + iter);
+    }
+
+    // there are no others environment to run.
+    if (curenv &amp;&amp; curenv-&gt;env_status == ENV_RUNNING)
+        env_run(curenv);
+    // sched_halt never returns
+    sched_halt();
+}
+
+</code></pre>
+
+<p>添加新的系统调用和创建多个这样的用户环境</p>
+
+<pre><code class="language-C"># syscall_dispatch()
+    case SYS_yield:
+        sys_yield();
+        return 0;
+# i386_init()
+#if defined(TEST)
+    // Don't touch -- used by grading script!
+    ENV_CREATE(TEST, ENV_TYPE_USER);
+#else
+    // Touch all you want.
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+    ENV_CREATE(user_yield, ENV_TYPE_USER);
+#endif // TEST*    
+</code></pre>
+
+<blockquote>
+<p>Q3:In your implementation of env_run() you should have called lcr3(). Before and after the call to lcr3(), your code makes references (at least it should) to the variable e, the argument to env_run. Upon loading the %cr3 register, the addressing context used by the MMU is instantly changed. But a virtual address (namely e) has meaning relative to a given address context&ndash;the address context specifies the physical address to which the virtual address maps. Why can the pointer e be dereferenced both before and after the addressing switch?</p>
+</blockquote>
+
+<p><code>e</code>在创建的时候会从<code>kern_pgdir</code>处复制一份，所以<code>lcr3</code>指令执行前后页表项是一样的。</p>
+
+<blockquote>
+<p>Q4:Whenever the kernel switches from one environment to another, it must ensure the old environment&rsquo;s registers are saved so they can be restored properly later. Why? Where does this happen?</p>
+</blockquote>
+
+<p><code>env_run()</code>通过pop<code>task frame</code>，而在调用trap()的时候就已经保存了相关寄存器信息。</p>
+
+<h2 id="challenge-1">Challenge</h2>
+
+<p>// stride scheduling 和 lottery scheduling</p>
+
+<h1 id="system-calls-for-environment-creation">System Calls for Environment Creation</h1>
+
+<p>虽然代码能在不同的用户环境中切换了，但是是依靠的内核初始化创建的环境。现在要做的就是实现在用户环境下创建和开始另一个新的用户环境。</p>
+
+<p>Unix中提供了最原始的fork()函数进行创建ixnd进程，<code>fork</code>复制整个父进程的内存空间去新建一个进程，唯一不同的就是它们的返回值，子进程返回0.</p>
+
+<p>在这个练习中，将为JOS实现更为原始的方法去创建新用户空间。</p>
+
+<hr />
+
+<h2 id="练习7">练习7</h2>
+
+<blockquote>
+<h2 id="完成syscall-c">完成syscall.c</h2>
+</blockquote>
+
+<h3 id="sys-exofork">sys_exofork</h3>
+
+<pre><code class="language-C">static envid_t
+sys_exofork(void)
+{
+    // LAB 4: Your code here.
+    int r;
+    struct Env *new_env;
+
+    if ((r = env_alloc(&amp;new_env, sys_getenvid())) &lt; 0)
+        return r;
+
+    new_env-&gt;env_tf = curenv-&gt;env_tf;
+    new_env-&gt;env_status = ENV_NOT_RUNNABLE;
+    // child env return 0
+    new_env-&gt;env_tf.tf_regs.reg_eax = 0;
+
+    return new_env-&gt;env_id;
+</code></pre>
+
+<h3 id="sys-env-set-status">sys_env_set_status</h3>
+
+<pre><code class="language-C">static int
+sys_env_set_status(envid_t envid, int status)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;sys_env_set_status not implemented&quot;);
+
+    struct Env *e;
+    int ret;
+
+    /* must be ENV_RUNNABLE or ENV_NOT_RUNNABLE*/
+    if (status == ENV_RUNNABLE ||
+        status == ENV_NOT_RUNNABLE)
+        ;
+    else
+        return -E_INVAL;
+
+    /* check whether the caller env is env to be set*/
+    if ((ret = envid2env(envid, &amp;e, 1)) &lt; 0)
+        return ret;
+
+    e-&gt;env_status = status;
+
+    return 0;
+
+}
+</code></pre>
+
+<h3 id="sys-page-alloc">sys_page_alloc</h3>
+
+<pre><code class="language-C">static int
+sys_page_alloc(envid_t envid, void *va, int perm)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;sys_page_alloc not implemented&quot;);
+    int ret;
+    struct PageInfo *pg;
+    struct Env *e;
+
+    /*
+    *   regist the page in the page directory 
+    */
+
+    /*check envid*/
+    if (envid2env(envid, &amp;e, 1) &lt; 0)
+        return -E_BAD_ENV;
+
+    /*check va*/
+    if ((uint32_t)va &gt;= UTOP || (uint32_t)va % PGSIZE)
+        return -E_INVAL;
+
+    /* permission check */
+    if (perm &amp; ~(PTE_U | PTE_P | PTE_AVAIL | PTE_W))
+        return -E_INVAL;
+
+    /*allocating page and mapping*/
+    pg = page_alloc(ALLOC_ZERO);
+    if (!pg)
+        return -E_NO_MEM;
+
+    if ((ret = page_insert(e-&gt;env_pgdir, pg, va, perm ))) {
+        page_free(pg);  // failed, free page;
+        return ret;
+    }
+    return 0;
+}
+
+</code></pre>
+
+<h3 id="sys-page-map">sys_page_map</h3>
+
+<pre><code class="language-C">static int
+sys_page_map(envid_t srcenvid, void *srcva,
+         envid_t dstenvid, void *dstva, int perm)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;sys_page_map not implemented&quot;);
+
+    /*
+    *   mapping
+    */
+
+    pte_t *pte; // page table entry;
+    struct Env *src, *dst;
+    struct PageInfo *pp;
+
+    /*check env*/
+    if (envid2env(srcenvid, &amp;src, 1) &lt; 0 ||
+        envid2env(dstenvid, &amp;dst, 1) &lt; 0)
+        return -E_BAD_ENV;
+
+    /* check va */
+    if ((uint32_t)srcva &gt;= UTOP || (uint32_t)srcva % PGSIZE ||
+        (uint32_t)dstva &gt;= UTOP || (uint32_t)dstva % PGSIZE)
+        return -E_INVAL;
+
+    /* check address space*/
+    if ((pp = page_lookup(src-&gt;env_pgdir, srcva, &amp;pte)) == NULL)
+        return -E_INVAL;
+
+    /* check parameter permission */
+    if (perm &amp; ~(PTE_P | PTE_U | PTE_AVAIL | PTE_W))
+        return -E_INVAL;
+
+    /* pte permission check*/
+    if (!(*pte &amp; PTE_W) &amp;&amp; (perm &amp; PTE_W))
+        return -E_INVAL;
+
+    return page_insert(dst-&gt;env_pgdir, pp, dstva, perm );
+
+}
+</code></pre>
+
+<h3 id="sys-page-unmap">sys_page_unmap</h3>
+
+<pre><code class="language-C">static int
+sys_page_unmap(envid_t envid, void *va)
+{
+    struct Env *e;
+    /*check env*/
+    if (envid2env(envid, &amp;e, 1))
+        return -E_BAD_ENV;
+
+    if ((uint32_t)va &gt;= UTOP || (uint32_t)va % PGSIZE)
+        return -E_INVAL;
+
+    page_remove(e-&gt;env_pgdir, va);
+
+    return 0;
+    // LAB 4: Your code here.
+    //panic(&quot;sys_page_unmap not implemented&quot;);
+}
+</code></pre>
+
+<pre><code class="language-C">int32_t
+syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
+{
+#define SELF_DEBUG_INFO
+#ifdef SELF_DEBUG_INFO
+    cprintf(&quot;call number:%d  \n&quot;, syscallno);
+#endif
+    switch (syscallno) {
+
+    case SYS_cputs: 
+        sys_cputs((char *)a1, a2);
+        return 0;
+
+    case SYS_cgetc:
+        return sys_cgetc();
+
+    case SYS_getenvid:
+        return sys_getenvid();
+
+    case SYS_env_destroy:
+        return sys_env_destroy(a1);
+
+    case SYS_yield:
+        sys_yield();
+        return 0;
+
+    case SYS_exofork:
+        return sys_exofork();
+
+    case SYS_page_alloc:
+        return sys_page_alloc(a1, (void *)a2, a3);
+
+    case SYS_page_map:
+        return sys_page_map(a1, (void *)a2, a3, (void *)a4, a5);
+
+    case SYS_page_unmap:
+        return sys_page_unmap(a1, (void *)a2);
+
+    case SYS_env_set_status:
+        return sys_env_set_status(a1 ,a2);
+
+    default:
+        return -E_INVAL;
+    }
+}
+
+</code></pre>
+
+<p>两点问题:
+1. 注意在设置status的时候的逻辑短路问题。
+2. exofork()中新的用户环境的eax应该置为0，以证明是子进程。</p>
+
+<p>用户环境的代码执行完后，一个CPU会执行kernel monitor一直占用内核，而另外3个CPU都在卡在了trap中的那个自旋锁中。</p>
+
+<p>PART A done.</p>
+
+<hr />
+
+<h1 id="part-b-copy-on-write-fork">Part B: Copy-On-Write Fork</h1>
+
+<p>最初Unix提供最基础的fork()系统调用去创建新的进程，forK()通过复制整个父进程的内存空间到子进程的内存中去，然而复制父进程到子进程是fork()操作开销最大的一个操作。通常情况下，fork()后子进程一般会马上调用exec()函数，用新的程序去替代子进程的内存空间。在这种情况下，复制父进程内存空间的时间开销很大程度上是不需要的，因为子进程仅有非常小的一部分被exec()所使用。</p>
+
+<p>在之后的版本中，Unix采用虚拟内存硬件这一机制，允许父子进程共享分别被映射到它们各自内存空间的内存，直到其中一个进程确实修改了这部分共享的内存，被称之为<strong>copy on write</strong>。为了这个机制，fork()不是复制被实际映射的页，而是复制描述内存空间的映射情况的页，同时标记这个页为只读。一旦这两个进程之一尝试去修改这部分被共享的页，该进程将会产生页错误。此时，Unix内核意识到这个页是一个&rdquo;copy-on-write&rdquo;的页需要被拷贝，于是分配一个新的私有的可写的页拷贝给这个产生页错误的进程。通过这种方式，这些分开的页的内容实际不会复制除非这些页确实别尝试写入。这个优化使得fork()后在子进程中执行exec()的开销更小，子进程可能只需要复制一个页(stack page)在调用exec()前。</p>
+
+<h1 id="user-level-page-fault-handling">User-level page fault handling</h1>
+
+<p>首先实现写时拷贝的fork()，需要知道被写保护的页。copy-on-write是多种可能处理页错误的方法之一。</p>
+
+<p>一种通用做法就是建立起一个内存空间指出当发生页错误的时候确定一些操作。比如，大多数Unix内核只为新进程的栈区映射一个单页面，分配和映射额外的栈页仅在该新进程栈增长和在栈地址中发生了未映射的栈区域时处理。通常unix内核需要确定对应处理方法当页错误发生在进程的不同区域。页错误发生在栈区通常分配和映射一个新的页帧给这个进程；页错误发生在程序的BSS区域通常分配一个新的页，并且将页内容全部置为0，并且映射到页表中去；页错误发生在可执行文件的.text区域将会从磁盘中读取相应的二进制文件，并且映射。</p>
+
+<p>这种处理办法虽然需要内核追踪一大堆信息，但是大大增加了程序的灵活性。</p>
+
+<h1 id="normal-and-exception-stacks-in-user-environments">Normal and Exception Stacks in User Environments</h1>
+
+<p>正常执行过程中，用户环境将会运行在正常用户栈中：即ESP寄存器最开始就指向了USTACKTOP，栈区数据被压入到<code>USTACKTOP-PGSIZE</code>和<code>USTACKTOP-1</code>这个范围中。当页错误发生在用户态下，内核将会重启这个用户环境，并且运行在一个被设计好的用户级别页错误解决办法(page fault handler)在一个不同的栈上，被称之为用户异常栈。大体上来说，JOS实现了在用户模式下的栈自动切换，同时，x86处理器已经实现了栈切换当发生从用户态到内核态发生转换的时候。</p>
+
+<p>JOS的异常栈也是只有PGSIZE，但是定义在了虚拟内存地址的UXSTACKTOP，所以在栈区<code>UXSTACKTOP</code>到<code>UXSTACKTOP-1</code>都是合法的。当运行在异常栈，用户级页错误handler能用普通的系统调用去映射新的页，调节映射情况并且修复这个导致页错误的问题。然后，这个handler将会return，通过汇编语言stub返回到发生页错误的代码处。</p>
+
+<p>任何一个用户程序需要支持用户级页错误将会需要去分配页给异常栈。</p>
+
+<h1 id="invoking-the-user-page-fault-handler">Invoking the User Page Fault Handler</h1>
+
+<p>为了解决来自用户态的页错误，现在需要调用用户态在发送页错误时的trap-time状态。
+如果没有页错误的handler被登记，JOS内核将会销毁这个用户进程，不然的话，内核将要设置下面这样的trap frame在该用户环境的异常栈上。</p>
+
+<pre><code class="language-C">                    &lt;-- UXSTACKTOP
+trap-time esp
+trap-time eflags
+trap-time eip
+trap-time eax       start of struct PushRegs
+trap-time ecx
+trap-time edx
+trap-time ebx
+trap-time esp
+trap-time ebp
+trap-time esi
+trap-time edi       end of struct PushRegs
+tf_err (error code)
+fault_va            &lt;-- %esp when handler is run
+(_pgfault_handler argument)
+(eip pushed by call instruction)
+reserved 4-bytes    &lt;-- to ret, reserved for eip
+trap-time esp       &lt;-- we should adjust the esp(esp = esp-4)
+trap-time eflags
+trap-time eip
+...                new trap-time frame
+trap-time esi
+trap-time edi       
+tf_err (error code)
+fault_va            &lt;-- esp 
+
+</code></pre>
+
+<p>系统内核需要准备用户在异常栈上面执行page fault handler的准备，<code>fault_va</code>是导致页错误的虚拟地址。</p>
+
+<p>如果用户环境在执行异常处理的时候发生页错误，那么将要将trap-time frame压栈在tf-&gt;tf_esp之下，而不是UXSTACKTOP。在这里，需要压入1个空的32-bit字，然后压入trap-time帧。</p>
+
+<p>为了确定tf-&gt;tf_esp是否已经在用户异常栈了，只需要检查它是否在范围<code>UXSTACKTOP-PGSIZE</code>和<code>UXSTACKTOP-1</code>这个范围内即可。</p>
+
+<hr />
+
+<h2 id="练习9">练习9</h2>
+
+<blockquote>
+<h2 id="实现-page-fault-handler-中的代码">实现<code>page_fault_handler</code>中的代码</h2>
+
+<p>程序的执行流梳理下：
+1. 首先用户程序使用<code>sys_set_env_pgfault_handler()</code>系统调用设置好页错误处理方法。
+2. 当用户程序发生页错误的时候，此时trap进入内核，通过<code>trapdispatch()</code>的分发错误机制，单独处理页错误。
+3. 因为是在用户环境下发生的页错误，内核将该用户环境的运行栈改成异常栈，</p>
+</blockquote>
+
+<pre><code class="language-C">void
+page_fault_handler(struct Trapframe *tf)
+{
+    ...
+    // LAB 4: Your code here.
+    struct UTrapframe *utf;
+    uint32_t uesp;
+
+    cprintf(&quot;user page fault\n&quot;);
+
+    if (tf-&gt;tf_esp &lt;= UXSTACKTOP-1 &amp;&amp; tf-&gt;tf_esp &gt;= UXSTACKTOP-PGSIZE)
+        uesp = tf-&gt;tf_esp - sizeof(struct UTrapframe) - 4; 
+    else
+        uesp = UXSTACKTOP - sizeof(struct UTrapframe);
+
+    /* call upcall if current env has handler*/
+    if (curenv-&gt;env_pgfault_upcall != NULL) {
+    
+        user_mem_assert(curenv, (void *)uesp, sizeof(struct UTrapframe), PTE_U|PTE_P|PTE_W);
+        
+        /*locates to the exception stack*/
+        utf = (struct UTrapframe *)uesp;
+
+        /*construct User trap frame*/
+        utf-&gt;utf_fault_va = fault_va;
+        utf-&gt;utf_err = tf-&gt;tf_err;
+        utf-&gt;utf_regs = tf-&gt;tf_regs;
+        utf-&gt;utf_eflags = tf-&gt;tf_eflags;
+        utf-&gt;utf_eip = tf-&gt;tf_eip;
+        utf-&gt;utf_esp = tf-&gt;tf_esp;  
+
+        /*ready for handler paremeter*/
+        tf-&gt;tf_esp = uesp;
+
+        /*after trap , execute the handler routine*/
+        tf-&gt;tf_eip = (uint32_t)curenv-&gt;env_pgfault_upcall; 
+
+        env_run(curenv);
+    }
+    ...   
+}
+</code></pre>
+
+<h2 id="练习10">练习10</h2>
+
+<blockquote>
+<h2 id="当发生页错误的时候-内核通过设置eip指向-pgfault-upcall来调用汇编代码-并且调用已经注册好的handler-该练习的任务就是当handler执行完后-用户如何返回到错误时的状态去">当发生页错误的时候，内核通过设置eip指向_pgfault_upcall来调用汇编代码，并且调用已经注册好的handler，该练习的任务就是当handler执行完后，用户如何返回到错误时的状态去。</h2>
+</blockquote>
+
+<pre><code class="language-asm">.globl _pgfault_upcall
+_pgfault_upcall:
+    // Call the C page fault handler.
+    pushl %esp          // function argument: pointer to UTF
+    movl _pgfault_handler, %eax
+    call *%eax
+    addl $4, %esp 
+
+    // LAB 4: Your code here.
+    subl $0x4, 0x30(%esp) # for push eip 
+    movl 0x30(%esp), %ebx #regular esp
+    movl 0x28(%esp), %eax #eip
+    movl %eax, (%ebx)
+        
+    // Restore the trap-time registers.  After you do this, you
+    // can no longer modify any general-purpose registers.
+    // LAB 4: Your code here.
+    addl $0x8, %esp
+    popal #regular registers
+
+    // Restore eflags from the stack.  After you do this, you can
+    // no longer use arithmetic operations or anything else that
+    // modifies eflags.
+    // LAB 4: Your code here.
+    addl $0x4, %esp
+    popfl
+
+    // Switch back to the adjusted trap-time stack.
+    // LAB 4: Your code here.
+    popl %esp
+    // Return to re-execute the instruction that faulted.
+    // LAB 4: Your code here.
+    ret
+</code></pre>
+
+<h2 id="练习11">练习11</h2>
+
+<blockquote>
+<h2 id="完成set-pgfault-handler">完成set_pgfault_handler()</h2>
+
+<pre><code class="language-C">
+void
+set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
+{
+    int r;
+
+    if (_pgfault_handler == 0) {
+        // First time through!
+        // LAB 4: Your code here.
+        //panic(&quot;set_pgfault_handler not implemented&quot;);
+        if (sys_page_alloc(0, (void *)UXSTACKTOP-PGSIZE, PTE_W|PTE_U|PTE_P) &lt; 0)
+            panic(&quot;memory allocation failed: On UXSTACKTOP&quot;);
+    }
+
+    // Save handler pointer for assembly to call.
+    _pgfault_handler = handler;
+    if (sys_env_set_pgfault_upcall(0, _pgfault_upcall) &lt; 0)
+        panic(&quot;bad env&quot;);
+}
+</code></pre>
+</blockquote>
+
+<p>通过一个callback function登记需要运行的handler，实现对不同情况的异常分发。</p>
+
+<p>#Implementing Copy-on-Write Fork
+与之前练习中的<code>dumbfork()</code>不同的是，<code>dumbfork()</code>复制了整个父环境中的所有的页，但是fork()仅仅只会复制一个关于页映射的页，其他的页会在用户环境往这些被标记的页写入内容的时候，发生页错误，并且分配新页，复制页内容。</p>
+
+<p>fork()的控制流如下：
+1. 父环境安装<code>pgfault()</code>作为page fault handler，利用set_pgfault_handler()可以做到。
+2. 父环境调用<code>sys_exofork()</code>来创建子环境。
+3. 将每一个地址低于<code>UTOP</code>的状态为<code>可写</code>或者<code>copy-on-write</code>的页，使用<code>duppage</code>函数，映射到子环境的内存空间去，并且把*自己*的和子内存空间的页状态都标记<code>COW</code>状态。</p>
+
+<ul>
+<li>异常栈不需要被映射，取而代之的是，父环境需要为子环境异常栈分配一个新的页。</li>
+</ul>
+
+<ol>
+<li>为子环境设置页错误入口</li>
+<li>将子环境标记为可运行状态。</li>
+</ol>
+
+<p>每当父环境或者子环境尝试写入状态为cow的页时，将会引发页错误，页错误处理程序的控制流如下：
+1. 内核传递也错给_pgfault_，然后调用pgfault()来处理
+2. <code>pgfault()</code>检查页错误的错误代码(FEC_WR)，并且页是否被标记为PTE_COW，如果不是，panic。
+3. <code>pgfault()</code>分配一个新的页映射到一个临时位置，然后复制发生错误的页到临时页位置，然后再将这个临时位置映射到一个合适的位置，并且标记为可读可写，代替之前只读的映射。</p>
+
+<h2 id="练习12">练习12</h2>
+
+<blockquote>
+<h2 id="实现fork-duppage-pgfault">实现fork,duppage,pgfault</h2>
+</blockquote>
+
+<h3 id="fork">fork()</h3>
+
+<pre><code class="language-C">envid_t
+fork(void)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;fork not implemented&quot;);
+    set_pgfault_handler(pgfault);   
+
+    int r;
+    envid_t envid;
+    int32_t va;
+    
+    envid = sys_exofork();
+    if (envid &lt; 0)
+        panic(&quot;sys_exofork error&quot;); 
+    if (envid == 0) {
+    //  panic(&quot;child&quot;);
+        thisenv = &amp;envs[ENVX(sys_getenvid())];
+        cprintf(&quot;child: %d\n&quot;, thisenv-&gt;env_id);
+        return 0;
+    }
+
+    cprintf(&quot;parent fork:%d -&gt; %d\n&quot;, thisenv-&gt;env_id, envid);
+    for (va = 0; va &lt; USTACKTOP; va += PGSIZE)
+        if ((uvpd[PDX(va)] &amp; PTE_P) &amp;&amp; (uvpt[PGNUM(va)] &amp; (PTE_P|PTE_U)) )
+                duppage(envid, (uint32_t)PGNUM(va));    
+    //panic(&quot;1&quot;);
+    if ((r = sys_page_alloc(envid, (void *)UXSTACKTOP-PGSIZE, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        return r;
+    
+    extern void _pgfault_upcall(void);
+    sys_env_set_pgfault_upcall(envid, _pgfault_upcall);
+
+    if ((r = sys_env_set_status(envid, ENV_RUNNABLE)) &lt; 0)
+        return r;
+    
+    return envid;
+}
+</code></pre>
+
+<h3 id="duppage">duppage()</h3>
+
+<pre><code class="language-C">static int
+duppage(envid_t envid, unsigned pn)
+{
+    int r;
+    uint32_t va;
+    // LAB 4: Your code here.
+    //panic(&quot;duppage not implemented&quot;);
+    va = pn*PGSIZE;
+    //cprintf(&quot;%x\n&quot;, va);  
+    if (uvpt[pn] &amp; PTE_COW || uvpt[pn] &amp; PTE_W) {
+        if ((r = sys_page_map(thisenv-&gt;env_id, (void *)va, envid, (void *)va, PTE_P|PTE_U|PTE_COW)) &lt; 0)
+            panic(&quot;2&quot;);
+        if ((r = sys_page_map(thisenv-&gt;env_id, (void *)va, thisenv-&gt;env_id, (void *)va, PTE_P|PTE_U|PTE_COW)) &lt; 0)
+            panic(&quot;3&quot;);
+    } else
+        if ((r = sys_page_map(thisenv-&gt;env_id, (void *)va, envid, (void *)va, PTE_U|PTE_P)) &lt; 0)
+            panic(&quot;4&quot;);
+    return 0;
+}
+</code></pre>
+
+<h3 id="pgfault">pgfault()</h3>
+
+<pre><code class="language-C">static void
+pgfault(struct UTrapframe *utf)
+{
+    void *addr = (void *) utf-&gt;utf_fault_va;
+    uint32_t err = utf-&gt;utf_err;
+    int r;
+
+    //cprintf(&quot;%d\n&quot;, err);
+    if (!(err &amp; FEC_WR) || !(uvpt[PGNUM(addr)] &amp; PTE_COW))
+        panic(&quot;user page fault: write to non-copy-on-write page&quot;);
+
+
+    // LAB 4: Your code here.
+    //panic(&quot;pgfault not implemented&quot;);
+    addr = (void *)ROUNDDOWN((uint32_t)addr, PGSIZE);
+    //cprintf(&quot;thisenv-&gt;envid : %d\n&quot;, thisenv-&gt;env_id);
+    if ((r = sys_page_alloc(0, (void *)PFTEMP, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        panic(&quot;handler fault :haven't memory &quot;);
+    memmove((void *)PFTEMP, addr, PGSIZE);
+    if ((r = sys_page_map(0, (void *)PFTEMP, 0, addr, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        panic(&quot;handler fault: sys_page_map&quot;);
+
+    if ((r = sys_page_unmap(0, PFTEMP)) &lt; 0)
+        panic(&quot;handler fault: sys_page_unmap&quot;);
+
+}
+
+</code></pre>
+
+<p>两个问题：
+1.在这，fork()是设置好子环境的相关上下文才调度到子环境中去的。</p>
+
+<ol>
+<li><p><code>thisenv-&gt;env</code>在<code>duppage()</code>中使用正常，但是在<code>pgfault()</code>会panic，于是观察系统调用信息：这个fork二叉树的根节点会在设置完子进程的信息后销毁，然后cpu调度新的任务。fork()函数中Hint告诉我注意修改子进程中的<code>thienv</code>的值。</p>
+
+<p>thisenv = &amp;envs[ENVX(sys_getenvid())];</p></li>
+</ol>
+
+<p><code>thisenv</code>是一个全局(静态)变量，被放在程序的.data域，父环境已经标记这个页为cow状态，所以这个赋值写操作会引发页错误。然后页错误处理程序来为这个页做一个拷贝到该子环境内存空间中。所以当我使用三个系统调用<code>sys_page_alloc</code>,<code>sys_page_map</code>,<code>sys_page_unmap</code>并且传递<code>thisenv-&gt;env_id</code>的时候，是被标记为cow的页发送读请求，结果读到的是父环境的内存内容。父环境已经被销毁了，所以程序在这儿被panic。<br />
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab4/debuginfo.png" alt="debuginfo.png" /><br />
+PS:父环境销毁的时候并不会回收实际页帧，每个页帧都要一个引用计数器，引用计数器的值在fork()的情境下，应该为2，所以不会被会受到free_list中去</p>
+
+<p>PART B done</p>
+
+<hr />
+
+<h1 id="part-c-preemptive-multitasking-and-inter-process-communication-ipc">Part C: Preemptive Multitasking and Inter-Process communication (IPC)</h1>
+
+<h1 id="clock-interrupts-and-preemption">Clock Interrupts and Preemption</h1>
+
+<p>运行<code>user/spin</code>测试程序，这个程序fork出一个子进程，子进程一旦接手CPU后只是简单地永久循环。父进程和内核都不能再获得CPU，这对保护操作系统防范恶意代码和bug的影响当然不是个好情况，因为任何用户态的进程都能接管整个系统去执行一个死循环。为了允许内核去抢占一个正在执行的环境，强制地重新获取CPU，必须为JOS提供来自时钟硬件的外部硬件中断。</p>
+
+<h1 id="interrput-discipline">Interrput discipline</h1>
+
+<p>外部中断又被称作IRQ(Interrupt Request Line)，有16种可能的IRQ，从0-15。<code>picirq.c</code>中的<code>pic_init()</code>映射IRQ 0-15映射到IDT的IRQ_OFFSET~IRQ_OFFSET+15。</p>
+
+<p><code>inc/trap.h</code>文件中，IRQ_OFFSET 被定义为十进制的23，用IDT表的32-47对应IRQ的0~15中断。例如，时钟中断是IRQ的0号，IDT[IRQ_OFFSET+0]包含了再内核中的时钟的历程。<code>IRQ_OFFSET</code>，选用<code>IRQ_OFFSET</code>这个值是为了不覆盖处理器异常。</p>
+
+<p>JOS做了一个相对于<code>xv6</code>来说关键性的简化，外部中断_总是_在内核态的时候总是被关闭的。外部中断被<code>eflags</code>寄存器的IF位所控制。当这个bit位被置1时，外部中断被打开。当然这个flag值能被多种方法修改，但是由于JOS的简化，保存和恢复<code>eflags</code>寄存器只有一种单独的方式进入和离开用户态。</p>
+
+<p>在外部中断来临之前，必须保证<code>FL_IF</code>的标志位被设置，中断号通过处理器获得。否则，中断会被屏蔽，或者会被忽略直到中断位被重新开启。在bootloader的时候，就已经屏蔽了中断，并且到现在都没有重新开启它们。</p>
+
+<hr />
+
+<h2 id="练习13">练习13</h2>
+
+<blockquote>
+<p>修改<code>kern/trapentry.S</code>和<code>kern/trap.c</code>，在IDT中去初始化合适的入口，并且为IRQ提供合适的handler。
+然后修改env_alloc()保证用户环境总是开启了中断响应。
+去掉sti(set interrupt-enable flag)指令的注释，使得这个闲置CPU取消屏蔽中断。</p>
+
+<h2 id="处理器对于硬件中断不会push错误代码-通过cpu针脚和lapic的都不会">处理器对于硬件中断不会push错误代码(通过CPU针脚和lapic的都不会)</h2>
+
+<blockquote>
+<p>for example, it is possible to invoke the page-fault handler through the
+INTR pin (by means of vector 14); however, this is not a true page-fault exception. It is an interrupt.</p>
+</blockquote>
+</blockquote>
+
+<p>也就是说，之前的异常是通过中断产生的，在这个练习中，需要为每一个env都开启IF标志位，所以需要修改之前的handler，使得用户环境发生中断的时候，将IF清0，屏蔽中断。</p>
+
+<h3 id="trap-c">trap.c</h3>
+
+<pre><code class="language-C">    //irq
+    void irq_handler0();
+    void irq_handler1();
+    void irq_handler2();
+    void irq_handler3();
+    void irq_handler4();
+    void irq_handler5();
+    void irq_handler6();
+    void irq_handler7();
+    void irq_handler8();
+    void irq_handler9();
+    void irq_handler10();
+    void irq_handler11();
+    void irq_handler12();
+    void irq_handler13();
+    void irq_handler14();   
+    void irq_handler15();
+    SETGATE(idt[T_DIVIDE], 0, GD_KT, divid_entry, 0);
+    SETGATE(idt[T_DEBUG], 0, GD_KT, debug_entry, 3);
+    SETGATE(idt[T_NMI], 0, GD_KT, nmi_entry, 0);
+    SETGATE(idt[T_BRKPT], 0, GD_KT, brkpt_entry, 3);
+    SETGATE(idt[T_OFLOW], 0, GD_KT, oflow_entry, 0);
+    SETGATE(idt[T_BOUND], 0, GD_KT, bound_entry, 0);
+    SETGATE(idt[T_ILLOP], 0, GD_KT, illop_entry, 0);
+    SETGATE(idt[T_DEVICE], 0, GD_KT, device_entry, 0);
+    SETGATE(idt[T_DBLFLT], 0, GD_KT, dblflt_entry, 0);
+    SETGATE(idt[T_TSS], 0, GD_KT, tss_entry, 0);
+    SETGATE(idt[T_SEGNP], 0, GD_KT, segnp_entry, 0);
+    SETGATE(idt[T_STACK], 0, GD_KT, stack_entry, 0);
+    SETGATE(idt[T_GPFLT], 0, GD_KT, gpflt_entry, 0);
+    SETGATE(idt[T_PGFLT], 0, GD_KT, pgflt_entry, 0);
+    SETGATE(idt[T_FPERR], 0, GD_KT, fperr_entry, 0);
+    SETGATE(idt[T_SYSCALL], 0, GD_KT, syscall_entry, 3);
+    //irq handler mapping 
+    SETGATE(idt[IRQ_OFFSET+0], 0, GD_KT, irq_handler0, 3);
+    SETGATE(idt[IRQ_OFFSET+1], 0, GD_KT, irq_handler1, 3);
+    SETGATE(idt[IRQ_OFFSET+2], 0, GD_KT, irq_handler2, 3);
+    SETGATE(idt[IRQ_OFFSET+3], 0, GD_KT, irq_handler3, 3);
+    SETGATE(idt[IRQ_OFFSET+4], 0, GD_KT, irq_handler4, 3);
+    SETGATE(idt[IRQ_OFFSET+5], 0, GD_KT, irq_handler5, 3);
+    SETGATE(idt[IRQ_OFFSET+6], 0, GD_KT, irq_handler6, 3);
+    SETGATE(idt[IRQ_OFFSET+7], 0, GD_KT, irq_handler7, 3);
+    SETGATE(idt[IRQ_OFFSET+8], 0, GD_KT, irq_handler8, 3);
+    SETGATE(idt[IRQ_OFFSET+9], 0, GD_KT, irq_handler9, 3);
+    SETGATE(idt[IRQ_OFFSET+10], 0, GD_KT, irq_handler10, 3);
+    SETGATE(idt[IRQ_OFFSET+11], 0, GD_KT, irq_handler11, 3);
+    SETGATE(idt[IRQ_OFFSET+12], 0, GD_KT, irq_handler12, 3);
+    SETGATE(idt[IRQ_OFFSET+13], 0, GD_KT, irq_handler13, 3);
+    SETGATE(idt[IRQ_OFFSET+14], 0, GD_KT, irq_handler14, 3);
+    SETGATE(idt[IRQ_OFFSET+15], 0, GD_KT, irq_handler15, 3);
+
+</code></pre>
+
+<h3 id="trapentry-s">trapentry.S</h3>
+
+<pre><code>TRAPHANDLER_NOEC(irq_handler0, 32);
+TRAPHANDLER_NOEC(irq_handler1, 33);
+TRAPHANDLER_NOEC(irq_handler2, 34);
+TRAPHANDLER_NOEC(irq_handler3, 35);
+TRAPHANDLER_NOEC(irq_handler4, 36);
+TRAPHANDLER_NOEC(irq_handler5, 37);
+TRAPHANDLER_NOEC(irq_handler6, 38);
+TRAPHANDLER_NOEC(irq_handler7, 39);
+TRAPHANDLER_NOEC(irq_handler8, 40);
+TRAPHANDLER_NOEC(irq_handler9, 41);
+TRAPHANDLER_NOEC(irq_handler10, 42);
+TRAPHANDLER_NOEC(irq_handler11, 43);
+TRAPHANDLER_NOEC(irq_handler12, 44);
+TRAPHANDLER_NOEC(irq_handler13, 45);
+TRAPHANDLER_NOEC(irq_handler14, 46);
+TRAPHANDLER_NOEC(irq_handler15, 47);
+</code></pre>
+
+<h3 id="env-c">env.c</h3>
+
+<pre><code class="language-C">    // Enable interrupts while in user mode.
+    // LAB 4: Your code here.
+    e-&gt;env_tf.tf_eflags |= FL_IF;
+
+</code></pre>
+
+<p>这里有大量的重复工作，之前有一个challenge会简化一部分，在这里获得一个建议：使用脚本语言完成这部分重复性工作，不知道这种办法是好是坏。</p>
+
+<hr />
+
+<h1 id="handing-clock-interrupts">Handing Clock Interrupts</h1>
+
+<p>在<code>user/spin</code>程序中，在子程序一开始运行时就仅仅是一直循环，内核不能取回控制权，所以现在需要生成周期性的时钟中断，强制性地取回内核的控制权，并且切换到不同的用户环境。</p>
+
+<h2 id="练习14">练习14</h2>
+
+<blockquote>
+<h2 id="修改-trap-dispatch-使得当发生时钟中断的时候-调用不同的用户环境">修改<code>trap_dispatch()</code>，使得当发生时钟中断的时候，调用不同的用户环境。</h2>
+</blockquote>
+
+<pre><code class="language-C">    // Handle clock interrupts. Don't forget to acknowledge the
+    // interrupt using lapic_eoi() before calling the scheduler!
+    // LAB 4: Your code here.
+    if (tf-&gt;tf_trapno == IRQ_OFFSET + 0) {
+        lapic_eoi();
+        sched_yield();   
+    }   
+</code></pre>
+
+<p><strong>eoi</strong>(end of interrupt):置为0表示该中断例程已经结束了。</p>
+
+<hr />
+
+<h1 id="inter-process-communication-ipc">Inter-Process communication (IPC)</h1>
+
+<p>之前都是关注的操作系统的独立性，这种方式使得每个程序看似独占一台机器。另外一个重要的操作系统服务就是允许程序与其他的程序进行交互。Unix中的pipe模型就是一个很典型的例子。</p>
+
+<p>还有很多模型提供了IPC，关于这些模型哪个最好仍在争议中，取而代之的实现一个简单的IPC机制。</p>
+
+<p>首先为JOS kernel提供几个的系统调用(<code>sys_ipc_recv</code>和<code>sys_ipc_try_send</code>)提供一个简单的IPC机制，然后实现两个库函数包装系统调用。</p>
+
+<p>用户环境能发送给其他环境的“消息”由两部分组成：一个32-bit的值和一个可选的单页映射。相比单个32位整形，提供了一种更高效的通过传递页映射信息的方式，允许环境更方便设置共享内存。</p>
+
+<h1 id="sending-and-receiving-messages">Sending and Receiving Messages</h1>
+
+<p>为了接收信息，一个用户环境调用<code>sys_ipc_recv</code>。系统调用放弃CPU当前执行的用户环境，并且直到接收到信息之前不会再运行。当一个用户环境正在等待一个消息，任何其他的环境能给它发送消息(不需要特定的用户环境，不需要父子进程等)。换句话说，PART A中的检查对IPC不适用，因为IPC系统调用被设计得很安全：一个用户进程不会因为被接收消息而发生失灵。</p>
+
+<p>为了尝试发送一个值，用户环境调用<code>sys_ipc_try_send</code>发送接收者的环境id和需要发送的值。如果该id所指的环境确实在接收状态，那么发送方发送消息并且返回0。否则发送方返回<code>-E_IPC_NOT_RECV</code>指出目标环境现在不期望获得一个值。</p>
+
+<p>用户空间的库函数<code>ipc_recv</code>将会调用<code>sys_ipc_recv</code>并且寻找相关被接收的值。同样地，<code>ipc_send</code>将会重复地调用<code>sys_ipc_try_send</code>直到成功。</p>
+
+<h1 id="transferring-pages">Transferring Pages</h1>
+
+<p>当一个用户环境调用<code>sys_ipc_recv</code>使用了一个合法的<code>dstva</code>参数，那么这个环境将会愿意去接受一个页的映射。如果发送方发送了一个页，那么这个页将会被映射到接收方的<code>dstva</code>这个地址空间去。 如果接收方已经映射了页帧在<code>dstva</code>，那么先前的页映射将会被取消。</p>
+
+<p>当一个用户环境调用<code>sys_ipc_try_send</code>传递小于<code>UTOP</code>的参数<code>srcva</code>，这意味着发送方想将这个页映射到接收方的内存空间，并且设置权限位<code>perm</code>。成功IPC后，发送方保持之前的页映射，但是接收方映射了与发送方相同的页帧到<code>dstva</code>，这使得双方能共享同一个页。如果发送方或者接收方没有指出哪个页需要被发送，那么就没有页被发送。</p>
+
+<h2 id="练习15">练习15</h2>
+
+<blockquote>
+<p>先实现<code>sys_ipc_recv</code>和<code>sys_ipc_try_send</code>,checkperm需要被置0，因为不一定需要父子关系才能引用。
+实现<code>ipc_recv</code>和<code>ipc_send</code>，这是对系统调用的一个封装。</p>
+
+<h2 id="用user-pingpong和user-primes测试ipc机制">用user/pingpong和user/primes测试IPC机制。</h2>
+</blockquote>
+
+<h3 id="sys-ipc-recv">sys_ipc_recv()</h3>
+
+<pre><code class="language-C">static int
+sys_ipc_recv(void *dstva)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;sys_ipc_recv not implemented&quot;);
+    if ((uint32_t)dstva &lt; UTOP &amp;&amp; (uint32_t)dstva % PGSIZE)
+        return -E_INVAL;
+
+    //mapping   
+
+    //set status
+    curenv-&gt;env_ipc_recving = true;
+    curenv-&gt;env_ipc_dstva = dstva;
+    curenv-&gt;env_status = ENV_NOT_RUNNABLE;
+    sched_yield();
+    return 0;
+}
+</code></pre>
+
+<h3 id="sys-ipc-try-send">sys_ipc_try_send()</h3>
+
+<pre><code class="language-C">static int
+sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;sys_ipc_try_send not implemented&quot;);
+    struct Env *dstenv;
+    struct PageInfo *pp;
+    pte_t *pte;
+
+    //cprintf(&quot;%x, val: %d\n&quot;, srcva, value);
+    if (envid2env(envid, &amp;dstenv, 0) &lt; 0)
+        return -E_BAD_ENV;
+    if (!dstenv-&gt;env_ipc_recving)
+        return -E_IPC_NOT_RECV;
+    if (perm &amp; ~PTE_SYSCALL)
+        return -E_INVAL;
+
+    // for page mapping checks //
+    if ((uint32_t)srcva &lt; UTOP) {
+        if ((uint32_t)srcva % PGSIZE)
+            return -E_INVAL;
+        if (!(pp = page_lookup(curenv-&gt;env_pgdir, srcva, &amp;pte)))
+            return -E_INVAL;
+        if (perm &amp; PTE_W &amp;&amp; !(*pte &amp; PTE_W))
+            return -E_INVAL;
+        if (page_insert(dstenv-&gt;env_pgdir, pp,  dstenv-&gt;env_ipc_dstva, perm) &lt; 0)
+            return -E_NO_MEM;
+    }
+    // update target env fields
+    dstenv-&gt;env_ipc_recving = false;
+    dstenv-&gt;env_ipc_from = curenv-&gt;env_id;
+    dstenv-&gt;env_ipc_value = value;
+    dstenv-&gt;env_ipc_perm = perm;
+    dstenv-&gt;env_status = ENV_RUNNABLE;
+    dstenv-&gt;env_tf.tf_regs.reg_eax = 0;
+    return 0;
+
+
+}
+
+</code></pre>
+
+<h3 id="ipc-recv">ipc_recv()</h3>
+
+<pre><code class="language-C">int32_t
+ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;ipc_recv not implemented&quot;);
+    int r;
+    void *va;
+
+
+    if (pg != NULL)
+        va = pg;
+    if (pg == NULL)
+        va = (void *)-1;
+
+    //system call failed    
+    if (sys_ipc_recv(va) &lt; 0) {
+        *from_env_store = 0;
+        *perm_store = 0;
+    }
+
+    //store infomation for caller
+    if (from_env_store) 
+        *from_env_store = thisenv-&gt;env_ipc_from;
+    if (perm_store) 
+        *perm_store =  thisenv-&gt;env_ipc_perm;
+    
+    return thisenv-&gt;env_ipc_value;
+}
+</code></pre>
+
+<h3 id="ipc-send">ipc_send()</h3>
+
+<pre><code class="language-C">void
+ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
+{
+    // LAB 4: Your code here.
+    //panic(&quot;ipc_send not implemented&quot;);
+    int r; 
+    void *va;
+
+    if (!pg) 
+        va = (void *)-1;
+    else
+        va = pg;
+
+    while (1) {
+        r = sys_ipc_try_send(to_env, val, va, perm);
+        if (r == 0)
+            break;
+        if (r &lt; 0 &amp;&amp; r != -E_IPC_NOT_RECV)
+            panic(&quot;error on send ipc_send, %e&quot;, r);
+        if (r == -E_IPC_NOT_RECV)
+            sys_yield();
+    }
+
+}
+</code></pre>
+
+<p>梳理一个过程(pingpong程序)：
+<code>sys_ipc_recv</code>将当前env设置为不可运行状态后调用调度程序，发送方开始执行检查并且配置自己和接收方内存空间的页映射等相关信息，设置完后通过return返回到<code>trap()</code>函数，通过env_run()返回用户态，准备执行<code>ipc_recv</code>接收刚才接收方的消息，执行调度。接收方的用户环境已经设置为可运行状态，从而开始执行<code>env_run</code>，此时这个环境中eax的值还是之前系统调用号<code>12</code>，如果运行<code>env_tf_pop</code>会直接回到调用的地点引发错误。所以，发送方应该将接收方的eax置为0表示接收成功。</p>
+
+<h1 id="make-grade">make grade</h1>
+
+<pre><code class="language-C">make[1]: Leaving directory '/home/moonlight/lab'
+dumbfork: OK (1.4s) 
+Part A score: 5/5
+
+faultread: OK (0.9s) 
+faultwrite: OK (1.0s) 
+faultdie: OK (2.0s) 
+faultregs: OK (2.0s) 
+faultalloc: OK (1.0s) 
+faultallocbad: OK (1.8s) 
+faultnostack: OK (1.1s) 
+faultbadhandler: OK (1.9s) 
+faultevilhandler: OK (2.2s) 
+forktree: OK (2.0s) 
+Part B score: 50/50
+
+spin: OK (1.9s) 
+stresssched: OK (3.4s) 
+sendpage: OK (1.8s) 
+    (Old jos.out.sendpage failure log removed)
+pingpong: OK (2.0s) 
+    (Old jos.out.pingpong failure log removed)
+primes: OK (13.9s) 
+    (Old jos.out.primes failure log removed)
+Part C score: 25/25
+
+Score: 80/80
+moonlight@ubuntu:~/lab$ 
+</code></pre>
+
+<blockquote>
+<p>Challenge 1:solute the <code>ipc_send</code> loop</p>
+</blockquote>
+
+<p>//todo here , reading IA32
+1. ipc_send use <code>ipc_find_env</code> firstly to find corrsponding env whose status is runnable
+2. call <code>sys_ipc_try_send</code>
+3. for the status of target env is running ,I should send an IPC interrupt using  <code>lapic_ipi()</code> function in the file <code>lapic.c</code>.
+4. makes it runnable
+5. call <code>sys_ipc_try_send</code></p>
+
+<hr />
+
+<blockquote>
+<p>thread introduction : <a href="http://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-35.pdf">http://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-35.pdf</a></p>
+
+<p>kernel design : <a href="https://github.com/fATwaer/fatwaer.github.io/tree/master/pdf/os/SRC-RR-35.pdf">https://github.com/fATwaer/fatwaer.github.io/tree/master/pdf/os/SRC-RR-35.pdf</a></p>
+</blockquote>
+
+<h1 id="总结">总结</h1>
+
+<p>上面两篇paper非常值得一看，JOS到目前为止都没用到thread这个概念，但是在接下来的学习中是非常重要的，另外一直没有看完的是IA32手册，这份手册提供了很多操作系统的细节，虽然没必要全部读完，但是我觉得至少把个位数的章节读完是很有必要的。</p>
+
+<p>Lab4到这里已经结束了，从5.7到5.19大概花了两周的时间，不同部分的代码依赖很强，一点不小心就会引发非常严重的错误。不过在这个实验中，第一次听说了回归测试这个概念，应该与单元测试功能相同，是为大型程序阶段性检测的一种技巧。JOS替换了进程的叫法，称之为“用户环境”。在实验中可以体会到，一个用户环境的创建包括很多过程，页表，页映射，当前执行的CPU，错误处理机制，正常栈，异常栈等等信息都要提前准备好才把这个进程设置为可运行状态，所准备的一切都是为一个需要执行的任务做下铺垫。</p>
+
+    
+    <div>
+      <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    </div>
+    <script src="http://localhost:1313/js/back2top.js"></script>
+  </main>
+  <div id="disqus-container">
+  
+    <button id="disqus-button" onclick="showComments()">Show comments</button>
+    <div id="disqus-comments">
+      
+      
+      
+        <p><em>Disqus comments are disabled.</em></p>
+        <script type="application/javascript">
+          function showComments() {
+            // Remove button
+var disqusButton = document.getElementById('disqus-button');
+disqusButton.parentNode.removeChild(disqusButton); 
+// Un-hide comments
+var disqusComments = document.getElementById('disqus-comments');
+disqusComments.style.display = 'block'; 
+          }
+        </script>
+      
+      <noscript>Enable JavaScript to view Disqus comments.</noscript>
+    </div>
+  
+</div>
+
+
+          <footer role="contentinfo">
+  
+  
+    Made with <a href="https://gohugo.io/">Hugo</a>. Themed by <a href="https://github.com/zwbetz-gh/cupper-hugo-theme">Cupper</a>. Analytics in comming.
+  
+</footer>
+
+        </div>
+      </div>
+    </div>
+    <script src="http://localhost:1313/js/prism.js"></script>
+<script src="http://localhost:1313/js/dom-scripts.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>

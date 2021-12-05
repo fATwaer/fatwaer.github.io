@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>debug on Pok</title>
+    <link>/tags/debug/</link>
+    <description>Recent content in debug on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 20 Mar 2020 16:01:24 +0800</lastBuildDate><atom:link href="/tags/debug/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>如何进行调试以及性能剖析</title>
+      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/</link>
+      <pubDate>Fri, 20 Mar 2020 16:01:24 +0800</pubDate>
+      
+      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/</guid>
+      <description>“The most effective debugging tool is still careful thought, coupled with judiciously placed print statements” — Brian Kernighan, Unix for Beginners.
+ 最朴素的debug方法还是使用print，并且在合适的地方插入print语句，过多的日志信息反而会引起混乱，使debug效率降低。
+日志分级 根据事情的验证程度，可以将事件的严重情况分为：
+ INFO WARNING ERROR CRITICAL  每当输出日志的时候，在响应事件前面加上前缀，相关的语言应该都有现成的库，根据需求进行选取即可。
+对于一个事件运行的程序，比如daemon进程，日志输出在响应文件夹，利用grep就能很好的查询不同严重程度的事件的发生情况。
+日志的位置通常在/var/log目录下，例如nginx的日志文件就在/var/log/nginx目录下，系统服务systemd的地址文件就在/var/log/journal目录下。
+日志除了写入文件外，还能通过相关配置写入到套接字/远程服务器上，对日志进行集中处理或存储。
+其他： - 交互式日志查看工具: lnav
+debug 工具 除了GNU项目中的gdb和python自带的pdb，还有一些能在debug过程中自动显示相关变量以及寄存器值的debug工具：
+ pwndb lldb  backtrace 利用strace可以查询一些系统调用的次数，例如
+store : ~/go &amp;gt;&amp;gt; ls bin pkg src store : ~/go &amp;gt;&amp;gt; sudo strace -e lstat ls -l &amp;gt; /dev/null lstat(&amp;#34;pkg&amp;#34;, {st_mode=S_IFDIR|0755, st_size=4096, .</description>
+    </item>
+    
+  </channel>
+</rss>

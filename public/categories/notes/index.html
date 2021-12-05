@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>notes</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="notes" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/categories/notes/" />
+
+
+
+    
+    
+    <link rel="stylesheet" href="/css/layouts/list.css">
+    <link rel="stylesheet" href="/css/navigators/sidebar.css">
+    
+    <link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  
+  
+
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/categories" data-filter="all">Categories</a></li>
+            <div class="subtree taxonomy-terms">
+              
+              
+
+
+
+  
+  
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/algorithm/" data-taxonomy-term="algorithm"><span class="taxonomy-label">algorithm</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/env/" data-taxonomy-term="env"><span class="taxonomy-label">env</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/language/" data-taxonomy-term="language"><span class="taxonomy-label">language</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term active" href="/categories/notes/" data-taxonomy-term="notes"><span class="taxonomy-label">notes</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/sys/" data-taxonomy-term="sys"><span class="taxonomy-label">sys</span></a></li>
+        
+          
+            
+          
+          <li><a class="taxonomy-term " href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" data-taxonomy-term="%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80"><span class="taxonomy-label">汇编语言</span></a></li>
+        
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content container-fluid" id="content">
+    <div class="container-fluid post-card-holder" id="post-card-holder">
+      
+      
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（6）：执行分布式搜索</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 26, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（5）：高可用保证</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 15, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（4）：相关性计算</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 7, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（3）：文档如何被实时索引</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 31, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（2）：文档分词原理</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 24, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（1）：基础查询</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 16, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（0）：快速搭建</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 8, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/notes/programatic2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">实效性软件构建的途径-下</h5>
+        <p class="card-text post-summary">前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。
+1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。
+无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。
+2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。
+花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。
+3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。
+那么如何合理地进行重构？
+ 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。
+另外测试都应该具有以下功能：
+ setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。
+而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。
+6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。
+7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。
+8. 管理知识资产 对于金融资产的管理：
+ 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：
+ 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：
+ 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">April 15, 2020</span>
+        <a
+        href="/posts/notes/programatic2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/notes/programatic1/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">实效性软件构建的途径-上</h5>
+        <p class="card-text post-summary">前言 无意中看到了这本书，译名是程序员修炼之道，想尝试在这本书中找到一些跟软件构建相关问题的答案。这本书虽然是上个世纪出版的，要注意时代的局限性和过期的经验，进行自我验证，但一遍看下来，对我来说，干货还是有很多的。
+1. 需求挖掘 这一点我认为是最重要的一点，于是放在最前面。
+找出用户为何要做特定事情的原因，而不是目前要做这件事情的方式，开发最终是需要解决商业问题。 比如，“只有员工和上级和人事部门才能查看员工的档案”和“只有指定人员能查看员工档案”，后者更加容易编写出适用于元数据编程的程序，也更加的灵活。
+这个用户不仅仅指实际使用的人，也可以是交给你这个工作的人。
+2. 做好退路和保险 书中是用代码所存储的机器因为崩溃而引发的问题，虽然在git的时代，这种问题不容易发生了，但是这种想法得印在脑子里，如果真发生类似的问题，损失将是非常大的。
+这一点和可撤销性想类似，要考虑架构部署的改动和灵活性，假设某次会议决定使用MySQL进行存储数据，但是在快完成时，需要换成其他DB进行存储，如果要改动很大，那么就是错误建立在了假定的决策上面。假定项目以后只会用到MySQL，很多代码都被写死了。
+再比如开发Unix软件，是否考虑所有平台的可以执行问题，例如epoll可以在linux上使用，那么如果在只有Kqueue的FreeBSD上面会怎么样，所以需要保证代码在一些决策上可以变通。
+3. 不要破窗户 这也就是常说的破窗效应，一扇破窗户，只要一段时间不修理，就会逐渐带来废弃感，逐渐变为破败的废弃物。软件中的破窗户就是指，低劣的设计，错误的决策，糟糕的代码。应该发现一个就修一个，如果没时间就加入注释，并且可以深究窗户什么时候破的，原因是什么，如何修理。
+并且要注意变化，随着软件补丁的添加，会慢慢偏离其规范，周期性地审视环境的变化，以免量变引发的雪崩。
+4. 重复的工作(Don&rsquo;t Repeat Yourself) 这种重复不单单指代码的复制粘贴，还有可能是一些不容易发现的错误。
+强加的重复  例如客户端和服务端使用不同的语言，那么两端都会有类似的数据结构，可以用schema的元数据自动生成相关的类定义。 文档：注释会随代码更新而过时，注释应该用于更加高级的说明，我的理解是注释应该写下这段代码应该干什么，而不是干了什么 语言：例如C/C++应该在头文件的函数声明前说明接口问题，实现文件中记载实现细节 文档和代码：如果边写代码边写文档，就会造成代码和文档的重复问题，比如代码改动了，文档也会随即发生变。如果最开始就根据用户的需求写成文档来生成测试，所有的代码只需要在提交时通过所有的测试即可。  无意的重复 通常是设计问题引起的，注意数据之间的关联性，书中的例子是一个数据集合中同时出现了两个点和一段距离，如果点发生了变化，那么需要同时更改距离，比较好的做法是通过点来计算距离，而不是通过赋值。
+耐性的重复 这就是在项目中放着好好的代码不用，自己重写写个轮子来浪费时间。
+开发者之间的重复 分工不明确导致工作职责重复，这个往往需要清晰的设计和强有力的技术项目领导进行责任划分。
+5. 解耦 接口设计时，应该考虑到传入的类型，比如某个函数需要B类型中的时间成员变量，下面这种耦合度更低。
+void foo(B &amp;b) { theTime = b.t; } void foo(time &amp;t) { theTime = t; } 较小响应集 根据统计结果，较大响应集更加容易出错，响应集的定义是：类的各个方法直接调用的函数的数目。
+Demeter法则 wiki：https://en.wikipedia.org/wiki/Law_of_Demeter
+ 每个单元对于其他的单元只能拥有有限的知识：只是与当前单元紧密联系的单元； 每个单元只能和它的朋友交谈：不能和陌生单元交谈； 只和自己直接的朋友交谈。  在OOP中，这个法则的规定为某个对象的任何方法都应该只调用属于一下情形中的方法：
+ 它自身的方法 传入该方法的任何参数的方法 该类所属的成员对象所含有的方法 所持有的任何对象的方法  class Demeter { private: A *a; int func(); public: // .</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">April 12, 2020</span>
+        <a
+        href="/posts/notes/programatic1/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+    </div>
+    <div class="paginator">
+      
+    </div>
+  </div>
+</section>
+
+
+      
+       
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+    <script src="/js/list.js"></script>
+
+  </body>
+</html>

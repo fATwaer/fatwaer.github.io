@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>如何进行调试以及性能剖析&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="如何进行调试以及性能剖析" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">如何进行调试以及性能剖析</h1><p class="article date">Friday, March 20, 2020</p></section><article class="article markdown-body"><blockquote>
+<p>“The most effective debugging tool is still careful thought, coupled with judiciously placed print statements” — Brian Kernighan, Unix for Beginners.</p>
+</blockquote>
+<p>最朴素的debug方法还是使用print，并且在合适的地方插入print语句，过多的日志信息反而会引起混乱，使debug效率降低。</p>
+<h2 id="日志分级">日志分级</h2>
+<p>根据事情的验证程度，可以将事件的严重情况分为：</p>
+<ul>
+<li><code>INFO</code></li>
+<li><code>WARNING</code></li>
+<li><code>ERROR</code></li>
+<li><code>CRITICAL</code></li>
+</ul>
+<p>每当输出日志的时候，在响应事件前面加上前缀，相关的语言应该都有现成的库，根据需求进行选取即可。</p>
+<p>对于一个事件运行的程序，比如<code>daemon</code>进程，日志输出在响应文件夹，利用<code>grep</code>就能很好的查询不同严重程度的事件的发生情况。</p>
+<p>日志的位置通常在<code>/var/log</code>目录下，例如nginx的日志文件就在<code>/var/log/nginx</code>目录下，系统服务<code>systemd</code>的地址文件就在<code>/var/log/journal</code>目录下。</p>
+<p>日志除了写入文件外，还能通过相关配置写入到<code>套接字</code>/<code>远程服务器</code>上，对日志进行集中处理或存储。</p>
+<p>其他：
+- 交互式日志查看工具: <a href="http://lnav.org/"target="_blank" rel="noopener noreferrer">lnav</a>
+</p>
+<h2 id="debug-工具">debug 工具</h2>
+<p>除了GNU项目中的<code>gdb</code>和python自带的<code>pdb</code>，还有一些能在debug过程中自动显示相关变量以及寄存器值的debug工具：</p>
+<ul>
+<li><a href="https://github.com/pwndbg/pwndbg"target="_blank" rel="noopener noreferrer">pwndb</a>
+</li>
+<li><a href="https://lldb.llvm.org/"target="_blank" rel="noopener noreferrer">lldb</a>
+</li>
+</ul>
+<h2 id="backtrace">backtrace</h2>
+<p>利用<code>strace</code>可以查询一些系统调用的次数，例如</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">store : ~/go &gt;&gt; ls
+bin  pkg  src
+store : ~/go &gt;&gt; sudo strace -e lstat ls -l &gt; /dev/null
+lstat<span class="o">(</span><span class="s2">&#34;pkg&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">})</span> <span class="o">=</span> <span class="m">0</span>
+lstat<span class="o">(</span><span class="s2">&#34;src&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">})</span> <span class="o">=</span> <span class="m">0</span>
+lstat<span class="o">(</span><span class="s2">&#34;bin&#34;</span>, <span class="o">{</span><span class="nv">st_mode</span><span class="o">=</span>S_IFDIR<span class="p">|</span>0755, <span class="nv">st_size</span><span class="o">=</span>4096, ...<span class="o">})</span> <span class="o">=</span> <span class="m">0</span>
++++ exited with <span class="m">0</span> +++
+</code></pre></div><p>通过strace获得ls程序调用了多少次lstat。</p>
+<p>扩展阅读：
+- <a href="https://blogs.oracle.com/linux/strace-the-sysadmins-microscope-v2">https://blogs.oracle.com/linux/strace-the-sysadmins-microscope-v2</a></p>
+<h2 id="静态分析">静态分析</h2>
+<p>静态分析(<a href="https://en.wikipedia.org/wiki/Static_program_analysis"target="_blank" rel="noopener noreferrer">wiki</a>
+)就像是对一个文本直接检查，推断相应的语法错误和可能的语法错误。</p>
+<p>例如python有<a href="https://pypi.org/project/pyflakes"target="_blank" rel="noopener noreferrer">pyflakes</a>
+，shell脚本有<code>shellcheck</code>，在github上也有相关的静态分析工具<a href="https://github.com/mre/awesome-static-analysis"target="_blank" rel="noopener noreferrer">集合</a>
+。</p>
+<h2 id="性能剖析">性能剖析</h2>
+<blockquote>
+<p>Premature optimization is the root of all evil</p>
+</blockquote>
+<p>通常认为过早优化是不好的，有时间可以读下**<a href="http://wiki.c2.com/?PrematureOptimization"target="_blank" rel="noopener noreferrer">Premature Optimization</a>
+**。</p>
+<p>最简单的性能测试可以通过程序结束的时间减去程序开始运行的时间获得。比如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">time</span> ls &gt; /dev/null
+
+real    0m0.002s
+user    0m0.001s
+sys     0m0.000s
+</code></pre></div><p>可以获得三个时间:</p>
+<ul>
+<li>real: 从程序开始到程序结束的时间，包括了I/O，网络的时间</li>
+<li>user：运行用户级别代码的时间</li>
+<li>sys: 运行内核的时间</li>
+</ul>
+<h3 id="cpu">CPU</h3>
+<p>在python中，可以利用<code>cProfile</code>模组进行测试每个函数所使用的时间，<a href="https://github.com/rkern/line_profiler"target="_blank" rel="noopener noreferrer">line profile</a>
+测试每一行执行时间。</p>
+<h3 id="内存占用">内存占用</h3>
+<ul>
+<li>
+<p>c/c++: Valgrind
+<a href="https://valgrind.org/">https://valgrind.org/</a></p>
+</li>
+<li>
+<p>python: mem-profiler
+<a href="https://pypi.org/project/memory-profiler/">https://pypi.org/project/memory-profiler/</a></p>
+</li>
+</ul>
+<h3 id="事件采样">事件采样</h3>
+<h4 id="perf-简介">perf 简介</h4>
+<p><code>perf</code>工具是Linux下用于性能剖析的工具，执行相应的程序，由内核或者硬件来计数程序所触发的事件。</p>
+<p>事件分为几类：</p>
+<ul>
+<li>software events: 完全由内核计数的事件，比如：上下文切换，fault等</li>
+<li>PMU hardware events: 由处理器自己或者性能监控单元PMU(Performance Monitoring Unit)提供，比如这些事件：运行CPU时钟的数量，<strong>失效指令</strong>，L1级cache未命中次数等。由CPU的种类和模型决定。</li>
+<li>tracepoint events：由内核的ftrace实现，并且只能用在2.6.3x等更新的内核。</li>
+</ul>
+<p><strong>失效指令</strong>这个术语是intel中的<code>instructions retired</code>，意思是所执行的指令数目，并不包括由于分支预测失败的那一部分指令。</p>
+<blockquote>
+<p>Instructions Retired:
+This event indicates the number of instructions that retired or executed completely. This does not include partially processed instructions executed due to branch mispredictions.</p>
+</blockquote>
+<p>回到<code>perf</code>工具，机器所支持的事件列表可以通过list查询:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ perf list
+
+List of pre-defined events <span class="o">(</span>to be used in -e<span class="o">)</span>:
+
+  alignment-faults                                   <span class="o">[</span>Software event<span class="o">]</span>
+  context-switches OR cs                             <span class="o">[</span>Software event<span class="o">]</span>
+  cpu-clock                                          <span class="o">[</span>Software event<span class="o">]</span>
+
+...
+</code></pre></div><h4 id="开始监控一个程序运行">开始监控一个程序运行</h4>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ perf stat -B dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/null <span class="nv">count</span><span class="o">=</span><span class="m">1000000</span>
+1000000+0 records in
+1000000+0 records out
+<span class="m">512000000</span> bytes <span class="o">(</span><span class="m">512</span> MB<span class="o">)</span> copied, 0.461866 s, 1.1 GB/s
+
+ Performance counter stats <span class="k">for</span> <span class="s1">&#39;dd if=/dev/zero of=/dev/null count=1000000&#39;</span>:
+
+            453.12 msec task-clock                <span class="c1">#    0.979 CPUs utilized</span>
+                <span class="m">43</span>      context-switches          <span class="c1">#    0.095 K/sec</span>
+                 <span class="m">0</span>      cpu-migrations            <span class="c1">#    0.000 K/sec</span>
+               <span class="m">216</span>      page-faults               <span class="c1">#    0.477 K/sec</span>
+   &lt;not supported&gt;      cycles
+   &lt;not supported&gt;      instructions
+   &lt;not supported&gt;      branches
+   &lt;not supported&gt;      branch-misses
+
+       0.462827938 seconds <span class="nb">time</span> elapsed
+
+       0.087344000 seconds user
+       0.366061000 seconds sys
+</code></pre></div><h3 id="火焰图">火焰图</h3>
+<p>利用<code>perf</code>工具还有一个比较方便的功能就是生成<a href="http://www.brendangregg.com/flamegraphs.html"target="_blank" rel="noopener noreferrer">火焰图</a>
+。</p>
+<p>例如，以上面的例子制作一个火焰图:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ git clone git@github.com:brendangregg/FlameGraph.git
+$ perf record -F <span class="m">99</span> -g dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/null <span class="nv">count</span><span class="o">=</span><span class="m">1000000</span>
+$ perf script &gt; out.perf
+$ FlameGraph/stackcollapse-perf.pl out.perf &gt; out.folded
+$ FlameGraph/flamegraph.pl out.folded &gt; myflame.svg
+</code></pre></div><p>就能得到一个<code>dd</code>命令执行的调用过程的<a href="http://fatwaer.store/flame/myflame.svg"target="_blank" rel="noopener noreferrer">*.svg</a>
+：</p>
+<p><img  src="/images/shell/flame.svg"
+        alt="flame"/></p>
+<p>另外python有<code>pycallgraph</code>，golang也有<code>go tool pprof</code>工具进行性能剖析。</p>
+<h2 id="性能监控">性能监控</h2>
+<h3 id="资源概览">资源概览</h3>
+<p>除了经常使用的<code>top</code>，还有许多开源的可视化的工具也比较方便。</p>
+<h4 id="htop">htop</h4>
+<p><img  src="/images/shell/htop.png"
+        alt="htop"/></p>
+<h4 id="glances">glances</h4>
+<p><img  src="/images/shell/glances.png"
+        alt="glances"/></p>
+<h3 id="磁盘与io">磁盘与I/O</h3>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># io监控</span>
+$ iotop
+
+<span class="c1"># 全局系统磁盘空间使用</span>
+df -h
+
+<span class="c1"># 指定目录占用情况</span>
+$ du -sh *
+
+<span class="c1"># 交互式磁盘占用工具</span>
+$ ncdu
+</code></pre></div><h3 id="内存">内存</h3>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ free -h
+</code></pre></div><h3 id="打开的文件">打开的文件</h3>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ lsof 
+</code></pre></div><h3 id="网络">网络</h3>
+<p>常用命令：</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ ss
+$ ip 
+$ netstat
+$ ifconfig
+</code></pre></div><h3 id="网络使用情况">网络使用情况</h3>
+<h4 id="iftop">iftop</h4>
+<p><img  src="/images/shell/nethogs/iftop.png"
+        alt="iftop"/></p>
+<h4 id="nethogs">nethogs</h4>
+<p><img  src="/images/shell/nethogs.png"
+        alt="nethogs"/></p>
+<h2 id="misc">MISC</h2>
+<p>除了这些基本的命令外，还有一些杂项，比如比较两个命令哪个执行得比较快的工具<a href="https://github.com/sharkdp/hyperfine"target="_blank" rel="noopener noreferrer">hyperfine</a>
+:</p>
+<p><img  src="/images/shell/hyperfine.gif"
+        alt="hyperfine"/></p>
+<p>还有 cgroup/taskset 等工具，其中cgroup需要单独拿出讲，cgroup在Docker中的资源隔离起着重要作用，先挖个坑。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://missing.csail.mit.edu/2020/debugging-profiling/">https://missing.csail.mit.edu/2020/debugging-profiling/</a></li>
+</ul>
+<p>perf相关:</p>
+<ul>
+<li><a href="http://perf.wiki.kernel.org/index.php/Tutorial">http://perf.wiki.kernel.org/index.php/Tutorial</a></li>
+<li><a href="https://github.com/brendangregg/FlameGraph">https://github.com/brendangregg/FlameGraph</a></li>
+</ul>
+<p>hyperfine:</p>
+<ul>
+<li><a href="https://github.com/sharkdp/hyperfine">https://github.com/sharkdp/hyperfine</a></li>
+</ul>
+</article><section class="article labels"><a class="tag" href=/tags/shell/>shell</a><a class="tag" href=/tags/debug/>debug</a><a class="tag" href=/tags/profiling/>profiling</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/c-i-c&#43;&#43;/programatic1/"><span class="iconfont icon-article"></span>实效性软件构建的途径-上</a></p><p><a class="link" href="/blog/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/"><span class="iconfont icon-article"></span>B-tree和LSM-tree</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

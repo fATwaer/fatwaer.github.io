@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hugo is comming !</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Hugo is comming !" />
+<meta property="og:description" content="将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布出来，而 hugo 相反，随着golang热度的上涨，社区也很活跃，其主题的更新在官网可以看出来相对频繁。我目前使用的主题是由zzossig 提供的Zzo主题。
+ Hugo 总览 看到比较合适的主题，有需要自己定制的话，可以简单过一遍Hugo的一个官方教程(大概3-4小时)：
+ https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3
+ Hugo 的安装和环境配置 Hugo 提供了较为详细的官方教程，安装过程非常详细，如果是在windows上安装，可以下载二进制文件到任意目录下，并且将改目录添加到PATH环境变量即可。
+Hugo 的基本使用 将hugo的环境搭建完成后博客根目录进行初始化：
+hugo version mkdir Sites cd Sites hugo new site sitename 然后需要去主题页找一个合适的主题，并且下载到Sites/sitename/themes目录，或者在Sites/sitename目录下执行：
+git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke 然后将配置文件中的主题设置为下载到themes目录中的主题文件夹名字：
+echo &#39;theme = &#34;ananke&#34;&#39; &gt;&gt; config.toml 像hexo一样，hugo提供了本地预览的功能，在 Sites/sitename目录下运行，然后就可以访问localhost:1313来访问博客了：
+$ hugo server Building sites … | EN | KO -------------------&#43;-----&#43;------ Pages | 54 | 10 Paginator pages | 3 | 0 Non-page files | 0 | 0 Static files | 209 | 209 Processed images | 0 | 0 Aliases | 11 | 1 Sitemaps | 2 | 1 Cleaned | 0 | 0 Built in 5641 ms Environment: &#34;development&#34; Serving pages from memory Running in Fast Render Mode." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-09-18T14:11:14+08:00" />
+<meta property="article:modified_time" content="2019-09-18T14:11:14+08:00" />
+
+
+
+    
+    
+<meta name="description" content="Hugo is comming !" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>September 18, 2019</p>
+        </div>
+
+        <div class="title">
+          <h1>Hugo is comming !</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <blockquote>
+<p>将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布出来，而 hugo 相反，随着golang热度的上涨，社区也很活跃，其主题的更新在官网可以看出来相对频繁。我目前使用的主题是由<a href="https://github.com/zzossig">zzossig</a> 提供的<a href="https://github.com/zzossig/hugo-theme-zzo">Zzo</a>主题。</p>
+</blockquote>
+<h2 id="hugo-总览">Hugo 总览</h2>
+<p>看到比较合适的主题，有需要自己定制的话，可以简单过一遍Hugo的一个官方教程(大概3-4小时)：</p>
+<blockquote>
+<p><a href="https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3">https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3</a></p>
+</blockquote>
+<h3 id="hugo-的安装和环境配置">Hugo 的安装和环境配置</h3>
+<p>Hugo 提供了较为详细的<a href="https://gohugo.io/getting-started/quick-start/">官方教程</a>，安装过程非常详细，如果是在windows上安装，可以下载<a href="https://github.com/gohugoio/hugo/releases">二进制文件</a>到任意目录下，并且将改目录添加到<code>PATH</code>环境变量即可。</p>
+<h3 id="hugo-的基本使用">Hugo 的基本使用</h3>
+<p>将hugo的环境搭建完成后博客根目录进行初始化：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hugo version
+mkdir Sites
+cd Sites
+hugo new site sitename
+</code></pre></div><p>然后需要去主题页找一个合适的<a href="https://themes.gohugo.io/">主题</a>，并且下载到<code>Sites/sitename/themes</code>目录，或者在<code>Sites/sitename</code>目录下执行：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git init
+git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke
+</code></pre></div><p>然后将配置文件中的主题设置为下载到<code>themes</code>目录中的主题文件夹名字：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">echo <span style="color:#e6db74">&#39;theme = &#34;ananke&#34;&#39;</span> &gt;&gt; config.toml
+</code></pre></div><p>像hexo一样，hugo提供了本地预览的功能，在 <code>Sites/sitename</code>目录下运行，然后就可以访问<code>localhost:1313</code>来访问博客了：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ hugo server
+Building sites …
+                   | EN  | KO
+-------------------+-----+------
+  Pages            |  <span style="color:#ae81ff">54</span> |  <span style="color:#ae81ff">10</span>
+  Paginator pages  |   <span style="color:#ae81ff">3</span> |   <span style="color:#ae81ff">0</span>
+  Non-page files   |   <span style="color:#ae81ff">0</span> |   <span style="color:#ae81ff">0</span>
+  Static files     | <span style="color:#ae81ff">209</span> | <span style="color:#ae81ff">209</span>
+  Processed images |   <span style="color:#ae81ff">0</span> |   <span style="color:#ae81ff">0</span>
+  Aliases          |  <span style="color:#ae81ff">11</span> |   <span style="color:#ae81ff">1</span>
+  Sitemaps         |   <span style="color:#ae81ff">2</span> |   <span style="color:#ae81ff">1</span>
+  Cleaned          |   <span style="color:#ae81ff">0</span> |   <span style="color:#ae81ff">0</span>
+
+Built in <span style="color:#ae81ff">5641</span> ms
+Environment: <span style="color:#e6db74">&#34;development&#34;</span>
+Serving pages from memory
+Running in Fast Render Mode. For full rebuilds on change: hugo server --disableFastRender
+Web Server is available at //localhost:1313/ <span style="color:#f92672">(</span>bind address 127.0.0.1<span style="color:#f92672">)</span>
+Press Ctrl+C to stop
+</code></pre></div><h3 id="hugo-与-github">Hugo 与 Github</h3>
+<p>如果单单运行<code>hugo</code>并且不添加仍和参数，hugo就会将博客的静态文件全部生成到<code>sitename/public</code>内，然后与<code>githubname.github.io</code>仓库进行关联，然后将代码推上去，就可以正常访问了。</p>
+<h3 id="其他">其他</h3>
+<p>Hugo 静态生成主要由两个部分组成，一个是<code>list template</code>，用于生成类似于目录页的页面，另一个是single template，类似于每一篇博客展现内容的页面。这两个页面一般是被嵌入在一个叫<code>baseof.html</code>的模板中。</p>
+<h2 id="markdown-图床">Markdown 图床</h2>
+<p>最开始用微博+chrome插件， 后来微博开启了防盗链， 转移到了七牛+picGo
+<a href="https://www.cnblogs.com/Dozeer/p/10965508.html">https://www.cnblogs.com/Dozeer/p/10965508.html</a></p>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/%e7%8e%af%e5%a2%83%e9%85%8d%e7%bd%ae%e7%ac%94%e8%ae%b0/hugo%e9%85%8d%e7%bd%ae.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hugo-总览">Hugo 总览</a>
+      <ul>
+        <li><a href="#hugo-的安装和环境配置">Hugo 的安装和环境配置</a></li>
+        <li><a href="#hugo-的基本使用">Hugo 的基本使用</a></li>
+        <li><a href="#hugo-与-github">Hugo 与 Github</a></li>
+        <li><a href="#其他">其他</a></li>
+      </ul>
+    </li>
+    <li><a href="#markdown-图床">Markdown 图床</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

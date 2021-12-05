@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Core Java for DataBase</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Core Java for DataBase" />
+<meta property="og:description" content="前言 最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C&#43;&#43;来实现的，并且课件PPT和视频都非常良心。
+这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C&#43;&#43;程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。
+基本结构 基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。
+字符串 字符串判断为空：
+if (str.length() == 0) or if (str.equals(&quot;&quot;))  虽然可以进行字符串拼接，但是效率比较低，可以使用StringBuilder类:
+StringBuilder builder = new StringBuilder(); builder.append(ch); builder.append(str); builder.toString();  作用域 JAVA的作用域和C/C&#43;&#43;不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用this指针来指定变量。
+数组 JAVA的数组都是分配在堆上，这又是和C/C&#43;&#43;不同的一点：
+JAVA中的:
+int[] a = new int[100];  等同于C/C&#43;&#43;中的:
+int* a = new int[100];  不同于:
+int a[100];  并且数组的完整拷贝通过方法Arrays.copyOf():
+newArr = Arrays.copyOf(oldArr, oldArr.lenght());  也可以通过这个方法来扩展数组：
+Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());  对象与类 OO应该是JAVA的重点，OOP三个特性：
+ 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。  通过下面的方法实例化一个类：" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-11-18T16:36:16+00:00" />
+<meta property="article:modified_time" content="2018-11-18T16:36:16+00:00" />
+
+
+
+    
+    
+<meta name="description" content="Core Java for DataBase" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>November 18, 2018</p>
+        </div>
+
+        <div class="title">
+          <h1>Core Java for DataBase</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h1 id="前言">前言</h1>
+<p>最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。</p>
+<p>这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。</p>
+<h1 id="基本结构">基本结构</h1>
+<p>基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。</p>
+<h2 id="字符串">字符串</h2>
+<p>字符串判断为空：</p>
+<pre><code>if (str.length() == 0)
+or 
+if (str.equals(&quot;&quot;))    
+</code></pre>
+<p>虽然可以进行字符串拼接，但是效率比较低，可以使用<code>StringBuilder</code>类:</p>
+<pre><code>StringBuilder builder = new StringBuilder();
+builder.append(ch);
+builder.append(str);
+builder.toString();
+</code></pre>
+<h2 id="作用域">作用域</h2>
+<p>JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用<code>this</code>指针来指定变量。</p>
+<h2 id="数组">数组</h2>
+<p>JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：</p>
+<p>JAVA中的:</p>
+<pre><code>int[] a = new int[100];
+</code></pre>
+<p>等同于C/C++中的:</p>
+<pre><code>int* a = new int[100];
+</code></pre>
+<p>不同于:</p>
+<pre><code>int a[100];
+</code></pre>
+<p>并且数组的完整拷贝通过方法<code>Arrays.copyOf()</code>:</p>
+<pre><code>newArr = Arrays.copyOf(oldArr, oldArr.lenght());
+</code></pre>
+<p>也可以通过这个方法来扩展数组：</p>
+<pre><code>Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());
+</code></pre>
+<h1 id="对象与类">对象与类</h1>
+<p>OO应该是JAVA的重点，OOP三个特性：</p>
+<ul>
+<li>封装：用一个类将实现和使用分开，只保留接口与外部进行联系。</li>
+<li>继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。</li>
+<li>多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</li>
+</ul>
+<p>通过下面的方法实例化一个类：</p>
+<pre><code>new Date();
+</code></pre>
+<p>如果想使用类中的一个方法：</p>
+<pre><code>System.out.println(new Date().toString());
+</code></pre>
+<h2 id="final-关键字">final 关键字</h2>
+<p><code>const</code>关键字相当于<code>const</code>关键字即不可变的意思，并且在构造一个类的时候必须要被初始化。</p>
+<h2 id="static-关键字">static 关键字</h2>
+<p><code>static</code>关键字其实也很类似，将<code>static</code>理解为类的方法和域即可而不是对象的方法和域。
+例如:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Employee</span> <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> currentId<span style="color:#f92672">;</span>
+    
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">getId</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> currentId<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>调用使用</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> Employee<span style="color:#f92672">.</span><span style="color:#a6e22e">curremtID</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> Employee<span style="color:#f92672">.</span><span style="color:#a6e22e">getId</span><span style="color:#f92672">();</span>
+</code></pre></div><h2 id="main方法">main方法</h2>
+<p>有意思的是java的每一个类里面都可以有main函数，这方便了java为每一个类做单元测试，自己在coding的时候也确实经常用到类的main函数进行测试。</p>
+<h2 id="初始化块">初始化块</h2>
+<p>初始化块也非常有意思，直接在类域里面输入大括号就能在调用构造器的时候执行。例如：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Employee</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">;</span>
+
+    <span style="color:#75715e">// initializeation block
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">{</span>
+        id <span style="color:#f92672">=</span> 1<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><h1 id="类继承">类继承</h1>
+<p>java中继承的关键字是<code>extends</code>,并且注意子类中的方法不能直接访问超类中的<code>private</code>域，所以需要通过在超类中准备<code>访问器</code>，利用<code>super</code>关键字来获取<code>private</code>域，构造函数也是如此。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Manager</span> <span style="color:#66d9ef">extends</span> Employee<span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Manager</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span>name<span style="color:#f92672">);</span>
+        <span style="color:#f92672">...</span> <span style="color:#75715e">// other initialization
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><h2 id="强制转化">强制转化</h2>
+<p><code>强制转化</code>可以发生在类的子类和超类转化中，进行类型转化的唯一原因是：<strong>在暂时忽视对象的实际类型后，使用对象的全部功能</strong>。并且，将一个子类的引用赋值给超类的时候，编译器是允许的，但是将一个超类赋值给一个子类变量，必须进行类型转化。</p>
+<p>对于测试强制类型转化，可以使用下面的tricks:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>staff <span style="color:#66d9ef">instanceof</span> Manager<span style="color:#f92672">)</span>
+<span style="color:#f92672">{</span>
+    boss <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Manager<span style="color:#f92672">)</span> staff<span style="color:#f92672">;</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>意思是，如果staff是<code>Manager</code>的一个实例，那么可以发生强制转化，当然必须是一个继承链才能成立。</p>
+<h2 id="抽象类">抽象类</h2>
+<p>抽象类的意义是提供一个较高层次的抽象，作为基类的存在，关键词是<code>abstract</code>。抽象类中的方法只是充当占位的角色，真正对方法的实现发生在子类中，并且抽象类不能被实例化。</p>
+<p>如果子类实现了全部的抽象方法，那么子类就不是抽象的。但若子类只定义了部分抽象类或不定义抽象类的方法，子类也必须标记为抽象类。</p>
+<h2 id="受保护访问">受保护访问</h2>
+<p><code>protected</code>关键词可以使得子类能够访问该域，但是外部代码不行，不过通常都是谨慎使用protected类，因为违背了OOP提倡的数据封装原则。</p>
+<h2 id="继承的设计技巧">继承的设计技巧</h2>
+<ol>
+<li>将公共操作和域放在超类中</li>
+<li>不使用<code>protected</code></li>
+<li>使用继承实现&quot;is-a&quot;关系</li>
+<li>除非所有的继承方法都有意义，否则不使用继承</li>
+<li>覆盖方法时，不要改变预期行为</li>
+<li>使用多态，而非类型信息</li>
+</ol>
+<h1 id="接口lambda内部类">接口、lambda、内部类</h1>
+<p>java提供的这三种机制是用来弥补类和类继承一些地方的不灵活性而创立的高级技术。</p>
+<h2 id="接口">接口</h2>
+<p>书上给了一个很好的理解接口的解释：”如果类遵从某个特定的接口，那么就履行这项服务“。即如果要调用数组的排序服务，那么这个数组中的类需要提供一个不同对象之间进行比较的接口。</p>
+<p>比如，用<code>Employee</code>类提供接口,关键词是<code>implements</code>，之后跟随的是要提供的接口:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Employee</span> <span style="color:#66d9ef">implements</span> Compareble<span style="color:#f92672">&lt;</span>Employee<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">compareTo</span><span style="color:#f92672">(</span>Employee other<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">...</span> <span style="color:#75715e">// implements
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">}</span>
+    <span style="color:#f92672">...</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>当然，在某一处提供了接口的代码，类似于声明的作用：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Comparable</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">int</span> compareTo<span style="color:#f92672">&lt;</span>Object other<span style="color:#f92672">&gt;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>其中<code>Object</code>类是所有类的超类。</p>
+<p>接口不是类，所以不能被实例化，但是可以声明接口的变量：</p>
+<pre><code>Comparable x;
+</code></pre>
+<p>然后引用实现了接口的类对象：</p>
+<pre><code>x = new Employee(...);
+</code></pre>
+<p>接口不能包含实例域和静态方法，但是可以包含常量。</p>
+<p>接口概念对于抽象类来说是不同的，抽象类只能用在继承链之中，每个子类只能继承一个超类，但是接口可以实现多个，提高了代码复用。</p>
+<h3 id="深拷贝和浅拷贝">深拷贝和浅拷贝</h3>
+<p>java每个变量其实可以理解为一个指针或者引用，它们引用一个内存空间作为对象实例的存储位置，但是对象实例中也可能引用了其他的对象。</p>
+<p>浅拷贝就是单单拷贝该变量引用的内存部分，但是深拷贝会将该对象内部所引用的对象也拷一份。</p>
+<p>比如：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Employee</span> <span style="color:#66d9ef">implements</span> Cloneable <span style="color:#f92672">{</span>
+    <span style="color:#f92672">...</span>
+    <span style="color:#66d9ef">public</span> Employee <span style="color:#a6e22e">clone</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
+        Employee cloned <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Employee<span style="color:#f92672">)</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">clone</span><span style="color:#f92672">();</span>
+        cloned<span style="color:#f92672">.</span><span style="color:#a6e22e">hireDay</span> <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Date<span style="color:#f92672">)</span> hireDay<span style="color:#f92672">.</span><span style="color:#a6e22e">clone</span><span style="color:#f92672">();</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>这样就是深拷贝，在拷贝完本身的内容后还会递归拷贝所引用对象的内存。</p>
+<h2 id="lambda表达式">lambda表达式</h2>
+<p>lambda就是一个代码块，表达形式为 (参数) -&gt; 表达式。
+例如:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Comparator<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> comp <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>first<span style="color:#f92672">,</span> second<span style="color:#f92672">)</span>
+        <span style="color:#f92672">-&gt;</span> first<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">()</span> <span style="color:#f92672">-</span> second<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">();</span>
+</code></pre></div><hr>
+<p>如果出现如下类似的lambda表达式:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">x<span style="color:#f92672">-&gt;</span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>x<span style="color:#f92672">)</span>
+</code></pre></div><p>那么可以简写为:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">::</span>println
+</code></pre></div><p>lambda表达式中的一些限制：</p>
+<ol>
+<li>只能引用不会改变的变量</li>
+<li>表达式捕获的变量必须是实际上的最终变量</li>
+<li>lambda中的局部变量不能与外部变量重名</li>
+</ol>
+<p>可以使用<code>Runable</code>来保存一个lambda,类似于回调：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Runable an <span style="color:#f92672">=</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> a<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> b<span style="color:#f92672">)-&gt;</span>System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>a<span style="color:#f92672">+</span>b<span style="color:#f92672">);</span>
+<span style="color:#f92672">...</span>
+<span style="color:#f92672">...</span>
+an<span style="color:#f92672">.</span><span style="color:#a6e22e">run</span><span style="color:#f92672">();</span>
+</code></pre></div><h2 id="内部类">内部类</h2>
+<p>顾名思义，内部类就是定义在一个class内部的类，使用原因：</p>
+<ul>
+<li>内部类方法可以访问该类定义所在作用域中的数据，包括私有数据</li>
+<li>内部类可以对同一类中的其他类隐藏起来</li>
+<li>若想定义一个回调函数，使用匿名内部类会比较便捷</li>
+</ul>
+<p>内部类其实是相对于所在类的一个独立的类，当<code>new</code>操作符新建一个实体的时候，并不会实体化内部类，内部类需要独立进行实例化。不过，内部类和所在类建立了一定的联系使得内部类可以访问外围类的数据。</p>
+<p>内部类的初始化语法稍微有点复杂：</p>
+<pre><code>outerObject.new InnerClass(construction parmeter)
+</code></pre>
+<p>例如：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">TalkingClock jabberer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TalkingClock<span style="color:#f92672">(</span>1000<span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+TalkingClock<span style="color:#f92672">.</span><span style="color:#a6e22e">TimePrinter</span> listener <span style="color:#f92672">=</span> jabberer<span style="color:#f92672">.</span><span style="color:#a6e22e">new</span> <span style="color:#a6e22e">TimerPrinter</span><span style="color:#f92672">();</span>
+</code></pre></div><p>内部类的一些限制：</p>
+<ul>
+<li>内部类声明所有的静态域必须要<code>final</code>，对于每一个外围类只需要有一个静态域的实例，若不是<code>final</code>，则分别会有单独的内部类实例。</li>
+<li>类似于lambda，访问外围局部变量也需要保证被引用的局部变量是事实上的<code>final</code>,内部类引用的时候，实际上创建了一份备份，防止外围类被垃圾回收的时候，引用出错，并且声明为<code>final</code>使得内部类和外围类引用的同一个实体。</li>
+</ul>
+<p>有一种方法来绕过这个限制，使用长度为1的数组：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">int</span><span style="color:#f92672">[]</span> conuter <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">int</span><span style="color:#f92672">[</span>1<span style="color:#f92672">];</span>
+<span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i <span style="color:#f92672">&lt;</span> dates<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">;</span> i<span style="color:#f92672">++)</span>
+    dates<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Date<span style="color:#f92672">()</span>
+        <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">compareTo</span><span style="color:#f92672">(</span>Date other<span style="color:#f92672">);</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">compareTo</span><span style="color:#f92672">(</span>other<span style="color:#f92672">);</span>
+        <span style="color:#f92672">};</span>
+</code></pre></div><h2 id="匿名内部类">匿名内部类</h2>
+<p>匿名内部类是一种很方便的工具来扩充某个接口，它的语法如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">new</span> SuperType<span style="color:#f92672">(</span>construction parameters<span style="color:#f92672">)</span>
+    <span style="color:#f92672">{</span>
+        inner <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">methods</span> and data
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>常用的使用方式为</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Person queen <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Person<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Mary&#34;</span><span style="color:#f92672">);</span>
+    <span style="color:#75715e">// normal object
+</span><span style="color:#75715e"></span>Person count <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Person<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Dracula&#34;</span><span style="color:#f92672">)</span> 
+    <span style="color:#f92672">{</span>
+        <span style="color:#f92672">...</span>
+    <span style="color:#f92672">};</span>
+    <span style="color:#75715e">// a object extending Person
+</span></code></pre></div>
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/Jvm%e7%9b%b8%e5%85%b3/Core%20Java%20for%20DataBase.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#字符串">字符串</a></li>
+    <li><a href="#作用域">作用域</a></li>
+    <li><a href="#数组">数组</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#final-关键字">final 关键字</a></li>
+    <li><a href="#static-关键字">static 关键字</a></li>
+    <li><a href="#main方法">main方法</a></li>
+    <li><a href="#初始化块">初始化块</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#强制转化">强制转化</a></li>
+    <li><a href="#抽象类">抽象类</a></li>
+    <li><a href="#受保护访问">受保护访问</a></li>
+    <li><a href="#继承的设计技巧">继承的设计技巧</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#接口">接口</a>
+      <ul>
+        <li><a href="#深拷贝和浅拷贝">深拷贝和浅拷贝</a></li>
+      </ul>
+    </li>
+    <li><a href="#lambda表达式">lambda表达式</a></li>
+    <li><a href="#内部类">内部类</a></li>
+    <li><a href="#匿名内部类">匿名内部类</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

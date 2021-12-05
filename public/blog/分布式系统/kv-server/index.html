@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/kv-server/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6.824 Lab3 Fault-tolerant Key\/Value Service",
+      "headline" : "6.824 Lab3 Fault-tolerant Key\/Value Service",
+      "description" : "强一致性Key\/Value服务 其实在写完Raft后，K\/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如map[string]string）即可，但是实际上在跑3A测试的时候还是出现了很多问题。\n并发(Concurrency) 虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。\n网络不可靠(Unreliable) 这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-\u0026gt;\u0026ldquo;2\u0026rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。\n服务器主机崩溃(Crash) 服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。\n网络分区(Partition) 由于是实现一个强一致性的KV服务，在并发条件下，每一个Get\/Put\/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为线性化。\n最先碰到网络分区和检查一致性是TestOnePartition3A，这个测试中做了如下几件事情：\n 创建一个5个server的kv服务器集群 客户端请求: Put:1 -\u0026gt; 13 建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。 往majority中提交Put:1-\u0026gt;14 检查majority 往minority中提交操作Put:1 -\u0026gt; 15和Get:1 检测6中两个操作是否会成功 往majority提交Put:1-\u0026gt;16并检查 合并两个分区，检查最后Key 1的值。  最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。\n当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：Put:1 -\u0026gt; 15和Get:1，使客户端重定向到新的leader。\n而Get什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。\n标识操作(UniqueID) 如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：\n seriesN：每个客户端初始化为-1，每执行一次Get\/Put\/Append调用前自增1。 Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。 Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。  每当启用一个新的客户端并且提交操作时，先自增seriesN，如果Client ID为-1，就会向服务端注册自己，即请求一个可用的Client ID，并设置Server ID。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。\n当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。\n考虑下面这种情景：\ns1 | x = 0 | x \u002b= 1 同步到其他server s2 | x = 0 | x \u002b= 1 s3 | x = 0 | x \u002b= 1 s4 | x = 0 | x \u002b= 1 s5 | x = 0 | nil   leader s1 提交了一个 x \u002b= 1 的操作后，并同步到了s2, s3, s4，然后发生分区。 s2 当选新一轮的leader，并同步完成 s1 恢复到该分区中，被s2的心跳转变为follower client对s1的rpc被返回，重定向到s2，重复的op被提交。  这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x \u002b= 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x \u002b= 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-02-12 10:42:40 \u002b0800 CST",
+      "dateModified" : "2020-02-12 10:42:40 \u002b0800 CST",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F\/kv-server\/",
+      "keywords" : [  ]
+  }
+</script>
+<title>6.824 Lab3 Fault-tolerant Key/Value Service</title>
+  <meta property="og:title" content="6.824 Lab3 Fault-tolerant Key/Value Service" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如map[string]string）即可，但是实际上在跑3A测试的时候还是出现了很多问题。
+并发(Concurrency) 虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。
+网络不可靠(Unreliable) 这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&amp;gt;&amp;ldquo;2&amp;rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。
+服务器主机崩溃(Crash) 服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。
+网络分区(Partition) 由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为线性化。
+最先碰到网络分区和检查一致性是TestOnePartition3A，这个测试中做了如下几件事情：
+ 创建一个5个server的kv服务器集群 客户端请求: Put:1 -&amp;gt; 13 建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。 往majority中提交Put:1-&amp;gt;14 检查majority 往minority中提交操作Put:1 -&amp;gt; 15和Get:1 检测6中两个操作是否会成功 往majority提交Put:1-&amp;gt;16并检查 合并两个分区，检查最后Key 1的值。  最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。
+当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：Put:1 -&amp;gt; 15和Get:1，使客户端重定向到新的leader。
+而Get什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。
+标识操作(UniqueID) 如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：
+ seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。 Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。 Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。  每当启用一个新的客户端并且提交操作时，先自增seriesN，如果Client ID为-1，就会向服务端注册自己，即请求一个可用的Client ID，并设置Server ID。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。
+当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。
+考虑下面这种情景：
+s1 | x = 0 | x &#43;= 1 同步到其他server s2 | x = 0 | x &#43;= 1 s3 | x = 0 | x &#43;= 1 s4 | x = 0 | x &#43;= 1 s5 | x = 0 | nil   leader s1 提交了一个 x &#43;= 1 的操作后，并同步到了s2, s3, s4，然后发生分区。 s2 当选新一轮的leader，并同步完成 s1 恢复到该分区中，被s2的心跳转变为follower client对s1的rpc被返回，重定向到s2，重复的op被提交。  这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x &#43;= 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x &#43;= 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。" />
+  <meta name="description" content="强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如map[string]string）即可，但是实际上在跑3A测试的时候还是出现了很多问题。
+并发(Concurrency) 虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。
+网络不可靠(Unreliable) 这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&amp;gt;&amp;ldquo;2&amp;rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。
+服务器主机崩溃(Crash) 服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。
+网络分区(Partition) 由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为线性化。
+最先碰到网络分区和检查一致性是TestOnePartition3A，这个测试中做了如下几件事情：
+ 创建一个5个server的kv服务器集群 客户端请求: Put:1 -&amp;gt; 13 建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。 往majority中提交Put:1-&amp;gt;14 检查majority 往minority中提交操作Put:1 -&amp;gt; 15和Get:1 检测6中两个操作是否会成功 往majority提交Put:1-&amp;gt;16并检查 合并两个分区，检查最后Key 1的值。  最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。
+当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：Put:1 -&amp;gt; 15和Get:1，使客户端重定向到新的leader。
+而Get什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。
+标识操作(UniqueID) 如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：
+ seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。 Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。 Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。  每当启用一个新的客户端并且提交操作时，先自增seriesN，如果Client ID为-1，就会向服务端注册自己，即请求一个可用的Client ID，并设置Server ID。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。
+当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。
+考虑下面这种情景：
+s1 | x = 0 | x &#43;= 1 同步到其他server s2 | x = 0 | x &#43;= 1 s3 | x = 0 | x &#43;= 1 s4 | x = 0 | x &#43;= 1 s5 | x = 0 | nil   leader s1 提交了一个 x &#43;= 1 的操作后，并同步到了s2, s3, s4，然后发生分区。 s2 当选新一轮的leader，并同步完成 s1 恢复到该分区中，被s2的心跳转变为follower client对s1的rpc被返回，重定向到s2，重复的op被提交。  这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x &#43;= 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x &#43;= 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6.824 Lab3 Fault-tolerant Key/Value Service</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2020-02-12 10:42:40 CST">
+                12 Feb 2020
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="强一致性keyvalue服务">强一致性Key/Value服务</h2>
+<p>其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如<code>map[string]string</code>）即可，但是实际上在跑3A测试的时候还是出现了很多问题。</p>
+<h3 id="并发concurrency">并发(Concurrency)</h3>
+<p>虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。</p>
+<h3 id="网络不可靠unreliable">网络不可靠(Unreliable)</h3>
+<p>这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&gt;&ldquo;2&rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。</p>
+<h3 id="服务器主机崩溃crash">服务器主机崩溃(Crash)</h3>
+<p>服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。</p>
+<h3 id="网络分区partition">网络分区(Partition)</h3>
+<p>由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为<a href="https://en.wikipedia.org/wiki/Linearizability">线性化</a>。</p>
+<p>最先碰到网络分区和检查一致性是<code>TestOnePartition3A</code>，这个测试中做了如下几件事情：</p>
+<ol>
+<li>创建一个5个server的kv服务器集群</li>
+<li>客户端请求: <code>Put:1 -&gt; 13</code></li>
+<li>建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。</li>
+<li>往majority中提交<code>Put:1-&gt;14</code></li>
+<li>检查majority</li>
+<li>往minority中提交操作<code>Put:1 -&gt; 15</code>和<code>Get:1</code></li>
+<li>检测6中两个操作是否会成功</li>
+<li>往majority提交<code>Put:1-&gt;16</code>并检查</li>
+<li>合并两个分区，检查最后Key 1的值。</li>
+</ol>
+<p>最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。</p>
+<p>当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：<code>Put:1 -&gt; 15</code>和<code>Get:1</code>，使客户端重定向到新的leader。</p>
+<p>而<code>Get</code>什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。</p>
+<h3 id="标识操作uniqueid">标识操作(UniqueID)</h3>
+<p>如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：</p>
+<ol>
+<li>seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。</li>
+<li>Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。</li>
+<li>Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。</li>
+</ol>
+<p>每当启用一个新的客户端并且提交操作时，先自增seriesN，如果<code>Client ID</code>为-1，就会向服务端注册自己，即请求一个可用的<code>Client ID</code>，并设置<code>Server ID</code>。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。</p>
+<p>当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。</p>
+<p>考虑下面这种情景：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">s1 | x = 0 | x += 1
+同步到其他server
+s2 | x = 0 | x += 1
+s3 | x = 0 | x += 1
+s4 | x = 0 | x += 1
+s5 | x = 0 | nil
+</code></pre></div><hr>
+<ol>
+<li>leader s1 提交了一个 x += 1 的操作后，并同步到了s2, s3, s4，然后发生分区。</li>
+<li>s2 当选新一轮的leader，并同步完成</li>
+<li>s1 恢复到该分区中，被s2的心跳转变为follower</li>
+<li>client对s1的rpc被返回，重定向到s2，重复的op被提交。</li>
+</ol>
+<p>这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x += 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x += 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。</p>
+<p>既然服务端要分配client ID，那么如何记住这些id以应对服务器崩溃，比较简单的办法是分配一个client ID后就做一次持久化，因为真正进行提交操作的client并不是很多也并不频繁。另外一种方法是根据raft的applyMsg会带有Sid，Cid，SeriesN三者，所以当服务crash后重启时，会随着一致性检查恢复之前自己已经分配过的Cid。</p>
+<p>Part A内容的大致就是这些，还剩一些优化的细节，比如client在找到server后就记住server的索引，没必要每次都向集群所有服务器发送请求。关于RPC，配置到服务器上时，没必要为每次RPC都新建一次连接，应该维护住这个连接直到主动断开或者发生错误。</p>
+<h2 id="快照snapshot">快照(Snapshot)</h2>
+<p>快照机制主要作用是两点:</p>
+<ul>
+<li>一是压缩日志，实际系统中，日志不能在内存中无限增长，如果没有相关机制清理陈旧的信息，那么会产生可用性的问题。日志压缩除了利用快照机制外，在Raft论文中还有提到了利用LSM-Tree对Raft的日志进行增量压缩的方法，由于保证日志的增长是顺序的，在这里利用日志结构树能承受住更高的I/O吞吐量。</li>
+<li>第二点是在写Lab中发现的，拥有快照机制的Raft能够更快地使落后的(发生了崩溃或者网络分区)follower恢复到同步水平。</li>
+</ul>
+<h3 id="snapshot要做什么">Snapshot要做什么</h3>
+<p><img src="/images/distributed-system/6.824/lab3/snapshot.png" alt="snapshot"></p>
+<p>快照所做的事情也比较简单，主要针对的是那些已经提交过的条目(即在大多是中达成共识)进行压缩，让这些条目所应用后的状态有一个备份，然后再将这些进行截断即可。因为没有必要每应用一个条目就执行一次快照，所以在应用到状态机后，可以设置一个阈值与当前在内存中的raft log进行比较，当超过这个阈值后执行日志压缩，这也就是3b主要需要做的事情。</p>
+<p>3B部分最难处理也就是如何进行日志截断、什么时候进行日志截断、截断后需要重新设置哪些值，在想好这三个问题后动手会减少大量的debug工作。</p>
+<h3 id="什么时候进行截断">什么时候进行截断</h3>
+<p>截断的时间是发生在应用到状态机后检测到raft log的大小已经增长超过了阈值，于是kv服务将自己的状态<code>map[string]string</code>进行保存，随着logIndex一起递交给自己的raft，raft根据index获取到最后条目的term，进行持久化，然后截断自己的日志。</p>
+<h3 id="如何进行日志截断">如何进行日志截断</h3>
+<p>截断首先要考虑到截断后对其他操作的影响：</p>
+<ol>
+<li>raft负责发送appendEntry的操作，对于落后的机器可能会读取到陈旧的条目</li>
+<li>raft收到appendEntry，常常发生于旧leader对最新的服务器(leader和follower)发送的心跳</li>
+<li>raft收到InstallSnapshot后，会有log的截断操作</li>
+</ol>
+<blockquote>
+<p>InstallSnapshot RPC: 6. If existing log entry has same index and term as snapshot’s last included entry, retain log entries following it and reply</p>
+</blockquote>
+<p>这些操作本质上都是数组下标界限的问题，需要根据实际逻辑进行判断。</p>
+<p>另外一点就是关于Golang的切片内存模型，因为在这里raft log是以切片进行保存，所以类似于<code>arr[beg:end]</code>的操作只是移动指向底层的指针和长度，所以这里得需要新分配一个切片给rf.log。</p>
+<p><img src="/images/distributed-system/6.824/lab3/slice.png" alt="slice"></p>
+<h3 id="截断后需要重新设置哪些值">截断后需要重新设置哪些值</h3>
+<p>首先是在论文里的LastIncludeIndex和LastIncludeTerm，这两个变量可以维护在raft的状态里，以免每次都需要进行一次I/O读取这两个变量。因为需要维护这两个变量，所以每当要<code>读取和写入</code>快照时都需要更新。</p>
+<p>另外一对重要的值是commitIndex和applyIndex，根据raft论文:</p>
+<blockquote>
+<p>If commitIndex &gt; lastApplied: increment lastApplied, apply log[lastApplied] to state machine</p>
+</blockquote>
+<p>这种情况在InstallSnapshot内要着重考虑，因为InstallSnapshot的LastIncludeIndex会大于当前的commitIndex，当某台follower还在apply到状态机的时候，收到了快照，需要做的事情是，应用完上一个快照后，检查自己的applyIndex和commitIndex。而在InstallSnapshot内需要做的事情除了设置LastIncludeIndex和LastIncludeTerm，还同时提高applyIndex和commitIndex。</p>
+<p>中断的之前的apply过程并不会导致不一致，在安装完快照后，需要重置kv的状态机，所以不用担心同步问题。</p>
+<h3 id="快照与kv服务">快照与K/V服务</h3>
+<p>3A部分中的kv服务是通过一致性检查后，一个一个地从0开始恢复状态，把以前的操作重新做一遍来恢复自己已分配掉的client ID，因为这个ID是会保存在raft的log中，对日志压缩也就会造成这些信息丢失，所以将当前已经分配掉的client ID写入到快照是有必要的。</p>
+<h2 id="部署后的-kv-服务">部署后的 K/V 服务</h2>
+<ul>
+<li>Server 1:
+state: <a href="http://fatwaer.store/kv/state.html">http://fatwaer.store/kv/state.html</a>
+log  : <a href="http://fatwaer.store/kv/log.html">http://fatwaer.store/kv/log.html</a></li>
+<li>Server 2:
+state: <a href="http://106.13.211.207/kv/state.html">http://106.13.211.207/kv/state.html</a>
+log  : <a href="http://106.13.211.207/kv/log.html">http://106.13.211.207/kv/log.html</a></li>
+<li>Server 3:
+state: <a href="http://18.162.39.157/kv/state.html">http://18.162.39.157/kv/state.html</a>
+log  : <a href="http://18.162.39.157/kv/log.html">http://18.162.39.157/kv/log.html</a></li>
+</ul>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li>《Unix网络编程：卷1》</li>
+<li><a href="https://blog.golang.org/go-slices-usage-and-internals">https://blog.golang.org/go-slices-usage-and-internals</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf">https://pdos.csail.mit.edu/6.824/papers/raft-extended.pdf</a></li>
+</ul>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

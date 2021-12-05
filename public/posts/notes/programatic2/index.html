@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>实效性软件构建的途径-下</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="实效性软件构建的途径-下" />
+<meta property="og:description" content="前言 如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。
+1. 养成估算的习惯 1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。
+无论什么时候有人需要你进行估算，你都可以给出答案。 如果没有经验，估算通常可以去问问已经做过该事情的人。 追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。
+2. 调试的过程 这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。
+花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。
+3. 重构 不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。
+那么如何合理地进行重构？
+ 不要在重构同时新增功能 开始重构前要有良好的测试，确保重构后能通过 采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试  4. 测试的一些建议 根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。 单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。
+另外测试都应该具有以下功能：
+ setup和cleanup的标准途径 可选择地选择可用测试方法 分析输出结果的手段 标准化故障报告的形式  5. 曳光弹与原型开发 曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。
+而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。
+6. 做变化的催化剂 这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。
+7. 不要过度修饰和求精程序 这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。
+8. 管理知识资产 对于金融资产的管理：
+ 定期投资，形成习惯 多元化是长期成功的关键 在保守的投资和高风险，高回报的投资之间平衡资产 设法低买高卖获取最大回报 周期性的评估和平衡财产  而程序员管理自己的知识资产可以类比：
+ 定投，周期性的学习 多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣 管理风险，不要把所学的技术都放在一个篮子里 低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作 重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。  所以可以给自己设立一些周期性的目标，防止自己的脱节：
+ 定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。 偶尔学习一些公开课 参与一些组织，打听公司以外的人都在做什么 试验不同的环境，技术或者非技术都是如此，逃离舒适区 持续投入！  9. 交流 交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/notes/programatic2/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-04-15T19:32:10+08:00" />
+<meta property="article:modified_time" content="2020-04-15T19:32:10+08:00" />
+
+
+
+    
+    
+<meta name="description" content="实效性软件构建的途径-下" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>April 15, 2020</p>
+        </div>
+
+        <div class="title">
+          <h1>实效性软件构建的途径-下</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h2 id="前言">前言</h2>
+<p>如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。</p>
+<h2 id="1-养成估算的习惯">1. 养成估算的习惯</h2>
+<p>1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。</p>
+<p>无论什么时候有人需要你进行估算，你都可以给出答案。
+如果没有经验，估算通常可以去问问已经做过该事情的人。
+追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。</p>
+<h2 id="2-调试的过程">2. 调试的过程</h2>
+<p>这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。</p>
+<p>花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。</p>
+<h2 id="3-重构">3. 重构</h2>
+<p>不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。</p>
+<p>那么如何合理地进行重构？</p>
+<ol>
+<li>不要在重构同时新增功能</li>
+<li>开始重构前要有良好的测试，确保重构后能通过</li>
+<li>采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试</li>
+</ol>
+<h2 id="4-测试的一些建议">4. 测试的一些建议</h2>
+<p>根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。
+单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。</p>
+<p>另外测试都应该具有以下功能：</p>
+<ol>
+<li>setup和cleanup的标准途径</li>
+<li>可选择地选择可用测试方法</li>
+<li>分析输出结果的手段</li>
+<li>标准化故障报告的形式</li>
+</ol>
+<h2 id="5-曳光弹与原型开发">5. 曳光弹与原型开发</h2>
+<p>曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。</p>
+<p>而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。</p>
+<h2 id="6-做变化的催化剂">6. 做变化的催化剂</h2>
+<p>这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。</p>
+<h2 id="7-不要过度修饰和求精程序">7. 不要过度修饰和求精程序</h2>
+<p>这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。</p>
+<h2 id="8-管理知识资产">8. 管理知识资产</h2>
+<p>对于金融资产的管理：</p>
+<ul>
+<li>定期投资，形成习惯</li>
+<li>多元化是长期成功的关键</li>
+<li>在保守的投资和高风险，高回报的投资之间平衡资产</li>
+<li>设法低买高卖获取最大回报</li>
+<li>周期性的评估和平衡财产</li>
+</ul>
+<p>而程序员管理自己的知识资产可以类比：</p>
+<ul>
+<li>定投，周期性的学习</li>
+<li>多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣</li>
+<li>管理风险，不要把所学的技术都放在一个篮子里</li>
+<li>低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作</li>
+<li>重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。</li>
+</ul>
+<p>所以可以给自己设立一些周期性的目标，防止自己的脱节：</p>
+<ul>
+<li>定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。</li>
+<li>偶尔学习一些公开课</li>
+<li>参与一些组织，打听公司以外的人都在做什么</li>
+<li>试验不同的环境，技术或者非技术都是如此，逃离舒适区</li>
+<li>持续投入！</li>
+</ul>
+<h2 id="9-交流">9. 交流</h2>
+<p>交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。</p>
+<p>书中提到的最关键的几点：</p>
+<h3 id="了解听众">了解听众</h3>
+<ol>
+<li>你想让他们学到什么</li>
+<li>他们对你讲的什么感兴趣</li>
+<li>他们有多丰富的经验</li>
+<li>他们要多少细节</li>
+<li>你想要谁拥有这些信息</li>
+<li>你如何促使他们听你说话</li>
+</ol>
+<h3 id="认真倾听和及时回复">认真倾听和及时回复</h3>
+<p>对于前者，你不听别人讲话，别人也懒得听你的 ：）；及时回复这一点，在现代社会中其实很容易遗忘，但是即使简单回复，”我稍后回复你“，也会显得礼貌。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《The Programatic Programmer》</li>
+<li><a href="https://en.wikipedia.org/wiki/Law_of_Demeter">https://en.wikipedia.org/wiki/Law_of_Demeter</a></li>
+</ul>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/notes/programatic2.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#1-养成估算的习惯">1. 养成估算的习惯</a></li>
+    <li><a href="#2-调试的过程">2. 调试的过程</a></li>
+    <li><a href="#3-重构">3. 重构</a></li>
+    <li><a href="#4-测试的一些建议">4. 测试的一些建议</a></li>
+    <li><a href="#5-曳光弹与原型开发">5. 曳光弹与原型开发</a></li>
+    <li><a href="#6-做变化的催化剂">6. 做变化的催化剂</a></li>
+    <li><a href="#7-不要过度修饰和求精程序">7. 不要过度修饰和求精程序</a></li>
+    <li><a href="#8-管理知识资产">8. 管理知识资产</a></li>
+    <li><a href="#9-交流">9. 交流</a>
+      <ul>
+        <li><a href="#了解听众">了解听众</a></li>
+        <li><a href="#认真倾听和及时回复">认真倾听和及时回复</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

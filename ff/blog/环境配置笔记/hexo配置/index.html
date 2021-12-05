@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>hexo 配置&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="hexo 配置" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">hexo 配置</h1><p class="article date">Thursday, April 5, 2018</p></section><article class="article markdown-body"><p><strong>注</strong>： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。</p>
+<h2 id="categories和tags">categories和tags</h2>
+<p>themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">type: <span class="s2">&#34;categories&#34;</span>
+layout: <span class="s2">&#34;categories&#34;</span>
+comments: <span class="nb">false</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">type: <span class="s2">&#34;tags&#34;</span>
+layout: <span class="s2">&#34;tags&#34;</span>
+comments: <span class="nb">false</span>
+</code></pre></div><h2 id="hexo-auto-category插件">hexo-auto-category插件</h2>
+<p>在_post文件夹下面创建的文件夹，都会被当作一个category，并分别将各个文件夹下面的md文件自动加上相应的category标识。
+安装
+<code>$ npm install hexo-auto-category --save</code></p>
+<p><code>$ hexo clean &amp;&amp; hexo g &amp;&amp; hexo s</code></p>
+<p>_config.yml配置</p>
+<pre><code># Generate categories from directory-tree
+# Dependencies: https://github.com/xu-song/hexo-auto-category
+# depth: the depth of directory-tree you want to generate, should &gt; 0
+auto_category:
+ enable: true
+ depth:
+</code></pre><p>github网址: <a href="https://github.com/xu-song/hexo-auto-category">https://github.com/xu-song/hexo-auto-category</a></p>
+<h2 id="live-2d">live-2d</h2>
+<p>这是个非常有趣的插件，看板娘get！
+安装:</p>
+<p><code>$ npm install --save hexo-helper-live2d</code></p>
+<p>根据<a href="https://github.com/EYHN/hexo-helper-live2d"target="_blank" rel="noopener noreferrer">原github</a>
+,修改hexo文件夹下面的_config.yml。
+然后要安装相应的模组：</p>
+<p><code>$ npm install {your model's package name}</code>
+模组下载地址:https://github.com/xiazeyu/live2d-widget-models</p>
+<h2 id="hexo-helper-qrcode">hexo-helper-qrcode</h2>
+<p>二维码</p>
+<p>Install
+<code>$ npm i -S hexo-helper-qrcode</code></p>
+<p>Usage</p>
+<div class="highlight"><pre class="chroma"><code class="language-HTML" data-lang="HTML"><span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;&lt;%- qrcode(url) %&gt;&#34;</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- white margin, default 0 --&gt;</span>
+<span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;&lt;%- qrcode(url, {
+</span><span class="s">    margin: 2
+</span><span class="s">}) %&gt;&#34;</span><span class="p">&gt;</span>
+
+<span class="c">&lt;!-- size of one module in pixels, default 6 --&gt;</span>
+<span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;&lt;%- qrcode(url, {
+</span><span class="s">    size: 4
+</span><span class="s">}) %&gt;&#34;</span><span class="p">&gt;</span>
+</code></pre></div><h2 id="fontawesome">fontawesome</h2>
+<p>在md文档中加入矢量图</p>
+<p><code>&lt;i class=&quot;fa fa-twitter fa-2x&quot;&gt;&lt;/i&gt;</code> <del>hugo 不支持</del></p>
+<p><i class="fa fa-caret-right"></i>fontwawesome : <a href="http://www.bootcss.com/p/font-awesome/design.html">http://www.bootcss.com/p/font-awesome/design.html</a></p>
+<h2 id="hexo-githus">hexo-githus</h2>
+<pre><code>$ npm install --save hexo-githus
+
+{% github name repo commit-sha-1 [auto_expand = true | false] [width = 50%] %} 
+</code></pre>
+<p>{% github fatwaer APUE-Practice-Code 6fb648e42bc1229199b80f1aba04280f9e5ad271  [width = 50%] %}</p>
+<h2 id="hexo-sliding-spoiler">hexo-sliding-spoiler</h2>
+<p><code>shell</code></p>
+<pre><code>$ npm install hexo-sliding-spoiler --save
+</code></pre>
+<p><code>__config.yml</code></p>
+<pre><code>plugins:
+ - hexo-sliding-spoiler 
+</code></pre><p><code>markdown</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-CSS" data-lang="CSS"><span class="p">{</span><span class="err">%</span> <span class="err">spoiler</span> <span class="err">title</span> <span class="err">%</span><span class="p">}</span>
+<span class="nt">content</span>
+<span class="p">{</span><span class="err">%</span> <span class="err">endspoiler</span> <span class="err">%</span><span class="p">}</span>
+</code></pre></div><p>{% spoiler title %}
+<code>code test</code></p>
+<pre><code>int
+main()
+{
+    return 0;
+}
+</code></pre>
+<p><strong>test bold</strong>
+{% endspoiler %}</p></article><section class="article labels"><a class="tag" href=/tags/config/>config</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/"><span class="iconfont icon-article"></span>6.828-操作系统工程-Lec1-3课件笔记和作业</a></p><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/"><span class="iconfont icon-article"></span>6.828-操作系统工程-Lab1:Booting a PC</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Effective Go</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Effective Go" />
+<meta property="og:description" content="goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &lt;- 1 go func() { process(req) &lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/sys/effective-go/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-01-10T12:48:14+00:00" />
+<meta property="article:modified_time" content="2019-01-10T12:48:14+00:00" />
+
+
+
+    
+    
+<meta name="description" content="Effective Go" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>January 10, 2019</p>
+        </div>
+
+        <div class="title">
+          <h1>Effective Go</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <h2 id="goroutine部分">goroutine部分</h2>
+<p>goroutine的一些tricks，比如</p>
+<pre><code>func Announce(message string, delay time.Duration) {
+    go func() {
+        time.Sleep(delay)
+        fmt.Println(message)
+    }()  // 注意括号 - 必须调用该函数。
+}
+</code></pre>
+<p>直接在<code>go</code>关键字后面接一个lambada表达式作为例程。</p>
+<p><code>goroutine</code>通常和<code>channal</code>一起使用，Unix的管道是基于生产-消费者模型，而channal则使用<a href="https://www.cs.cmu.edu/~crary/819-f09/Hoare78.pdf">CSP</a>(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。</p>
+<pre><code>var sem = make(chan int, MaxOutstanding)
+
+func handle(r *Request) {
+    sem &lt;- 1 // 等待活动队列清空。
+    process(r)  // 可能需要很长时间。
+    &lt;-sem    // 完成；使下一个请求可以运行。
+}
+
+func Serve(queue chan *Request) {
+    for {
+        req := &lt;-queue
+        go handle(req)  // 无需等待 handle 结束。
+    }
+}
+</code></pre>
+<p>例如这样一段代码可以实现最大接受请求数量为<code>MaxOutstanding</code>,当新的请求到达时，<code>req := &lt;-queue</code>从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。</p>
+<pre><code>func Serve(queue chan *Request) {
+    for req := range queue {
+        req := req // 为该Go程创建 req 的新实例。
+        sem &lt;- 1
+        go func() {
+            process(req)
+            &lt;-sem
+        }()
+    }
+}
+</code></pre>
+<p>解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉<code>req := req</code>这一行，<code>req</code>变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</p>
+<blockquote>
+<p>Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once.</p>
+</blockquote>
+<p>另外，<code>并发(concurrency)</code>和<code>并行(parallelism)</code>是两种单独的意思，并发是多个独立地执行程序的组合，即一次性解决大量的事情，而并行是同时执行某些相关连的计算。</p>
+<h2 id="反射相关">反射相关</h2>
+<p>变量的最基本信息就是类型和值：反射包的 Type 用来表示一个 Go 类型，反射包的 Value 为 Go 值提供了反射接口。这对于没有源代码的包尤其有用。这是一个强大的工具，除非真得有必要，否则应当避免使用或小心使用。</p>
+<p>实际上，反射是通过检查一个接口的值，变量首先被转换成空接口。这从下面两个函数签名能够很明显的看出来：</p>
+<pre><code>func TypeOf(i interface{}) Type
+func ValueOf(i interface{}) Value
+</code></pre>
+<p>接口的值包含一个 type 和 value。</p>
+<h2 id="结构体集合设计">结构体，集合设计</h2>
+<p><a href="https://go.fdos.me/11.14.html">https://go.fdos.me/11.14.html</a> (golang中一些关于结构体的设计技巧)</p>
+<h2 id="常见错误">常见错误</h2>
+<p><a href="http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/">50种常见错误</a> (在awesome-go仓库里面翻到的，有空可以看看)</p>
+<p><a href="https://wuyin.io/2018/03/07/50-shades-of-golang-traps-gotchas-mistakes/">翻译版本</a></p>
+<h2 id="并发控制库">并发控制库</h2>
+<p><a href="https://www.flysnow.org/2017/05/12/go-in-action-go-context.html">Context库</a> (该作者其他的帖子也可以看看，干货较多)</p>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/sys/Effective-Go.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#goroutine部分">goroutine部分</a></li>
+    <li><a href="#反射相关">反射相关</a></li>
+    <li><a href="#结构体集合设计">结构体，集合设计</a></li>
+    <li><a href="#常见错误">常见错误</a></li>
+    <li><a href="#并发控制库">并发控制库</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tech Internals</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="Tech Internals" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" />
+
+
+
+    
+    
+    <link rel="stylesheet" href="/css/layouts/list.css">
+    <link rel="stylesheet" href="/css/navigators/sidebar.css">
+    
+    <link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  
+  
+
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content container-fluid" id="content">
+    <div class="container-fluid post-card-holder" id="post-card-holder">
+      
+      
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（6）：执行分布式搜索</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 26, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch6%E6%89%A7%E8%A1%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%90%9C%E7%B4%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（5）：高可用保证</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 15, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch5%E9%AB%98%E5%8F%AF%E7%94%A8%E4%BF%9D%E8%AF%81/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（4）：相关性计算</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">August 7, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch4%E7%9B%B8%E5%85%B3%E6%80%A7%E8%AE%A1%E7%AE%97/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（3）：文档如何被实时索引</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 31, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch3%E6%96%87%E6%A1%A3%E5%A6%82%E4%BD%95%E8%A2%AB%E5%AE%9E%E6%97%B6%E7%B4%A2%E5%BC%95/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（2）：文档分词原理</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 24, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch2%E6%96%87%E6%A1%A3%E5%88%86%E8%AF%8D/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（1）：基础查询</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 16, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch1%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">ElasticSearch（0）：快速搭建</h5>
+        <p class="card-text post-summary">包括 Elasticsearch 的CRUD和基础检索方式</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">July 8, 2021</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch0%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+        
+          <div class="post-card">
+  <a href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/" class="post-card-link">
+    <div class="card">
+      <div class="card-head">
+        <img class="card-img-top" src='/images/default-hero.jpg' alt="Hero Image">
+      </div>
+      <div class="card-body">
+        <h5 class="card-title"></h5>
+        <p class="card-text post-summary">elasticsearch 文档创建和删除 创建和更新文档 官方提供的接口:
+PUT /&lt;target&gt;/_doc/&lt;_id&gt; POST /&lt;target&gt;/_doc/ PUT /&lt;target&gt;/_create/&lt;_id&gt; POST /&lt;target&gt;/_create/&lt;_id&gt; 下面的例子利用PUT方法创建一个 id 为1的文档：
+PUT /index-001/_doc/1 { &quot;title&quot;: &quot;Elasticsearch: The Definitive Guide&quot;, &quot;authors&quot;: [ &quot;clinton gormley&quot;, &quot;zachary tong&quot; ], &quot;summary&quot;: &quot;A distibuted real-time search and analytics engine&quot;, &quot;publish_date&quot;: &quot;2015-02-07&quot;, &quot;num_reviews&quot;: 20, &quot;publisher&quot;: &quot;oreilly&quot; } 响应结构为：
+{ &quot;_index&quot; : &quot;index-001&quot;, &quot;_type&quot; : &quot;_doc&quot;, &quot;_id&quot; : &quot;1&quot;, &quot;_version&quot; : 1, &quot;result&quot; : &quot;created&quot;, &quot;_shards&quot; : { &quot;total&quot; : 2, &quot;successful&quot; : 1, &quot;failed&quot; : 0 }, &quot;_seq_no&quot; : 18, &quot;_primary_term&quot; : 1 } 其中，version字段为1，并且result的值为created。</p>
+      </div>
+      <div class="card-footer">
+        <span class="float-left">January 1, 0001</span>
+        <a
+        href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/"
+        class="float-right btn btn-outline-info btn-sm"
+        >Read</a
+        >
+      </div>
+    </div>
+  </a>
+</div>
+
+        
+      
+    </div>
+    <div class="paginator">
+      
+    </div>
+  </div>
+</section>
+
+
+      
+       
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+    <script src="/js/list.js"></script>
+
+  </body>
+</html>

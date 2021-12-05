@@ -1,0 +1,45 @@
+baseurl: "/"
+languageCode: "en-us"
+title: "Pok's Blog: discover the world"
+theme: "cactus"
+author: "pok"
+googleAnalytics: ""
+disqusShortname: "fatwaer"
+ignoreFiles: ["\\.Rmd$", "\\.Rmarkdown$", "_cache$", "\\.knit\\.md$", "\\.utf8\\.md$"]
+preserveTaxonomyNames: true
+footnotereturnlinkcontents: "↩"
+hasCJKLanguage: true
+enableEmoji: true
+paginate: 1000
+
+googleAnalytics : "G-LGMCE8D1GT"
+
+permalinks:
+  post: "/post/:year/:month/:day/:slug/"
+
+menu:
+  main:
+    - name: Home
+      url: /
+      weight: 1
+    - name: Writings
+      url: /posts/
+      weight: 2
+    - name: Categories
+      url: /categories/
+      weight: 3
+
+
+params:
+  description: "~"
+  colortheme: "white"
+  
+  footer: "&copy; [Yihui Xie](https://yihui.org) 2017 - 2020 | [Github](https://github.com/yihui) | [Twitter](https://twitter.com/xieyihui)"
+  github_edit: "https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/"
+  summary_length: 300
+  showAllPostsOnHomePage: true
+  
+  text:
+    back: "&larr; Back to Home"
+    edit: "Edit this page &rarr;"
+    truncated: "&hellip;"

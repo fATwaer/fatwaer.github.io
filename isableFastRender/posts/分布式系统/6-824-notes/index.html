@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="generator" content="Hugo 0.57.2" />
+  <link rel="canonical" href="http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/">
+
+  
+
+  
+   
+   <link rel="shortcut icon" href="/11.jpeg" >
+   
+  <link rel="manifest" href="/site.webmanifest">
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/prism.css" media="none" onload="this.media='all';">
+
+  
+  
+  <link rel="stylesheet" type="text/css" href="http://localhost:1313/css/styles.css">
+
+  <style id="inverter" media="none">
+    html { filter: invert(100%) }
+    * { background-color: inherit }
+    img:not([src*=".svg"]), .colors, iframe, .demo-container { filter: invert(100%) }
+  </style>
+
+  
+  
+  <title>6.824 distributed system notes | fatwaer</title>
+</head>
+
+  <body>
+    <a href="#main">skip to content</a>
+    <svg style="display: none">
+  <symbol id="bookmark" viewBox="0 0 40 50">
+   <g transform="translate(2266 3206.2)">
+    <path style="stroke:currentColor;stroke-width:3.2637;fill:none" d="m-2262.2-3203.4-.2331 42.195 16.319-16.318 16.318 16.318.2331-42.428z"/>
+   </g>
+  </symbol>
+
+  <symbol id="w3c" viewBox="0 0 127.09899 67.763">
+   <text font-size="83" style="font-size:83px;font-family:Trebuchet;letter-spacing:-12;fill-opacity:0" letter-spacing="-12" y="67.609352" x="-26.782778">W3C</text>
+   <text font-size="83" style="font-size:83px;font-weight:bold;font-family:Trebuchet;fill-opacity:0" y="67.609352" x="153.21722" font-weight="bold">SVG</text>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m33.695.377 12.062 41.016 12.067-41.016h8.731l-19.968 67.386h-.831l-12.48-41.759-12.479 41.759h-.832l-19.965-67.386h8.736l12.061 41.016 8.154-27.618-3.993-13.397h8.737z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m91.355 46.132c0 6.104-1.624 11.234-4.862 15.394-3.248 4.158-7.45 6.237-12.607 6.237-3.882 0-7.263-1.238-10.148-3.702-2.885-2.47-5.02-5.812-6.406-10.022l6.82-2.829c1.001 2.552 2.317 4.562 3.953 6.028 1.636 1.469 3.56 2.207 5.781 2.207 2.329 0 4.3-1.306 5.909-3.911 1.609-2.606 2.411-5.738 2.411-9.401 0-4.049-.861-7.179-2.582-9.399-1.995-2.604-5.129-3.912-9.397-3.912h-3.327v-3.991l11.646-20.133h-14.062l-3.911 6.655h-2.493v-14.976h32.441v4.075l-12.31 21.217c4.324 1.385 7.596 3.911 9.815 7.571 2.22 3.659 3.329 7.953 3.329 12.892z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.21 0 1.414 8.6-5.008 9.583s-1.924-4.064-5.117-6.314c-2.693-1.899-4.447-2.309-7.186-1.746-3.527.73-7.516 4.938-9.258 10.13-2.084 6.21-2.104 9.218-2.178 11.978-.115 4.428.58 7.043.58 7.043s-3.04-5.626-3.011-13.866c.018-5.882.947-11.218 3.666-16.479 2.404-4.627 5.954-7.404 9.114-7.728 3.264-.343 5.848 1.229 7.841 2.938 2.089 1.788 4.213 5.698 4.213 5.698l4.94-9.837z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.82 48.674s-2.208 3.957-3.589 5.48c-1.379 1.524-3.849 4.209-6.896 5.555-3.049 1.343-4.646 1.598-7.661 1.306-3.01-.29-5.807-2.032-6.786-2.764-.979-.722-3.486-2.864-4.897-4.854-1.42-2-3.634-5.995-3.634-5.995s1.233 4.001 2.007 5.699c.442.977 1.81 3.965 3.749 6.572 1.805 2.425 5.315 6.604 10.652 7.545 5.336.945 9.002-1.449 9.907-2.031.907-.578 2.819-2.178 4.032-3.475 1.264-1.351 2.459-3.079 3.116-4.108.487-.758 1.276-2.286 1.276-2.286l-1.276-6.644z"/>
+  </symbol>
+
+  <symbol id="tag" viewBox="0 0 177.16535 177.16535">
+    <g transform="translate(0 -875.2)">
+     <path style="fill-rule:evenodd;stroke-width:0;fill:currentColor" d="m159.9 894.3-68.79 8.5872-75.42 77.336 61.931 60.397 75.429-76.565 6.8495-69.755zm-31.412 31.835a10.813 10.813 0 0 1 1.8443 2.247 10.813 10.813 0 0 1 -3.5174 14.872l-.0445.0275a10.813 10.813 0 0 1 -14.86 -3.5714 10.813 10.813 0 0 1 3.5563 -14.863 10.813 10.813 0 0 1 13.022 1.2884z"/>
+    </g>
+  </symbol>
+
+  <symbol id="balloon" viewBox="0 0 141.73228 177.16535">
+   <g transform="translate(0 -875.2)">
+    <g>
+     <path style="fill:currentColor" d="m68.156 882.83-.88753 1.4269c-4.9564 7.9666-6.3764 17.321-5.6731 37.378.36584 10.437 1.1246 23.51 1.6874 29.062.38895 3.8372 3.8278 32.454 4.6105 38.459 4.6694-.24176 9.2946.2879 14.377 1.481 1.2359-3.2937 5.2496-13.088 8.886-21.623 6.249-14.668 8.4128-21.264 10.253-31.252 1.2464-6.7626 1.6341-12.156 1.4204-19.764-.36325-12.93-2.1234-19.487-6.9377-25.843-2.0833-2.7507-6.9865-7.6112-7.9127-7.8436-.79716-.20019-6.6946-1.0922-6.7755-1.0248-.02213.0182-5.0006-.41858-7.5248-.22808l-2.149-.22808h-3.3738z"/>
+     <path style="fill:currentColor" d="m61.915 883.28-3.2484.4497c-1.7863.24724-3.5182.53481-3.8494.63994-2.4751.33811-4.7267.86957-6.7777 1.5696-.28598 0-1.0254.20146-2.3695.58589-5.0418 1.4418-6.6374 2.2604-8.2567 4.2364-6.281 7.6657-11.457 18.43-12.932 26.891-1.4667 8.4111.71353 22.583 5.0764 32.996 3.8064 9.0852 13.569 25.149 22.801 37.517 1.3741 1.841 2.1708 2.9286 2.4712 3.5792 3.5437-1.1699 6.8496-1.9336 10.082-2.3263-1.3569-5.7831-4.6968-21.86-6.8361-33.002-.92884-4.8368-2.4692-14.322-3.2452-19.991-.68557-5.0083-.77707-6.9534-.74159-15.791.04316-10.803.41822-16.162 1.5026-21.503 1.4593-5.9026 3.3494-11.077 6.3247-15.852z"/>
+     <path style="fill:currentColor" d="m94.499 885.78c-.10214-.0109-.13691 0-.0907.0409.16033.13489 1.329 1.0675 2.5976 2.0723 6.7003 5.307 11.273 14.568 12.658 25.638.52519 4.1949.24765 14.361-.5059 18.523-2.4775 13.684-9.7807 32.345-20.944 53.519l-3.0559 5.7971c2.8082.76579 5.7915 1.727 8.9926 2.8441 11.562-11.691 18.349-19.678 24.129-28.394 7.8992-11.913 11.132-20.234 12.24-31.518.98442-10.02-1.5579-20.876-6.7799-28.959-.2758-.4269-.57803-.86856-.89617-1.3166-3.247-6.13-9.752-12.053-21.264-16.131-2.3687-.86369-6.3657-2.0433-7.0802-2.1166z"/>
+     <path style="fill:currentColor" d="m32.52 892.22c-.20090-.13016-1.4606.81389-3.9132 2.7457-11.486 9.0476-17.632 24.186-16.078 39.61.79699 7.9138 2.4066 13.505 5.9184 20.562 5.8577 11.77 14.749 23.219 30.087 38.74.05838.059.12188.1244.18052.1838 1.3166-.5556 2.5965-1.0618 3.8429-1.5199-.66408-.32448-1.4608-1.3297-3.8116-4.4602-5.0951-6.785-8.7512-11.962-13.051-18.486-5.1379-7.7948-5.0097-7.5894-8.0586-13.054-6.2097-11.13-8.2674-17.725-8.6014-27.563-.21552-6.3494.13041-9.2733 1.775-14.987 2.1832-7.5849 3.9273-10.986 9.2693-18.07 1.7839-2.3656 2.6418-3.57 2.4409-3.7003z"/>
+     <path style="fill:currentColor" d="m69.133 992.37c-6.2405.0309-12.635.76718-19.554 2.5706 4.6956 4.7759 9.935 10.258 12.05 12.625l4.1272 4.6202h11.493l3.964-4.4516c2.0962-2.3541 7.4804-7.9845 12.201-12.768-8.378-1.4975-16.207-2.6353-24.281-2.5955z"/>
+     <rect style="stroke-width:0;fill:currentColor" ry="2.0328" height="27.746" width="22.766" y="1017.7" x="60.201"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="info" viewBox="0 0 41.667 41.667">
+   <g transform="translate(-37.035 -1004.6)">
+    <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m76.25 1030.2a18.968 18.968 0 0 1 -23.037 13.709 18.968 18.968 0 0 1 -13.738 -23.019 18.968 18.968 0 0 1 23.001 -13.768 18.968 18.968 0 0 1 13.798 22.984"/>
+    <g transform="matrix(1.1146 0 0 1.1146 -26.276 -124.92)">
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m75.491 1039.5v-8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" transform="scale(-1)" d="m-73.193-1024.5a2.3719 2.3719 0 0 1 -2.8807 1.7142 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="warning" viewBox="0 0 48.430474 41.646302">
+    <g transform="translate(-1.1273 -1010.2)">
+     <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:4.151;fill:none" d="m25.343 1012.3-22.14 37.496h44.28z"/>
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:4.1512;fill:none" d="m25.54 1027.7v8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" d="m27.839 1042.8a2.3719 2.3719 0 0 1 -2.8807 1.7143 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+  </symbol>
+
+  <symbol id="menu" viewBox="0 0 50 50">
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="0" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="20" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="40" x="0"/>
+   </symbol>
+
+   <symbol id="link" viewBox="0 0 50 50">
+    <g transform="translate(0 -1002.4)">
+     <g transform="matrix(.095670 0 0 .095670 2.3233 1004.9)">
+      <g>
+       <path style="stroke-width:0;fill:currentColor" d="m452.84 192.9-128.65 128.65c-35.535 35.54-93.108 35.54-128.65 0l-42.881-42.886 42.881-42.876 42.884 42.876c11.845 11.822 31.064 11.846 42.886 0l128.64-128.64c11.816-11.831 11.816-31.066 0-42.9l-42.881-42.881c-11.822-11.814-31.064-11.814-42.887 0l-45.928 45.936c-21.292-12.531-45.491-17.905-69.449-16.291l72.501-72.526c35.535-35.521 93.136-35.521 128.64 0l42.886 42.881c35.535 35.523 35.535 93.141-.001 128.66zm-254.28 168.51-45.903 45.9c-11.845 11.846-31.064 11.817-42.881 0l-42.884-42.881c-11.845-11.821-11.845-31.041 0-42.886l128.65-128.65c11.819-11.814 31.069-11.814 42.884 0l42.886 42.886 42.876-42.886-42.876-42.881c-35.54-35.521-93.113-35.521-128.65 0l-128.65 128.64c-35.538 35.545-35.538 93.146 0 128.65l42.883 42.882c35.51 35.54 93.11 35.54 128.65 0l72.496-72.499c-23.956 1.597-48.092-3.784-69.474-16.283z"/>
+      </g>
+     </g>
+    </g>
+  </symbol>
+
+  <symbol id="doc" viewBox="0 0 35 45">
+   <g transform="translate(-147.53 -539.83)">
+    <path style="stroke:currentColor;stroke-width:2.4501;fill:none" d="m149.38 542.67v39.194h31.354v-39.194z"/>
+    <g style="stroke-width:25" transform="matrix(.098003 0 0 .098003 133.69 525.96)">
+     <path d="m220 252.36h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path style="stroke:currentColor;stroke-width:25;fill:none" d="m220 409.95h200"/>
+     <path d="m220 488.74h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path d="m220 331.15h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+    </g>
+   </g>
+ </symbol>
+
+ <symbol id="tick" viewBox="0 0 177.16535 177.16535">
+  <g transform="translate(0 -875.2)">
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="155" width="40" y="702.99" x="556.82"/>
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="40" width="90.404" y="817.99" x="506.42"/>
+  </g>
+ </symbol>
+</svg>
+
+    <div class="wrapper">
+      <header class="intro-and-nav" role="banner">
+  <div>
+    <div class="intro">
+      <a class="logo" href="/" aria-label="fatwaer home page">
+        <img src="http://localhost:1313/images/11.jpeg" alt="">
+      </a>
+      <p class="library-desc">
+        
+          Here&rsquo;s fatwaer&rsquo;s blog, recording some technical problems and  notes about open-source courses
+        
+      </p>
+    </div>
+    <nav id="patterns-nav" class="patterns" role="navigation">
+  <h2 class="vh">Main navigation</h2>
+  <button id="menu-button" aria-expanded="false">
+    <svg viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+      <use xlink:href="#menu"></use>
+    </svg>
+    Menu
+  </button>
+  
+  <ul id="patterns-list">
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/posts/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Home</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/tags/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Tags</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/about/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">About</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/todo/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Todo</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/index.xml" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">RSS</span>
+      </a>
+    </li>
+  
+  </ul>
+</nav>
+  </div>
+</header>
+      <div class="main-and-footer">
+        <div>
+          
+  <main id="main">
+    <h1>
+      <svg class="bookmark-icon" aria-hidden="true" viewBox="0 0 40 50" focusable="false">
+        <use xlink:href="#bookmark"></use>
+      </svg>
+      6.824 distributed system notes
+    </h1>
+
+    <div class="date">
+      
+      
+      <strong aria-hidden="true">Publish date: </strong>1-15, 2019
+      
+        
+      
+    </div>
+
+    
+      <div class="tags">
+        <strong aria-hidden="true">Tags: </strong>
+        <ul aria-label="tags">
+          
+            <li>
+              <svg class="tag-icon" aria-hidden="true" viewBox="0 0 177.16535 177.16535" focusable="false">
+                <use xlink:href="#tag"></use>
+              </svg>
+              
+              <a href="http://localhost:1313/tags/distributed-system/">distributed system</a>
+            </li>
+          
+        </ul>
+      </div>
+    
+    
+    
+      
+
+  <nav class="toc" aria-labelledby="toc-heading">
+    <h2 id="toc-heading">Table of contents</h2>
+    <ol>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#mapreduce-2004">
+            MapReduce(2004)
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#rpc">
+            RPC
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#gfs-2003">
+            GFS(2003)
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#raft-2014">
+            Raft(2014)
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#spinnaker-2011">
+            Spinnaker(2011)
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#zookeeper-2010">
+            ZooKeeper(2010)
+          </a>
+        </li>
+      
+    </ol>
+  </nav>
+
+
+    
+
+    
+
+<p>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。</p>
+
+<p>分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。</p>
+
+<p>分布式系统的<code>优点</code>是能够组织物理上分离的实体，通过<code>isolation</code>取得系统安全，通过<code>replication</code>获取容错机制，通过并行<code>CPUs/mem/disk/net</code>来比例提升系统速度。</p>
+
+<p>当然也有些<code>缺点</code>，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。</p>
+
+<h2 id="mapreduce-2004">MapReduce(2004)</h2>
+
+<pre><code>input is divided into M files
+[diagram: maps generate rows of K-V pairs, reduces consume columns]
+Input1 -&gt; Map -&gt; a,1 b,1 c,1
+Input2 -&gt; Map -&gt;     b,1
+Input3 -&gt; Map -&gt; a,1     c,1
+                    |   |   |
+                    |   |   -&gt; Reduce -&gt; c,2
+                    |   -----&gt; Reduce -&gt; b,2
+                    ---------&gt; Reduce -&gt; a,2
+</code></pre>
+
+<p>对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 <k2, v2>键值对(图中的一行)作为中间数据。</p>
+
+<p>MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 <k2, v3> 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：</p>
+
+<pre><code>map(k1, v1) -&gt; list(k2, v2)
+reduce(k2, list(v2) -&gt; list(k2, v3)]
+</code></pre>
+
+<p>MapReduce 隐藏了很多关键的细节，l如启动处于服务器上的软件，跟踪任务是否完成，数据的移动，从错误中恢复等。</p>
+
+<h3 id="mapreduce-过程">MapReduce 过程</h3>
+
+<p><a href="https://static.googleusercontent.com/media/research.google.com/zh-CN//archive/mapreduce-osdi04.pdf">Paper</a>中共分为7个步骤：</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/mapreduce1.png" alt="mapreduce1.png" /></p>
+
+<ol>
+<li>MapReduce将输入文件分成M份，并且开始在集群的机器上运行该程序的拷贝。</li>
+<li>其中有该程序拷贝的Master节点会为集群中剩下的workers分配任务，其中有M份map任务和R份reduce工作，并且master将会为处于闲置状态的worker分配map或者reduce任务</li>
+<li>worker被赋予了map任务将会从对应的input分片中读取内容，并且将从中解析出的k/v键值对传递到user-defined函数中。(这些由map()产生的k/v对被缓冲在内存中)</li>
+<li>这些中间值将会被周期性的写到worker的本地磁盘，并且被partitioning function分成R份区域。这些被写到磁盘的键值对的位置将会被传回给master，并且可靠地将这些定位推进到reduce worker</li>
+<li>当reduce worker被Master告知了这些键值对的定位，使用RPC读取这些在map worker本地磁盘缓冲的数据，当reduce worker读取到了所有的中间值，接下来会根据key值进行分组。</li>
+<li>reduce worker将会遍历这些排序好的中间值，并且将遇到的每一个独一无二的key值，传递到user的Reduce function中，该函数的输出最后会附加到最终输出中去。</li>
+<li>当所有map和reduce的任务完成后，master将会唤醒user program，此时 MapReduce调用已经返回到用户代码中。</li>
+</ol>
+
+<p>其中
+没有reduce worker会在map任务完成之前被调用。</p>
+
+<p>中间值将只会在网络中出现一次，map从分布式文件系统中进行本地复制，执行Map然后写本地磁盘，通知Master通知reduce worker从该位置远程读取数据，然后写到reduce worker的本地磁盘。</p>
+
+<p>根据以上的条件，有一种非常坏的情况就是N-1台服务器等待最后一台服务器完成任务，整个系统都在等待其完成任务。解决办法是使得任务数目要多余主机数，master需要递送新的任务给已经完成任务的workers,最后的结果是较快的servers会比较慢的servers完成更多的工作,但是绝对时间是相同的。</p>
+
+<h3 id="容错处理">容错处理</h3>
+
+<ol>
+<li>Map worker 崩溃
+master多次ping崩溃的主机仍没有回应，并且Map的输出已经丢失了，但是后面的每一个reduce任务都需要该结果。如果reduce worker已经完全拉取了中间值，并且在reduce的过程中又发生了crash，则会强制执行失效map。</li>
+<li>Reduce worker 崩溃
+如果在worker上的任务已经完成则没有关系，因为已经存储到了分布式文件系统中了，如果是在执行过程中发生了崩溃，则在新的worker上启动未完成的工作。</li>
+<li>Reduce 在输出结果集发生了崩溃
+在reduce工作完成前是不可见的，整个reduce到输出文件都是保持原子性的，这保证master重新在其他地方执行任务。</li>
+</ol>
+
+<h2 id="rpc">RPC</h2>
+
+<pre><code>Client:
+    z = fn(x, y)
+Server:
+    fn(x, y) {
+    compute
+    return z
+    }
+</code></pre>
+
+<p>RPC简单来说就是客户端通过tcp连接调用远程服务器中的函数并且获取值的一个过程，GoLang中自带了rpc库。如果rpc库调用失败，可能有几种情况，比如服务器根本没有收到这个请求，可能收到了请求并且执行了相关调用，但是崩溃在发送之前，或者在发送后该数据包迷失在了网络中。</p>
+
+<p>最简单的方法模式的“尽最大努力交付”：
+1. 客户端调用rpc，并且等待
+2. 如果没有响应，则重传
+3. 重传多次无果，返回错误值</p>
+
+<p>尽最大努力交付这种模式只适合一些多次操作不会进行写操作的调用，比如读操作，检查db记录是否被插入等等。</p>
+
+<h2 id="gfs-2003">GFS(2003)</h2>
+
+<p>GFS支持一些常见的文件操作，例如create, delete, open, close, read, write等，另外还有snapshot和record append的操作。</p>
+
+<h3 id="gfs的结构">GFS的结构</h3>
+
+<p>一个GFS集群由一个master节点和多个能被clients访问的chunkservers组成。通常是是一些商业linux机器运行着用户级别的服务器进程，并且可以让clients和chunkserver的进程运行在同一个机器上面。</p>
+
+<p>文件被分成固定大小的chunksize(一般为64MB), 并且每一个chunk都在创建期间被master一个全局不可变的chunk handle，并且默认情况下，每一个chunk都有三份备份。</p>
+
+<p>master负责维护整个系统的metadata，其中包括了命名空间，访问控制信息，文件到文件系统的映射信息，以及当前状态chunk服务器的位置，并且使用周期性的HeartBeat消息来给予指令或者收集chunk的状态。</p>
+
+<p>client不会从master节点读写数据，取而代之的是获取chunkserver的信息，并且缓冲这些信息在一段时间内，并且进行接下来的系列操作。</p>
+
+<p>GFS的读取操作:</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/gfs1.png" alt="gfs1.png" /></p>
+
+<ol>
+<li>首先，client将文件名和字节偏移转化为chunk索引，然后发送给master一个包含文件名和该索引的请求。master回复对应的chunk handle和各个备份的位置。client缓冲这些信息，以文件名和chunk index作为key值</li>
+<li>然后，client发送请求到其中的一个备份去，一般选择最近的，这个请求中包含了chunk内偏移，然后chunk将数据回复给clients。</li>
+</ol>
+
+<p>GFS的写操作：</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/gfs2.png" alt="gfs2.png" /></p>
+
+<ol>
+<li>客户端请求master获取一份持有lease的chunk server</li>
+<li>master回复主备份的节点id和其他备份的位置，client缓冲这些数据。并且在这些备份地址不可达的时候，重新请求master节点。</li>
+<li>client推送数据到到所有的拷贝，并且chunkserver将会缓冲这些数据到基于LRU的缓冲区直到数据被使用或者超时。</li>
+<li>一旦所欲的拷贝都回复确认收到了该数据，client将会发送写请求到主拷贝节点，主拷贝将会复制一串连续的数字给所接收到的数据变动，并且将这连续的数据变动应用到本地。</li>
+<li>主拷贝将会向前推送写请求到所有的第二级拷贝，并且所有的拷贝对数据的变动与拷贝相同</li>
+<li>第二级拷贝将会回复主拷贝已经完成了这个操作</li>
+<li>主拷贝将会回复client，在变动过程中发生了任何错误都会回复给client。</li>
+</ol>
+
+<h2 id="raft-2014">Raft(2014)</h2>
+
+<p>推荐下这个视频，结合那篇paper一起看比较容易理解
+<a href="https://www.youtube.com/watch?v=YbZ3zDzDnrw">https://www.youtube.com/watch?v=YbZ3zDzDnrw</a></p>
+
+<p>raft 协议主要是可理解性，相对于paxos来说简单了很多，raft也是提供了在非拜占庭错误(<a href="http://www.itboth.com/d/Q32eua">non-Byzantine fault</a>)下一种新的并发模型。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/raft1.png" alt="raft1.png" /></p>
+
+<p>当clients向其中一个sever提交一个操作的时候，该操作首先会被放入log中，然后使其他的servers也记录该操作，当大多数的机器正确回复了请求后，那么该操作就会被提交到该服务器的状态机，从而完成一个完整的操作，当多个操作开始执行的时候，都会以相同的顺序进行执行。</p>
+
+<p>raft中所有的server在某一时刻会扮演三种角色中的一种：
+Leader：　处理client的交互，日志复制，并且同一时刻，只会有一个leader</p>
+
+<p>Follower：　完全处于被动状态，不会产生RPC，但是会回应即将到来的RPC</p>
+
+<p>Candidate：　将会被选举成一个新的leader</p>
+
+<p>在raft协议中，时间被分为以term为单位的时间片段，term有如下的性质：</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/raft2.png" alt="raft2.png" /></p>
+
+<ol>
+<li>每一期被分为选举时间和普通操作时间。</li>
+<li>每一期最多有一个leader</li>
+<li>有些时期可能没有leader，之后提到的一些选举失败的情况中会出现。</li>
+<li>每一个server中都会维护一个<code>当前期数</code>的值，用于server发生crash或者unreachable的时候</li>
+</ol>
+
+<p>期数在raft中是个非常重要的概念，用于指示server中哪些数据已经过时了</p>
+
+<p>Raft　大体上可以分成６个部分</p>
+
+<h3 id="1-leader-election">1.Leader election</h3>
+
+<ol>
+<li>最开始的时候，所有的服务器在raft中以follower的角色启动</li>
+<li>follower期待来自leader或者candidates的rpc</li>
+<li>leader必须发送心跳包(空的AppendEntries　RPC)来维护自己的权威性</li>
+<li>如果electionTimeout到了并且没有接收到rpc，那么
+
+<ul>
+<li>follower将会假定leader崩溃了</li>
+<li>follower开始新的选举</li>
+<li>timeout的时长通常为100-500ms</li>
+</ul></li>
+</ol>
+
+<p>选举的过程：
+- 自增当前的期数
+- 从follower改变至candidate状态
+- 为自己投票
+- 发送RequestVote RPC到其他服务器，如果没有收到回复，那么一直重传至：
+    1. 接受到大多数的服务器的投票，那么该服务器变成leader并且发送心跳包到其他服务器
+    2. 接收到来自合法leader的RPC，那么该服务器回到follower的状态
+    3. 没有任何一个服务器赢得该轮选举，那么自增期数，开始新的一轮选举(splite vote　term的产生)，新开始的一轮的时期通常选为electionTimeout T~2T之间</p>
+
+<h3 id="2-normal-operation">2.Normal operation</h3>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/raft3.png" alt="raft3.png" /></p>
+
+<p>每一个日志条目(log entry)由三个部分组成：index, term和command，并且都会存储在稳定的存储介质中，例如磁盘。</p>
+
+<p>log的并发处理:　1. 如果在不同的服务器上面日志条目有相同的index和term，那么表示这些条目存储了相同的命令并且之前的条目也是准确的。2.　如果一个条目是被committed的，那么之前的所有条目也是被committed的</p>
+
+<p>一个条目被称之为<code>committed</code>则说明这个条目已经被存储在了大多数的服务器上面，并且最终会在集群每个服务器的状态机上执行。</p>
+
+<p>正常运行过程：
+1. client发送一个命令到leader
+2. leader将会把这个命令附加到其log上
+3. leader发送AppendEntries RPC到follower
+4. 一旦一个新的entry是committed，那么代表:
+   - leader把这个命令应用到状态机上并且返回结果给client
+   - leader将会给已经提交该条目发送接下来的AppendEntries RPC
+   - follower把该命令提交到自己的状态机上面</p>
+
+<p>每一个AppendEntries RPC会包含需要附加位置之前一个的index, term，如果不相符合，follower将会拒绝这个请求。</p>
+
+<h3 id="3-leader-changes">3.leader changes</h3>
+
+<p>leader发生改变最重要的一点是，leader的log总是对的，在follower中发生冲突的条目将会被删除。</p>
+
+<p>在选举期间，candidate最有可能是包含了的最多已经committed条目的服务器，在RequestVote RPC中，包含了candidate最后一个条目的index和term，收到该请求的服务器将会与自己的最后期数进行对比，如果自己的期数等于candidate的期数或者期数相等但是自己的最后的索引大于candidate的索引，那么将会否决投票，这样就保证leader拥有最完整的log。</p>
+
+<p>修复follower的log，新的leader必须使follower的log与自己的一致，删除那些不想管的条目并且填充缺少的条目，leader会为每一个follower保持一个nextIndex，初始值为(1 + leader&rsquo;s last index)，当一个一个AppendEntries RPC失败了，对应的nextIndex将会进行递减并且重新尝试。如果follower覆盖了不一致的条目，那么follower将会删除接下来所有的条目。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/raft4.png" alt="raft4.png" /></p>
+
+<h3 id="4-neutralizing-old-leader">4.Neutralizing old leader</h3>
+
+<p>假设出现这种情况，需要使得旧的leader无效：
+- 暂时性地从网络中断开
+- 剩下的其他服务器选举出一个新的leader
+- 旧的leader重新连接到集群网络并且尝试去提交日志条目</p>
+
+<p>terms用来检测过时的leader或者candidate，每个rpc中都包含有sender的期数，如果发送者的期数更低，那么rpc将会被接受者拒绝，并且发送方将会转变为follower并且更新其自己的期数。相反，如果接受者的期数更低，那么接收者变成follower，并且更新自己的期数然后正常处理rpc</p>
+
+<h3 id="5-clients-interaction">5.clients interaction</h3>
+
+<ul>
+<li>client发送命令到leader，如果不知道leader的位置，联系任何一个已知的服务器，最终将会重定向到leader处。</li>
+<li>除非命令已经被状态机logged，committed，并且exectued，leader不会进行回复该请求。</li>
+<li>如果一个请求超时了，client需要重新发送命令到其他的服务器。</li>
+</ul>
+
+<p>但是多次重新发送同一个命令会引起多次执行，所以client必须嵌入一个独一无二的id到每一个指令中去，服务器也将会接受该id到日志条目中去，在接收新来的指令之前，leader会检查其日志的该id，如果找到了，将会无视新的指令，但是会返回原来执行过的结果。</p>
+
+<h3 id="6-configuration-changes">6.configuration changes</h3>
+
+<p>配置发生改变是指，该集群中某些机器失效了或者需要新的机器来代替原来的机器等等更改集群物理配置的一些改变。集群配置变更不能直接发生变化，例如决策的处理等等。</p>
+
+<p>raft使用<code>2-phase</code>的途径来处理这种情况：</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/distributed-system/6.824/notes/raft5.png" alt="raft5.png" /></p>
+
+<p>C(old)表示需要在旧配置上的大多数服务器进行决策，而C(old)+C(new)代表需要在旧配置的大多数服务器上通过并且同时需要在新配置的大多数服务器上通过决策。</p>
+
+<h2 id="spinnaker-2011">Spinnaker(2011)</h2>
+
+<p>分表：With sharding,
+each node of the cluster is responsible for part of the data
+and runs its own independent instance of the database
+software</p>
+
+<p>数据库分表+主从节点同步在商业方面并不完美
+2-way 同步复制　figure 1
+首先主从节点都从LSN　10开始同步(a)，此时从节点失效了(b)，主节点继续接受读写请求到LSN 20，然后从节点在接受主节点的时候，主节点失效了&copy;，从节点无法继续同步因为不是最新的状态(d)。</p>
+
+<p>Paxos solves the general problem of
+reaching consensus on the state of 2F + 1 replicas while tolerating up to F failures. However, Paxos has not been used
+for database replication because it is generally perceived as
+too complex and slow.</p>
+
+<p>CAP理论：</p>
+
+<p>Although strong consistency is clearly a desirable property
+for building applications, it is impossible to achieve without
+sacrificing either availability or tolerance to network partitions. This was first observed by Brewer in his well-known
+CAP Theorem [6], which states that among Consistency,
+Availability, and Partition tolerance, only two out of three
+are possible</p>
+
+<p>Spinnaker is an example of a CA system</p>
+
+<p>2PC
+１．the failure of a single node will lead to an abort.
+２. invoking 2PC
+for every transaction will lead to poor performance, since a
+typical implementation of 2PC requires 2 disk forces and 2
+message delays
+３. 2PC blocks when the coordinator
+fails</p>
+
+<h2 id="zookeeper-2010">ZooKeeper(2010)</h2>
+
+<p>Blocking primitives: Locking  :slow or faulty clients to impact negatively the performance of faster clients.
+wait-free:  important for performance and fault tolerance,  not sufficient for coordination
+order guarantees:  FIFO client ordering of all operations and linearizable writes
+a leader-based atomic broadcast protocol
+Caching data(with leases): leader id</p>
+
+<p>一些名词:client to denote a
+user of the ZooKeeper service, server to denote a process
+providing the ZooKeeper service, and znode to denote
+an in-memory data node in the ZooKeeper data, which
+is organized in a hierarchical namespace referred to as
+the data tree. We also use the terms update and write to
+refer to any operation that modifies the state of the data
+tree. Clients establish a session when they connect to
+ZooKeeper and obtain a session handle through which
+they issue requests.</p>
+
+    
+    <div>
+      <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    </div>
+    <script src="http://localhost:1313/js/back2top.js"></script>
+  </main>
+  <div id="disqus-container">
+  
+    <button id="disqus-button" onclick="showComments()">Show comments</button>
+    <div id="disqus-comments">
+      
+      
+      
+        <p><em>Disqus comments are disabled.</em></p>
+        <script type="application/javascript">
+          function showComments() {
+            // Remove button
+var disqusButton = document.getElementById('disqus-button');
+disqusButton.parentNode.removeChild(disqusButton); 
+// Un-hide comments
+var disqusComments = document.getElementById('disqus-comments');
+disqusComments.style.display = 'block'; 
+          }
+        </script>
+      
+      <noscript>Enable JavaScript to view Disqus comments.</noscript>
+    </div>
+  
+</div>
+
+
+          <footer role="contentinfo">
+  
+  
+    Made with <a href="https://gohugo.io/">Hugo</a>. Themed by <a href="https://github.com/zwbetz-gh/cupper-hugo-theme">Cupper</a>. Analytics in comming.
+  
+</footer>
+
+        </div>
+      </div>
+    </div>
+    <script src="http://localhost:1313/js/prism.js"></script>
+<script src="http://localhost:1313/js/dom-scripts.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>

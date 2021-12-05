@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/protection/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "Protection Mechanism on 80386",
+      "headline" : "Protection Mechanism on 80386",
+      "description" : "80386 下的保护模式划为5个部分：\n 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制  事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。\n段级别的保护 段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。\n 段描述符格式\n 上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。\n当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。\n段机制的类型检查 描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。\n  在数据段的 writable bit 代表正在执行的指令可否写入到该段。\n  代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。\n一个可读可执行的段可以被两种形式加载：\n 通过 CS 寄存器，例如 ljmp cs:addr 加载到通用段寄存器中    类型检查会在两种情况下进行：\n  当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：\n CS 寄存器只能加载可执行的段 不可读但是可执行的段不能被加载到数据段寄存器中 只有科协的数据段能被加载到SS寄存器    当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：\n 不能尝试往可执行的段中写入 不能往w位未置位的数据段中写入 不能读取r位未置位的可执行段（数据段默认可读）    段机制的界限检查 故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2019",
+      "datePublished": "2019-11-11 12:34:17 \u002b0800 CST",
+      "dateModified" : "2019-11-11 12:34:17 \u002b0800 CST",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/protection\/",
+      "keywords" : [  ]
+  }
+</script>
+<title>Protection Mechanism on 80386</title>
+  <meta property="og:title" content="Protection Mechanism on 80386" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="80386 下的保护模式划为5个部分：
+ 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制  事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。
+段级别的保护 段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。
+ 段描述符格式
+ 上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。
+当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。
+段机制的类型检查 描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。
+  在数据段的 writable bit 代表正在执行的指令可否写入到该段。
+  代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。
+一个可读可执行的段可以被两种形式加载：
+ 通过 CS 寄存器，例如 ljmp cs:addr 加载到通用段寄存器中    类型检查会在两种情况下进行：
+  当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：
+ CS 寄存器只能加载可执行的段 不可读但是可执行的段不能被加载到数据段寄存器中 只有科协的数据段能被加载到SS寄存器    当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：
+ 不能尝试往可执行的段中写入 不能往w位未置位的数据段中写入 不能读取r位未置位的可执行段（数据段默认可读）    段机制的界限检查 故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。" />
+  <meta name="description" content="80386 下的保护模式划为5个部分：
+ 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制  事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。
+段级别的保护 段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。
+ 段描述符格式
+ 上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。
+当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。
+段机制的类型检查 描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。
+  在数据段的 writable bit 代表正在执行的指令可否写入到该段。
+  代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。
+一个可读可执行的段可以被两种形式加载：
+ 通过 CS 寄存器，例如 ljmp cs:addr 加载到通用段寄存器中    类型检查会在两种情况下进行：
+  当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：
+ CS 寄存器只能加载可执行的段 不可读但是可执行的段不能被加载到数据段寄存器中 只有科协的数据段能被加载到SS寄存器    当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：
+ 不能尝试往可执行的段中写入 不能往w位未置位的数据段中写入 不能读取r位未置位的可执行段（数据段默认可读）    段机制的界限检查 故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">Protection Mechanism on 80386</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2019-11-11 12:34:17 CST">
+                11 Nov 2019
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <p>80386 下的保护模式划为5个部分：</p>
+<ol>
+<li>类型检查</li>
+<li>界限检查</li>
+<li>可寻址域的限制</li>
+<li>过程调用的限制</li>
+<li>指令集的限制</li>
+</ol>
+<p>事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。</p>
+<h1 id="段级别的保护">段级别的保护</h1>
+<p>段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。</p>
+<blockquote>
+<p>段描述符格式</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-1.gif" alt="fig6-1.gif"></p>
+<p>上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。</p>
+<p>当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register.png" alt="segment-register.png"></p>
+<h2 id="段机制的类型检查">段机制的类型检查</h2>
+<p>描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。</p>
+<ul>
+<li>
+<p>在数据段的 writable bit 代表正在执行的指令可否写入到该段。</p>
+</li>
+<li>
+<p>代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。</p>
+<p>一个可读可执行的段可以被两种形式加载：</p>
+<ol>
+<li>通过 CS 寄存器，例如 ljmp cs:addr</li>
+<li>加载到通用段寄存器中</li>
+</ol>
+</li>
+</ul>
+<p>类型检查会在两种情况下进行：</p>
+<ol>
+<li>
+<p>当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：</p>
+<ul>
+<li>CS 寄存器只能加载可执行的段</li>
+<li>不可读但是可执行的段不能被加载到数据段寄存器中</li>
+<li>只有科协的数据段能被加载到SS寄存器</li>
+</ul>
+</li>
+<li>
+<p>当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：</p>
+<ul>
+<li>不能尝试往可执行的段中写入</li>
+<li>不能往w位未置位的数据段中写入</li>
+<li>不能读取r位未置位的可执行段（数据段默认可读）</li>
+</ul>
+</li>
+</ol>
+<h2 id="段机制的界限检查">段机制的界限检查</h2>
+<p>故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</p>
+<blockquote>
+<p>bit 组合</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/table6-2.png" alt="table6-2.png"></p>
+<p>除去 expand-down 类型的数据段，下列这些情况会产生一般保护错误（general-protection exception）：</p>
+<ol>
+<li>尝试访问1字节的地址，地址大于界限</li>
+<li>尝试访问1字的地址，地址大于等于界限</li>
+<li>尝试访问2字的地址，地址大于等于界限值-2</li>
+</ol>
+<p>界限的检查能捕获一些程序的运行错误例如非法的指针计算。这些错误会在刚刚发生时被检测到，所以检测这些错误更加简单，如果没有这个机制，这些错误可能会影响到其他的部件，到那时候再去追踪就难多了。</p>
+<h3 id="特权等级">特权等级</h3>
+<p>特权等级分为四级，但是基本只会用到两级，最高特权级别 ring 0和最低的特权级别 ring 3。</p>
+<p><img src="/images/operating-system/6.828/protection/ring.png" alt="ring.png"></p>
+<p>特权等级在以下这些地方展现：</p>
+<ul>
+<li>
+<p>CPL(Current privilege level): CPL 代表当前正在运行的程序或者任务的权限等级，存储在CS或者SS段寄存器的第0和1位。通常CPL和当前运行的代码段的等级相同，当CPL发生改变时，代表程序在不同特权等级之间的控制转移。</p>
+<p>但是当代码段描述符的 conforming 位置位时，情况有所不同，conforming 置位的代码段能被特权等级与其相等或者更低权限的任务所访问，并且，在执行 conforming 置位的代码时，CPL不会发生改变，所以通常 conforming 代码段用于低权限任务需要执行数学函数或者异常处理函数等情况。</p>
+</li>
+<li>
+<p>DPL(descriptor privilege level): 在段描述符或者门描述符中存在一个域用于表明这个描述符的特权等级，当正在执行的代码段尝试去访问一个段或者门时，CPL和RPL就会与DPL进行比较，DPL根据段或门的类型不同会有不同的解释方法：</p>
+<ul>
+<li>数据段：DPL代表可以访问该段的最低权限，比如数据段的DPL位1，仅只有程序运行在CPL为0或1时才能访问该段。</li>
+<li>非 conforming 的代码段（不使用 call gate）：DPL代表程序必须运行在的特权等级（即使特权等级大于DPL也不行）</li>
+<li>Call gate：DPL代表可以访问该段的最低权限，同数据段</li>
+<li>使用call gate 访问代码段：DPL代表可以访问该段的最高权限，比如某个代码段的DPL为2，运行在特权等级 0 或者 1 的程序无法访问。</li>
+<li>TSS：DPL代表可以访问该段的最低权限，同数据段</li>
+</ul>
+</li>
+<li>
+<p>RPL(Requested privilege level): RPL 是存储在段选择子第0 和 1 位，处理器在检查特权等级时会同时检查 CPL 和 RPL。即使程序运行的特权等级 (CPL) 已经满足了相应段的特权等级 (DPL)，如果 RPL 不能满足 DPL 的话，访问段的操作仍然会被拒绝。这意味着，如果 RPL 树枝上大于 CPL，那么RPL将会作为尝试去访问相应段的特权等级，反之亦然。RPL 可以被保证 特权代码不会代表应用程序去访问一个该应用程序并没有权限的段。</p>
+<p><img src="/images/operating-system/6.828/protection/segment-register-format.png" alt="segment-register-format.png"></p>
+<p>关于 RPL 的作用在  Intel® 64 Developer’s Manual : <strong>4.10.4 Checking Caller Access Privileges (ARPL Instruction)</strong> 里面有几个例子进行说明。</p>
+<p>当一个应用程序过程(the calling procedure)调用操作系统 的一个过程(the called procedure)时，在执行操作系统过程中会将特权等级设置为应用程序的段选择子的 RPL。当操作系统尝试去访问相关的段时，处理器会对 RPL 而不是特权等级值更低的 CPL（此时为0）进行特权等级检查。</p>
+<p><img src="/images/operating-system/6.828/protection/rpl.png" alt="rpl.png"></p>
+<p>在上图中，应用程序正运行在代码段A中，处理数据段D1中的数据，此时在数据段D1中指向了一个特权数据结构（在数据段D中的操作系统数据结构，数据段的 DPL 为0）。因为 CPL 的值大于特权等级值，权限不足以访问。</p>
+<p>为了访问到数据段 D，应用程序执行了一个调用，并且通过栈传递了段选择子 D1（存在RPL） 到操作系统。在传递段选择子前，应用程序会将段选择子设置为当前的 CPL （SS或者CS中）。当通过门 C （运行在特权等级0）利用段选择子 D1 （栈上的值）访问数据段 D时，由于D1的RPL要大于DPL，访问数据段 D 的操作被拒绝。</p>
+<p>该部分后面还有一种情况，通过门调用时，由于应用程序可以修改栈上的段选择器中的 RPL 值（对应图中数据段D2），这会导致保护机制被破坏，于是有了 ARPL 指令对栈上的 RPL 和调用此操作系统过程的程序的 CPL 进行比较。</p>
+</li>
+</ul>
+<h2 id="段机制的数据的访问限制">段机制的数据的访问限制</h2>
+<p>为了访问到在内存中的操作数，程序必须将数据段加载到数据段(DS, ES, FS, GS, SS)寄存器中。处理器会在访问数据段时自动比较特权等级。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-3.gif" alt="fig6-3.gif"></p>
+<p>数据段寄存器能加载一个数据段的前提是DPL大于RPL和CPL。</p>
+<h2 id="段机制的控制转移限制">段机制的控制转移限制</h2>
+<p>控制转移往往伴随着JMP, CALL, RET, INT, IRET指令以及中断和异常机制。在同一个代码段的JMP, CALL, RET仅仅只有段界限检查。远距离的调用或者跳转会引用到其他段，因此，处理器会进行特权检查。</p>
+<p>例如：ljmp   $0x8,$0x7c32，$0x8为段寄存器值。</p>
+<p>JMP 或者 CALL 会通过两种方式引用另外一个段：</p>
+<ol>
+<li>操作数中存在另一个可执行的代码段描述符</li>
+<li>操作数中有一个调用门描述符</li>
+</ol>
+<p>一般情况下，处理器正在运行的代码段的 DPL 和 CPL 相等，但是如果代码段的 conforming 位置位时，CPL 可能大于 DPL。所以只有当 DPL 和 CPL 相等时或者代码段的conforming 位置位并且 DPL 小于等于 CPL 时，JMP和CALL能够直接从原先的代码段跳转到另一个代码段。</p>
+<blockquote>
+<p>代码段的检查</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-4.gif" alt="fig6-4.gif"></p>
+<h3 id="门限描述符对过程调用的保护">门限描述符对过程调用的保护</h3>
+<p>一共有4中描述符用于在不同特权等级间进行跳转：</p>
+<ul>
+<li>call gate</li>
+<li>Trap gates</li>
+<li>Interrupt gates</li>
+<li>Task gates</li>
+</ul>
+<p>call gate 和普通描述符一样，定义在GDT或者LDT中，它定义了一个过程调用的入口和调用该过程所需要的特权等级。call gate描述符对于jmp和call指令来说和代码段的处理方式一样。</p>
+<blockquote>
+<p>call gate</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-5.gif" alt="fig6-5.gif"></p>
+<p>selector 和 offset 域能形成一个到调用过程入口的指针，call gate 保证能跳转到另一个段的合法地址，而不是跳转到一个过程调用的中间或者&hellip;.一条指令的中间。一条指令的控制转移的偏移地址不会在call gate跳转中使用（前面那种跳转到中途的情况）。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-6.gif" alt="fig6-6.gif"></p>
+<p>执行指令时，首先通过操作数中的段选择器得到门限描述符的偏移，在门限描述符中的 selector 字段获得目标调用过程的代码段描述符，执行过程调用，在这过程中，一共涉及到4个特权等级，CPL，RPL，门限的 DPL 和目标代码段的 DPL。</p>
+<p><img src="/images/operating-system/6.828/protection/fig6-7.gif" alt="fig6-7.gif"></p>
+<p>通过 gate 可以实现不同特权等级的转移，但是只有通过 call 指令能切换到更低的特权等级上，而 jmp 指令只能在同特权等级之间跳转（不考虑comforming 代码段）。</p>
+<p>对于 jmp 指令，要求：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL = CPL
+</code></pre></div><p>对于 call 指令或者 jmp 目的代码段为 comforming：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL &lt;= CPL
+</code></pre></div><h3 id="栈切换">栈切换</h3>
+<p>为了维护系统的整体性，任意特权等级拥有各自独立的栈，处理器通过TSS（task state segment）定位这些不同特权等级的栈。比如通过call gate切换特权等级时，新的栈指针将会从tss中读取出来。</p>
+<blockquote>
+<p>TSS</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-8.gif" alt="fig6-8.gif"></p>
+<p>处理器会利用目标代码段的DPL找到对应特权等级（PL 0，1，2）的栈，并且 DPL 必须与 CPL 相等。TSS 中没有对应特权等级为3的栈，因为特权等级3的过程不能被其他任意低于其特权等级的过程调用。每个栈都必须有足够的空间去存储 ss:esp，返回地址，参数等。</p>
+<p>为了在不同特权等级之间调用过程，处理器必须将调用者的参数从旧的栈帧中拷贝到新特权等级的栈帧中去。call gate 描述符中的 count 字段代表多少双字（doublewords）需要拷贝，如果count为0，拷贝就不会发生。</p>
+<blockquote>
+<p>切换特权等级的栈切换：</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-9.gif" alt="fig6-9.gif"></p>
+<ol>
+<li>新栈检查是否有足够的空间容纳参数等，否则产生一个栈错误，错误代码设置为0.</li>
+<li>将旧栈SS:ESP压入新栈（占用两个双字）</li>
+<li>复制剩下的参数</li>
+<li>调用者的call的下一条指令地址以 CS:EIP 压入新栈</li>
+<li>将新的 SS:ESP 指向新栈栈顶</li>
+</ol>
+<h3 id="从过程调用中返回ret">从过程调用中返回（ret）</h3>
+<p>和 call 指令类似，同一个代码段之间的 ret 只有界限检查。对于段间的 ret，首先会弹出由 call 压入的返回地址，通常情况下时合法的，但是也有可能由于调用过程替换掉了这个地址或者没有很好地维护栈，这个返回地址也是不可信的，所以权限检查还是会有的。</p>
+<p>段之间的 ret 只能返回到与其相等或者更高特权值的等级去，当栈上保存的 CS 中的 RPL 大于当前的 CPL 时，特权等级间的控制转移就会发生：</p>
+<ol>
+<li>检查下表中的内容，加载栈上的 CS:EIP 和 SS:ESP 到相应寄存器。</li>
+<li>原先的栈指针会被 ret 指令做相应的调整，此时 esp 的值不会进行界限检查，如果 esp 实在超出了界限，那么下次对栈的操作将会产生错误。</li>
+<li>基础段寄存器的特权值将会被检查，如果这些段寄存器引用了那些 DPL 大于新 CPL（栈上保存的CS得到） 的段，那么段寄存器就会加载 null selector，即 GDT 中的一个 null 描述符（INDEX = 0, TI = 0）。并且，此时不会产生异常，直到下次操作相应段内存时产生一般保护异常。</li>
+</ol>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">SF = Stack Fault
+GP = General Protection Exception
+NP = Segment-Not-Present Exception
+
+Type of Check                                  Exception   Error Code
+
+ESP is within current SS segment               SF          0
+ESP + 7 is within current SS segment           SF          0
+RPL of return CS is greater than CPL           GP          Return CS
+Return CS selector is not null                 GP          Return CS
+Return CS segment is within descriptor
+  table limit                                  GP          Return CS
+Return CS descriptor is a code segment         GP          Return CS
+Return CS segment is present                   NP          Return CS
+DPL of return nonconforming code
+  segment = RPL of return CS, or DPL of
+  return conforming code segment &lt;= RPL
+  of return CS                                 GP          Return CS
+ESP + N + 15 is within SS segment
+N   Immediate Operand of RET N Instruction     SF          Return SS
+SS selector at ESP + N + 12 is not null        GP          Return SS
+SS selector at ESP + N + 12 is within
+  descriptor table limit                       GP          Return SS
+SS descriptor is writable data segment         GP          Return SS
+SS segment is present                          SF          Return SS
+Saved SS segment DPL = RPL of saved
+  CS                                           GP          Return SS
+Saved SS selector RPL = Saved SS
+  segment DPL                                  GP          Return SS
+</code></pre></div><h2 id="指令集的限制">指令集的限制</h2>
+<p>影响到保护机制的指令分为两类，特权指令，通常被用于系统控制；敏感指令，通常被用作 IO或者 IO相关的操作。</p>
+<p>特权指令如下：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">CLTS -- Clear Task-Switched Flag
+HLT -- Halt Processor
+LGDT -- Load GDL Register
+LIDT -- Load IDT Register
+LLDT -- Load LDT Register
+LMSW -- Load Machine Status Word
+LTR -- Load Task Register
+MOV to/from CRn -- Move to Control Register n
+MOV to /from DRn -- Move to Debug Register n
+MOV to/from TRn -- Move to Test Register n
+</code></pre></div><h1 id="页级别保护">页级别保护</h1>
+<p>页级别的保护较为简单，分成有两种：</p>
+<ol>
+<li>对可寻址的内存进行限制</li>
+<li>类型检查</li>
+</ol>
+<h2 id="页机制中的寻址限制">页机制中的寻址限制</h2>
+<blockquote>
+<p>PDE/PTE</p>
+</blockquote>
+<p><img src="/images/operating-system/6.828/protection/fig6-10.gif" alt="fig6-10.gif"></p>
+<p>在页机制中，特权等级被分为了两级：</p>
+<ol>
+<li>Supervisor level (U/S=0) ：对应操作系统的软件和相关数据</li>
+<li>User level (U/S=1)：对于应用程序级别的过程和数据</li>
+</ol>
+<p>页机制中的特权等级和段机制中的 CPL 相关联，CPL 处于 ring 0,1,2 代表处理器执行在 supervisor level， CPL 处于 ring 3 代表执行在 user level。</p>
+<p>当处理器执行在 user level ，只能寻址那些属于用户级别的页，如果处于  supervisor level ，那么处理器能够寻址所有的页。</p>
+<h2 id="页机制中的类型检查">页机制中的类型检查</h2>
+<p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论。处于 user 级别时，对于supervisor 的所有的页都是不可读写的。</p>
+<p><strong>参考资料</strong>：</p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-1.pdf">Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</a></p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/c06.htm">6.828 readings, Protection</a></p>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

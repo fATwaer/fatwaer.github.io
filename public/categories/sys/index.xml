@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>sys on Pok</title>
+    <link>/categories/sys/</link>
+    <description>Recent content in sys on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 Apr 2021 13:09:26 +0800</lastBuildDate><atom:link href="/categories/sys/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>google benchmark：利用 perf 工具查看程序热点</title>
+      <link>/posts/sys/google-benchmark/</link>
+      <pubDate>Fri, 30 Apr 2021 13:09:26 +0800</pubDate>
+      
+      <guid>/posts/sys/google-benchmark/</guid>
+      <description>前言 准确的度量系统的开销是很重要的, 系统级别比较出名的是 Latency Numbers Every Programmer Should Know, 而在各种变成语言中, 需要依赖基准测试来判断程序实际的耗时。
+Latency Comparison Numbers (~2012) ---------------------------------- L1 cache reference 0.5 ns Branch mispredict 5 ns L2 cache reference 7 ns 14x L1 cache Mutex lock/unlock 25 ns Main memory reference 100 ns 20x L2 cache, 200x L1 cache Compress 1K bytes with Zippy 3,000 ns 3 us Send 1K bytes over 1 Gbps network 10,000 ns 10 us Read 4K randomly from SSD* 150,000 ns 150 us ~1GB/sec SSD Read 1 MB sequentially from memory 250,000 ns 250 us Round trip within same datacenter 500,000 ns 500 us Read 1 MB sequentially from SSD* 1,000,000 ns 1,000 us 1 ms ~1GB/sec SSD, 4X memory Disk seek 10,000,000 ns 10,000 us 10 ms 20x datacenter roundtrip Read 1 MB sequentially from disk 20,000,000 ns 20,000 us 20 ms 80x memory, 20X SSD Send packet CA-&amp;gt;Netherlands-&amp;gt;CA 150,000,000 ns 150,000 us 150 ms Notes ----- 1 ns = 10^-9 seconds 1 us = 10^-6 seconds = 1,000 ns 1 ms = 10^-3 seconds = 1,000 us = 1,000,000 ns Credit ------ By Jeff Dean: http://research.</description>
+    </item>
+    
+    <item>
+      <title>利用Jemalloc进行内存泄漏的调试</title>
+      <link>/posts/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/</link>
+      <pubDate>Fri, 18 Dec 2020 22:56:03 +0800</pubDate>
+      
+      <guid>/posts/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/</guid>
+      <description>内存不符预期的不断上涨，可能的原因是内存泄漏，例如new出来的对象未进行delete就重新进行复制，使得之前分配的内存块被悬空，应用程序没办法访问到那部分内存，并且也没有办法释放；在C++中，STL容器都会有clear()方法并且伴随RAII原则对容器里元素进行清理，但除了STL还有可能是字符串不断地在进行累加，不断的分配出新的内存块存放增长的字符串。
+在cppzh 群 内看到讨论利用jemalloc对内存占用的调试，能够清楚的 dump 出内存的使用情况，便尝试了下。
+安装 # 用于生成 pdf yum -y install graphviz ghostscript wget https://github.com/jemalloc/jemalloc/archive/5.1.0.tar.gz tar zxvf 5.1.0.tar.gz cd jemalloc-5.1.0/ ./autogen.sh ./configure --prefix=/usr/local/jemalloc-5.1.0 --enable-prof make -j make install 程序退出时的用例和检查 # run MALLOC_CONF=prof_leak:true,lg_prof_sample:0,prof_final:true LD_PRELOAD=/usr/local/jemalloc-5.1.0/lib/libjemalloc.so.2 ./a.out # 查看内存占用情况 /usr/local/jemalloc-5.1.0/bin/jeprof a.out jeprof.34447.0.f.heap &amp;gt; top 长时间运行-测试用例 对于长时间运行的程序，例如服务端程序通常不能够退出，jemalloc提供每增长指定大小进行一次内存dump。
+下面这个例子mock长时间运行的程序，分别测试顺序容器(vector)和关联容器(map)，string 和最基本的new，并且每100ms执行1000次，代表服务端的运行情况。
+#include &amp;lt;iostream&amp;gt;#include &amp;lt;string&amp;gt;#include &amp;lt;vector&amp;gt;#include &amp;lt;map&amp;gt;#include &amp;lt;chrono&amp;gt;#include &amp;lt;thread&amp;gt; int main() { std::vector&amp;lt;int&amp;gt; vec; std::map&amp;lt;int, int&amp;gt; mp; std::string s; for (;;) { for (int i = 0; i &amp;lt; 1000; ++i) { vec.</description>
+    </item>
+    
+    <item>
+      <title>gRPC：复用CompletionQueue</title>
+      <link>/posts/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/</link>
+      <pubDate>Mon, 19 Oct 2020 22:56:03 +0800</pubDate>
+      
+      <guid>/posts/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/</guid>
+      <description>异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。
+异步请求流程应该如下：
+在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，
+// struct for keeping state and data information  struct AsyncClientCall { // Container for the data we expect from the server.  HelloReply reply; // Context for the client. It could be used to convey extra information to  // the server and/or tweak certain RPC behaviors.  ClientContext context; // Storage for the status of the RPC upon completion.  Status status; std::unique_ptr&amp;lt;ClientAsyncResponseReader&amp;lt;HelloReply&amp;gt;&amp;gt; response_reader; }; void SayHello(const std::string&amp;amp; user) { // Data we are sending to the server.</description>
+    </item>
+    
+    <item>
+      <title>如何进行调试以及性能剖析</title>
+      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/</link>
+      <pubDate>Fri, 20 Mar 2020 16:01:24 +0800</pubDate>
+      
+      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/</guid>
+      <description>“The most effective debugging tool is still careful thought, coupled with judiciously placed print statements” — Brian Kernighan, Unix for Beginners.
+ 最朴素的debug方法还是使用print，并且在合适的地方插入print语句，过多的日志信息反而会引起混乱，使debug效率降低。
+日志分级 根据事情的验证程度，可以将事件的严重情况分为：
+ INFO WARNING ERROR CRITICAL  每当输出日志的时候，在响应事件前面加上前缀，相关的语言应该都有现成的库，根据需求进行选取即可。
+对于一个事件运行的程序，比如daemon进程，日志输出在响应文件夹，利用grep就能很好的查询不同严重程度的事件的发生情况。
+日志的位置通常在/var/log目录下，例如nginx的日志文件就在/var/log/nginx目录下，系统服务systemd的地址文件就在/var/log/journal目录下。
+日志除了写入文件外，还能通过相关配置写入到套接字/远程服务器上，对日志进行集中处理或存储。
+其他： - 交互式日志查看工具: lnav
+debug 工具 除了GNU项目中的gdb和python自带的pdb，还有一些能在debug过程中自动显示相关变量以及寄存器值的debug工具：
+ pwndb lldb  backtrace 利用strace可以查询一些系统调用的次数，例如
+store : ~/go &amp;gt;&amp;gt; ls bin pkg src store : ~/go &amp;gt;&amp;gt; sudo strace -e lstat ls -l &amp;gt; /dev/null lstat(&amp;#34;pkg&amp;#34;, {st_mode=S_IFDIR|0755, st_size=4096, .</description>
+    </item>
+    
+    <item>
+      <title>Golang原生RPC与gPRC</title>
+      <link>/posts/sys/rpc-and-grpc/</link>
+      <pubDate>Wed, 26 Feb 2020 22:19:35 +0000</pubDate>
+      
+      <guid>/posts/sys/rpc-and-grpc/</guid>
+      <description>前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。
+RPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。
+虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。
+RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。
+原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。
+客户端代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net/rpc&amp;#34; ) // // Common RPC request/reply definitions //  const ( OK = &amp;#34;OK&amp;#34; ErrNoKey = &amp;#34;ErrNoKey&amp;#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } // // Client //  func connect() *rpc.</description>
+    </item>
+    
+    <item>
+      <title>6.824 Lab3 Fault-tolerant Key/Value Service</title>
+      <link>/posts/sys/kv-server/</link>
+      <pubDate>Wed, 12 Feb 2020 10:42:40 +0800</pubDate>
+      
+      <guid>/posts/sys/kv-server/</guid>
+      <description>强一致性Key/Value服务 其实在写完Raft后，K/V的接口已经比较明显了，只需要将操作写入Raft entry的Command内，然后等待Raft的同步，再应用到状态机（例如map[string]string）即可，但是实际上在跑3A测试的时候还是出现了很多问题。
+并发(Concurrency) 虽然保证同一个客户端同时只会发送一个Put或者Get请求，但是在面对多个客户端时，如何处理这些请求，并且将这些请求写入到Raft的log entry中。老生常谈的问题，但是在这里处理比较简单，在Raft开始协调一个新的共识(Agreement)的时候,也就是start()，已经使用了mutex来附加新的entry到log中。
+网络不可靠(Unreliable) 这里是在3A碰到的第一个要认真考虑的点，如果一个RPC请求（比如append “1”-&amp;gt;&amp;ldquo;2&amp;rdquo;）经过了慢速网络而触发了重传，导致这个RPC被调用了两次，所以在Hint中有提醒，让client的每一个请求都有一个独一无二的ID来保证每个操作只能被执行一次。而如何使得每个操作只会被执行一次，并保证幂等性，还需要考虑到接下来的几个情况。
+服务器主机崩溃(Crash) 服务器主机崩溃的情景里要考虑的不是网络问题，而是当发生了主机崩溃，往往代表着新的一轮选举和新的leader诞生。所以当真正发生leader切换的时候，客户端需要做的事情是将当前的RPC重新发往新的leader。另外一点是持久化问题，这个会在快照机制中遇到一些需要思考的点。
+网络分区(Partition) 由于是实现一个强一致性的KV服务，在并发条件下，每一个Get/Put/Append操作都会被按顺序执行一次，而每次调用都需要监控之前的操作序列所做的操作所带来的影响，就好像在调用前，前面的所有的调用已经完成，通常称其为线性化。
+最先碰到网络分区和检查一致性是TestOnePartition3A，这个测试中做了如下几件事情：
+ 创建一个5个server的kv服务器集群 客户端请求: Put:1 -&amp;gt; 13 建立网络分区，3台主机处于大多数(majority)，另外两台主机(保证有一台是leader)处于少数(minority)。 往majority中提交Put:1-&amp;gt;14 检查majority 往minority中提交操作Put:1 -&amp;gt; 15和Get:1 检测6中两个操作是否会成功 往majority提交Put:1-&amp;gt;16并检查 合并两个分区，检查最后Key 1的值。  最后的值应该为15，在这里碰到的一致性检查是关于第六步Get操作，从Raft可以知道在minority中提交的操作是不会被commit的，更不会被应用到状态机，此时minority中的key 1的值是13，相比于majority中的14，是一个过期的值，所以6步中的Get RPC在分区合并前不应该返回。
+当分区合并后，minority的leader会被majority中的新leader的心跳设置为follower，所以旧leader的kv服务应该检测到自己不再是leader而返回现存的RPC：Put:1 -&amp;gt; 15和Get:1，使客户端重定向到新的leader。
+而Get什么时候返回？这个在Hint中也提到了，最方便的做法就是将Get也塞入raft的log entry内，在这种情境下，处于minority分区的Get操作就会被读取到过期的数据。
+标识操作(UniqueID) 如何为每一个操作定独一无二ID？我的做法是每个操作维护三个变量以及新加一个RPC用于客户端注册：
+ seriesN：每个客户端初始化为-1，每执行一次Get/Put/Append调用前自增1。 Client ID：初始化为-1，用于辨识客户端，由kv服务端来分配，客户端进行维护。 Server ID：代表分配Client ID的服务端，用于解决同一个操作因为leader切换而造成ID冲突。  每当启用一个新的客户端并且提交操作时，先自增seriesN，如果Client ID为-1，就会向服务端注册自己，即请求一个可用的Client ID，并设置Server ID。每当一个操作在raft中达成共识时，应用到状态机后，应该记录Cid和Sid的最大值，用于防止重复的操作被提交到状态机。
+当出现小于当前seriesN的操作出现时，需要返回一个duplicate的错误告知客户端。
+考虑下面这种情景：
+s1 | x = 0 | x += 1 同步到其他server s2 | x = 0 | x += 1 s3 | x = 0 | x += 1 s4 | x = 0 | x += 1 s5 | x = 0 | nil   leader s1 提交了一个 x += 1 的操作后，并同步到了s2, s3, s4，然后发生分区。 s2 当选新一轮的leader，并同步完成 s1 恢复到该分区中，被s2的心跳转变为follower client对s1的rpc被返回，重定向到s2，重复的op被提交。  这里也可以通过比较相同clinetID的seriesN来决定是否应用到状态机，但是如果第一步中，x += 1 并没有提交到s1以外的服务器，s2服务器当选leader后先为另一个client分配了相同的client ID，在分区合并前提交过几次操作，那么 x += 1的操作将会被驳回，所以这里需要server ID处理命名空间的冲突。</description>
+    </item>
+    
+    <item>
+      <title>Protection Mechanism on 80386</title>
+      <link>/posts/sys/protection/</link>
+      <pubDate>Mon, 11 Nov 2019 12:34:17 +0800</pubDate>
+      
+      <guid>/posts/sys/protection/</guid>
+      <description>80386 下的保护模式划为5个部分：
+ 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制  事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。
+段级别的保护 段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。
+ 段描述符格式
+ 上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。
+当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。
+段机制的类型检查 描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。
+  在数据段的 writable bit 代表正在执行的指令可否写入到该段。
+  代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。
+一个可读可执行的段可以被两种形式加载：
+ 通过 CS 寄存器，例如 ljmp cs:addr 加载到通用段寄存器中    类型检查会在两种情况下进行：
+  当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：
+ CS 寄存器只能加载可执行的段 不可读但是可执行的段不能被加载到数据段寄存器中 只有科协的数据段能被加载到SS寄存器    当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：
+ 不能尝试往可执行的段中写入 不能往w位未置位的数据段中写入 不能读取r位未置位的可执行段（数据段默认可读）    段机制的界限检查 故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</description>
+    </item>
+    
+    <item>
+      <title>6.824 Notes：MapReduce、GFS、Raft</title>
+      <link>/posts/course-notes/6.824-notesmapreducegfsraft/</link>
+      <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6.824-notesmapreducegfsraft/</guid>
+      <description>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。
+分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。
+分布式系统的优点是能够组织物理上分离的实体，通过isolation取得系统安全，通过replication获取容错机制，通过并行CPUs/mem/disk/net来比例提升系统速度。
+当然也有些缺点，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。
+MapReduce(2004) input is divided into M files [diagram: maps generate rows of K-V pairs, reduces consume columns] Input1 -&amp;gt; Map -&amp;gt; a,1 b,1 c,1 Input2 -&amp;gt; Map -&amp;gt; b,1 Input3 -&amp;gt; Map -&amp;gt; a,1 c,1 | | | | | -&amp;gt; Reduce -&amp;gt; c,2 | -----&amp;gt; Reduce -&amp;gt; b,2 ---------&amp;gt; Reduce -&amp;gt; a,2  对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 &amp;lt;k2, v2&amp;gt;键值对(图中的一行)作为中间数据。
+MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 &amp;lt;k2, v3&amp;gt; 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：</description>
+    </item>
+    
+    <item>
+      <title>Data-Intensive System</title>
+      <link>/posts/sys/data-intensive-system/</link>
+      <pubDate>Fri, 11 Jan 2019 11:57:29 +0000</pubDate>
+      
+      <guid>/posts/sys/data-intensive-system/</guid>
+      <description>数据组件   消息队列
+Redis: https://github.com/antirez/redis
+Apache Kafka
+  主数据库
+//todo
+  全文索引
+Elasticsearch: https://github.com/elastic/elasticsearch
+Apache Solr
+  内存缓存
+Memcached: https://github.com/memcached/memcached
+  </description>
+    </item>
+    
+    <item>
+      <title>Effective Go</title>
+      <link>/posts/sys/effective-go/</link>
+      <pubDate>Thu, 10 Jan 2019 12:48:14 +0000</pubDate>
+      
+      <guid>/posts/sys/effective-go/</guid>
+      <description>goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &amp;lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &amp;lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &amp;lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &amp;lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &amp;lt;- 1 go func() { process(req) &amp;lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</description>
+    </item>
+    
+    <item>
+      <title>线程同步</title>
+      <link>/posts/sys/thread-synchronization/</link>
+      <pubDate>Mon, 15 Oct 2018 08:36:39 +0000</pubDate>
+      
+      <guid>/posts/sys/thread-synchronization/</guid>
+      <description>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。
+在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。
+struct job { struct job *j_next; struct job *j_prev; pthread_t j_id; /** job */ int (*j_add)(int); int j_num; }; 然后写一个简单的作业函数，完成j_num的累加工作，已经初始化结构体job的作业分配函数，并且将这个作业加入到作业队列中去：
+ 累加函数  int add(int i) { int sum; sum = 0; while (i) sum += i--; return sum; }  作业分配  struct job * job_alloc(struct queue *qp, int num) { struct job *jp; if ((jp = (struct job *)malloc(sizeof(struct job))) == NULL) return (NULL); jp-&amp;gt;j_add = add; jp-&amp;gt;j_num = num; jp-&amp;gt;j_id = pthread_self(); job_insert(qp, jp); return (jp); } 然后可以创建一个线程去完成作业分配工作，生成一个待执行的作业队列，虽然在这里使用主线程来创建会更好。</description>
+    </item>
+    
+    <item>
+      <title>apue-file and directory</title>
+      <link>/posts/sys/apue-file-and-directory/</link>
+      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+      
+      <guid>/posts/sys/apue-file-and-directory/</guid>
+      <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取这些文件的特殊信息。 文件类型包括普通文件，目录文件，块特殊文件,字符特殊文件，ＦＩＦＯ，套接字，符号链接。可以向函数(S_ISREG(), S_ISDIR()&amp;hellip;)传入结构体中的st_stat获取文件类型。
+文件访问权限  读权限允许我们读取目录，获得在该目录下的文件名列表，但是当某个目录是　路径名　的一部分的时候，必须有该目录的可执行权限。 在目录下创建一个文件，是需要对该目录有写权限和执行权限，删除一个文件也是一样，但是不需要对该文件有读写权限。  书上有一个关于access的实例，虽然有些文件可以不能通过可读权限，但是open()函数仍然能打开但是不能用read()等方法进行读操作。
+文件系统 现代unix和以前学的有些不同，其中JOS不支持inode，但是还是有相似的地方。重新翻了下前面的文章。文件系统都有一个boot块用来自启，紧接着的是叫做super块来描述文件系统的性质，例如目录地址，上次检错时间等。现代unix在之后的磁盘块中以超级块副本，配置信息，Ｉ节点图，bitmap，ｉ节点，数据块依次排开构成文件系统。JOS就要简化了一些，因为不存在ｉnode，所以数据和目录都是放在bitmap后的数据块中。
+硬链接是指inode的引用计数，当计数为０时才是真正从磁盘中擦去该目录项，保存在结构体stat的st_nlink中。
+inode节点包含了文件所有信息，文件类型，文件访问权限位，文件长度，指向文件数据块的指针（JOS中的FILE结构体）。
+$ mkdir test  该命令执行后，会创建一个新的文件目录，任何新目录创建后的引用数都为２．该test目录在创建后，父目录中的test指向该目录，以及test目录中的 .　也指向该目录，所以引用计数为２。
+以此类推，其父目录的引用计数应该为３，１是该目录的父目录的指向，２是该目录下.文件的指向，３是test文件中..的指向。所以没创建一个文件目录，该目录的引用计数都会增加１。
+unlink 当文件的引用计数为０时，就会从磁盘中擦去，像vim打开一个文件，填入内容保存后，就会在该目录下引用了这个普通文件，引用计数为１，使用unlink可以解除即删去该文件。
+当一个程序用open()打开一个文件后，马上调用unlink()，那么只有当进程关闭改文件或者进程终止的时候，文件内容才被删除。
+if (open(&amp;quot;tempfile&amp;quot;, O_RDWR) &amp;lt; 0) err_sys(&amp;quot;open error&amp;quot;); if (unlink(&amp;quot;tempfile&amp;quot;) &amp;lt; 0) err_sys(&amp;quot;unlink errorr&amp;quot;); 符号链接 符号链接是一种与硬链接相比较限制宽松的链接方式，不用接触到文件系统底层。
+使用命令ln来创建一个符号链接
+$ln -s ~/file file  然后使用 ls -l 查看文件
+lrwxrwxrwx 1 moonlight users 26 Aug 14 16:07 sp -&amp;gt; /home/moonlight/hotspot.py  可以看到对一个文件的链接，但是使用cat命令确并不存在。
+文件的时间 最后访问时间(st_atim) ： 文件数据最后被read操作的最后一次时间。</description>
+    </item>
+    
+    <item>
+      <title>apue-file I/O</title>
+      <link>/posts/sys/apue-chapter3/</link>
+      <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+      
+      <guid>/posts/sys/apue-chapter3/</guid>
+      <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言API的书籍，中间穿插了关于UNIX操作系统的知识，趁这个机会，利用6.828的知识，来提高下在linux下的编程水平，比完赛回来后，换成了arch linux，这是一款非常轻量级的操作系统，比较适合用来做自己的开发环境，另一方面也减少了游戏对自己的干扰。 本书第一章节主要讲的标准输入输出的一些基本操作，第二章提到了一些POSIX的标准，快速浏览一遍就好。
+学习笔记  文件描述符 文件描述符这个概念已经比较熟悉了，是一个 0~OPEN_MAX-1 的正整数，也是一个程序中方便操作的对象。一般来说，0代表的标准输入，1代表标准输出，2代表的是标准错误输出。
+open()标志位 O_RDONLY : 只读打开
+O_WRONLY : 只写打开，后面会发现如果尝试读取只写的文件会出现乱码
+O_RDWR : 读写打开
+O_EXEC : 只执行打开
+O_SEARCH : 用于搜索*
+以上是打开文件必须选择的标志
+O_APPEND : 附加
+O_CLOEXEC: 这个以前做过验证: 链接
+O_CREAT : 不存在就创建
+O_EXCL : 在创建文件时，如果指定了该标志位，文件存在，那么open返回失败值
+O_DIRECTORY: 目录判断
+O_NOFOLLOW: 需要是非链接文件
+O_NOBLOCK : 以非阻塞模式打开FIFO，块设备，字符特殊文件
+O_SYNC : 每次write都需要写入磁盘(同步写)，然后等待磁盘返回
+O_TRUNC: 打开已存在的文件，并且将长度截为0，也就是原来的文件内容不能再进行访问，文件变为新文件,需要有写权限。
+*O_TTY_INIT/O_DSYNC/O_RSYNC 还不清楚
+习题 writeup 3.3 在该题目中，fd1和fd2当然都指向同一个文件表，因为执行了dup操作，所以相关的文件描述符标志等信息都会被复制，对于fd3，我理解为这是打开的同一个文件，在自己尝试写出的代码中，可以反复打开同一个文件多次，但是不会指向同一个文件表项。
+首先打开两个相同的文件
+	fd1 = open(&amp;quot;file&amp;quot;, O_RDONLY); fd2 = open(&amp;quot;file&amp;quot;, O_RDONLY); 然后读取分别读取fd1，fd2几个字符，再用lseek()获取当前文件偏移。
+read(fd1, buf, 3); off1 = lseek(fd1, 0, SEEK_CUR); read(fd2, buf, 5); off2 = lseek(fd2, 0, SEEK_CUR); 结果显示这两个文件偏移off1和off2并没有相互叠加。</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab6-Network Driver(Final)</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</link>
+      <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</guid>
+      <description>这章节是完成一个网络驱动程序，现在系统中已经存在了文件系统里，所以可以添加一个网络栈，是基于82540EM芯片(E1000)。这章节内容比我想象中难，虽然之前概览了一下，但是实际做起来的时候涉及到的概念和知识超出我现在所掌握的。
+准备 git
+$ git add . $ git commit -am &amp;#34;lab 5 done&amp;#34; $ make handin $ git pull $ git checkout -b lab6 origin/lab6 $ git merge lab5 Auto-merging lib/fd.c Auto-merging kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c Auto-merging inc/lib.h Auto-merging fs/serv.c Merge made by the &amp;#39;recursive&amp;#39; strategy. boot/main.c | 1 - fs/bc.c | 22 +- fs/fs.c | 73 +- .... user/faultio.c | 2 +- user/forktree.c | 1 + user/sh.c | 9 +- user/testfile.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab5-File system, Spawn and Shell</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</link>
+      <pubDate>Sun, 20 May 2018 18:37:16 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</guid>
+      <description>这个实验主要是实现spawn库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库 ，使得足以在控制台上运行shell。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。
+准备 git
+ $ find . -name &amp;quot;*.swp&amp;quot; | xargs rm $ git add . $ git commit -m &amp;quot;lab4 done&amp;quot; $ git pull $ git merge lab4 Auto-merging kern/trap.c CONFLICT (content): Merge conflict in kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c CONFLICT (content): Merge conflict in kern/init.c Auto-merging kern/env.c CONFLICT (content): Merge conflict in kern/env.c Auto-merging inc/lib.h Automatic merge failed; fix conflicts and then commit the result. 解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab4:Preemptive Multitasking</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</link>
+      <pubDate>Mon, 07 May 2018 19:28:03 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</guid>
+      <description>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab3:User Environments</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</link>
+      <pubDate>Sun, 22 Apr 2018 23:01:09 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</guid>
+      <description>4月22日 - 5月2日
+ PART A 这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。 这是关于这章节代码文件的介绍
+inc/env.h Public definitions for user-mode environments trap.h Public definitions for trap handling syscall.h Public definitions for system calls from user environments to the kernel lib.h Public definitions for the user-mode support library kern/env.h Kernel-private definitions for user-mode environments env.c Kernel code implementing user-mode environments trap.h Kernel-private trap handling definitions trap.c Trap handling code trapentry.S Assembly-language trap handler entry-points syscall.h Kernel-private definitions for system call handling syscall.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab2:Memory Management</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</link>
+      <pubDate>Thu, 12 Apr 2018 19:18:13 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</guid>
+      <description>Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。
+ 地址转换
+ 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。
+线性地址转换过程:
+段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。
+// A linear address &#39;la&#39; has a three-part structure as follows: // // +--------10------+-------10-------+---------12----------+ // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // +----------------+----------------+---------------------+ // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab1:Booting a PC</title>
+      <link>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</link>
+      <pubDate>Wed, 14 Mar 2018 21:08:44 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</guid>
+      <description>3月14日 - 3月28日
+ Exercise 1 熟悉x86汇编和AT&amp;amp;T汇编
+16-bit intel 8088 1MB = 1048576bit 内存地址: 0x00000 ~ 0xFFFFF 640KB(0x00000 ~ 0xA0000) 用户可用 参考资料
+GDB启动过程 首先打开一个终端到目的lab根文件夹 $ make qemu-nox-gdb 再打开一个新的终端窗口执行以下命令进行监听 $ make gdb
+以及一些常用的gdb命令 b: 0xffff: 在0xffff出下断点 c: continue to breakpoint si: 单步前进 x/5: 0xFFFFF 从0xFFFFF开始的5个命令
+ Exercise 2 第一条指令: [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b 当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。 这个地址与BIOS的结束位置0x100000差16bytes。
+启动后追踪BIOS的部分代码 [f000:e05b] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较 [f000:e062] 0xfe062:	jne 0xfd2e1 ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转 [f000:e066] 0xfe066:	xor %dx,%dx ;dx清0 [f000:e068] 0xfe068:	mov %dx,%ss ;ss置0,AT&amp;amp;T汇编mov指令反向 [f000:e06a] 0xfe06a:	mov $0x7000,%esp ;esp设置为0x7000,实模式引导区位置 [f000:e070] 0xfe070:	mov $0xf3691,%executed ;edx设置为0xf3691 [f000:e076] 0xfe076:	jmp 0xfd165 ;跳转 0xfd165 [f000:d165] 0xfd165:	mov %eax,%ecx [f000:d168] 0xfd168:	cli ;屏蔽中断 [f000:d169] 0xfd169:	cld ;DF设置为0，指在每次传送一次将esi和edi自动+1;std将DF设置为1,传送自减 [f000:d16a] 0xfd16a:	mov $0x8f,%eax [f000:d170] 0xfd170:	out %al,$0x70 ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1 [f000:d172] 0xfd172:	in $0x71,%al ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0 ;A20地址线使能,进入保护模式 [f000:d174] 0xfd174:	in $0x92,%al [f000:d176] 0xfd176:	or $0x2,%al [f000:d178] 0xfd178:	out %al,$0x92 ;加载6个字节 [f000:d17a] 0xfd17a:	lidtw %cs:0x6c38 ;加载中断向量表 -&amp;gt;idt寄存器 [f000:d180] 0xfd180:	lgdtw %cs:0x6bf4 ;加载全局描述符表-&amp;gt;gdt寄存器 ;cr0寄存器置为1，进入保护模式 [f000:d186] 0xfd186:	mov %cr0,%eax [f000:d189] 0xfd189:	or $0x1,%eax [f000:d18d] 0xfd18d:	mov %eax,%cr0 ;重新加载全局描述符GDT 0xfd190:	ljmpl $0x8,$0xfd198 0xfd198:	mov $0x10,%ax 0xfd19b:	add %al,(%bx,%si) 0xfd19d:	mov %ax,%ds 0xfd19f:	mov %ax,%es 0xfd1a1:	mov %ax,%ss 0xfd1a3:	mov %ax,%fs  重新加载的 x86汇编复习 外围设备端口  软盘硬盘 磁盘的最小传输单元(sector)： 512bytes 16位机，在CD-ROM启动之前，后被扩展。xv6使用传统硬盘,512bytes/sector boot sector 在开机时被读入物理地址为 0x7c00 ~ 0x7dff</description>
+    </item>
+    
+  </channel>
+</rss>

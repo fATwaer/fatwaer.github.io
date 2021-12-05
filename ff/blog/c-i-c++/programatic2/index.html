@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>实效性软件构建的途径-下&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="实效性软件构建的途径-下" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">实效性软件构建的途径-下</h1><p class="article date">Wednesday, April 15, 2020</p></section><article class="article markdown-body"><h2 id="前言">前言</h2>
+<p>如果一次性总结，文章太过于冗长，上部分更加是一种在编程中会碰到的技术细节，而这一部分是一些编程中需要记住的良好习惯。</p>
+<h2 id="1-养成估算的习惯">1. 养成估算的习惯</h2>
+<p>1000字节数据通过路由器需要多少时间？类似这样的问题需要有个大致的答案，通过学习估算，能将估算发展到对事物的数量级有直觉的程度，就可以确定方案的可能性。</p>
+<p>无论什么时候有人需要你进行估算，你都可以给出答案。
+如果没有经验，估算通常可以去问问已经做过该事情的人。
+追踪自己的估算能力，如果估算错了，找出什么事情与自己的预期不同。</p>
+<h2 id="2-调试的过程">2. 调试的过程</h2>
+<p>这里不讲技术上怎么调试，而是另外一种途径进行调试：向别人一行一行解释代码的作用，并且详细描述假定的情况，可能在解释的过程中就可以知道哪里处理问题。</p>
+<p>花很长时间找到bug后，想想可以做点什么使找到这个bug更加容易，例如内建更加好的测试。</p>
+<h2 id="3-重构">3. 重构</h2>
+<p>不要害怕重构，老旧的代码如果不适用，所有代码都可以被替换。重构往往在非正交设计，违反DRY原则、过时的知识、性能缺陷存在时发生。</p>
+<p>那么如何合理地进行重构？</p>
+<ol>
+<li>不要在重构同时新增功能</li>
+<li>开始重构前要有良好的测试，确保重构后能通过</li>
+<li>采用小改动的模式，利用局部改动慢慢扩大到更大规模的改动，避免长时间的调试</li>
+</ol>
+<h2 id="4-测试的一些建议">4. 测试的一些建议</h2>
+<p>根据合约(契约式编程)进行单元测试，先测试子模块，再测试模块自身子模块，再测试模块自身。
+单元测试应该在模块目录，使测试代码容易找到，既可以说明怎么使用模块的功能，又可以用于构建回归测试，验证未来对代码的改动是否正确。</p>
+<p>另外测试都应该具有以下功能：</p>
+<ol>
+<li>setup和cleanup的标准途径</li>
+<li>可选择地选择可用测试方法</li>
+<li>分析输出结果的手段</li>
+<li>标准化故障报告的形式</li>
+</ol>
+<h2 id="5-曳光弹与原型开发">5. 曳光弹与原型开发</h2>
+<p>曳光弹原本是指在机枪子弹中间接出现的用于显示子弹射击目标的子弹，比起精确计算风向、射速、角度再射击，曳光弹的方式更加实际。曳光弹的原理就是指，尝试制作一个项目，慢慢地靠近客户需求的一种构建方式，可以有效的展现工作进度，并且这种构建方式的每一段代码都需要有完整的错误检查，结构，文档，以及自查。</p>
+<p>而原型开发这种方式通常是一种实验性的探索，为取得某种功能，不必关注太多细节情况，通常没有太多文档和注释。</p>
+<h2 id="6-做变化的催化剂">6. 做变化的催化剂</h2>
+<p>这一点对自己的要求比较高，在团队合作中，写出很好的代码，让团队的其他人大吃一惊，渐渐影响他们，从而提高项目质量。</p>
+<h2 id="7-不要过度修饰和求精程序">7. 不要过度修饰和求精程序</h2>
+<p>这和过早优化的概念同理，但概念更加偏向于用户，今日了不起的软件往往被明天更加完美的软件更加可取，让用户先使用，用他们的反馈引领软件走向最终解决方案。但是并不是说就可以用不整洁的代码，或者制作糟糕的代码。</p>
+<h2 id="8-管理知识资产">8. 管理知识资产</h2>
+<p>对于金融资产的管理：</p>
+<ul>
+<li>定期投资，形成习惯</li>
+<li>多元化是长期成功的关键</li>
+<li>在保守的投资和高风险，高回报的投资之间平衡资产</li>
+<li>设法低买高卖获取最大回报</li>
+<li>周期性的评估和平衡财产</li>
+</ul>
+<p>而程序员管理自己的知识资产可以类比：</p>
+<ul>
+<li>定投，周期性的学习</li>
+<li>多元化，广度学习，底线是需要知道目前所使用技术的各种特性，优劣</li>
+<li>管理风险，不要把所学的技术都放在一个篮子里</li>
+<li>低买高卖：新兴技术可能就是被低估的股票，提前学习可能可以更好的找到工作</li>
+<li>重新评估：热门技术可能很快就冷门了，甚至过一段时间有需要重新温习忘记的数据库技术等，需要对自己的知识体系重新评估。</li>
+</ul>
+<p>所以可以给自己设立一些周期性的目标，防止自己的脱节：</p>
+<ul>
+<li>定期投资可以是每年至少学习一种新的语言，每月阅读一本技术书籍，阅读非技术书籍。</li>
+<li>偶尔学习一些公开课</li>
+<li>参与一些组织，打听公司以外的人都在做什么</li>
+<li>试验不同的环境，技术或者非技术都是如此，逃离舒适区</li>
+<li>持续投入！</li>
+</ul>
+<h2 id="9-交流">9. 交流</h2>
+<p>交流很重要，即使是“自闭”人群，该说话的时候还是得好好说话。</p>
+<p>书中提到的最关键的几点：</p>
+<h3 id="了解听众">了解听众</h3>
+<ol>
+<li>你想让他们学到什么</li>
+<li>他们对你讲的什么感兴趣</li>
+<li>他们有多丰富的经验</li>
+<li>他们要多少细节</li>
+<li>你想要谁拥有这些信息</li>
+<li>你如何促使他们听你说话</li>
+</ol>
+<h3 id="认真倾听和及时回复">认真倾听和及时回复</h3>
+<p>对于前者，你不听别人讲话，别人也懒得听你的 ：）；及时回复这一点，在现代社会中其实很容易遗忘，但是即使简单回复，”我稍后回复你“，也会显得礼貌。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《The Programatic Programmer》</li>
+<li><a href="https://en.wikipedia.org/wiki/Law_of_Demeter">https://en.wikipedia.org/wiki/Law_of_Demeter</a></li>
+</ul>
+</article><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/c-i-c&#43;&#43;/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/"><span class="iconfont icon-article"></span>gRPC：复用CompletionQueue</a></p><p><a class="link" href="/blog/c-i-c&#43;&#43;/programatic1/"><span class="iconfont icon-article"></span>实效性软件构建的途径-上</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

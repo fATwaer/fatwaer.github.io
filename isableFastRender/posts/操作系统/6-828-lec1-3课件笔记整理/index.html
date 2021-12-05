@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="generator" content="Hugo 0.57.2" />
+  <link rel="canonical" href="http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/">
+
+  
+
+  
+   
+   <link rel="shortcut icon" href="/11.jpeg" >
+   
+  <link rel="manifest" href="/site.webmanifest">
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/prism.css" media="none" onload="this.media='all';">
+
+  
+  
+  <link rel="stylesheet" type="text/css" href="http://localhost:1313/css/styles.css">
+
+  <style id="inverter" media="none">
+    html { filter: invert(100%) }
+    * { background-color: inherit }
+    img:not([src*=".svg"]), .colors, iframe, .demo-container { filter: invert(100%) }
+  </style>
+
+  
+  
+  <title>6.828-操作系统工程-Lec1-3课件笔记和作业 | fatwaer</title>
+</head>
+
+  <body>
+    <a href="#main">skip to content</a>
+    <svg style="display: none">
+  <symbol id="bookmark" viewBox="0 0 40 50">
+   <g transform="translate(2266 3206.2)">
+    <path style="stroke:currentColor;stroke-width:3.2637;fill:none" d="m-2262.2-3203.4-.2331 42.195 16.319-16.318 16.318 16.318.2331-42.428z"/>
+   </g>
+  </symbol>
+
+  <symbol id="w3c" viewBox="0 0 127.09899 67.763">
+   <text font-size="83" style="font-size:83px;font-family:Trebuchet;letter-spacing:-12;fill-opacity:0" letter-spacing="-12" y="67.609352" x="-26.782778">W3C</text>
+   <text font-size="83" style="font-size:83px;font-weight:bold;font-family:Trebuchet;fill-opacity:0" y="67.609352" x="153.21722" font-weight="bold">SVG</text>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m33.695.377 12.062 41.016 12.067-41.016h8.731l-19.968 67.386h-.831l-12.48-41.759-12.479 41.759h-.832l-19.965-67.386h8.736l12.061 41.016 8.154-27.618-3.993-13.397h8.737z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m91.355 46.132c0 6.104-1.624 11.234-4.862 15.394-3.248 4.158-7.45 6.237-12.607 6.237-3.882 0-7.263-1.238-10.148-3.702-2.885-2.47-5.02-5.812-6.406-10.022l6.82-2.829c1.001 2.552 2.317 4.562 3.953 6.028 1.636 1.469 3.56 2.207 5.781 2.207 2.329 0 4.3-1.306 5.909-3.911 1.609-2.606 2.411-5.738 2.411-9.401 0-4.049-.861-7.179-2.582-9.399-1.995-2.604-5.129-3.912-9.397-3.912h-3.327v-3.991l11.646-20.133h-14.062l-3.911 6.655h-2.493v-14.976h32.441v4.075l-12.31 21.217c4.324 1.385 7.596 3.911 9.815 7.571 2.22 3.659 3.329 7.953 3.329 12.892z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.21 0 1.414 8.6-5.008 9.583s-1.924-4.064-5.117-6.314c-2.693-1.899-4.447-2.309-7.186-1.746-3.527.73-7.516 4.938-9.258 10.13-2.084 6.21-2.104 9.218-2.178 11.978-.115 4.428.58 7.043.58 7.043s-3.04-5.626-3.011-13.866c.018-5.882.947-11.218 3.666-16.479 2.404-4.627 5.954-7.404 9.114-7.728 3.264-.343 5.848 1.229 7.841 2.938 2.089 1.788 4.213 5.698 4.213 5.698l4.94-9.837z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.82 48.674s-2.208 3.957-3.589 5.48c-1.379 1.524-3.849 4.209-6.896 5.555-3.049 1.343-4.646 1.598-7.661 1.306-3.01-.29-5.807-2.032-6.786-2.764-.979-.722-3.486-2.864-4.897-4.854-1.42-2-3.634-5.995-3.634-5.995s1.233 4.001 2.007 5.699c.442.977 1.81 3.965 3.749 6.572 1.805 2.425 5.315 6.604 10.652 7.545 5.336.945 9.002-1.449 9.907-2.031.907-.578 2.819-2.178 4.032-3.475 1.264-1.351 2.459-3.079 3.116-4.108.487-.758 1.276-2.286 1.276-2.286l-1.276-6.644z"/>
+  </symbol>
+
+  <symbol id="tag" viewBox="0 0 177.16535 177.16535">
+    <g transform="translate(0 -875.2)">
+     <path style="fill-rule:evenodd;stroke-width:0;fill:currentColor" d="m159.9 894.3-68.79 8.5872-75.42 77.336 61.931 60.397 75.429-76.565 6.8495-69.755zm-31.412 31.835a10.813 10.813 0 0 1 1.8443 2.247 10.813 10.813 0 0 1 -3.5174 14.872l-.0445.0275a10.813 10.813 0 0 1 -14.86 -3.5714 10.813 10.813 0 0 1 3.5563 -14.863 10.813 10.813 0 0 1 13.022 1.2884z"/>
+    </g>
+  </symbol>
+
+  <symbol id="balloon" viewBox="0 0 141.73228 177.16535">
+   <g transform="translate(0 -875.2)">
+    <g>
+     <path style="fill:currentColor" d="m68.156 882.83-.88753 1.4269c-4.9564 7.9666-6.3764 17.321-5.6731 37.378.36584 10.437 1.1246 23.51 1.6874 29.062.38895 3.8372 3.8278 32.454 4.6105 38.459 4.6694-.24176 9.2946.2879 14.377 1.481 1.2359-3.2937 5.2496-13.088 8.886-21.623 6.249-14.668 8.4128-21.264 10.253-31.252 1.2464-6.7626 1.6341-12.156 1.4204-19.764-.36325-12.93-2.1234-19.487-6.9377-25.843-2.0833-2.7507-6.9865-7.6112-7.9127-7.8436-.79716-.20019-6.6946-1.0922-6.7755-1.0248-.02213.0182-5.0006-.41858-7.5248-.22808l-2.149-.22808h-3.3738z"/>
+     <path style="fill:currentColor" d="m61.915 883.28-3.2484.4497c-1.7863.24724-3.5182.53481-3.8494.63994-2.4751.33811-4.7267.86957-6.7777 1.5696-.28598 0-1.0254.20146-2.3695.58589-5.0418 1.4418-6.6374 2.2604-8.2567 4.2364-6.281 7.6657-11.457 18.43-12.932 26.891-1.4667 8.4111.71353 22.583 5.0764 32.996 3.8064 9.0852 13.569 25.149 22.801 37.517 1.3741 1.841 2.1708 2.9286 2.4712 3.5792 3.5437-1.1699 6.8496-1.9336 10.082-2.3263-1.3569-5.7831-4.6968-21.86-6.8361-33.002-.92884-4.8368-2.4692-14.322-3.2452-19.991-.68557-5.0083-.77707-6.9534-.74159-15.791.04316-10.803.41822-16.162 1.5026-21.503 1.4593-5.9026 3.3494-11.077 6.3247-15.852z"/>
+     <path style="fill:currentColor" d="m94.499 885.78c-.10214-.0109-.13691 0-.0907.0409.16033.13489 1.329 1.0675 2.5976 2.0723 6.7003 5.307 11.273 14.568 12.658 25.638.52519 4.1949.24765 14.361-.5059 18.523-2.4775 13.684-9.7807 32.345-20.944 53.519l-3.0559 5.7971c2.8082.76579 5.7915 1.727 8.9926 2.8441 11.562-11.691 18.349-19.678 24.129-28.394 7.8992-11.913 11.132-20.234 12.24-31.518.98442-10.02-1.5579-20.876-6.7799-28.959-.2758-.4269-.57803-.86856-.89617-1.3166-3.247-6.13-9.752-12.053-21.264-16.131-2.3687-.86369-6.3657-2.0433-7.0802-2.1166z"/>
+     <path style="fill:currentColor" d="m32.52 892.22c-.20090-.13016-1.4606.81389-3.9132 2.7457-11.486 9.0476-17.632 24.186-16.078 39.61.79699 7.9138 2.4066 13.505 5.9184 20.562 5.8577 11.77 14.749 23.219 30.087 38.74.05838.059.12188.1244.18052.1838 1.3166-.5556 2.5965-1.0618 3.8429-1.5199-.66408-.32448-1.4608-1.3297-3.8116-4.4602-5.0951-6.785-8.7512-11.962-13.051-18.486-5.1379-7.7948-5.0097-7.5894-8.0586-13.054-6.2097-11.13-8.2674-17.725-8.6014-27.563-.21552-6.3494.13041-9.2733 1.775-14.987 2.1832-7.5849 3.9273-10.986 9.2693-18.07 1.7839-2.3656 2.6418-3.57 2.4409-3.7003z"/>
+     <path style="fill:currentColor" d="m69.133 992.37c-6.2405.0309-12.635.76718-19.554 2.5706 4.6956 4.7759 9.935 10.258 12.05 12.625l4.1272 4.6202h11.493l3.964-4.4516c2.0962-2.3541 7.4804-7.9845 12.201-12.768-8.378-1.4975-16.207-2.6353-24.281-2.5955z"/>
+     <rect style="stroke-width:0;fill:currentColor" ry="2.0328" height="27.746" width="22.766" y="1017.7" x="60.201"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="info" viewBox="0 0 41.667 41.667">
+   <g transform="translate(-37.035 -1004.6)">
+    <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m76.25 1030.2a18.968 18.968 0 0 1 -23.037 13.709 18.968 18.968 0 0 1 -13.738 -23.019 18.968 18.968 0 0 1 23.001 -13.768 18.968 18.968 0 0 1 13.798 22.984"/>
+    <g transform="matrix(1.1146 0 0 1.1146 -26.276 -124.92)">
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m75.491 1039.5v-8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" transform="scale(-1)" d="m-73.193-1024.5a2.3719 2.3719 0 0 1 -2.8807 1.7142 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="warning" viewBox="0 0 48.430474 41.646302">
+    <g transform="translate(-1.1273 -1010.2)">
+     <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:4.151;fill:none" d="m25.343 1012.3-22.14 37.496h44.28z"/>
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:4.1512;fill:none" d="m25.54 1027.7v8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" d="m27.839 1042.8a2.3719 2.3719 0 0 1 -2.8807 1.7143 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+  </symbol>
+
+  <symbol id="menu" viewBox="0 0 50 50">
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="0" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="20" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="40" x="0"/>
+   </symbol>
+
+   <symbol id="link" viewBox="0 0 50 50">
+    <g transform="translate(0 -1002.4)">
+     <g transform="matrix(.095670 0 0 .095670 2.3233 1004.9)">
+      <g>
+       <path style="stroke-width:0;fill:currentColor" d="m452.84 192.9-128.65 128.65c-35.535 35.54-93.108 35.54-128.65 0l-42.881-42.886 42.881-42.876 42.884 42.876c11.845 11.822 31.064 11.846 42.886 0l128.64-128.64c11.816-11.831 11.816-31.066 0-42.9l-42.881-42.881c-11.822-11.814-31.064-11.814-42.887 0l-45.928 45.936c-21.292-12.531-45.491-17.905-69.449-16.291l72.501-72.526c35.535-35.521 93.136-35.521 128.64 0l42.886 42.881c35.535 35.523 35.535 93.141-.001 128.66zm-254.28 168.51-45.903 45.9c-11.845 11.846-31.064 11.817-42.881 0l-42.884-42.881c-11.845-11.821-11.845-31.041 0-42.886l128.65-128.65c11.819-11.814 31.069-11.814 42.884 0l42.886 42.886 42.876-42.886-42.876-42.881c-35.54-35.521-93.113-35.521-128.65 0l-128.65 128.64c-35.538 35.545-35.538 93.146 0 128.65l42.883 42.882c35.51 35.54 93.11 35.54 128.65 0l72.496-72.499c-23.956 1.597-48.092-3.784-69.474-16.283z"/>
+      </g>
+     </g>
+    </g>
+  </symbol>
+
+  <symbol id="doc" viewBox="0 0 35 45">
+   <g transform="translate(-147.53 -539.83)">
+    <path style="stroke:currentColor;stroke-width:2.4501;fill:none" d="m149.38 542.67v39.194h31.354v-39.194z"/>
+    <g style="stroke-width:25" transform="matrix(.098003 0 0 .098003 133.69 525.96)">
+     <path d="m220 252.36h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path style="stroke:currentColor;stroke-width:25;fill:none" d="m220 409.95h200"/>
+     <path d="m220 488.74h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path d="m220 331.15h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+    </g>
+   </g>
+ </symbol>
+
+ <symbol id="tick" viewBox="0 0 177.16535 177.16535">
+  <g transform="translate(0 -875.2)">
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="155" width="40" y="702.99" x="556.82"/>
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="40" width="90.404" y="817.99" x="506.42"/>
+  </g>
+ </symbol>
+</svg>
+
+    <div class="wrapper">
+      <header class="intro-and-nav" role="banner">
+  <div>
+    <div class="intro">
+      <a class="logo" href="/" aria-label="fatwaer home page">
+        <img src="http://localhost:1313/images/11.jpeg" alt="">
+      </a>
+      <p class="library-desc">
+        
+          Here&rsquo;s fatwaer&rsquo;s blog, recording some technical problems and  notes about open-source courses
+        
+      </p>
+    </div>
+    <nav id="patterns-nav" class="patterns" role="navigation">
+  <h2 class="vh">Main navigation</h2>
+  <button id="menu-button" aria-expanded="false">
+    <svg viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+      <use xlink:href="#menu"></use>
+    </svg>
+    Menu
+  </button>
+  
+  <ul id="patterns-list">
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/posts/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Home</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/tags/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Tags</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/about/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">About</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/todo/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Todo</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/index.xml" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">RSS</span>
+      </a>
+    </li>
+  
+  </ul>
+</nav>
+  </div>
+</header>
+      <div class="main-and-footer">
+        <div>
+          
+  <main id="main">
+    <h1>
+      <svg class="bookmark-icon" aria-hidden="true" viewBox="0 0 40 50" focusable="false">
+        <use xlink:href="#bookmark"></use>
+      </svg>
+      6.828-操作系统工程-Lec1-3课件笔记和作业
+    </h1>
+
+    <div class="date">
+      
+      
+      <strong aria-hidden="true">Publish date: </strong>4-6, 2018
+      
+        
+      
+    </div>
+
+    
+      <div class="tags">
+        <strong aria-hidden="true">Tags: </strong>
+        <ul aria-label="tags">
+          
+            <li>
+              <svg class="tag-icon" aria-hidden="true" viewBox="0 0 177.16535 177.16535" focusable="false">
+                <use xlink:href="#tag"></use>
+              </svg>
+              
+              <a href="http://localhost:1313/tags/os/">OS</a>
+            </li>
+          
+        </ul>
+      </div>
+    
+    
+    
+      
+
+  <nav class="toc" aria-labelledby="toc-heading">
+    <h2 id="toc-heading">Table of contents</h2>
+    <ol>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%87%bd%e6%95%b0%e7%9a%84%e5%bc%80%e5%9c%ba%e5%92%8c%e7%bb%93%e6%9d%9f">
+            函数的开场和结束
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%87%bd%e6%95%b0%e8%b0%83%e7%94%a8%e5%92%8c%e6%b1%87%e7%bc%96%e5%af%b9%e5%ba%94">
+            函数调用和汇编对应
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#c%e6%ba%90%e6%96%87%e4%bb%b6%e7%bc%96%e8%af%91%e8%bf%87%e7%a8%8b">
+            C源文件编译过程
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#pc-%e6%a8%a1%e6%8b%9f%e5%99%a8%e5%ae%9e%e7%8e%b0">
+            PC 模拟器实现
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#implement-shell">
+            Implement Shell
+          </a>
+        </li>
+      
+    </ol>
+  </nav>
+
+
+    
+
+    
+
+<h1 id="笔记">笔记</h1>
+
+<hr />
+
+<h2 id="函数的开场和结束">函数的开场和结束</h2>
+
+<pre><code>               +------------+   |
+               | arg 2      |   \
+               +------------+    &gt;- previous function's stack frame
+               | arg 1      |   /
+               +------------+   |
+               | ret %eip   |   /
+               +============+   
+               | saved %ebp |   \
+        %ebp-&gt; +------------+   |
+               |            |   |
+               |   local    |   \
+               | variables, |    &gt;- current function's stack frame
+               |    etc.    |   /
+               |            |   |
+               |            |   |
+        %esp-&gt; +------------+   /
+</code></pre>
+
+<h2 id="函数调用和汇编对应">函数调用和汇编对应</h2>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/note1.png" alt="note1.png" /></p>
+
+<p>其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。</p>
+
+<h2 id="c源文件编译过程">C源文件编译过程</h2>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/note2.png" alt="note2.png" /></p>
+
+<hr />
+
+<h2 id="pc-模拟器实现">PC 模拟器实现</h2>
+
+<hr />
+
+<h3 id="cpu寄存器">CPU寄存器</h3>
+
+<pre><code class="language-C">#存储在全局变量中
+int32_t regs[8];
+#define REG_EAX 1;
+#define REG_EBX 2;
+#define REG_ECX 3;
+...
+int32_t eip;
+int16_t segregs[4];
+...
+</code></pre>
+
+<h3 id="物理内存">物理内存</h3>
+
+<pre><code class="language-C">char mem[256*1024*1024];
+</code></pre>
+
+<h3 id="执行">执行</h3>
+
+<pre><code class="language-C">for (;;) {
+        read_instruction();
+        switch (decode_instruction_opcode()) {
+        case OPCODE_ADD:
+            int src = decode_src_reg();
+            int dst = decode_dst_reg();
+            regs[dst] = regs[dst] + regs[src];
+            break;
+        case OPCODE_SUB:
+            int src = decode_src_reg();
+            int dst = decode_dst_reg();
+            regs[dst] = regs[dst] - regs[src];
+            break;
+        ...
+        }
+        eip += instruction_length;
+</code></pre>
+
+<h3 id="物理内存布局">物理内存布局</h3>
+
+<pre><code class="language-C">#define KB      1024
+    #define MB      1024*1024
+
+    #define LOW_MEMORY  640*KB
+    #define EXT_MEMORY  10*MB
+
+    uint8_t low_mem[LOW_MEMORY];
+    uint8_t ext_mem[EXT_MEMORY];
+    uint8_t bios_rom[64*KB];
+
+    uint8_t read_byte(uint32_t phys_addr) {
+        if (phys_addr &lt; LOW_MEMORY)
+            return low_mem[phys_addr];
+        else if (phys_addr &gt;= 960*KB &amp;&amp; phys_addr &lt; 1*MB)
+            return rom_bios[phys_addr - 960*KB];
+        else if (phys_addr &gt;= 1*MB &amp;&amp; phys_addr &lt; 1*MB+EXT_MEMORY) {
+            return ext_mem[phys_addr-1*MB];
+        else ...
+    }
+
+    void write_byte(uint32_t phys_addr, uint8_t val) {
+        if (phys_addr &lt; LOW_MEMORY)
+            low_mem[phys_addr] = val;
+        else if (phys_addr &gt;= 960*KB &amp;&amp; phys_addr &lt; 1*MB)
+            ; /* ignore attempted write to ROM! */
+        else if (phys_addr &gt;= 1*MB &amp;&amp; phys_addr &lt; 1*MB+EXT_MEMORY) {
+            ext_mem[phys_addr-1*MB] = val;
+        else ...
+    }
+</code></pre>
+
+<h3 id="外围设备">外围设备</h3>
+
+<ul>
+<li>Hard disk: using a file of the host</li>
+<li>VGA display: draw in a host window</li>
+<li>Keyboard: hostsʼs keyboard API</li>
+<li>Clock chip: hostʼs clock</li>
+<li>Etc.</li>
+</ul>
+
+<hr />
+
+<h1 id="homework">Homework</h1>
+
+<hr />
+
+<h2 id="implement-shell">Implement Shell</h2>
+
+<p><a href="https://github.com/fATwaer/Operating-System-Engineering-Code/tree/master/homework1">注释好的shell code和最后完成的shell code</a></p>
+
+<h3 id="代码片段1">代码片段1</h3>
+
+<p>实现shell的执行命令</p>
+
+<pre><code class="language-C">case ' ':
+    ecmd = (struct execcmd*)cmd;
+    if(ecmd-&gt;argv[0] == 0)
+      _exit(0);
+    char path[256];
+    if( !access(ecmd-&gt;argv[0], F_OK) ){  //argv[0]为要执行的命令
+        execv(ecmd-&gt;argv[0], ecmd-&gt;argv);
+        fprintf(stderr, &quot;executed in home dictory\n&quot;); 
+    } else {
+        strcpy(path,&quot;/bin/&quot;);
+        strcat(path,ecmd-&gt;argv[0]);
+        if( !access(path, F_OK) )
+                execv(path, ecmd-&gt;argv);
+        else
+                fprintf(stderr,&quot;\&quot;%s\&quot; command not found\n&quot;, path);
+</code></pre>
+
+<hr />
+
+<h4 id="access和execv">access和execv</h4>
+
+<pre><code>int access(const char *pathname, int mode);
+</code></pre>
+
+<p>判断用户是否能使用pathname这个文件或者目录。
+mode有4种:
+1. F_OK tests  for  the  existence  of  the file.<br />
+2. R_OK,  W_OK,  and  X_OK test whether the file exists and grants read, write, and execute permissions</p>
+
+<pre><code>int execv(const char *path, char *const argv[]);
+</code></pre>
+
+<p>执行path下的命令</p>
+
+<h3 id="代码片段2">代码片段2</h3>
+
+<hr />
+
+<pre><code class="language-C">  case '&gt;':
+  case '&lt;':
+    rcmd = (struct redircmd*)cmd;
+    //fprintf(stderr, &quot;redir not implemented\n&quot;);
+    // Your code here ...
+    close(rcmd-&gt;fd);
+    if((open(rcmd-&gt;file, rcmd-&gt;flags, 777)) == -1){
+    fprintf(stderr, &quot;open file error\n&quot;);
+    exit(0);
+    }
+    runcmd(rcmd-&gt;cmd);
+    break;
+</code></pre>
+
+<h4 id="open">open()</h4>
+
+<pre><code>int open(constchar* pathname,int flags,[mode_t mode]);
+</code></pre>
+
+<p><code>返回值</code> : 成功则返回文件描述符，否则返回-1
+<code>flags</code> : 参数用来描述打开文件的方法:</p>
+
+<pre><code>O_RDONLY 只读模式
+O_WRONLY 只写模式
+O_RDWR 读写模式
+O_APPEND 每次写操作都写入文件的末尾
+O_CREAT 如果指定文件不存在，则创建这个文件
+O_EXCL 如果要创建的文件已存在，则返回-1，并且修改errno的值
+O_TRUNC 如果文件存在，并且以只写/读写方式打开，则清空文件全部内容(即将其长度截短为0)
+O_NOCTTY 如果路径名指向终端设备，不要把这个设备用作控制终端。
+O_NONBLOCK 如果路径名指向FIFO/块文件/字符文件，则把文件的打开和后继I/O
+</code></pre>
+
+<p>代码测试片段</p>
+
+<pre><code class="language-C">int fd;
+fd = open(&quot;test.c&quot;,O_RDONLY);
+printf(&quot;%d\n&quot;,fd);
+//close(fd);
+fd = open(&quot;test1.c&quot;,O_WRONLY);
+printf(&quot;%d\n&quot;,fd);
+
+# result:
+3
+4
+</code></pre>
+
+<h3 id="代码片段3">代码片段3</h3>
+
+<pre><code class="language-C">  case '|':
+    pcmd = (struct pipecmd*)cmd;
+    //fprintf(stderr, &quot;pipe not implemented\n&quot;);
+    // Your code here ...
+    if((pipe(p)) == -1) perror(&quot;pipe&quot;);
+    if(fork1() == 0){
+        close(p[0]);
+    dup2(p[1], STDOUT_FILENO);
+    close(p[1]);
+    runcmd(pcmd-&gt;left);
+    }
+    wait(0);
+    close(p[1]);
+    dup2(p[0], STDIN_FILENO);
+    close(p[0]);
+    runcmd(pcmd-&gt;right);
+    break;
+</code></pre>
+
+<h4 id="pipe">pipe()</h4>
+
+<pre><code>int pipe(int pipefd[2]);
+</code></pre>
+
+<p>Dscpt:
+<code>pipefd[0]</code> : pipe的读取端
+<code>pipefd[1]</code> : pipe的写入端
+<code>The read  end</code> is  opened using the O_RDONLY flag;
+<code>The write end</code> is opened using the O_WRONLY flag.</p>
+
+<h4 id="使用fork和pipe进行进程之间的通信">使用fork和pipe进行进程之间的通信</h4>
+
+<pre><code class="language-C">#include&lt;fcntl.h&gt;
+#include&lt;stdio.h&gt;
+#include&lt;unistd.h&gt;
+
+int main()
+{
+        int fd[2];
+        pid_t pid;
+
+        pipe(fd);
+        pid = fork();
+        if(pid &gt; 0){
+            printf(&quot;parent process:\n&quot;);
+            char sp[] = &quot;string is waiting for being loaded&quot;;
+            write(fd[1], sp, sizeof(sp));
+        } else if (pid == 0) {
+            char buf[80];
+            printf(&quot;child process:\n&quot;);
+            read(fd[0], buf, sizeof(buf));
+            printf(&quot;loaded: %s\n&quot;, buf);
+        } else {
+            printf(&quot;fork error&quot;);
+        }
+
+</code></pre>
+
+<hr />
+
+<h4 id="dup和fcntl">dup和fcntl</h4>
+
+<pre><code>int  dup(int oldfd)
+</code></pre>
+
+<p>新复制的fd和旧的fd共享文件位移(offset)和文件状态标识符(file status flags),不共享文件描述符标识(file descriptor flags),文件描述符标识只有一个the close-on-exec flag,用来指示fork的子进程在执行之前,要不要关闭这个文件描述符。</p>
+
+<p>每个文件描述符都有一个close-on-exec标志。在系统默认情况下，这个标志最后一位被设置为0。而FD_CLOEXEC则用来设置文件的close-on-exec，FD_CLOEXEC的值为1，所以在设置close-on-exec位时可以使用FD_CLOEXEC也可以直接的使用0或1数字对close-on-exec位进行设置,FD_CLOEXEC可以用fcntl()来设置。当将close-on-exec标志置为1时，即开启此标志。那么当子进程调用exec函数之前，系统就已经让子进程将此文件描述符关闭了。当close-on-exec标志置为0时，即关闭了此标志。那么当子进程调用exec函数，子进程将不会关闭该文件描述符。此时，父子进程将共享该文件，它们具有同一个文件表项，也就有了同一个文件偏移量等。</p>
+
+<pre><code>int dup2( int fd, int new_fd )
+</code></pre>
+
+<p>同样，函数返回一个新的文件描述符，若出错则返回 -1。与 dup 不同的是，dup2 可以用 filedes2 参数指定新描述符的数值。如果 filedes2 已经打开,则先将其关闭。如若 filedes 等于 filedes2 , 则 dup2 返回 filedes2 , 而不关闭它。返回的新文件描述符与参数 filedes 共享同一个文件数据结构。</p>
+
+<p>比如,<code>dup2(p[1], STDOUT_FILENO)</code>,p[1]为pipe的写入口
+1. 把进程的标准输出关闭
+2. 复制一个大于等于<code>STDOUT_FILENO</code>的文件描述符FD
+3. 这时候新的FD共享<code>STDOUT_FILENO</code>的文件内容。
+4. 原本进程的输出，就转移到了pipe管道的写入口。</p>
+
+<pre><code>int fcntl(int filedes,int cmd,...);
+</code></pre>
+
+<p><code>cmd = F_DUPFD</code>, 复制一个现有的文件描述符,返回值为新文件描述符。相当于<code>dup(oldfd)</code>
+<code>cmd = F_SETFL</code> : 设置状态标志
+<code>cmd = F_GETFL</code> : 获取状态标志
+状态标志就是open是的oflag(O_RDONLY,O_WRONLY,O_RDWR,O_NONBLOCK,O_APPEND,O_SYNC（异步I/O）,O_ASYNC（等待写完成）
+可以更改的标志是O_APPEND，O_NONBLOCK，O_SYNC,O_ASYNC。)
+<code>FD_CLOEXEC</code>:fcntl调用的一个宏定义，填在fcntl第三个参数处。
+<code>O_CLOEXEC</code>:open()调用的一个宏定义</p>
+
+<h4 id="用fcntl复制一个fd">用fcntl复制一个fd</h4>
+
+<pre><code class="language-C">    char buf[80];
+    int fd = open(&quot;a1&quot;, O_RDONLY);
+    int fd_new = fcntl(fd, F_DUPFD);
+    printf(&quot;fd_new : %d\n&quot;, fd_new);
+    while(read(fd_new, buf, sizeof(buf)))
+    {
+            printf(&quot;%s\n&quot;, buf);
+    }
+</code></pre>
+
+<p>关于<a href="https://fatwaer.github.io/2018/04/09/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/FD-CLOEXEC%E6%A0%87%E5%BF%97/">FD_CLOEXEC flag</a> , 是指在FD在被exec()函数族被调用的时候,自动关闭。</p>
+
+<hr />
+
+<h4 id="结构体强制转换">结构体强制转换</h4>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+struct a1{
+    int a;
+    char c;
+};
+
+struct b1{
+    int c;
+    char cc;
+    int interger;
+};
+
+struct a1*
+b1(void){
+    struct b1* temp;
+    temp = malloc(sizeof(*b1));
+    temp-&gt;c = 1;
+    temp-&gt;cc = 'c';
+    temp-&gt;interger = 11;
+    return (struct a1*) temp;
+} 
+
+
+int 
+main()
+{
+    struct a1 *a;
+    struct b1 *b;
+    a = b1();
+    printf(&quot;%d , %c&quot;,a-&gt;a, a-&gt;c);
+}
+</code></pre>
+
+<h4 id="获取环境变量">获取环境变量</h4>
+
+<p>获得一个环境变量的字符串数组</p>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_PATH 20
+int main()
+{
+    char* s_ptr;
+    char *pa, *pb, *buf;
+    int i;
+    char* path[MAX_PATH];
+    s_ptr = getenv(&quot;PATH&quot;);
+    printf(&quot;%s\n&quot;, s_ptr);
+    buf = malloc(strlen(s_ptr)+1);  
+    strcpy(buf, s_ptr);
+    
+    int length;
+    i = 0;
+    pa = pb = buf;
+    while(*pa){
+        while(*pa != 0 &amp;&amp; *pa++ != ':')  ;
+        length = pa - pb;
+        path[i] = malloc(length);
+        strncpy(path[i], pb, length);
+        if(*pa != 0)
+            path[i][pa-pb-1] = 0;
+        
+        i++;
+        pb = pa;
+    }
+    int j = 0;
+    for(; j &lt; i; j++ )
+        printf(&quot;%s\n&quot;, path[j]);    
+}
+</code></pre>
+
+<h3 id="最后完成的runcmd">最后完成的runcmd()</h3>
+
+<pre><code class="language-C">void
+runcmd(struct cmd *cmd)
+{
+  int p[2], r;
+  struct execcmd *ecmd;
+  struct pipecmd *pcmd;
+  struct redircmd *rcmd;
+
+  if(cmd == 0)
+    _exit(0);
+  
+  switch(cmd-&gt;type){
+  default:
+    fprintf(stderr, &quot;unknown runcmd\n&quot;);
+    _exit(-1);
+
+  case ' ':
+    ecmd = (struct execcmd*)cmd;
+    if(ecmd-&gt;argv[0] == 0)
+      _exit(0);
+    // fprintf(stderr, &quot;exec not implemented\n&quot;);
+    // Your code here ...
+    
+    char pathbuf[256];
+    if( !access(ecmd-&gt;argv[0], F_OK) ){
+        execv(ecmd-&gt;argv[0], ecmd-&gt;argv);
+        fprintf(stderr, &quot;executed in home dictory\n&quot;);
+    } else {
+    char* s_ptr;
+        char *pa, *pb, *buf;
+        int i;
+        char* path[MAX_PATH];
+        s_ptr = getenv(&quot;PATH&quot;);
+        buf = malloc(strlen(s_ptr)+1);  
+        strcpy(buf, s_ptr);
+    
+        int length;
+        i = 0;
+        pa = pb = buf;
+        while(*pa){
+            while(*pa != 0 &amp;&amp; *pa++ != ':')  ;
+            length = pa - pb;
+            path[i] = malloc(length);
+            strncpy(path[i], pb, length);
+            if(*pa != 0)
+                path[i][pa-pb-1] = 0;
+ 
+            i++;
+            pb = pa;
+        }
+
+    int ji;
+    for(ji=0; ji &lt; i; ji++){
+        strcpy(pathbuf, path[ji]);
+        strcat(pathbuf, &quot;/&quot;);
+        strcat(pathbuf, ecmd-&gt;argv[0]);
+        //printf(&quot;path-&gt; %s\n&quot;, pathbuf);
+        if( !access(pathbuf, F_OK) ){
+            execv(pathbuf, ecmd-&gt;argv);
+        }
+        
+        memset(pathbuf, 0, sizeof(pathbuf));
+    }
+    if(ji == i)
+        fprintf(stderr, &quot; \&quot;%s\&quot;command not found\n&quot;, ecmd-&gt;argv[0]);
+    }   
+    break;
+
+  case '&gt;':
+  case '&lt;':
+    rcmd = (struct redircmd*)cmd;
+    //fprintf(stderr, &quot;redir not implemented\n&quot;);
+    // Your code here ...
+    close(rcmd-&gt;fd);
+    if((open(rcmd-&gt;file, rcmd-&gt;flags, 777)) == -1){
+    fprintf(stderr, &quot;open file error\n&quot;);
+    exit(0);
+    }
+    runcmd(rcmd-&gt;cmd);
+    break;
+
+  case '|':
+    pcmd = (struct pipecmd*)cmd;
+    //fprintf(stderr, &quot;pipe not implemented\n&quot;);
+    // Your code here ...
+    if((pipe(p)) == -1) perror(&quot;pipe&quot;);
+    if(fork1() == 0){
+        close(p[0]);
+        dup2(p[1], STDOUT_FILENO);  
+        close(p[1]);                     // &lt;- 关闭p[1],防止fd泄露
+        runcmd(pcmd-&gt;left);
+    }
+    wait(0);
+    close(p[1]);
+    dup2(p[0], STDIN_FILENO);
+    close(p[0]);
+    runcmd(pcmd-&gt;right);
+    break;
+  }    
+  _exit(0);
+}
+</code></pre>
+
+<h3 id="结果">结果</h3>
+
+<pre><code class="language-shell">moonlight@ubuntu:~/homework$ ./a.out &lt; t.sh
+     15      15      82
+     15      15      82
+</code></pre>
+
+<h3 id="pipe-dup重定向文章">pipe、dup重定向文章</h3>
+
+<p>[I/O重定向和管道：使用pipe、fork、exec详解。] :<a href="https://blog.csdn.net/skyroben/article/details/71513385#">https://blog.csdn.net/skyroben/article/details/71513385#</a>
+[进程间的通信方式] : <a href="https://blog.csdn.net/yake25/article/details/7447086">https://blog.csdn.net/yake25/article/details/7447086</a><br />
+[dup2后close] : <a href="http://blog.51cto.com/keren/170892">http://blog.51cto.com/keren/170892</a></p>
+
+<p><em>* 挑战题目未完成</em></p>
+
+<blockquote>
+<p>获取环境变量的时候造了个轮子.</p>
+</blockquote>
+
+    
+    <div>
+      <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    </div>
+    <script src="http://localhost:1313/js/back2top.js"></script>
+  </main>
+  <div id="disqus-container">
+  
+    <button id="disqus-button" onclick="showComments()">Show comments</button>
+    <div id="disqus-comments">
+      
+      
+      
+        <p><em>Disqus comments are disabled.</em></p>
+        <script type="application/javascript">
+          function showComments() {
+            // Remove button
+var disqusButton = document.getElementById('disqus-button');
+disqusButton.parentNode.removeChild(disqusButton); 
+// Un-hide comments
+var disqusComments = document.getElementById('disqus-comments');
+disqusComments.style.display = 'block'; 
+          }
+        </script>
+      
+      <noscript>Enable JavaScript to view Disqus comments.</noscript>
+    </div>
+  
+</div>
+
+
+          <footer role="contentinfo">
+  
+  
+    Made with <a href="https://gohugo.io/">Hugo</a>. Themed by <a href="https://github.com/zwbetz-gh/cupper-hugo-theme">Cupper</a>. Analytics in comming.
+  
+</footer>
+
+        </div>
+      </div>
+    </div>
+    <script src="http://localhost:1313/js/prism.js"></script>
+<script src="http://localhost:1313/js/dom-scripts.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>

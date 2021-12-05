@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>distributed system on Pok</title>
+    <link>/tags/distributed-system/</link>
+    <description>Recent content in distributed system on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 26 Feb 2020 22:19:35 +0000</lastBuildDate><atom:link href="/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Golang原生RPC与gPRC</title>
+      <link>/posts/sys/rpc-and-grpc/</link>
+      <pubDate>Wed, 26 Feb 2020 22:19:35 +0000</pubDate>
+      
+      <guid>/posts/sys/rpc-and-grpc/</guid>
+      <description>前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。
+RPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。
+虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。
+RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。
+原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。
+客户端代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net/rpc&amp;#34; ) // // Common RPC request/reply definitions //  const ( OK = &amp;#34;OK&amp;#34; ErrNoKey = &amp;#34;ErrNoKey&amp;#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } // // Client //  func connect() *rpc.</description>
+    </item>
+    
+    <item>
+      <title>6.824 Notes：MapReduce、GFS、Raft</title>
+      <link>/posts/course-notes/6.824-notesmapreducegfsraft/</link>
+      <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
+      
+      <guid>/posts/course-notes/6.824-notesmapreducegfsraft/</guid>
+      <description>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。
+分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。
+分布式系统的优点是能够组织物理上分离的实体，通过isolation取得系统安全，通过replication获取容错机制，通过并行CPUs/mem/disk/net来比例提升系统速度。
+当然也有些缺点，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。
+MapReduce(2004) input is divided into M files [diagram: maps generate rows of K-V pairs, reduces consume columns] Input1 -&amp;gt; Map -&amp;gt; a,1 b,1 c,1 Input2 -&amp;gt; Map -&amp;gt; b,1 Input3 -&amp;gt; Map -&amp;gt; a,1 c,1 | | | | | -&amp;gt; Reduce -&amp;gt; c,2 | -----&amp;gt; Reduce -&amp;gt; b,2 ---------&amp;gt; Reduce -&amp;gt; a,2  对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 &amp;lt;k2, v2&amp;gt;键值对(图中的一行)作为中间数据。
+MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 &amp;lt;k2, v3&amp;gt; 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：</description>
+    </item>
+    
+    <item>
+      <title>Data-Intensive System</title>
+      <link>/posts/sys/data-intensive-system/</link>
+      <pubDate>Fri, 11 Jan 2019 11:57:29 +0000</pubDate>
+      
+      <guid>/posts/sys/data-intensive-system/</guid>
+      <description>数据组件   消息队列
+Redis: https://github.com/antirez/redis
+Apache Kafka
+  主数据库
+//todo
+  全文索引
+Elasticsearch: https://github.com/elastic/elasticsearch
+Apache Solr
+  内存缓存
+Memcached: https://github.com/memcached/memcached
+  </description>
+    </item>
+    
+    <item>
+      <title>Effective Go</title>
+      <link>/posts/sys/effective-go/</link>
+      <pubDate>Thu, 10 Jan 2019 12:48:14 +0000</pubDate>
+      
+      <guid>/posts/sys/effective-go/</guid>
+      <description>goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &amp;lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &amp;lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &amp;lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &amp;lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &amp;lt;- 1 go func() { process(req) &amp;lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</description>
+    </item>
+    
+  </channel>
+</rss>

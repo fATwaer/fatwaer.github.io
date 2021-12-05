@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" />
+  <link rel="canonical" href="https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/" /><link rel="alternate" type="application/atom+xml" href="https://www.fatwae.store/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/www.fatwae.store\/"
+      },
+      "articleSection" : "blog",
+      "name" : "6.828-操作系统工程-Lec1-3课件笔记和作业",
+      "headline" : "6.828-操作系统工程-Lec1-3课件笔记和作业",
+      "description" : "笔记  函数的开场和结束 \u002b------------\u002b | | arg 2 | \\ \u002b------------\u002b \u0026gt;- previous function\u0026#39;s stack frame | arg 1 | \/ \u002b------------\u002b | | ret %eip | \/ \u002b============\u002b | saved %ebp | \\ %ebp-\u0026gt; \u002b------------\u002b | | | | | local | \\ | variables, | \u0026gt;- current function\u0026#39;s stack frame | etc. | \/ | | | | | | %esp-\u0026gt; \u002b------------\u002b \/ 函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。\nC源文件编译过程  PC 模拟器实现  CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; .",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2018",
+      "datePublished": "2018-04-06 22:58:48 \u002b0000 UTC",
+      "dateModified" : "2018-04-06 22:58:48 \u002b0000 UTC",
+      "url" : "https:\/\/www.fatwae.store\/blog\/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F\/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86\/",
+      "keywords" : [ "OS", ]
+  }
+</script>
+<title>6.828-操作系统工程-Lec1-3课件笔记和作业</title>
+  <meta property="og:title" content="6.828-操作系统工程-Lec1-3课件笔记和作业" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="笔记  函数的开场和结束 &#43;------------&#43; | | arg 2 | \ &#43;------------&#43; &amp;gt;- previous function&amp;#39;s stack frame | arg 1 | / &#43;------------&#43; | | ret %eip | / &#43;============&#43; | saved %ebp | \ %ebp-&amp;gt; &#43;------------&#43; | | | | | local | \ | variables, | &amp;gt;- current function&amp;#39;s stack frame | etc. | / | | | | | | %esp-&amp;gt; &#43;------------&#43; / 函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。
+C源文件编译过程  PC 模拟器实现  CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; ." />
+  <meta name="description" content="笔记  函数的开场和结束 &#43;------------&#43; | | arg 2 | \ &#43;------------&#43; &amp;gt;- previous function&amp;#39;s stack frame | arg 1 | / &#43;------------&#43; | | ret %eip | / &#43;============&#43; | saved %ebp | \ %ebp-&amp;gt; &#43;------------&#43; | | | | | local | \ | variables, | &amp;gt;- current function&amp;#39;s stack frame | etc. | / | | | | | | %esp-&amp;gt; &#43;------------&#43; / 函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。
+C源文件编译过程  PC 模拟器实现  CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; ." />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="https://pawer.io" target="_blank">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="" target="_blank">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">6.828-操作系统工程-Lec1-3课件笔记和作业</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2018-04-06 22:58:48 UTC">
+                06 Apr 2018
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https://pwaer.io/">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h1 id="笔记">笔记</h1>
+<hr>
+<h2 id="函数的开场和结束">函数的开场和结束</h2>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">               +------------+   |
+               | arg 2      |   \
+               +------------+    &gt;- previous function&#39;s stack frame
+               | arg 1      |   /
+               +------------+   |
+               | ret %eip   |   /
+               +============+   
+               | saved %ebp |   \
+        %ebp-&gt; +------------+   |
+               |            |   |
+               |   local    |   \
+               | variables, |    &gt;- current function&#39;s stack frame
+               |    etc.    |   /
+               |            |   |
+               |            |   |
+        %esp-&gt; +------------+   /
+</code></pre></div><h2 id="函数调用和汇编对应">函数调用和汇编对应</h2>
+<p><img src="/images/operating-system/6.828/lab1/note1.png" alt="note1.png"></p>
+<p>其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。</p>
+<h2 id="c源文件编译过程">C源文件编译过程</h2>
+<p><img src="/images/operating-system/6.828/lab1/note2.png" alt="note2.png"></p>
+<hr>
+<h2 id="pc-模拟器实现">PC 模拟器实现</h2>
+<hr>
+<h3 id="cpu寄存器">CPU寄存器</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#存储在全局变量中
+</span><span style=""></span>int32_t regs[8];
+<span style="">#define REG_EAX 1;
+</span><span style="">#define REG_EBX 2;
+</span><span style="">#define REG_ECX 3;
+</span><span style=""></span>...
+int32_t eip;
+int16_t segregs[4];
+...
+</code></pre></div><h3 id="物理内存">物理内存</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">char</span> mem[256*1024*1024];
+</code></pre></div><h3 id="执行">执行</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">for</span> (;;) {
+        read_instruction();
+        <span style="font-weight:bold">switch</span> (decode_instruction_opcode()) {
+        <span style="font-weight:bold">case</span> OPCODE_ADD:
+            <span style="">int</span> src = decode_src_reg();
+            <span style="">int</span> dst = decode_dst_reg();
+            regs[dst] = regs[dst] + regs[src];
+            <span style="font-weight:bold">break</span>;
+        <span style="font-weight:bold">case</span> OPCODE_SUB:
+            <span style="">int</span> src = decode_src_reg();
+            <span style="">int</span> dst = decode_dst_reg();
+            regs[dst] = regs[dst] - regs[src];
+            <span style="font-weight:bold">break</span>;
+        ...
+        }
+        eip += instruction_length;
+</code></pre></div><h3 id="物理内存布局">物理内存布局</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#define KB      1024
+</span><span style=""></span>    <span style="">#define MB      1024*1024
+</span><span style=""></span>
+    <span style="">#define LOW_MEMORY  640*KB
+</span><span style=""></span>    <span style="">#define EXT_MEMORY  10*MB
+</span><span style=""></span>
+    uint8_t low_mem[LOW_MEMORY];
+    uint8_t ext_mem[EXT_MEMORY];
+    uint8_t bios_rom[64*KB];
+
+    uint8_t read_byte(uint32_t phys_addr) {
+        <span style="font-weight:bold">if</span> (phys_addr &lt; LOW_MEMORY)
+            <span style="font-weight:bold">return</span> low_mem[phys_addr];
+        <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (phys_addr &gt;= 960*KB &amp;&amp; phys_addr &lt; 1*MB)
+            <span style="font-weight:bold">return</span> rom_bios[phys_addr - 960*KB];
+        <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (phys_addr &gt;= 1*MB &amp;&amp; phys_addr &lt; 1*MB+EXT_MEMORY) {
+            <span style="font-weight:bold">return</span> ext_mem[phys_addr-1*MB];
+        <span style="font-weight:bold">else</span> ...
+    }
+
+    <span style="">void</span> write_byte(uint32_t phys_addr, uint8_t val) {
+        <span style="font-weight:bold">if</span> (phys_addr &lt; LOW_MEMORY)
+            low_mem[phys_addr] = val;
+        <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (phys_addr &gt;= 960*KB &amp;&amp; phys_addr &lt; 1*MB)
+            ; <span style="font-style:italic">/* ignore attempted write to ROM! */</span>
+        <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (phys_addr &gt;= 1*MB &amp;&amp; phys_addr &lt; 1*MB+EXT_MEMORY) {
+            ext_mem[phys_addr-1*MB] = val;
+        <span style="font-weight:bold">else</span> ...
+    }
+</code></pre></div><h3 id="外围设备">外围设备</h3>
+<ul>
+<li>Hard disk: using a file of the host</li>
+<li>VGA display: draw in a host window</li>
+<li>Keyboard: hostsʼs keyboard API</li>
+<li>Clock chip: hostʼs clock</li>
+<li>Etc.</li>
+</ul>
+<hr>
+<h1 id="homework">Homework</h1>
+<hr>
+<h2 id="implement-shell">Implement Shell</h2>
+<p><a href="https://github.com/fATwaer/Operating-System-Engineering-Code/tree/master/homework1">注释好的shell code和最后完成的shell code</a></p>
+<h3 id="代码片段1">代码片段1</h3>
+<p>实现shell的执行命令</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="font-weight:bold">case</span> <span style="font-style:italic">&#39; &#39;</span>:
+    ecmd = (<span style="font-weight:bold">struct</span> execcmd*)cmd;
+    <span style="font-weight:bold">if</span>(ecmd-&gt;argv[0] == 0)
+      _exit(0);
+    <span style="">char</span> path[256];
+    <span style="font-weight:bold">if</span>( !access(ecmd-&gt;argv[0], F_OK) ){  <span style="font-style:italic">//argv[0]为要执行的命令
+</span><span style="font-style:italic"></span>        execv(ecmd-&gt;argv[0], ecmd-&gt;argv);
+        fprintf(stderr, <span style="font-style:italic">&#34;executed in home dictory</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>); 
+    } <span style="font-weight:bold">else</span> {
+        strcpy(path,<span style="font-style:italic">&#34;/bin/&#34;</span>);
+        strcat(path,ecmd-&gt;argv[0]);
+        <span style="font-weight:bold">if</span>( !access(path, F_OK) )
+                execv(path, ecmd-&gt;argv);
+        <span style="font-weight:bold">else</span>
+                fprintf(stderr,<span style="font-style:italic">&#34;</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">%s</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic"> command not found</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, path);
+</code></pre></div><hr>
+<h4 id="access和execv">access和execv</h4>
+<pre><code>int access(const char *pathname, int mode);
+</code></pre>
+<p>判断用户是否能使用pathname这个文件或者目录。
+mode有4种:</p>
+<ol>
+<li>
+<p>F_OK tests  for  the  existence  of  the file.</p>
+</li>
+<li>
+<p>R_OK,  W_OK,  and  X_OK test whether the file exists and grants read, write, and execute permissions</p>
+<p>int execv(const char *path, char *const argv[]);
+执行path下的命令</p>
+</li>
+</ol>
+<h3 id="代码片段2">代码片段2</h3>
+<hr>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;&gt;&#39;</span>:
+  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;&lt;&#39;</span>:
+    rcmd = (<span style="font-weight:bold">struct</span> redircmd*)cmd;
+    <span style="font-style:italic">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here ...
+</span><span style="font-style:italic"></span>    close(rcmd-&gt;fd);
+    <span style="font-weight:bold">if</span>((open(rcmd-&gt;file, rcmd-&gt;flags, 777)) == -1){
+    fprintf(stderr, <span style="font-style:italic">&#34;open file error</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+    exit(0);
+    }
+    runcmd(rcmd-&gt;cmd);
+    <span style="font-weight:bold">break</span>;
+</code></pre></div><h4 id="open">open()</h4>
+<pre><code>int open(constchar* pathname,int flags,[mode_t mode]);
+</code></pre>
+<p><code>返回值</code> : 成功则返回文件描述符，否则返回-1
+<code>flags</code> : 参数用来描述打开文件的方法:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">O_RDONLY 只读模式
+O_WRONLY 只写模式
+O_RDWR 读写模式
+O_APPEND 每次写操作都写入文件的末尾
+O_CREAT 如果指定文件不存在，则创建这个文件
+O_EXCL 如果要创建的文件已存在，则返回-1，并且修改errno的值
+O_TRUNC 如果文件存在，并且以只写/读写方式打开，则清空文件全部内容(即将其长度截短为0)
+O_NOCTTY 如果路径名指向终端设备，不要把这个设备用作控制终端。
+O_NONBLOCK 如果路径名指向FIFO/块文件/字符文件，则把文件的打开和后继I/O
+</code></pre></div><p>代码测试片段</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">int</span> fd;
+fd = open(<span style="font-style:italic">&#34;test.c&#34;</span>,O_RDONLY);
+printf(<span style="font-style:italic">&#34;%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>,fd);
+<span style="font-style:italic">//close(fd);
+</span><span style="font-style:italic"></span>fd = open(<span style="font-style:italic">&#34;test1.c&#34;</span>,O_WRONLY);
+printf(<span style="font-style:italic">&#34;%d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>,fd);
+
+<span style=""># result:
+</span><span style=""></span>3
+4
+</code></pre></div><h3 id="代码片段3">代码片段3</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;|&#39;</span>:
+    pcmd = (<span style="font-weight:bold">struct</span> pipecmd*)cmd;
+    <span style="font-style:italic">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here ...
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span>((pipe(p)) == -1) perror(<span style="font-style:italic">&#34;pipe&#34;</span>);
+    <span style="font-weight:bold">if</span>(fork1() == 0){
+        close(p[0]);
+    dup2(p[1], STDOUT_FILENO);
+    close(p[1]);
+    runcmd(pcmd-&gt;left);
+    }
+    wait(0);
+    close(p[1]);
+    dup2(p[0], STDIN_FILENO);
+    close(p[0]);
+    runcmd(pcmd-&gt;right);
+    <span style="font-weight:bold">break</span>;
+</code></pre></div><h4 id="pipe">pipe()</h4>
+<pre><code>int pipe(int pipefd[2]);
+</code></pre>
+<p>Dscpt:
+<code>pipefd[0]</code> : pipe的读取端
+<code>pipefd[1]</code> : pipe的写入端
+<code>The read  end</code> is  opened using the O_RDONLY flag;
+<code>The write end</code> is opened using the O_WRONLY flag.</p>
+<h4 id="使用fork和pipe进行进程之间的通信">使用fork和pipe进行进程之间的通信</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#include</span><span style="">&lt;fcntl.h&gt;</span><span style="">
+</span><span style="">#include</span><span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style="">#include</span><span style="">&lt;unistd.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">int</span> main()
+{
+        <span style="">int</span> fd[2];
+        pid_t pid;
+
+        pipe(fd);
+        pid = fork();
+        <span style="font-weight:bold">if</span>(pid &gt; 0){
+            printf(<span style="font-style:italic">&#34;parent process:</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+            <span style="">char</span> sp[] = <span style="font-style:italic">&#34;string is waiting for being loaded&#34;</span>;
+            write(fd[1], sp, <span style="font-weight:bold">sizeof</span>(sp));
+        } <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> (pid == 0) {
+            <span style="">char</span> buf[80];
+            printf(<span style="font-style:italic">&#34;child process:</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+            read(fd[0], buf, <span style="font-weight:bold">sizeof</span>(buf));
+            printf(<span style="font-style:italic">&#34;loaded: %s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, buf);
+        } <span style="font-weight:bold">else</span> {
+            printf(<span style="font-style:italic">&#34;fork error&#34;</span>);
+        }
+
+</code></pre></div><hr>
+<h4 id="dup和fcntl">dup和fcntl</h4>
+<pre><code>int  dup(int oldfd)
+</code></pre>
+<p>新复制的fd和旧的fd共享文件位移(offset)和文件状态标识符(file status flags),不共享文件描述符标识(file descriptor flags),文件描述符标识只有一个the close-on-exec flag,用来指示fork的子进程在执行之前,要不要关闭这个文件描述符。</p>
+<p>每个文件描述符都有一个close-on-exec标志。在系统默认情况下，这个标志最后一位被设置为0。而FD_CLOEXEC则用来设置文件的close-on-exec，FD_CLOEXEC的值为1，所以在设置close-on-exec位时可以使用FD_CLOEXEC也可以直接的使用0或1数字对close-on-exec位进行设置,FD_CLOEXEC可以用fcntl()来设置。当将close-on-exec标志置为1时，即开启此标志。那么当子进程调用exec函数之前，系统就已经让子进程将此文件描述符关闭了。当close-on-exec标志置为0时，即关闭了此标志。那么当子进程调用exec函数，子进程将不会关闭该文件描述符。此时，父子进程将共享该文件，它们具有同一个文件表项，也就有了同一个文件偏移量等。</p>
+<pre><code>int dup2( int fd, int new_fd )
+</code></pre>
+<p>同样，函数返回一个新的文件描述符，若出错则返回 -1。与 dup 不同的是，dup2 可以用 filedes2 参数指定新描述符的数值。如果 filedes2 已经打开,则先将其关闭。如若 filedes 等于 filedes2 , 则 dup2 返回 filedes2 , 而不关闭它。返回的新文件描述符与参数 filedes 共享同一个文件数据结构。</p>
+<p>比如,<code>dup2(p[1], STDOUT_FILENO)</code>,p[1]为pipe的写入口</p>
+<ol>
+<li>
+<p>把进程的标准输出关闭</p>
+</li>
+<li>
+<p>复制一个大于等于<code>STDOUT_FILENO</code>的文件描述符FD</p>
+</li>
+<li>
+<p>这时候新的FD共享<code>STDOUT_FILENO</code>的文件内容。</p>
+</li>
+<li>
+<p>原本进程的输出，就转移到了pipe管道的写入口。</p>
+<p>int fcntl(int filedes,int cmd,&hellip;);
+<code>cmd = F_DUPFD</code>, 复制一个现有的文件描述符,返回值为新文件描述符。相当于<code>dup(oldfd)</code>
+<code>cmd = F_SETFL</code> : 设置状态标志
+<code>cmd = F_GETFL</code> : 获取状态标志
+状态标志就是open是的oflag(O_RDONLY,O_WRONLY,O_RDWR,O_NONBLOCK,O_APPEND,O_SYNC（异步I/O）,O_ASYNC（等待写完成）
+可以更改的标志是O_APPEND，O_NONBLOCK，O_SYNC,O_ASYNC。)
+<code>FD_CLOEXEC</code>:fcntl调用的一个宏定义，填在fcntl第三个参数处。
+<code>O_CLOEXEC</code>:open()调用的一个宏定义</p>
+</li>
+</ol>
+<h4 id="用fcntl复制一个fd">用fcntl复制一个fd</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C">    <span style="">char</span> buf[80];
+    <span style="">int</span> fd = open(<span style="font-style:italic">&#34;a1&#34;</span>, O_RDONLY);
+    <span style="">int</span> fd_new = fcntl(fd, F_DUPFD);
+    printf(<span style="font-style:italic">&#34;fd_new : %d</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, fd_new);
+    <span style="font-weight:bold">while</span>(read(fd_new, buf, <span style="font-weight:bold">sizeof</span>(buf)))
+    {
+            printf(<span style="font-style:italic">&#34;%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, buf);
+    }
+</code></pre></div><p>关于<a href="https://fatwaer.github.io/2018/04/09/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/FD-CLOEXEC%E6%A0%87%E5%BF%97/">FD_CLOEXEC flag</a> , 是指在FD在被exec()函数族被调用的时候,自动关闭。</p>
+<hr>
+<h4 id="结构体强制转换">结构体强制转换</h4>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;string.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style=""></span><span style="font-weight:bold">struct</span> a1{
+    <span style="">int</span> a;
+    <span style="">char</span> c;
+};
+
+<span style="font-weight:bold">struct</span> b1{
+    <span style="">int</span> c;
+    <span style="">char</span> cc;
+    <span style="">int</span> interger;
+};
+
+<span style="font-weight:bold">struct</span> a1*
+b1(<span style="">void</span>){
+    <span style="font-weight:bold">struct</span> b1* temp;
+    temp = malloc(<span style="font-weight:bold">sizeof</span>(*b1));
+    temp-&gt;c = 1;
+    temp-&gt;cc = <span style="font-style:italic">&#39;c&#39;</span>;
+    temp-&gt;interger = 11;
+    <span style="font-weight:bold">return</span> (<span style="font-weight:bold">struct</span> a1*) temp;
+} 
+
+
+<span style="">int</span> 
+main()
+{
+    <span style="font-weight:bold">struct</span> a1 *a;
+    <span style="font-weight:bold">struct</span> b1 *b;
+    a = b1();
+    printf(<span style="font-style:italic">&#34;%d , %c&#34;</span>,a-&gt;a, a-&gt;c);
+}
+</code></pre></div><h4 id="获取环境变量">获取环境变量</h4>
+<p>获得一个环境变量的字符串数组</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">#include</span> <span style="">&lt;stdio.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;stdlib.h&gt;</span><span style="">
+</span><span style="">#include</span> <span style="">&lt;string.h&gt;</span><span style="">
+</span><span style=""></span>
+<span style="">#define MAX_PATH 20
+</span><span style=""></span><span style="">int</span> main()
+{
+    <span style="">char</span>* s_ptr;
+    <span style="">char</span> *pa, *pb, *buf;
+    <span style="">int</span> i;
+    <span style="">char</span>* path[MAX_PATH];
+    s_ptr = getenv(<span style="font-style:italic">&#34;PATH&#34;</span>);
+    printf(<span style="font-style:italic">&#34;%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, s_ptr);
+    buf = malloc(strlen(s_ptr)+1);  
+    strcpy(buf, s_ptr);
+    
+    <span style="">int</span> length;
+    i = 0;
+    pa = pb = buf;
+    <span style="font-weight:bold">while</span>(*pa){
+        <span style="font-weight:bold">while</span>(*pa != 0 &amp;&amp; *pa++ != <span style="font-style:italic">&#39;:&#39;</span>)  ;
+        length = pa - pb;
+        path[i] = malloc(length);
+        strncpy(path[i], pb, length);
+        <span style="font-weight:bold">if</span>(*pa != 0)
+            path[i][pa-pb-1] = 0;
+        
+        i++;
+        pb = pa;
+    }
+    <span style="">int</span> j = 0;
+    <span style="font-weight:bold">for</span>(; j &lt; i; j++ )
+        printf(<span style="font-style:italic">&#34;%s</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, path[j]);    
+}
+</code></pre></div><h3 id="最后完成的runcmd">最后完成的runcmd()</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-C" data-lang="C"><span style="">void</span>
+runcmd(<span style="font-weight:bold">struct</span> cmd *cmd)
+{
+  <span style="">int</span> p[2], r;
+  <span style="font-weight:bold">struct</span> execcmd *ecmd;
+  <span style="font-weight:bold">struct</span> pipecmd *pcmd;
+  <span style="font-weight:bold">struct</span> redircmd *rcmd;
+
+  <span style="font-weight:bold">if</span>(cmd == 0)
+    _exit(0);
+  
+  <span style="font-weight:bold">switch</span>(cmd-&gt;type){
+  <span style="font-weight:bold">default</span>:
+    fprintf(stderr, <span style="font-style:italic">&#34;unknown runcmd</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+    _exit(-1);
+
+  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39; &#39;</span>:
+    ecmd = (<span style="font-weight:bold">struct</span> execcmd*)cmd;
+    <span style="font-weight:bold">if</span>(ecmd-&gt;argv[0] == 0)
+      _exit(0);
+    <span style="font-style:italic">// fprintf(stderr, &#34;exec not implemented\n&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here ...
+</span><span style="font-style:italic"></span>    
+    <span style="">char</span> pathbuf[256];
+    <span style="font-weight:bold">if</span>( !access(ecmd-&gt;argv[0], F_OK) ){
+        execv(ecmd-&gt;argv[0], ecmd-&gt;argv);
+        fprintf(stderr, <span style="font-style:italic">&#34;executed in home dictory</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+    } <span style="font-weight:bold">else</span> {
+    <span style="">char</span>* s_ptr;
+        <span style="">char</span> *pa, *pb, *buf;
+        <span style="">int</span> i;
+        <span style="">char</span>* path[MAX_PATH];
+        s_ptr = getenv(<span style="font-style:italic">&#34;PATH&#34;</span>);
+        buf = malloc(strlen(s_ptr)+1);  
+        strcpy(buf, s_ptr);
+    
+        <span style="">int</span> length;
+        i = 0;
+        pa = pb = buf;
+        <span style="font-weight:bold">while</span>(*pa){
+            <span style="font-weight:bold">while</span>(*pa != 0 &amp;&amp; *pa++ != <span style="font-style:italic">&#39;:&#39;</span>)  ;
+            length = pa - pb;
+            path[i] = malloc(length);
+            strncpy(path[i], pb, length);
+            <span style="font-weight:bold">if</span>(*pa != 0)
+                path[i][pa-pb-1] = 0;
+ 
+            i++;
+            pb = pa;
+        }
+
+    <span style="">int</span> ji;
+    <span style="font-weight:bold">for</span>(ji=0; ji &lt; i; ji++){
+        strcpy(pathbuf, path[ji]);
+        strcat(pathbuf, <span style="font-style:italic">&#34;/&#34;</span>);
+        strcat(pathbuf, ecmd-&gt;argv[0]);
+        <span style="font-style:italic">//printf(&#34;path-&gt; %s\n&#34;, pathbuf);
+</span><span style="font-style:italic"></span>        <span style="font-weight:bold">if</span>( !access(pathbuf, F_OK) ){
+            execv(pathbuf, ecmd-&gt;argv);
+        }
+        
+        memset(pathbuf, 0, <span style="font-weight:bold">sizeof</span>(pathbuf));
+    }
+    <span style="font-weight:bold">if</span>(ji == i)
+        fprintf(stderr, <span style="font-style:italic">&#34; </span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">%s</span><span style="font-weight:bold;font-style:italic">\&#34;</span><span style="font-style:italic">command not found</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>, ecmd-&gt;argv[0]);
+    }   
+    <span style="font-weight:bold">break</span>;
+
+  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;&gt;&#39;</span>:
+  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;&lt;&#39;</span>:
+    rcmd = (<span style="font-weight:bold">struct</span> redircmd*)cmd;
+    <span style="font-style:italic">//fprintf(stderr, &#34;redir not implemented\n&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here ...
+</span><span style="font-style:italic"></span>    close(rcmd-&gt;fd);
+    <span style="font-weight:bold">if</span>((open(rcmd-&gt;file, rcmd-&gt;flags, 777)) == -1){
+    fprintf(stderr, <span style="font-style:italic">&#34;open file error</span><span style="font-weight:bold;font-style:italic">\n</span><span style="font-style:italic">&#34;</span>);
+    exit(0);
+    }
+    runcmd(rcmd-&gt;cmd);
+    <span style="font-weight:bold">break</span>;
+
+  <span style="font-weight:bold">case</span> <span style="font-style:italic">&#39;|&#39;</span>:
+    pcmd = (<span style="font-weight:bold">struct</span> pipecmd*)cmd;
+    <span style="font-style:italic">//fprintf(stderr, &#34;pipe not implemented\n&#34;);
+</span><span style="font-style:italic"></span>    <span style="font-style:italic">// Your code here ...
+</span><span style="font-style:italic"></span>    <span style="font-weight:bold">if</span>((pipe(p)) == -1) perror(<span style="font-style:italic">&#34;pipe&#34;</span>);
+    <span style="font-weight:bold">if</span>(fork1() == 0){
+        close(p[0]);
+        dup2(p[1], STDOUT_FILENO);  
+        close(p[1]);                     <span style="font-style:italic">// &lt;- 关闭p[1],防止fd泄露
+</span><span style="font-style:italic"></span>        runcmd(pcmd-&gt;left);
+    }
+    wait(0);
+    close(p[1]);
+    dup2(p[0], STDIN_FILENO);
+    close(p[0]);
+    runcmd(pcmd-&gt;right);
+    <span style="font-weight:bold">break</span>;
+  }    
+  _exit(0);
+}
+</code></pre></div><h3 id="结果">结果</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-shell" data-lang="shell">moonlight@ubuntu:~/homework$ ./a.out &lt; t.sh
+     15      15      82
+     15      15      82
+</code></pre></div><h3 id="pipedup重定向文章">pipe、dup重定向文章</h3>
+<p>[I/O重定向和管道：使用pipe、fork、exec详解。] :https://blog.csdn.net/skyroben/article/details/71513385#
+[进程间的通信方式] : <a href="https://blog.csdn.net/yake25/article/details/7447086">https://blog.csdn.net/yake25/article/details/7447086</a><br>
+[dup2后close] : <a href="http://blog.51cto.com/keren/170892">http://blog.51cto.com/keren/170892</a></p>
+<p>_* 挑战题目未完成_</p>
+<blockquote>
+<p>获取环境变量的时候造了个轮子.</p>
+</blockquote>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/os/">
+                OS
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+<div class="related-content">
+  <h3>Related Posts</h3>
+  <ul>
+    
+    <li><a href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/">6.828-操作系统工程-Lab1:Booting a PC</a></li>
+    
+  </ul>
+</div>
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/elasticsearch/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "",
+      "headline" : "",
+      "description" : "elasticsearch 文档创建和删除 创建和更新文档 官方提供的接口:\nPUT \/\u0026lt;target\u0026gt;\/_doc\/\u0026lt;_id\u0026gt; POST \/\u0026lt;target\u0026gt;\/_doc\/ PUT \/\u0026lt;target\u0026gt;\/_create\/\u0026lt;_id\u0026gt; POST \/\u0026lt;target\u0026gt;\/_create\/\u0026lt;_id\u0026gt; 下面的例子利用PUT方法创建一个 id 为1的文档：\nPUT \/index-001\/_doc\/1 { \u0026#34;title\u0026#34;: \u0026#34;Elasticsearch: The Definitive Guide\u0026#34;, \u0026#34;authors\u0026#34;: [ \u0026#34;clinton gormley\u0026#34;, \u0026#34;zachary tong\u0026#34; ], \u0026#34;summary\u0026#34;: \u0026#34;A distibuted real-time search and analytics engine\u0026#34;, \u0026#34;publish_date\u0026#34;: \u0026#34;2015-02-07\u0026#34;, \u0026#34;num_reviews\u0026#34;: 20, \u0026#34;publisher\u0026#34;: \u0026#34;oreilly\u0026#34; } 响应结构为：\n{ \u0026#34;_index\u0026#34; : \u0026#34;index-001\u0026#34;, \u0026#34;_type\u0026#34; : \u0026#34;_doc\u0026#34;, \u0026#34;_id\u0026#34; : \u0026#34;1\u0026#34;, \u0026#34;_version\u0026#34; : 1, \u0026#34;result\u0026#34; : \u0026#34;created\u0026#34;, \u0026#34;_shards\u0026#34; : { \u0026#34;total\u0026#34; : 2, \u0026#34;successful\u0026#34; : 1, \u0026#34;failed\u0026#34; : 0 }, \u0026#34;_seq_no\u0026#34; : 18, \u0026#34;_primary_term\u0026#34; : 1 } 其中，version字段为1，并且result的值为created。",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "0001",
+      "datePublished": "0001-01-01 00:00:00 \u002b0000 UTC",
+      "dateModified" : "0001-01-01 00:00:00 \u002b0000 UTC",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6\/elasticsearch\/",
+      "keywords" : [  ]
+  }
+</script>
+<title></title>
+  <meta property="og:title" content="" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="elasticsearch 文档创建和删除 创建和更新文档 官方提供的接口:
+PUT /&amp;lt;target&amp;gt;/_doc/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_doc/ PUT /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; 下面的例子利用PUT方法创建一个 id 为1的文档：
+PUT /index-001/_doc/1 { &amp;#34;title&amp;#34;: &amp;#34;Elasticsearch: The Definitive Guide&amp;#34;, &amp;#34;authors&amp;#34;: [ &amp;#34;clinton gormley&amp;#34;, &amp;#34;zachary tong&amp;#34; ], &amp;#34;summary&amp;#34;: &amp;#34;A distibuted real-time search and analytics engine&amp;#34;, &amp;#34;publish_date&amp;#34;: &amp;#34;2015-02-07&amp;#34;, &amp;#34;num_reviews&amp;#34;: 20, &amp;#34;publisher&amp;#34;: &amp;#34;oreilly&amp;#34; } 响应结构为：
+{ &amp;#34;_index&amp;#34; : &amp;#34;index-001&amp;#34;, &amp;#34;_type&amp;#34; : &amp;#34;_doc&amp;#34;, &amp;#34;_id&amp;#34; : &amp;#34;1&amp;#34;, &amp;#34;_version&amp;#34; : 1, &amp;#34;result&amp;#34; : &amp;#34;created&amp;#34;, &amp;#34;_shards&amp;#34; : { &amp;#34;total&amp;#34; : 2, &amp;#34;successful&amp;#34; : 1, &amp;#34;failed&amp;#34; : 0 }, &amp;#34;_seq_no&amp;#34; : 18, &amp;#34;_primary_term&amp;#34; : 1 } 其中，version字段为1，并且result的值为created。" />
+  <meta name="description" content="elasticsearch 文档创建和删除 创建和更新文档 官方提供的接口:
+PUT /&amp;lt;target&amp;gt;/_doc/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_doc/ PUT /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; POST /&amp;lt;target&amp;gt;/_create/&amp;lt;_id&amp;gt; 下面的例子利用PUT方法创建一个 id 为1的文档：
+PUT /index-001/_doc/1 { &amp;#34;title&amp;#34;: &amp;#34;Elasticsearch: The Definitive Guide&amp;#34;, &amp;#34;authors&amp;#34;: [ &amp;#34;clinton gormley&amp;#34;, &amp;#34;zachary tong&amp;#34; ], &amp;#34;summary&amp;#34;: &amp;#34;A distibuted real-time search and analytics engine&amp;#34;, &amp;#34;publish_date&amp;#34;: &amp;#34;2015-02-07&amp;#34;, &amp;#34;num_reviews&amp;#34;: 20, &amp;#34;publisher&amp;#34;: &amp;#34;oreilly&amp;#34; } 响应结构为：
+{ &amp;#34;_index&amp;#34; : &amp;#34;index-001&amp;#34;, &amp;#34;_type&amp;#34; : &amp;#34;_doc&amp;#34;, &amp;#34;_id&amp;#34; : &amp;#34;1&amp;#34;, &amp;#34;_version&amp;#34; : 1, &amp;#34;result&amp;#34; : &amp;#34;created&amp;#34;, &amp;#34;_shards&amp;#34; : { &amp;#34;total&amp;#34; : 2, &amp;#34;successful&amp;#34; : 1, &amp;#34;failed&amp;#34; : 0 }, &amp;#34;_seq_no&amp;#34; : 18, &amp;#34;_primary_term&amp;#34; : 1 } 其中，version字段为1，并且result的值为created。" />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title"></h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h1 id="elasticsearch">elasticsearch</h1>
+<h2 id="文档创建和删除">文档创建和删除</h2>
+<h3 id="创建和更新文档">创建和更新文档</h3>
+<p>官方提供的接口:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">PUT /&lt;target&gt;/_doc/&lt;_id&gt;
+POST /&lt;target&gt;/_doc/
+PUT /&lt;target&gt;/_create/&lt;_id&gt;
+POST /&lt;target&gt;/_create/&lt;_id&gt;
+</code></pre></div><p>下面的例子利用<code>PUT</code>方法创建一个 id 为1的文档：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">PUT /index-001/_doc/1
+{
+  &#34;title&#34;: &#34;Elasticsearch: The Definitive Guide&#34;,
+  &#34;authors&#34;: [
+    &#34;clinton gormley&#34;,
+    &#34;zachary tong&#34;
+  ],
+  &#34;summary&#34;: &#34;A distibuted real-time search and analytics engine&#34;,
+  &#34;publish_date&#34;: &#34;2015-02-07&#34;,
+  &#34;num_reviews&#34;: 20,
+  &#34;publisher&#34;: &#34;oreilly&#34;
+}
+</code></pre></div><p>响应结构为：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{
+  &#34;_index&#34; : &#34;index-001&#34;,
+  &#34;_type&#34; : &#34;_doc&#34;,
+  &#34;_id&#34; : &#34;1&#34;,
+  &#34;_version&#34; : 1,
+  &#34;result&#34; : &#34;created&#34;,
+  &#34;_shards&#34; : {
+    &#34;total&#34; : 2,
+    &#34;successful&#34; : 1,
+    &#34;failed&#34; : 0
+  },
+  &#34;_seq_no&#34; : 18,
+  &#34;_primary_term&#34; : 1
+}
+</code></pre></div><p>其中，version字段为1，并且result的值为<code>created</code>。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{
+  &#34;_index&#34; : &#34;index-001&#34;,
+  &#34;_type&#34; : &#34;_doc&#34;,
+  &#34;_id&#34; : &#34;1&#34;,
+  &#34;_version&#34; : 2,
+  &#34;result&#34; : &#34;updated&#34;,
+  ..
+}
+
+</code></pre></div><p>如果重复对这个文档执行PUT操作，那么ES就会转变为更新，并且自增<code>version</code>字段。</p>
+<p>自动创建索引和文档并且设置为文档的 id，如果需要由 elasticsearch 创建唯一的索引id，不传入 id 即可。</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">POST /index-001/_doc
+{
+  &#34;title&#34;: &#34;Taming Text: How to Find, Organize, and Manipulate It&#34;,
+  &#34;authors&#34;: [
+    &#34;grant ingersoll&#34;,
+    &#34;thomas morton&#34;,
+    &#34;drew farris&#34;
+  ],
+  &#34;summary&#34;: &#34;organize text using approaches such as full-text search, proper name recognition, clustering, tagging, information extraction, and summarization&#34;,
+  &#34;publish_date&#34;: &#34;2013-01-24&#34;,
+  &#34;num_reviews&#34;: 12,
+  &#34;publisher&#34;: &#34;manning&#34;
+}
+
+[result]
+{
+...
+
+  &#34;_id&#34; : &#34;uhPDrXoBbcUNJeGl43Px&#34;,
+  &#34;_version&#34; : 1,
+  &#34;result&#34; : &#34;created&#34;,
+
+...
+}
+</code></pre></div><p>PUT和POST操作都会索引文档并且自动创建索引以及和请求结构相关的mappings(类似数据库的表结构schema)。查询索引的信息如下：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /&lt;index_name&gt;
+</code></pre></div><p>通常会得到三个信息，aliases、mappings和settings</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /index-001
+
+[result]
+{
+  &#34;index-001&#34; : {
+    &#34;aliases&#34; : {},
+    &#34;mappings&#34; : {},
+    &#34;settings&#34; : {}
+  }
+}
+</code></pre></div><h3 id="查询文档">查询文档</h3>
+<p>文档索引完成后，能够通过下面的查询查到新加入的文档：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /&lt;index_name&gt;/_doc/1
+GET /&lt;index_name&gt;/_search
+</code></pre></div><h3 id="删除文档">删除文档</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">DELETE /&lt;index&gt;/_doc/&lt;_id&gt;
+</code></pre></div><p>例如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">DELETE /index-001/_doc/1
+</code></pre></div><p>会返回一个结构体：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{
+  &#34;_index&#34; : &#34;index-001&#34;,
+  &#34;_type&#34; : &#34;_doc&#34;,
+  &#34;_id&#34; : &#34;1&#34;,
+  &#34;_version&#34; : 9,
+  &#34;result&#34; : &#34;deleted&#34;,
+  ...
+}
+
+</code></pre></div><p>如果找到了，会返回<code>200OK</code>，并且 found 判断是否存在文档，<code>_version </code> 字段在删除成功后会自增</p>
+<h2 id="基础检索">基础检索</h2>
+<h3 id="准备查询数据">准备查询数据</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">PUT /megacorp/employee/1
+{
+    &#34;first_name&#34; : &#34;John&#34;,
+    &#34;last_name&#34; :  &#34;Smith&#34;,
+    &#34;age&#34; :        25,
+    &#34;about&#34; :      &#34;I love to go rock climbing&#34;,
+    &#34;interests&#34;: [ &#34;sports&#34;, &#34;music&#34; ]
+}
+PUT /megacorp/employee/2
+{
+    &#34;first_name&#34; :  &#34;Jane&#34;,
+    &#34;last_name&#34; :   &#34;Smith&#34;,
+    &#34;age&#34; :         32,
+    &#34;about&#34; :       &#34;I like to collect rock albums&#34;,
+    &#34;interests&#34;:  [ &#34;music&#34; ]
+}
+
+PUT /megacorp/employee/3
+{
+    &#34;first_name&#34; :  &#34;Douglas&#34;,
+    &#34;last_name&#34; :   &#34;Fir&#34;,
+    &#34;age&#34; :         35,
+    &#34;about&#34;:        &#34;I like to build cabinets&#34;,
+    &#34;interests&#34;:  [ &#34;forestry&#34; ]
+}
+</code></pre></div><h3 id="simple_query_string">simple_query_string</h3>
+<h3 id="查询字符串query_string">查询字符串(query_string)</h3>
+<pre><code>GET /megacorp/employee/_search?q=last_name:Smith
+</code></pre>
+<h3 id="基础请求体查询request_body">基础请求体查询(request_body)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+    &#34;query&#34; : {
+        &#34;match&#34; : {
+            &#34;last_name&#34; : &#34;Smith&#34;
+        }
+    },
+    &#34;from&#34;: 0,
+    &#34;size&#34;: 2,
+    &#34;_source&#34;: [&#34;first_name&#34;, &#34;last_name&#34;],
+	&#34;sort&#34;: [{&#34;age&#34;:  &#34;desc&#34;}]
+}
+</code></pre></div><p>from,size 用于分页，<em>_source</em> 相当于select，sort对应order by</p>
+<h3 id="查询返回结构">查询返回结构</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{
+  &#34;took&#34; : 0,
+  &#34;timed_out&#34; : false,
+  &#34;_shards&#34; : {
+    &#34;total&#34; : 1,
+    &#34;successful&#34; : 1,
+    &#34;skipped&#34; : 0,
+    &#34;failed&#34; : 0
+  },
+  &#34;hits&#34; : {
+    &#34;total&#34; : {
+      &#34;value&#34; : 3,
+      &#34;relation&#34; : &#34;eq&#34;
+    },
+    &#34;max_score&#34; : 1.0,
+    &#34;hits&#34; : [
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;1&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;John&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 25,
+          &#34;about&#34; : &#34;I love to go rock climbing&#34;,
+          &#34;interests&#34; : [
+            &#34;sports&#34;,
+            &#34;music&#34;
+          ]
+        }
+      },
+      ...
+    ]
+  }
+}
+</code></pre></div><p>took 查询使用时间，timed_out 超时
+_shards 表示在多少分片上查询成功了
+hits: 为命中结果
+包含了文档的id、相关性得分</p>
+<h3 id="全文搜索match">全文搜索(match)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/employee/_search
+{
+    &#34;query&#34; : {
+        &#34;match&#34; : {
+            &#34;about&#34; : &#34;rock climbing&#34;
+        }
+    }
+}
+</code></pre></div><p>查询在 about 属性上喜欢 rock climbing 的人。<code> rock albums</code>和 <code>rock climbing</code> 都会被命中。如果字段是设置了 <code>not_analyzed </code> 或者是日期、数字、布尔，也会给定精确匹配的值。</p>
+<h3 id="短语检索match_phrase">短语检索(match_phrase)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/employee/_search
+{
+    &#34;query&#34; : {
+        &#34;match_phrase&#34; : {
+            &#34;about&#34; : &#34;rock climbing&#34;
+        }
+    }
+}
+</code></pre></div><p>只有含有短语 <code>rock climbing</code> 的文档才被检索</p>
+<h3 id="多字段查询multi_match">多字段查询(multi_match)</h3>
+<p>允许在多个字段上执行相同的查询</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;multi_match&#34;: {
+      &#34;query&#34;: &#34;like music&#34;,
+      &#34;fields&#34;: [&#34;about&#34;, &#34;interests&#34;]
+    }
+  }
+}
+
+[result]
+&#34;hits&#34; : {
+    &#34;total&#34; : {
+      &#34;value&#34; : 3,
+      &#34;relation&#34; : &#34;eq&#34;
+    },
+    &#34;max_score&#34; : 0.7549127,
+    &#34;hits&#34; : [
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;2&#34;,
+        &#34;_score&#34; : 0.7549127,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;Jane&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 32,
+          &#34;about&#34; : &#34;I like to collect rock albums&#34;,
+          &#34;interests&#34; : [
+            &#34;music&#34;
+          ]
+        }
+      },
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;1&#34;,
+        &#34;_score&#34; : 0.55654144,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;John&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 25,
+          &#34;about&#34; : &#34;I love to go rock climbing&#34;,
+          &#34;interests&#34; : [
+            &#34;sports&#34;,
+            &#34;music&#34;
+          ]
+        }
+      },
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;3&#34;,
+        &#34;_score&#34; : 0.3704521,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;Douglas&#34;,
+          &#34;last_name&#34; : &#34;Fir&#34;,
+          &#34;age&#34; : 35,
+          &#34;about&#34; : &#34;I like to build cabinets&#34;,
+          &#34;interests&#34; : [
+            &#34;forestry&#34;
+          ]
+        }
+      }
+    ]
+  }
+</code></pre></div><h3 id="范围查询range">范围查询(range)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;range&#34;: {
+        &#34;age&#34;: {
+            &#34;gte&#34;:  20,
+            &#34;lt&#34;:   33
+        }
+    }
+  }
+}
+
+[result]
+&#34;hits&#34; : {
+    &#34;total&#34; : {
+      &#34;value&#34; : 2,
+      &#34;relation&#34; : &#34;eq&#34;
+    },
+    &#34;max_score&#34; : 1.0,
+    &#34;hits&#34; : [
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;1&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;John&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 25,
+          &#34;about&#34; : &#34;I love to go rock climbing&#34;,
+          &#34;interests&#34; : [
+            &#34;sports&#34;,
+            &#34;music&#34;
+          ]
+        }
+      },
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;2&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;Jane&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 32,
+          &#34;about&#34; : &#34;I like to collect rock albums&#34;,
+          &#34;interests&#34; : [
+            &#34;music&#34;
+          ]
+        }
+      }
+    ]
+  }
+</code></pre></div><p>gt: 大于
+gte: 大于等于
+lt: 小于
+lte: 小于等于</p>
+<h3 id="精确值查找termterms">精确值查找(term/terms)</h3>
+<p>term 查询被用于精确值匹配，这些精确值可能是数字、时间、布尔或者那些 <strong>not_analyzed</strong> 的字符串</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;term&#34;: {
+      &#34;age&#34;: {
+        &#34;value&#34;: &#34;25&#34;
+      }
+    }
+  }
+}
+
+[result]
+&#34;hits&#34; : {
+    &#34;total&#34; : {
+      &#34;value&#34; : 1,
+      &#34;relation&#34; : &#34;eq&#34;
+    },
+    &#34;max_score&#34; : 1.0,
+    &#34;hits&#34; : [
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;1&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;John&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 25,
+          &#34;about&#34; : &#34;I love to go rock climbing&#34;,
+          &#34;interests&#34; : [
+            &#34;sports&#34;,
+            &#34;music&#34;
+          ]
+        }
+      }
+    ]
+  }
+</code></pre></div><p>terms 查询是 term 的多值版本</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;terms&#34;: {
+      &#34;age&#34;: [&#34;25&#34;, &#34;32&#34;]
+    }
+  }
+}
+
+[result]
+  &#34;hits&#34; : {
+    &#34;total&#34; : {
+      &#34;value&#34; : 2,
+      &#34;relation&#34; : &#34;eq&#34;
+    },
+    &#34;max_score&#34; : 1.0,
+    &#34;hits&#34; : [
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;1&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;John&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 25,
+          &#34;about&#34; : &#34;I love to go rock climbing&#34;,
+          &#34;interests&#34; : [
+            &#34;sports&#34;,
+            &#34;music&#34;
+          ]
+        }
+      },
+      {
+        &#34;_index&#34; : &#34;megacorp&#34;,
+        &#34;_type&#34; : &#34;employee&#34;,
+        &#34;_id&#34; : &#34;2&#34;,
+        &#34;_score&#34; : 1.0,
+        &#34;_source&#34; : {
+          &#34;first_name&#34; : &#34;Jane&#34;,
+          &#34;last_name&#34; : &#34;Smith&#34;,
+          &#34;age&#34; : 32,
+          &#34;about&#34; : &#34;I like to collect rock albums&#34;,
+          &#34;interests&#34; : [
+            &#34;music&#34;
+          ]
+        }
+      }
+    ]
+  }
+</code></pre></div><h3 id="存在性查找exsistsmissing">存在性查找(exsists/missing)</h3>
+<p>查找字段是否有值</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{
+    &#34;exists&#34;:   {
+        &#34;field&#34;:    &#34;title&#34;
+    }
+}
+</code></pre></div><h3 id="前缀查询match_prefix">前缀查询(match_prefix)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;prefix&#34;: {
+      &#34;first_name.keyword&#34;: {
+        &#34;value&#34;: &#34;J&#34;
+      }
+    }
+  }
+}
+</code></pre></div><p>为什么要加入keyword？或者:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;prefix&#34;: {
+      &#34;first_name.keyword&#34;: {
+        &#34;value&#34;: &#34;j&#34;
+      }
+    }
+  }
+}
+</code></pre></div><p>prefix 查询不做相关度评分计算，</p>
+<p>因为目前只有三条记录，分别是：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">&#34;first_name&#34; : &#34;John&#34;,
+&#34;first_name&#34; : &#34;Jane&#34;,
+&#34;first_name&#34; : &#34;Douglas&#34;,
+</code></pre></div><h3 id="模糊查询和正则表达式wildcardregexp">模糊查询和正则表达式(wildcard/regexp)</h3>
+<p>因为语句会被es分解成词，match查询的最小模糊匹配是词，利用模糊查询就能将模糊粒度降低到字母，如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;wildcard&#34;: {
+      &#34;about&#34;: {
+        &#34;value&#34;: &#34;c*&#34;
+      }
+    }
+  }
+}
+</code></pre></div><p>或者:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;regexp&#34;: {
+      &#34;about&#34;: {
+        &#34;value&#34;: &#34;c.*&#34;
+      }
+    }
+  }
+}
+</code></pre></div><p>数据在索引时的预处理有助于提高<code>前缀匹配</code>的效率，而通配符和正则表达式查询只能在查询时完成，尽管这些查询有其应用场景，但使用仍需谨慎。</p>
+<p>prefix 、 wildcard 和 regexp 查询是基于词操作的，像语句“Quick brown fox”如果设置了<code>analyzed </code>就会被分解成 quick 、 brown 和 fox。</p>
+<pre><code>{ &quot;regexp&quot;: { &quot;title&quot;: &quot;br.*&quot; }}
+</code></pre>
+<p>语句能够检索到，但是下面这些组合了词语的查询不行</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">{ &#34;regexp&#34;: { &#34;title&#34;: &#34;Qu.*&#34; }}
+{ &#34;regexp&#34;: { &#34;title&#34;: &#34;quick br*&#34; }}
+</code></pre></div><h3 id="复合查询">复合查询</h3>
+<p>复合查询使用 <code>bool</code> 查询来实现逻辑的组合，接受以下四种参数：</p>
+<ul>
+<li><code>must</code>：文档 <strong>必须</strong> 匹配这些条件才能被包含进来。</li>
+<li><code>must_not</code>：文档 <strong>必须不</strong> 匹配这些条件才能被包含进来。</li>
+<li><code>should</code>: 如果满足这些语句中的任意语句，将增加 _score ，否则，无任何影响。它们主要用于<code>修正每个文档的相关性得分</code>。</li>
+<li><code>filter</code>: <strong>必须</strong> 匹配，但它以不评分、过滤模式来进行。这些语句对评分没有贡献，只是根据过滤标准来排除或包含文档。</li>
+</ul>
+<p>结构为：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">&#34;query&#34;: {
+	&#34;bool&#34;: {
+	  &#34;must&#34;: [ SUB_QUERY ],
+	  &#34;must_not&#34;: [ SUB_QUERY ]
+	}
+}
+</code></pre></div><p>例如：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;bool&#34;: {
+      &#34;must&#34;: [
+        {&#34;range&#34;: {
+          &#34;age&#34;: {
+            &#34;gte&#34;: 30
+          }
+        }}
+      ],
+	  &#34;must_not&#34;: [
+        {&#34;match&#34;: {
+          &#34;about&#34;: &#34;cabinets&#34;
+        }}
+      ]
+    }
+  }
+}
+</code></pre></div><h3 id="过滤查询filter">过滤查询(filter)</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;bool&#34;: {
+      &#34;must&#34;: {&#34;match&#34; : {&#34;about&#34; : &#34;like build&#34;}},
+      &#34;filter&#34;: {
+        &#34;bool&#34;: {
+          &#34;must&#34; : {&#34;range&#34;: {&#34;age&#34;: { &#34;gte&#34;: 30 }}}
+        }
+      }
+    }
+  }
+}
+
+</code></pre></div><p>将查询移到 <code>bool</code> 查询的 <code>filter</code> 的 <code>bool</code> 语句中，例如像年龄这样的字段，只需要进行过滤，不需要放在查询做，所以可以放到filter中来优化查询性能。</p>
+<h3 id="过滤查询constant_score">过滤查询(constant_score)</h3>
+<p><code>constant_score</code> 是filter的另外一种形式，通常用在只进行filter，而不用查询相关性分的情况。</p>
+<p>如下：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;constant_score&#34;: {
+      &#34;filter&#34;: {&#34;range&#34;: {&#34;age&#34;: { &#34;gte&#34;: 30 }}}
+    }
+  }
+}
+</code></pre></div><p>Kibana 会自动补全 <code>boost:1.2</code></p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">GET /megacorp/_search
+{
+  &#34;query&#34;: {
+    &#34;constant_score&#34;: {
+      &#34;filter&#34;: {&#34;range&#34;: {&#34;age&#34;: { &#34;gte&#34;: 30 }}},
+      &#34;boost&#34;: 1.2
+    }
+  }
+}
+</code></pre></div><h3 id="总结">总结</h3>
+<h2 id="集群搜索原理">集群搜索原理</h2>
+<h3 id="查询流程">查询流程</h3>
+<h3 id="通过url限制搜索范围">通过URL限制搜索范围</h3>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://n3xtchen.github.io/n3xtchen/elasticsearch/2017/07/05/elasticsearch-23-useful-query-example">19 个很有用的 ElasticSearch 查询语句</a></li>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/getting-started.html">elastic search guide</a></li>
+</ul>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

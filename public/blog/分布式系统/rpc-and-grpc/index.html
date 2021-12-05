@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Hugo 0.79.0" />
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="pwaer" />
+  <meta property="og:url" content="https://pwaer.ink/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/" />
+  <link rel="canonical" href="https://pwaer.ink/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/rpc-and-grpc/" /><link rel="alternate" type="application/atom+xml" href="https://pwaer.ink/index.xml" title="Pwaer&#39;s Blog">
+
+  <script type="application/ld+json">
+  {
+      "@context" : "http://schema.org",
+      "@type" : "BlogPosting",
+      "mainEntityOfPage": {
+           "@type": "WebPage",
+           "@id": "https:\/\/pwaer.ink\/"
+      },
+      "articleSection" : "blog",
+      "name" : "Golang原生RPC与gPRC",
+      "headline" : "Golang原生RPC与gPRC",
+      "description" : "前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。\nRPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。\n虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。\nRPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。\n原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。\n客户端代码 package main import ( \u0026#34;fmt\u0026#34; \u0026#34;log\u0026#34; \u0026#34;net\/rpc\u0026#34; ) \/\/ \/\/ Common RPC request\/reply definitions \/\/  const ( OK = \u0026#34;OK\u0026#34; ErrNoKey = \u0026#34;ErrNoKey\u0026#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } \/\/ \/\/ Client \/\/  func connect() *rpc.",
+      "inLanguage" : "en-US",
+      "author" : "pwaer",
+      "creator" : "pwaer",
+      "publisher": "pwaer",
+      "accountablePerson" : "pwaer",
+      "copyrightHolder" : "pwaer",
+      "copyrightYear" : "2020",
+      "datePublished": "2020-02-26 22:19:35 \u002b0000 UTC",
+      "dateModified" : "2020-02-26 22:19:35 \u002b0000 UTC",
+      "url" : "https:\/\/pwaer.ink\/blog\/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F\/rpc-and-grpc\/",
+      "keywords" : [ "distributed system", ]
+  }
+</script>
+<title>Golang原生RPC与gPRC</title>
+  <meta property="og:title" content="Golang原生RPC与gPRC" />
+  <meta property="og:type" content="article" />
+  <meta property="og:description" content="前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。
+RPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。
+虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。
+RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。
+原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。
+客户端代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net/rpc&amp;#34; ) // // Common RPC request/reply definitions //  const ( OK = &amp;#34;OK&amp;#34; ErrNoKey = &amp;#34;ErrNoKey&amp;#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } // // Client //  func connect() *rpc." />
+  <meta name="description" content="前言 因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。
+RPC历史 RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证幂等性等。
+虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。
+RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。
+原生RPC 这里直接尝试写一个简单的KV服务，提供Put，Get的接口。
+客户端代码 package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net/rpc&amp;#34; ) // // Common RPC request/reply definitions //  const ( OK = &amp;#34;OK&amp;#34; ErrNoKey = &amp;#34;ErrNoKey&amp;#34; ) type Err string type PutArgs struct { Key string Value string } type PutReply struct { Err Err } type GetArgs struct { Key string } type GetReply struct { Err Err Value string } // // Client //  func connect() *rpc." />
+  <meta property="og:locale" content="en-us" />
+
+  
+    <style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style>
+  
+  
+    <style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:0 1 auto;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:0 0 auto;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style>
+  
+
+  
+
+  <link href="/index.xml" rel="alternate" type="application/rss+xml"
+    title="Pwaer&#39;s Blog">
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel="stylesheet">
+  
+  
+
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "G-LGMCE8D1GT");</script>
+</head>
+
+
+<body>
+  <article class="post " id="article">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="site-header">
+          
+<header>
+  <div class="header-title">
+    <a href="/"
+      >Learning machine</a
+    >
+  </div>
+  <div class="header-subtitle"></div>
+</header>
+<div class="row end-md center-xs header-items">
+  
+  <div class="header-item">
+    <a href="/about">About Me</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="/path">World</a>
+  </div>
+  
+  <div class="header-item">
+    <a href="https://github.com/fatwaer">Github</a>
+  </div>
+  
+</div>
+<div class="row end-xs">
+   
+</div>
+<div class="header-line"></div>
+
+        </div>
+        <header class="post-header">
+          <h1 class="post-title">Golang原生RPC与gPRC</h1>
+          
+          <div class="row post-desc">
+            <div class="col-xs-6">
+              
+              <time class="post-date" datetime="2020-02-26 22:19:35 UTC">
+                26 Feb 2020
+              </time>
+              
+            </div>
+            <div class="col-xs-6">
+              
+              <div class="post-author">
+                <a target="_blank" href="https//github.com/fatwaer">@pwaer</a>
+              </div>
+              
+            </div>
+          </div>
+          
+        </header>
+
+        <div class="post-content markdown-body">
+          
+          <h2 id="前言">前言</h2>
+<p>因为前段时间把6.824的lab3做完了，但是lab内部是用channel mock了一个简单的网络来测试网络丢包，网络分区等问题，也就是说跑在单机上面，其rpc也是通过channel和反射实现。目前比较有名的RPC框架就是gRPC，golang也自带了rpc库，这篇文章主要讲述这两者的简单使用，以及谈论一些关于rpc的观点。</p>
+<h2 id="rpc历史">RPC历史</h2>
+<p>RPC也称远程过程调用，自从上世纪70年代就存在的思想，RPC模型是尝试使远程服务看起来像在统一进程空间的函数一样。但是，一种基于HTTP原则的设计理念REST可以扮演RPC的角色，利用url表示资源，利用HTTP的其他功能提供身份验证等，并且RPC虽然看上去非常简洁，实际上是存在缺陷的，比如rpc的时间根据网络情况可能大不相同，网络不可信时，超时重传会使RPC函数被调用多次，这就又需要这个函数能保证<strong>幂等性</strong>等。</p>
+<p>虽然有以上问题，RPC没有消失肯定有其独特存在的原因，首先是使用二进制编码的RPC协议能实现比REST上基于JSON的数据流协议获得更好的性能(但是JSON数据流可以提供良好的调试功能，这是二进制编码不可比拟的)。所以REST一般用于公共API，而RPC框架侧重于同一组织内多项服务之间的请求，也通常发生在同一个数据中心。</p>
+<p>RPC的目标是让客户端和服务端易于交互(编程意义上)，隐藏底层的网络协议。</p>
+<h2 id="原生rpc">原生RPC</h2>
+<p>这里直接尝试写一个简单的KV服务，提供Put，Get的接口。</p>
+<h3 id="客户端代码">客户端代码</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-Go" data-lang="Go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+        <span style="font-style:italic">&#34;fmt&#34;</span>
+        <span style="font-style:italic">&#34;log&#34;</span>
+        <span style="font-style:italic">&#34;net/rpc&#34;</span>
+)
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// Common RPC request/reply definitions
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">const</span> (
+        OK       = <span style="font-style:italic">&#34;OK&#34;</span>
+        ErrNoKey = <span style="font-style:italic">&#34;ErrNoKey&#34;</span>
+)
+
+<span style="font-weight:bold">type</span> Err <span style="">string</span>
+
+<span style="font-weight:bold">type</span> PutArgs <span style="font-weight:bold">struct</span> {
+        Key   <span style="">string</span>
+        Value <span style="">string</span>
+}
+
+<span style="font-weight:bold">type</span> PutReply <span style="font-weight:bold">struct</span> {
+        Err Err
+}
+
+<span style="font-weight:bold">type</span> GetArgs <span style="font-weight:bold">struct</span> {
+        Key <span style="">string</span>
+}
+
+<span style="font-weight:bold">type</span> GetReply <span style="font-weight:bold">struct</span> {
+        Err   Err
+        Value <span style="">string</span>
+}
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// Client
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">func</span> connect() *rpc.Client {
+        client, err := rpc.Dial(<span style="font-style:italic">&#34;tcp&#34;</span>, <span style="font-style:italic">&#34;fatwaer.store:1234&#34;</span>)
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatal(<span style="font-style:italic">&#34;dialing:&#34;</span>, err)
+        }
+        <span style="font-weight:bold">return</span> client
+}
+
+<span style="font-weight:bold">func</span> get(key <span style="">string</span>) <span style="">string</span> {
+        client := connect()
+        args := GetArgs{<span style="font-style:italic">&#34;subject&#34;</span>}
+        reply := GetReply{}
+        err := client.Call(<span style="font-style:italic">&#34;KV.Get&#34;</span>, &amp;args, &amp;reply)
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatal(<span style="font-style:italic">&#34;error:&#34;</span>, err)
+        }
+        client.Close()
+        <span style="font-weight:bold">return</span> reply.Value
+}
+
+<span style="font-weight:bold">func</span> put(key <span style="">string</span>, val <span style="">string</span>) {
+        client := connect()
+        args := PutArgs{<span style="font-style:italic">&#34;subject&#34;</span>, <span style="font-style:italic">&#34;6.824&#34;</span>}
+        reply := PutReply{}
+        err := client.Call(<span style="font-style:italic">&#34;KV.Put&#34;</span>, &amp;args, &amp;reply)
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatal(<span style="font-style:italic">&#34;error:&#34;</span>, err)
+        }
+        client.Close()
+}
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// main
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">func</span> main() {
+        put(<span style="font-style:italic">&#34;subject&#34;</span>, <span style="font-style:italic">&#34;6.824&#34;</span>)
+        fmt.Printf(<span style="font-style:italic">&#34;Put(subject, 6.824) done\n&#34;</span>)
+        fmt.Printf(<span style="font-style:italic">&#34;get(subject) -&gt; %s\n&#34;</span>, get(<span style="font-style:italic">&#34;subject&#34;</span>))
+}
+</code></pre></div><h3 id="服务端代码">服务端代码</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+        <span style="font-style:italic">&#34;fmt&#34;</span>
+        <span style="font-style:italic">&#34;log&#34;</span>
+        <span style="font-style:italic">&#34;net&#34;</span>
+        <span style="font-style:italic">&#34;net/rpc&#34;</span>
+        <span style="font-style:italic">&#34;sync&#34;</span>
+)
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// Common RPC request/reply definitions
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">const</span> (
+        OK       = <span style="font-style:italic">&#34;OK&#34;</span>
+        ErrNoKey = <span style="font-style:italic">&#34;ErrNoKey&#34;</span>
+)
+
+<span style="font-weight:bold">type</span> Err <span style="">string</span>
+
+<span style="font-weight:bold">type</span> PutArgs <span style="font-weight:bold">struct</span> {
+        Key   <span style="">string</span>
+        Value <span style="">string</span>
+}
+
+<span style="font-weight:bold">type</span> PutReply <span style="font-weight:bold">struct</span> {
+        Err Err
+}
+
+<span style="font-weight:bold">type</span> GetArgs <span style="font-weight:bold">struct</span> {
+        Key <span style="">string</span>
+}
+
+<span style="font-weight:bold">type</span> GetReply <span style="font-weight:bold">struct</span> {
+        Err   Err
+        Value <span style="">string</span>
+}
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// Server
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">type</span> KV <span style="font-weight:bold">struct</span> {
+        mu   sync.Mutex
+        data <span style="font-weight:bold">map</span>[<span style="">string</span>]<span style="">string</span>
+}
+
+<span style="font-weight:bold">func</span> server() {
+        kv := new(KV)
+        kv.data = <span style="font-weight:bold">map</span>[<span style="">string</span>]<span style="">string</span>{}
+        rpcs := rpc.NewServer()
+        rpcs.Register(kv)
+        l, e := net.Listen(<span style="font-style:italic">&#34;tcp&#34;</span>, <span style="font-style:italic">&#34;:1234&#34;</span>)
+        <span style="font-weight:bold">if</span> e != <span style="font-weight:bold">nil</span> {
+                log.Fatal(<span style="font-style:italic">&#34;listen error:&#34;</span>, e)
+        }
+        fmt.Println(<span style="font-style:italic">&#34;server Listen &#34;</span>)
+        <span style="font-weight:bold">for</span> {
+                conn, err := l.Accept()
+                <span style="font-weight:bold">if</span> err == <span style="font-weight:bold">nil</span> {
+                        <span style="font-weight:bold">go</span> rpcs.ServeConn(conn)
+                } <span style="font-weight:bold">else</span> {
+                        <span style="font-weight:bold">break</span>
+                }
+        }
+        l.Close()
+}
+
+<span style="font-weight:bold">func</span> (kv *KV) Get(args *GetArgs, reply *GetReply) <span style="">error</span> {
+
+        fmt.Printf(<span style="font-style:italic">&#34;server recive get %s\n&#34;</span>, args.Key)
+        kv.mu.Lock()
+        <span style="font-weight:bold">defer</span> kv.mu.Unlock()
+
+        val, ok := kv.data[args.Key]
+        <span style="font-weight:bold">if</span> ok {
+                reply.Err = OK
+                reply.Value = val
+        } <span style="font-weight:bold">else</span> {
+                reply.Err = ErrNoKey
+                reply.Value = <span style="font-style:italic">&#34;&#34;</span>
+        }
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+
+<span style="font-weight:bold">func</span> (kv *KV) Put(args *PutArgs, reply *PutReply) <span style="">error</span> {
+
+        fmt.Printf(<span style="font-style:italic">&#34;server recive put %s-&gt;%s\n&#34;</span>, args.Key, args.Value)
+        kv.mu.Lock()
+        <span style="font-weight:bold">defer</span> kv.mu.Unlock()
+
+        kv.data[args.Key] = args.Value
+        reply.Err = OK
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+
+<span style="font-style:italic">//
+</span><span style="font-style:italic">// main
+</span><span style="font-style:italic">//
+</span><span style="font-style:italic"></span>
+<span style="font-weight:bold">func</span> main() {
+        server()
+}
+</code></pre></div><h3 id="运行结果">运行结果</h3>
+<p>分别在两台云服务器上运行，确保可以通过网络传递消息：</p>
+<p><img src="/images/distributed-system/rpc/rpcc.png" alt="client">
+<img src="/images/distributed-system/rpc/rpcs.png" alt="server"></p>
+<h3 id="代码结构">代码结构</h3>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-fallback" data-lang="fallback">    Software structure
+      client app        handler fns
+      stub fns         dispatcher
+      RPC lib           RPC lib
+        net  ------------ net
+</code></pre></div><p>客户端/服务端需要先建立相应的TCP连接，即服务端先在相应端口绑定监听，然后客户端与该端口三次握手后，服务端accept返回得到建立好的TCP连接，注册到RPC中，然后将数据写入到连接内，服务端收到调用，执行相应的程序返回。</p>
+<hr>
+<h2 id="grpc">gRPC</h2>
+<p>gRPC的使用分为三部:</p>
+<ol>
+<li>将需要在网络中传递的数据/服务定义在<code>.proto</code>里</li>
+<li>利用protocol buffer compiler基于上面的<code>.proto</code>生成代码</li>
+<li>使用gRPC的API</li>
+</ol>
+<h3 id="安装依赖">安装依赖</h3>
+<ul>
+<li>grpc</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">go get google.golang.org/grpc
+go get -u github.com/golang/protobuf/protoc-gen-go
+export PATH=$PATH:$GOPATH/bin
+</code></pre></div><ul>
+<li>protocol buffer compiler(protoc)</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">PROTOC_ZIP=protoc-3.7.1-linux-x86_64.zip
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/$PROTOC_ZIP
+sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+sudo unzip -o $PROTOC_ZIP -d /usr/local <span style="font-style:italic">&#39;include/*&#39;</span>
+rm -f $PROTOC_ZIP
+</code></pre></div><h3 id="定义自己的proto">定义自己的proto</h3>
+<ul>
+<li>kv.proto</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-go" data-lang="go">syntax = <span style="font-style:italic">&#34;proto3&#34;</span>;
+
+<span style="font-weight:bold">package</span> kv;
+
+service kv {
+    rpc Put (PutArgs) returns (PutReply) {}
+    rpc Get (GetArgs) returns (GetReply) {}
+}
+
+message PutArgs {
+    <span style="">string</span> key = 1;
+    <span style="">string</span> value = 2;
+}
+
+message PutReply {
+    <span style="">string</span> ok = 1;
+}
+
+message GetArgs {
+    <span style="">string</span> key = 1;
+}
+
+message GetReply {
+    <span style="">string</span> ok = 1;
+    <span style="">string</span> value = 2;
+}
+
+</code></pre></div><p><code>syntax</code>为protobuf编码版本，<code>message</code>类似于类型定义关键字，而每一个message内都需要有一个单独的值来指定某个变量。</p>
+<h3 id="生成-pbgo">生成 .pb.go</h3>
+<p>例如如下的代码结构：</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">store : ~/gokv/grpc/src &gt; tree .
+.
+├── kv
+│   ├── kv.proto
+store : ~/gokv/grpc/src &gt; echo $GOPATH
+/root/go:/root/gokv/grpc
+</code></pre></div><p>执行</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-bash" data-lang="bash">protoc -I kv/ kv/kv.proto --go_out=plugins=grpc:kv
+</code></pre></div><p>在kv目录下生成kv.pb.go，然后在外部利用import kv即可使用kv.pb.go中生成的代码。
+kv.pb.go包含了如下内容：</p>
+<ol>
+<li>生成的服务端和客户端的代码</li>
+<li>对调用参数进行序列化、反序列化的代码</li>
+</ol>
+<h3 id="写自己的kv服务">写自己的KV服务</h3>
+<p>和上面原生RPC的类似：</p>
+<ul>
+<li>服务端代码</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+        <span style="font-style:italic">&#34;context&#34;</span>
+        <span style="font-style:italic">&#34;log&#34;</span>
+        <span style="font-style:italic">&#34;net&#34;</span>
+    <span style="font-style:italic">&#34;sync&#34;</span>
+
+        <span style="font-style:italic">&#34;google.golang.org/grpc&#34;</span>
+        pb <span style="font-style:italic">&#34;kv&#34;</span>
+)
+
+<span style="font-weight:bold">const</span> (
+        port = <span style="font-style:italic">&#34;:1234&#34;</span>
+)
+
+<span style="font-style:italic">// server is used to implement kv.Kvserver.
+</span><span style="font-style:italic"></span><span style="font-weight:bold">type</span> server <span style="font-weight:bold">struct</span> {
+    data <span style="font-weight:bold">map</span>[<span style="">string</span>] <span style="">string</span>
+    mu sync.Mutex
+        pb.UnimplementedKvServer
+}
+
+<span style="font-style:italic">// Put implements implement kv.Kvserver
+</span><span style="font-style:italic"></span><span style="font-weight:bold">func</span> (s *server) Put(ctx context.Context, in *pb.PutArgs) (*pb.PutReply, <span style="">error</span>) {
+        log.Printf(<span style="font-style:italic">&#34;Received Put: %v&#34;</span>, in)
+    s.mu.Lock()
+    <span style="font-weight:bold">defer</span> s.mu.Unlock()
+    s.data[in.Key]  = in.Value
+    <span style="font-weight:bold">return</span> &amp;pb.PutReply{Ok: <span style="font-style:italic">&#34;Ok&#34;</span>}, <span style="font-weight:bold">nil</span>
+}
+
+<span style="font-weight:bold">func</span> (s *server) Get(ctx context.Context, in *pb.GetArgs) (*pb.GetReply, <span style="">error</span>) {
+    log.Printf(<span style="font-style:italic">&#34;Received Get: %v&#34;</span>, in)
+    s.mu.Lock()
+    <span style="font-weight:bold">defer</span> s.mu.Unlock()
+    value := s.data[in.Key]
+    <span style="font-weight:bold">return</span> &amp;pb.GetReply{Ok: <span style="font-style:italic">&#34;Ok&#34;</span>, Value:value}, <span style="font-weight:bold">nil</span>
+}
+
+<span style="font-weight:bold">func</span> main() {
+
+    log.Printf(<span style="font-style:italic">&#34;server start\n&#34;</span>)
+    lis, err := net.Listen(<span style="font-style:italic">&#34;tcp&#34;</span>, port)
+    <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+        log.Fatalf(<span style="font-style:italic">&#34;failed to listen: %v&#34;</span>, err)
+    }
+    rpcs := grpc.NewServer()
+    srv := new(server)
+    srv.data = <span style="font-weight:bold">map</span>[<span style="">string</span>]<span style="">string</span>{}
+
+    pb.RegisterKvServer(rpcs, srv)
+    log.Printf(<span style="font-style:italic">&#34;Listen at %s\n&#34;</span>, port)
+    <span style="font-weight:bold">if</span> err := rpcs.Serve(lis); err != <span style="font-weight:bold">nil</span> {
+        log.Fatalf(<span style="font-style:italic">&#34;failed to serve: %v&#34;</span>, err)
+    }
+}
+</code></pre></div><ul>
+<li>客户端代码</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+        <span style="font-style:italic">&#34;context&#34;</span>
+        <span style="font-style:italic">&#34;log&#34;</span>
+        <span style="font-style:italic">&#34;time&#34;</span>
+
+        <span style="font-style:italic">&#34;google.golang.org/grpc&#34;</span>
+        pb <span style="font-style:italic">&#34;kv&#34;</span>
+)
+
+<span style="font-weight:bold">const</span> (
+        address = <span style="font-style:italic">&#34;fatwaer.store:1234&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> main() {
+        <span style="font-style:italic">// set-up connection.
+</span><span style="font-style:italic"></span>        conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatalf(<span style="font-style:italic">&#34;didn&#39;t connect: %v&#34;</span>, err)
+        }
+        <span style="font-weight:bold">defer</span> conn.Close()
+        c := pb.NewKvClient(conn)
+        log.Printf(<span style="font-style:italic">&#34;connect ok&#34;</span>)
+        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+        <span style="font-weight:bold">defer</span> cancel()
+        r, err := c.Put(ctx, &amp;pb.PutArgs{Key: <span style="font-style:italic">&#34;Hello&#34;</span>, Value: <span style="font-style:italic">&#34;World&#34;</span>})
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatalf(<span style="font-style:italic">&#34;put err %v&#34;</span>, err)
+        }
+        log.Printf(<span style="font-style:italic">&#34;put %s&#34;</span>, r.GetOk())
+
+        nr, err := c.Get(ctx, &amp;pb.GetArgs{Key: <span style="font-style:italic">&#34;Hello&#34;</span>})
+        <span style="font-weight:bold">if</span> err != <span style="font-weight:bold">nil</span> {
+                log.Fatalf(<span style="font-style:italic">&#34;put err %v&#34;</span>, err)
+        }
+        log.Printf(<span style="font-style:italic">&#34;get %s, get value %s&#34;</span>, nr.GetOk(), nr.GetValue())
+
+}
+</code></pre></div><h3 id="运行结果-1">运行结果</h3>
+<p><img src="/images/distributed-system/rpc/grpcs.png" alt="server">
+<img src="/images/distributed-system/rpc/grpcc.png" alt="client"></p>
+<p>和原生RPC使用很类似，但是中间加了一层protobuf的使用问题，而protobuf的存在却可以解决在多语言之间进行通信的问题，而原生不行。
+<img src="/images/distributed-system/rpc/landing-2.svg" alt="landing"></p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>《数据密集型应用系统设计》</li>
+<li><a href="https://pdos.csail.mit.edu/6.824/notes/kv.go">https://pdos.csail.mit.edu/6.824/notes/kv.go</a></li>
+<li><a href="https://pdos.csail.mit.edu/6.824/notes/l-rpc.txt">https://pdos.csail.mit.edu/6.824/notes/l-rpc.txt</a></li>
+<li><a href="https://developers.google.com/protocol-buffers/docs/overview">https://developers.google.com/protocol-buffers/docs/overview</a></li>
+<li><a href="https://developers.google.com/protocol-buffers/docs/proto">https://developers.google.com/protocol-buffers/docs/proto</a></li>
+<li><a href="https://grpc.io/docs/tutorials/basic/go/">https://grpc.io/docs/tutorials/basic/go/</a></li>
+<li><a href="http://google.github.io/proto-lens/installing-protoc.html">http://google.github.io/proto-lens/installing-protoc.html</a></li>
+</ul>
+
+        </div>
+
+        <div class="row middle-xs">
+          <div class="col-xs-12">
+            
+            <div class="post-tags">
+              <a href="/tags/distributed-system/">
+                distributed system
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-xs-12">
+              
+            </div>
+          </div>
+
+          
+
+<div class="related-content">
+  <h3>Related Posts</h3>
+  <ul>
+    
+    <li><a href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6.824-notesmapreducegfsraft/">6.824 Notes：MapReduce、GFS、Raft</a></li>
+    
+    <li><a href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/">Data-Intensive System</a></li>
+    
+    <li><a href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/">Effective Go</a></li>
+    
+  </ul>
+</div>
+
+
+
+          
+          
+          <div style="height: 50px;"></div>
+          
+          <div class="post-comments">
+            <div id="disqus_thread"></div>
+<script>
+  window.addEventListener("load", () => {
+    (function() {
+      
+      var d = document,
+        s = d.createElement("script");
+      s.src = "https://fatwaer.disqus.com/embed.js";
+      s.setAttribute("data-timestamp", +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  });
+</script>
+<noscript
+  >Please enable JavaScript to view the
+  <a href="https://disqus.com/?ref_noscript"
+    >comments powered by Disqus.</a
+  ></noscript
+>
+
+          </div>
+          
+        
+
+        <div class="site-footer">
+  
+  
+</div>
+
+      </div>
+    </div>
+  </article>
+
+  
+
+<script>
+  
+  
+    
+    
+  
+</script>
+
+  
+
+</body>
+
+</html>

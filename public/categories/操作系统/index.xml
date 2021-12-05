@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>操作系统 on Pwaer&#39;s Blog</title>
+    <link>https://www.fatwae.store/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</link>
+    <description>Recent content in 操作系统 on Pwaer&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 28 May 2018 09:26:33 +0000</lastBuildDate><atom:link href="https://www.fatwae.store/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>6-828-操作系统工程-Lab6-Network Driver(Final)</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</link>
+      <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</guid>
+      <description>这章节是完成一个网络驱动程序，现在系统中已经存在了文件系统里，所以可以添加一个网络栈，是基于82540EM芯片(E1000)。这章节内容比我想象中难，虽然之前概览了一下，但是实际做起来的时候涉及到的概念和知识超出我现在所掌握的。
+准备 git
+$ git add . $ git commit -am &amp;#34;lab 5 done&amp;#34; $ make handin $ git pull $ git checkout -b lab6 origin/lab6 $ git merge lab5 Auto-merging lib/fd.c Auto-merging kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c Auto-merging inc/lib.h Auto-merging fs/serv.c Merge made by the &amp;#39;recursive&amp;#39; strategy. boot/main.c | 1 - fs/bc.c | 22 +- fs/fs.c | 73 +- .... user/faultio.c | 2 +- user/forktree.c | 1 + user/sh.c | 9 +- user/testfile.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab5-File system, Spawn and Shell</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</link>
+      <pubDate>Sun, 20 May 2018 18:37:16 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</guid>
+      <description>这个实验主要是实现spawn库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库 ，使得足以在控制台上运行shell。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。
+准备 git
+$ find . -name &amp;#34;*.swp&amp;#34; | xargs rm $ git add . $ git commit -m &amp;#34;lab4 done&amp;#34; $ git pull $ git merge lab4 Auto-merging kern/trap.c CONFLICT (content): Merge conflict in kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c CONFLICT (content): Merge conflict in kern/init.c Auto-merging kern/env.c CONFLICT (content): Merge conflict in kern/env.c Auto-merging inc/lib.h Automatic merge failed; fix conflicts and then commit the result. 解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab4:Preemptive Multitasking</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</link>
+      <pubDate>Mon, 07 May 2018 19:28:03 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</guid>
+      <description>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab3:User Environments</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</link>
+      <pubDate>Sun, 22 Apr 2018 23:01:09 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</guid>
+      <description>4月22日 - 5月2日
+ PART A 这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。 这是关于这章节代码文件的介绍
+inc/env.h Public definitions for user-mode environments trap.h Public definitions for trap handling syscall.h Public definitions for system calls from user environments to the kernel lib.h Public definitions for the user-mode support library kern/env.h Kernel-private definitions for user-mode environments env.c Kernel code implementing user-mode environments trap.h Kernel-private trap handling definitions trap.c Trap handling code trapentry.S Assembly-language trap handler entry-points syscall.h Kernel-private definitions for system call handling syscall.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab2:Memory Management</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</link>
+      <pubDate>Thu, 12 Apr 2018 19:18:13 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</guid>
+      <description>Exercise 1: 内存初始化 在 lab1 中开启了分段和分页，并且初始化了内核页目录（地址存储在CR3中），于是有了下面这样的地址转换机制。
+ 地址转换
+ 首先通过相应段寄存器获得地址基址，然后以虚拟地址作为偏移获得线性地址。线性地址在通过一定的机制，获得实际的物理地址。
+线性地址转换过程:
+段翻译机制输出一个线性地址（Linear address） Linear address(LA)，用于接下来的转换，在 CR0 寄存器 PG 位未设置的时候，线性地址会被直接作为物理地址。
+// A linear address &amp;#39;la&amp;#39; has a three-part structure as follows: // // +--------10------+-------10-------+---------12----------+ // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // +----------------+----------------+---------------------+ // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lec4-7课件笔记整理</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Wed, 11 Apr 2018 10:59:57 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>Lec4 shell / OS  https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space + thread app -&amp;gt; printf() -&amp;gt; write() -&amp;gt; SYSTEM CALL -&amp;gt; sys_write() -&amp;gt; ..
+Homework2
+  exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()
+  redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。
+  pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls &amp;gt; temp1 ; sort temp1 &amp;gt; temp2; uniq temp2 &amp;gt; temp3; wc temp3 &amp;gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lec1-3课件笔记和作业</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Fri, 06 Apr 2018 22:58:48 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>笔记  函数的开场和结束 +------------+ | | arg 2 | \ +------------+ &amp;gt;- previous function&amp;#39;s stack frame | arg 1 | / +------------+ | | ret %eip | / +============+ | saved %ebp | \ %ebp-&amp;gt; +------------+ | | | | | local | \ | variables, | &amp;gt;- current function&amp;#39;s stack frame | etc. | / | | | | | | %esp-&amp;gt; +------------+ / 函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。
+C源文件编译过程  PC 模拟器实现  CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; .</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab1:Booting a PC</title>
+      <link>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/</link>
+      <pubDate>Wed, 14 Mar 2018 21:08:44 +0000</pubDate>
+      
+      <guid>https://www.fatwae.store/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/</guid>
+      <description>Exercise 1: 内存分布和相关启动信息  memory layout
+ 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bios 会进行激活显卡，检查内存等工作。其中实模式下寻址方式为：
+physical address = 16 * segment + offset
+intel 80286后突破1m的门槛支持16M到4g, 但是仍然保留了这一段物理内存从 0x000A0000 到 0x00100000用于向前兼容，现代PC仍有这个内存空缺，这部分地址以下的叫做low/conventional memory，以上叫extended memory
+因为扩展到了4G，bios必须留下第二个内存空缺在32-bit可寻址的区域顶部用于映射。
+参考来源：Phil Storrs I/O Ports Description
+Exercise 2: 追踪 BIOS 部分指令 启动两个终端，分别运行：
+$ make qemu-nox-gdb
+$ make gdb
+BIOS被硬连接到物理内存0x000f0000-0x000fffff，来保证机器启动的时候总是由BIOS控制。每当处理器加电被重置都会被设置为CS to 0xf000 and the IP to 0xfff0。
+跳转到fe05b [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6ac8 [f000:e062] 0xfe062:	jne 0xfd2e1 dx置为0 [f000:e066] 0xfe066:	xor %dx,%dx ss置为0 [f000:e068] 0xfe068:	mov %dx,%ss esp置为0x7000 [f000:e06a] 0xfe06a:	mov $0x7000,%esp edx置为$0xf34c2 [f000:e070] 0xfe070:	mov $0xf34c2,%edx 跳转到0xfd15c [f000:e076] 0xfe076:	jmp 0xfd15c 将eax值保存在ecx中 [f000:d15c] 0xfd15c:	mov %eax,%ecx Clear Interupt [f000:d15f] 0xfd15f:	cli DF(direction flag)esi和edi自动+1； 类似std指令可以将df置为1; [f000:d160] 0xfd160:	cld 0x8F(‭10001111‬)写入IO端口0x70， 根据bochs，bit 7	= 1 NMI disable, 剩下7位为偏移，1111(0xF)对应 shutdown status byte。 [f000:d161] 0xfd161:	mov $0x8f,%eax [f000:d167] 0xfd167:	out %al,$0x70 从0x71中读取shutdown status byte， 其中用gdb指令info reigster可以看到eax值为0， 查看bochs, “normal execution of POST”， 其中POST是指Power-on self-test，代表BIOS自检正常执行。 [f000:d169] 0xfd169:	in $0x71,%al IO端口0x92中的值 |= 0x10，即激活A20地址线 [f000:d16b] 0xfd16b:	in $0x92,%al [f000:d16d] 0xfd16d:	or $0x2,%al [f000:d16f] 0xfd16f:	out %al,$0x92 加载idt和gdt f000:d171] 0xfd171:	lidtw %cs:0x6ab8 [f000:d177] 0xfd177:	lgdtw %cs:0x6a74 cr0寄存器PE(page enable)置位，即代表开启保护模式 [f000:d17d] 0xfd17d:	mov %cr0,%eax [f000:d180] 0xfd180:	or $0x1,%eax [f000:d184] 0xfd184:	mov %eax,%cr0 CS 段选择子切换 CS 寄存器会在执行一些段控制指令时被 隐式地改变，例如CALL，JMP，中断，异常等。 [f000:d187] 0xfd187:	ljmpl $0x8,$0xfd18f 将ds,ss,fs,gs段寄存器设置为0x10 =&amp;gt; 0xfd18f:	mov $0x10,%eax =&amp;gt; 0xfd194:	mov %eax,%ds =&amp;gt; 0xfd198:	mov %eax,%ss =&amp;gt; 0xfd19a:	mov %eax,%fs =&amp;gt; 0xfd19c:	mov %eax,%gs =&amp;gt; 0xfd19e:	mov %ecx,%eax 跳转到寄存器edx中的地址：0xf34c2  in/out 指令</description>
+    </item>
+    
+  </channel>
+</rss>

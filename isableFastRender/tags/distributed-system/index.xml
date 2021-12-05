@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>distributed system on fatwaer</title>
+    <link>http://localhost:1313/tags/distributed-system/</link>
+    <description>Recent content in distributed system on fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 15 Jan 2019 15:49:46 +0000</lastBuildDate>
+    
+	<atom:link href="http://localhost:1313/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>6.824 distributed system notes</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</link>
+      <pubDate>Tue, 15 Jan 2019 15:49:46 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/6-824-notes/</guid>
+      <description>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。
+分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。
+分布式系统的优点是能够组织物理上分离的实体，通过isolation取得系统安全，通过replication获取容错机制，通过并行CPUs/mem/disk/net来比例提升系统速度。
+当然也有些缺点，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。
+MapReduce(2004) input is divided into M files [diagram: maps generate rows of K-V pairs, reduces consume columns] Input1 -&amp;gt; Map -&amp;gt; a,1 b,1 c,1 Input2 -&amp;gt; Map -&amp;gt; b,1 Input3 -&amp;gt; Map -&amp;gt; a,1 c,1 | | | | | -&amp;gt; Reduce -&amp;gt; c,2 | -----&amp;gt; Reduce -&amp;gt; b,2 ---------&amp;gt; Reduce -&amp;gt; a,2  对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 键值对(图中的一行)作为中间数据。
+MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：
+map(k1, v1) -&amp;gt; list(k2, v2) reduce(k2, list(v2) -&amp;gt; list(k2, v3)]  MapReduce 隐藏了很多关键的细节，l如启动处于服务器上的软件，跟踪任务是否完成，数据的移动，从错误中恢复等。</description>
+    </item>
+    
+    <item>
+      <title>Data-Intensive System</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</link>
+      <pubDate>Fri, 11 Jan 2019 11:57:29 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/data-intensive-system/</guid>
+      <description> 数据组件  消息队列
+Redis: https://github.com/antirez/redis
+Apache Kafka
+ 主数据库
+//todo
+ 全文索引
+Elasticsearch: https://github.com/elastic/elasticsearch
+Apache Solr
+ 内存缓存
+Memcached: https://github.com/memcached/memcached
+  </description>
+    </item>
+    
+    <item>
+      <title>Effective Go</title>
+      <link>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</link>
+      <pubDate>Thu, 10 Jan 2019 12:48:14 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/</guid>
+      <description>goroutine部分 goroutine的一些tricks，比如
+func Announce(message string, delay time.Duration) { go func() { time.Sleep(delay) fmt.Println(message) }() // 注意括号 - 必须调用该函数。 }  直接在go关键字后面接一个lambada表达式作为例程。
+goroutine通常和channal一起使用，Unix的管道是基于生产-消费者模型，而channal则使用CSP(Communicating Sequential Process)进行构建。信道没有数据的时候会进行阻塞，利用这种条件可以实现一些信号量机制。
+var sem = make(chan int, MaxOutstanding) func handle(r *Request) { sem &amp;lt;- 1 // 等待活动队列清空。 process(r) // 可能需要很长时间。 &amp;lt;-sem // 完成；使下一个请求可以运行。 } func Serve(queue chan *Request) { for { req := &amp;lt;-queue go handle(req) // 无需等待 handle 结束。 } }  例如这样一段代码可以实现最大接受请求数量为MaxOutstanding,当新的请求到达时，req := &amp;lt;-queue从阻塞中恢复并且执行goroutine处理请求，再往sem里面写入内容时，会因为队列满了而阻塞，当然这样也有局限性，当有大量请求到达的时候，会不停地新生成新的goroutine，占用系统资源。
+func Serve(queue chan *Request) { for req := range queue { req := req // 为该Go程创建 req 的新实例。 sem &amp;lt;- 1 go func() { process(req) &amp;lt;-sem }() } }  解决方案是在循环的routine中尝试往信道中写入内容，这样可以正确实现队列的大小限制。考虑去掉req := req这一行，req变量在每个循环中都被赋予不同的值，但是实际上底层使用的同样的内存，相应的goroutine后的函数闭包可以引用该作用域的变量并且保持和修改，所以每个新生成的goroutine都会使用同一个变量，造成比较严重的错误。</description>
+    </item>
+    
+  </channel>
+</rss>

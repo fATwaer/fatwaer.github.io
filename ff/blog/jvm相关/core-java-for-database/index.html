@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Core Java for DataBase&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Core Java for DataBase" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Core Java for DataBase</h1><p class="article date">Sunday, November 18, 2018</p></section><article class="article markdown-body"><h1 id="前言">前言</h1>
+<p>最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。</p>
+<p>这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。</p>
+<h1 id="基本结构">基本结构</h1>
+<p>基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。</p>
+<h2 id="字符串">字符串</h2>
+<p>字符串判断为空：</p>
+<pre><code>if (str.length() == 0)
+or 
+if (str.equals(&quot;&quot;))    
+</code></pre>
+<p>虽然可以进行字符串拼接，但是效率比较低，可以使用<code>StringBuilder</code>类:</p>
+<pre><code>StringBuilder builder = new StringBuilder();
+builder.append(ch);
+builder.append(str);
+builder.toString();
+</code></pre>
+<h2 id="作用域">作用域</h2>
+<p>JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用<code>this</code>指针来指定变量。</p>
+<h2 id="数组">数组</h2>
+<p>JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：</p>
+<p>JAVA中的:</p>
+<pre><code>int[] a = new int[100];
+</code></pre>
+<p>等同于C/C++中的:</p>
+<pre><code>int* a = new int[100];
+</code></pre>
+<p>不同于:</p>
+<pre><code>int a[100];
+</code></pre>
+<p>并且数组的完整拷贝通过方法<code>Arrays.copyOf()</code>:</p>
+<pre><code>newArr = Arrays.copyOf(oldArr, oldArr.lenght());
+</code></pre>
+<p>也可以通过这个方法来扩展数组：</p>
+<pre><code>Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());
+</code></pre>
+<h1 id="对象与类">对象与类</h1>
+<p>OO应该是JAVA的重点，OOP三个特性：</p>
+<ul>
+<li>封装：用一个类将实现和使用分开，只保留接口与外部进行联系。</li>
+<li>继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。</li>
+<li>多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</li>
+</ul>
+<p>通过下面的方法实例化一个类：</p>
+<pre><code>new Date();
+</code></pre>
+<p>如果想使用类中的一个方法：</p>
+<pre><code>System.out.println(new Date().toString());
+</code></pre>
+<h2 id="final-关键字">final 关键字</h2>
+<p><code>const</code>关键字相当于<code>const</code>关键字即不可变的意思，并且在构造一个类的时候必须要被初始化。</p>
+<h2 id="static-关键字">static 关键字</h2>
+<p><code>static</code>关键字其实也很类似，将<code>static</code>理解为类的方法和域即可而不是对象的方法和域。
+例如:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">currentId</span><span class="o">;</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getId</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">currentId</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>调用使用</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">Employee</span><span class="o">.</span><span class="na">curremtID</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">Employee</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+</code></pre></div><h2 id="main方法">main方法</h2>
+<p>有意思的是java的每一个类里面都可以有main函数，这方便了java为每一个类做单元测试，自己在coding的时候也确实经常用到类的main函数进行测试。</p>
+<h2 id="初始化块">初始化块</h2>
+<p>初始化块也非常有意思，直接在类域里面输入大括号就能在调用构造器的时候执行。例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+
+    <span class="c1">// initializeation block
+</span><span class="c1"></span>    <span class="o">{</span>
+        <span class="n">id</span> <span class="o">=</span> <span class="n">1</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><h1 id="类继承">类继承</h1>
+<p>java中继承的关键字是<code>extends</code>,并且注意子类中的方法不能直接访问超类中的<code>private</code>域，所以需要通过在超类中准备<code>访问器</code>，利用<code>super</code>关键字来获取<code>private</code>域，构造函数也是如此。</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Manager</span> <span class="kd">extends</span> <span class="n">Employee</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">Manager</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="o">...</span> <span class="c1">// other initialization
+</span><span class="c1"></span>    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><h2 id="强制转化">强制转化</h2>
+<p><code>强制转化</code>可以发生在类的子类和超类转化中，进行类型转化的唯一原因是：<strong>在暂时忽视对象的实际类型后，使用对象的全部功能</strong>。并且，将一个子类的引用赋值给超类的时候，编译器是允许的，但是将一个超类赋值给一个子类变量，必须进行类型转化。</p>
+<p>对于测试强制类型转化，可以使用下面的tricks:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="k">if</span> <span class="o">(</span><span class="n">staff</span> <span class="k">instanceof</span> <span class="n">Manager</span><span class="o">)</span>
+<span class="o">{</span>
+    <span class="n">boss</span> <span class="o">=</span> <span class="o">(</span><span class="n">Manager</span><span class="o">)</span> <span class="n">staff</span><span class="o">;</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>意思是，如果staff是<code>Manager</code>的一个实例，那么可以发生强制转化，当然必须是一个继承链才能成立。</p>
+<h2 id="抽象类">抽象类</h2>
+<p>抽象类的意义是提供一个较高层次的抽象，作为基类的存在，关键词是<code>abstract</code>。抽象类中的方法只是充当占位的角色，真正对方法的实现发生在子类中，并且抽象类不能被实例化。</p>
+<p>如果子类实现了全部的抽象方法，那么子类就不是抽象的。但若子类只定义了部分抽象类或不定义抽象类的方法，子类也必须标记为抽象类。</p>
+<h2 id="受保护访问">受保护访问</h2>
+<p><code>protected</code>关键词可以使得子类能够访问该域，但是外部代码不行，不过通常都是谨慎使用protected类，因为违背了OOP提倡的数据封装原则。</p>
+<h2 id="继承的设计技巧">继承的设计技巧</h2>
+<ol>
+<li>将公共操作和域放在超类中</li>
+<li>不使用<code>protected</code></li>
+<li>使用继承实现&quot;is-a&quot;关系</li>
+<li>除非所有的继承方法都有意义，否则不使用继承</li>
+<li>覆盖方法时，不要改变预期行为</li>
+<li>使用多态，而非类型信息</li>
+</ol>
+<h1 id="接口lambda内部类">接口、lambda、内部类</h1>
+<p>java提供的这三种机制是用来弥补类和类继承一些地方的不灵活性而创立的高级技术。</p>
+<h2 id="接口">接口</h2>
+<p>书上给了一个很好的理解接口的解释：”如果类遵从某个特定的接口，那么就履行这项服务“。即如果要调用数组的排序服务，那么这个数组中的类需要提供一个不同对象之间进行比较的接口。</p>
+<p>比如，用<code>Employee</code>类提供接口,关键词是<code>implements</code>，之后跟随的是要提供的接口:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="kd">implements</span> <span class="n">Compareble</span><span class="o">&lt;</span><span class="n">Employee</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">Employee</span> <span class="n">other</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">...</span> <span class="c1">// implements
+</span><span class="c1"></span>    <span class="o">}</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>当然，在某一处提供了接口的代码，类似于声明的作用：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Comparable</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">compareTo</span><span class="o">&lt;</span><span class="n">Object</span> <span class="n">other</span><span class="o">&gt;</span>
+<span class="o">}</span>
+</code></pre></div><p>其中<code>Object</code>类是所有类的超类。</p>
+<p>接口不是类，所以不能被实例化，但是可以声明接口的变量：</p>
+<pre><code>Comparable x;
+</code></pre>
+<p>然后引用实现了接口的类对象：</p>
+<pre><code>x = new Employee(...);
+</code></pre>
+<p>接口不能包含实例域和静态方法，但是可以包含常量。</p>
+<p>接口概念对于抽象类来说是不同的，抽象类只能用在继承链之中，每个子类只能继承一个超类，但是接口可以实现多个，提高了代码复用。</p>
+<h3 id="深拷贝和浅拷贝">深拷贝和浅拷贝</h3>
+<p>java每个变量其实可以理解为一个指针或者引用，它们引用一个内存空间作为对象实例的存储位置，但是对象实例中也可能引用了其他的对象。</p>
+<p>浅拷贝就是单单拷贝该变量引用的内存部分，但是深拷贝会将该对象内部所引用的对象也拷一份。</p>
+<p>比如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="kd">public</span> <span class="n">Employee</span> <span class="nf">clone</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Employee</span> <span class="n">cloned</span> <span class="o">=</span> <span class="o">(</span><span class="n">Employee</span><span class="o">)</span> <span class="kd">super</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+        <span class="n">cloned</span><span class="o">.</span><span class="na">hireDay</span> <span class="o">=</span> <span class="o">(</span><span class="n">Date</span><span class="o">)</span> <span class="n">hireDay</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>这样就是深拷贝，在拷贝完本身的内容后还会递归拷贝所引用对象的内存。</p>
+<h2 id="lambda表达式">lambda表达式</h2>
+<p>lambda就是一个代码块，表达形式为 (参数) -&gt; 表达式。
+例如:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Comparator</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">comp</span> <span class="o">=</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">)</span>
+        <span class="o">-&gt;</span> <span class="n">first</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="n">second</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</code></pre></div><hr>
+<p>如果出现如下类似的lambda表达式:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">x</span><span class="o">-&gt;</span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">x</span><span class="o">)</span>
+</code></pre></div><p>那么可以简写为:</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">::</span><span class="n">println</span>
+</code></pre></div><p>lambda表达式中的一些限制：</p>
+<ol>
+<li>只能引用不会改变的变量</li>
+<li>表达式捕获的变量必须是实际上的最终变量</li>
+<li>lambda中的局部变量不能与外部变量重名</li>
+</ol>
+<p>可以使用<code>Runable</code>来保存一个lambda,类似于回调：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Runable</span> <span class="n">an</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span> <span class="n">a</span><span class="o">,</span> <span class="kt">int</span> <span class="n">b</span><span class="o">)-&gt;</span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="o">);</span>
+<span class="o">...</span>
+<span class="o">...</span>
+<span class="n">an</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+</code></pre></div><h2 id="内部类">内部类</h2>
+<p>顾名思义，内部类就是定义在一个class内部的类，使用原因：</p>
+<ul>
+<li>内部类方法可以访问该类定义所在作用域中的数据，包括私有数据</li>
+<li>内部类可以对同一类中的其他类隐藏起来</li>
+<li>若想定义一个回调函数，使用匿名内部类会比较便捷</li>
+</ul>
+<p>内部类其实是相对于所在类的一个独立的类，当<code>new</code>操作符新建一个实体的时候，并不会实体化内部类，内部类需要独立进行实例化。不过，内部类和所在类建立了一定的联系使得内部类可以访问外围类的数据。</p>
+<p>内部类的初始化语法稍微有点复杂：</p>
+<pre><code>outerObject.new InnerClass(construction parmeter)
+</code></pre>
+<p>例如：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">TalkingClock</span> <span class="n">jabberer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TalkingClock</span><span class="o">(</span><span class="n">1000</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">TalkingClock</span><span class="o">.</span><span class="na">TimePrinter</span> <span class="n">listener</span> <span class="o">=</span> <span class="n">jabberer</span><span class="o">.</span><span class="na">new</span> <span class="nf">TimerPrinter</span><span class="o">();</span>
+</code></pre></div><p>内部类的一些限制：</p>
+<ul>
+<li>内部类声明所有的静态域必须要<code>final</code>，对于每一个外围类只需要有一个静态域的实例，若不是<code>final</code>，则分别会有单独的内部类实例。</li>
+<li>类似于lambda，访问外围局部变量也需要保证被引用的局部变量是事实上的<code>final</code>,内部类引用的时候，实际上创建了一份备份，防止外围类被垃圾回收的时候，引用出错，并且声明为<code>final</code>使得内部类和外围类引用的同一个实体。</li>
+</ul>
+<p>有一种方法来绕过这个限制，使用长度为1的数组：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kt">int</span><span class="o">[]</span> <span class="n">conuter</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+<span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">dates</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+    <span class="n">dates</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Date</span><span class="o">()</span>
+        <span class="o">{</span>
+            <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">Date</span> <span class="n">other</span><span class="o">);</span>
+            <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">other</span><span class="o">);</span>
+        <span class="o">};</span>
+</code></pre></div><h2 id="匿名内部类">匿名内部类</h2>
+<p>匿名内部类是一种很方便的工具来扩充某个接口，它的语法如下：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="k">new</span> <span class="n">SuperType</span><span class="o">(</span><span class="n">construction</span> <span class="n">parameters</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">inner</span> <span class="kd">class</span> <span class="nc">methods</span> <span class="n">and</span> <span class="n">data</span>
+    <span class="o">}</span>
+</code></pre></div><p>常用的使用方式为</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Person</span> <span class="n">queen</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="o">(</span><span class="s">&#34;Mary&#34;</span><span class="o">);</span>
+    <span class="c1">// normal object
+</span><span class="c1"></span><span class="n">Person</span> <span class="n">count</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="o">(</span><span class="s">&#34;Dracula&#34;</span><span class="o">)</span> 
+    <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">};</span>
+    <span class="c1">// a object extending Person
+</span></code></pre></div></article><section class="article labels"><a class="tag" href=/tags/java/>Java</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/effective-go/"><span class="iconfont icon-article"></span>Effective Go</a></p><p><a class="link" href="/blog/c-i-c&#43;&#43;/thread-synchronization/"><span class="iconfont icon-article"></span>线程同步</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

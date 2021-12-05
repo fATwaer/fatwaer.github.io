@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>OS on fatwaer</title>
+    <link>http://localhost:1313/tags/os/</link>
+    <description>Recent content in OS on fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 28 May 2018 09:26:33 +0000</lastBuildDate>
+    
+	<atom:link href="http://localhost:1313/tags/os/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>6-828-操作系统工程-Lab6-Network Driver(Final)</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</link>
+      <pubDate>Mon, 28 May 2018 09:26:33 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/</guid>
+      <description>准备 git
+$ git add . $ git commit -am &amp;quot;lab 5 done&amp;quot; $ make handin $ git pull $ git checkout -b lab6 origin/lab6 $ git merge lab5 Auto-merging lib/fd.c Auto-merging kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c Auto-merging inc/lib.h Auto-merging fs/serv.c Merge made by the &#39;recursive&#39; strategy. boot/main.c | 1 - fs/bc.c | 22 +- fs/fs.c | 73 +- .... user/faultio.c | 2 +- user/forktree.c | 1 + user/sh.c | 9 +- user/testfile.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lab5-File system, Spawn and Shell</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</link>
+      <pubDate>Sun, 20 May 2018 18:37:16 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/</guid>
+      <description>这个实验主要是实现spawn库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库 ，使得足以在控制台上运行shell。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。
+准备 git
+ $ find . -name &amp;quot;*.swp&amp;quot; | xargs rm $ git add . $ git commit -m &amp;quot;lab4 done&amp;quot; $ git pull $ git merge lab4 Auto-merging kern/trap.c CONFLICT (content): Merge conflict in kern/trap.c Auto-merging kern/syscall.c Auto-merging kern/init.c CONFLICT (content): Merge conflict in kern/init.c Auto-merging kern/env.c CONFLICT (content): Merge conflict in kern/env.c Auto-merging inc/lib.h Automatic merge failed; fix conflicts and then commit the result.  解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab4:Preemptive Multitasking</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</link>
+      <pubDate>Mon, 07 May 2018 19:28:03 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/</guid>
+      <description>在这个实验中，将会在多个用户环境同时运行时实现抢占式多任务。
+ part A:为JOS添加多处理器的支持，实现round-robin scheduling和增加基础的用户环境管理的系统调用，例如创建和销毁用户环境，分配和映射内存中的内容。 part B: 实现fork()函数，允许用户环境去添加一份自己环境的拷贝。 part C: 添加进程间的通信IPC(inter-process communication)，允许不同的用户环境各自通信和同步；添加硬件时钟中断和抢占任务。
+ 准备开始 git
+#git rest --hard FETCH_HEAD git add -u git commit -m &amp;quot;&amp;quot; git pull git checkout -b lab4 origin/lab4 git merge lab3  confilcts in file config/lab.mk
+源文件描述 kern/cpu.h Kernel-private definitions for multiprocessor support kern/mpconfig.c Code to read the multiprocessor configuration kern/lapic.c Kernel code driving the local APIC unit in each processor kern/mpentry.S Assembly-language entry code for non-boot CPUs kern/spinlock.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab3:User Environments</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</link>
+      <pubDate>Sun, 22 Apr 2018 23:01:09 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/</guid>
+      <description>4月22日 - 5月2日
+ PART A 这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。 这是关于这章节代码文件的介绍
+inc/env.h Public definitions for user-mode environments trap.h Public definitions for trap handling syscall.h Public definitions for system calls from user environments to the kernel lib.h Public definitions for the user-mode support library kern/env.h Kernel-private definitions for user-mode environments env.c Kernel code implementing user-mode environments trap.h Kernel-private trap handling definitions trap.c Trap handling code trapentry.S Assembly-language trap handler entry-points syscall.h Kernel-private definitions for system call handling syscall.</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab2:Memory Management</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</link>
+      <pubDate>Thu, 12 Apr 2018 19:18:13 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/</guid>
+      <description>练习1 page-translation open : cr0 和 PG bit page : 4k-byte 连续的内存单元 linear address : DIR | PAGE | OFFSET DIR是page directory的索引，PAGE是page table的索引。
+寻址过程:
+段部件输出一个线性地址（Linear address） Linear address(LA)
+// A linear address &#39;la&#39; has a three-part structure as follows: // // +--------10------+-------10-------+---------12----------+ // | Page Directory | Page Table | Offset within Page | // | Index | Index | | // +----------------+----------------+---------------------+ // \--- PDX(la) --/ \--- PTX(la) --/ \---- PGOFF(la) ----/ // \---------- PGNUM(la) ----------/ // // The PDX, PTX, PGOFF, and PGNUM macros decompose linear addresses as shown.</description>
+    </item>
+    
+    <item>
+      <title>6-828-操作系统工程-Lec4-7课件笔记整理</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Wed, 11 Apr 2018 10:59:57 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec4-7%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>Lec4 shell / OS https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt process = address space + thread app -&amp;gt; printf() -&amp;gt; write() -&amp;gt; SYSTEM CALL -&amp;gt; sys_write() -&amp;gt; ..
+Homework2
+ exec: execv()一个参数是用来执行命令，另一个让函数知道参数的结束。 exec程序结束后 execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()
+ redirect 关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。
+ pipe 如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。 reader不关掉写端，读不到数据。 writer不关读段，正常执行。 pipe的好处，例如 ls | sort | uniq | wc指令，如果没有pipe的话，指令则只能这样写ls &amp;gt; temp1 ; sort temp1 &amp;gt; temp2; uniq temp2 &amp;gt; temp3; wc temp3 &amp;gt; temp4; cat temp4 how does the kernel know when to free the pipe buffer?</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lec1-3课件笔记和作业</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</link>
+      <pubDate>Fri, 06 Apr 2018 22:58:48 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/</guid>
+      <description>笔记 函数的开场和结束  +------------+ | | arg 2 | \ +------------+ &amp;gt;- previous function&#39;s stack frame | arg 1 | / +------------+ | | ret %eip | / +============+ | saved %ebp | \ %ebp-&amp;gt; +------------+ | | | | | local | \ | variables, | &amp;gt;- current function&#39;s stack frame | etc. | / | | | | | | %esp-&amp;gt; +------------+ /  函数调用和汇编对应 其中Prologue,Epilogue可以理解为每次调用函数和return函数所需要的操作。
+C源文件编译过程 PC 模拟器实现 CPU寄存器 #存储在全局变量中 int32_t regs[8]; #define REG_EAX 1; #define REG_EBX 2; #define REG_ECX 3; .</description>
+    </item>
+    
+    <item>
+      <title>6.828-操作系统工程-Lab1:Booting a PC</title>
+      <link>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</link>
+      <pubDate>Wed, 14 Mar 2018 21:08:44 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/</guid>
+      <description>3月14日 - 3月28日
+ Exercise 1 熟悉x86汇编和AT&amp;amp;T汇编
+16-bit intel 8088 1MB = 1048576bit 内存地址: 0x00000 ~ 0xFFFFF 640KB(0x00000 ~ 0xA0000) 用户可用 参考资料
+GDB启动过程 首先打开一个终端到目的lab根文件夹
+$ make qemu-nox-gdb
+再打开一个新的终端窗口执行以下命令进行监听
+$ make gdb
+以及一些常用的gdb命令 b: 0xffff: 在0xffff出下断点 c: continue to breakpoint si: 单步前进 x/5: 0xFFFFF 从0xFFFFF开始的5个命令
+Exercise 2 第一条指令: [f000:fff0] 0xffff0: ljmp $0xf000,$0xe05b 当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。 这个地址与BIOS的结束位置0x100000差16bytes。
+启动后追踪BIOS的部分代码 [f000:e05b] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较 [f000:e062] 0xfe062:	jne 0xfd2e1 ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转 [f000:e066] 0xfe066:	xor %dx,%dx ;dx清0 [f000:e068] 0xfe068:	mov %dx,%ss ;ss置0,AT&amp;amp;T汇编mov指令反向 [f000:e06a] 0xfe06a:	mov $0x7000,%esp ;esp设置为0x7000,实模式引导区位置 [f000:e070] 0xfe070:	mov $0xf3691,%executed ;edx设置为0xf3691 [f000:e076] 0xfe076:	jmp 0xfd165 ;跳转 0xfd165 [f000:d165] 0xfd165:	mov %eax,%ecx [f000:d168] 0xfd168:	cli ;屏蔽中断 [f000:d169] 0xfd169:	cld ;DF设置为0，指在每次传送一次将esi和edi自动+1;std将DF设置为1,传送自减 [f000:d16a] 0xfd16a:	mov $0x8f,%eax [f000:d170] 0xfd170:	out %al,$0x70 ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1 [f000:d172] 0xfd172:	in $0x71,%al ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0 ;A20地址线使能,进入保护模式 [f000:d174] 0xfd174:	in $0x92,%al [f000:d176] 0xfd176:	or $0x2,%al [f000:d178] 0xfd178:	out %al,$0x92 ;加载6个字节 [f000:d17a] 0xfd17a:	lidtw %cs:0x6c38 ;加载中断向量表 -&amp;gt;idt寄存器 [f000:d180] 0xfd180:	lgdtw %cs:0x6bf4 ;加载全局描述符表-&amp;gt;gdt寄存器 ;cr0寄存器置为1，进入保护模式 [f000:d186] 0xfd186:	mov %cr0,%eax [f000:d189] 0xfd189:	or $0x1,%eax [f000:d18d] 0xfd18d:	mov %eax,%cr0 ;重新加载全局描述符GDT 0xfd190:	ljmpl $0x8,$0xfd198 0xfd198:	mov $0x10,%ax 0xfd19b:	add %al,(%bx,%si) 0xfd19d:	mov %ax,%ds 0xfd19f:	mov %ax,%es 0xfd1a1:	mov %ax,%ss 0xfd1a3:	mov %ax,%fs   重新加载的 x86汇编复习 外围设备端口  软盘硬盘 磁盘的最小传输单元(sector)： 512bytes</description>
+    </item>
+    
+  </channel>
+</rss>

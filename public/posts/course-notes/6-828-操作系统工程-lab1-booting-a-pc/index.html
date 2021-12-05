@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>6.828-操作系统工程-Lab1:Booting a PC</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="6.828-操作系统工程-Lab1:Booting a PC" />
+<meta property="og:description" content="3月14日 - 3月28日
+ Exercise 1 熟悉x86汇编和AT&amp;T汇编
+16-bit intel 8088 1MB = 1048576bit 内存地址: 0x00000 ~ 0xFFFFF 640KB(0x00000 ~ 0xA0000) 用户可用 参考资料
+GDB启动过程 首先打开一个终端到目的lab根文件夹 $ make qemu-nox-gdb 再打开一个新的终端窗口执行以下命令进行监听 $ make gdb
+以及一些常用的gdb命令 b: 0xffff: 在0xffff出下断点 c: continue to breakpoint si: 单步前进 x/5: 0xFFFFF 从0xFFFFF开始的5个命令
+ Exercise 2 第一条指令: [f000:fff0] 0xffff0:	ljmp $0xf000,$0xe05b 当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。 这个地址与BIOS的结束位置0x100000差16bytes。
+启动后追踪BIOS的部分代码 [f000:e05b] 0xffff0:	ljmp $0xf000,$0xe05b [f000:e05b] 0xfe05b:	cmpl $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较 [f000:e062] 0xfe062:	jne 0xfd2e1 ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转 [f000:e066] 0xfe066:	xor %dx,%dx ;dx清0 [f000:e068] 0xfe068:	mov %dx,%ss ;ss置0,AT&amp;T汇编mov指令反向 [f000:e06a] 0xfe06a:	mov $0x7000,%esp ;esp设置为0x7000,实模式引导区位置 [f000:e070] 0xfe070:	mov $0xf3691,%executed ;edx设置为0xf3691 [f000:e076] 0xfe076:	jmp 0xfd165 ;跳转 0xfd165 [f000:d165] 0xfd165:	mov %eax,%ecx [f000:d168] 0xfd168:	cli ;屏蔽中断 [f000:d169] 0xfd169:	cld ;DF设置为0，指在每次传送一次将esi和edi自动&#43;1;std将DF设置为1,传送自减 [f000:d16a] 0xfd16a:	mov $0x8f,%eax [f000:d170] 0xfd170:	out %al,$0x70 ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1 [f000:d172] 0xfd172:	in $0x71,%al ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0 ;A20地址线使能,进入保护模式 [f000:d174] 0xfd174:	in $0x92,%al [f000:d176] 0xfd176:	or $0x2,%al [f000:d178] 0xfd178:	out %al,$0x92 ;加载6个字节 [f000:d17a] 0xfd17a:	lidtw %cs:0x6c38 ;加载中断向量表 -&gt;idt寄存器 [f000:d180] 0xfd180:	lgdtw %cs:0x6bf4 ;加载全局描述符表-&gt;gdt寄存器 ;cr0寄存器置为1，进入保护模式 [f000:d186] 0xfd186:	mov %cr0,%eax [f000:d189] 0xfd189:	or $0x1,%eax [f000:d18d] 0xfd18d:	mov %eax,%cr0 ;重新加载全局描述符GDT 0xfd190:	ljmpl $0x8,$0xfd198 0xfd198:	mov $0x10,%ax 0xfd19b:	add %al,(%bx,%si) 0xfd19d:	mov %ax,%ds 0xfd19f:	mov %ax,%es 0xfd1a1:	mov %ax,%ss 0xfd1a3:	mov %ax,%fs  重新加载的 x86汇编复习 外围设备端口  软盘硬盘 磁盘的最小传输单元(sector)： 512bytes 16位机，在CD-ROM启动之前，后被扩展。xv6使用传统硬盘,512bytes/sector boot sector 在开机时被读入物理地址为 0x7c00 ~ 0x7dff" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab1-booting-a-pc/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-03-14T21:08:44+00:00" />
+<meta property="article:modified_time" content="2018-03-14T21:08:44+00:00" />
+
+
+
+    
+    
+<meta name="description" content="6.828-操作系统工程-Lab1:Booting a PC" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>March 14, 2018</p>
+        </div>
+
+        <div class="title">
+          <h1>6.828-操作系统工程-Lab1:Booting a PC</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <blockquote>
+<p>3月14日 - 3月28日</p>
+</blockquote>
+<h2 id="exercise-1">Exercise 1</h2>
+<p>熟悉x86汇编和AT&amp;T汇编</p>
+<p>16-bit intel 8088
+1MB = 1048576bit
+内存地址: 0x00000 ~ 0xFFFFF
+640KB(0x00000 ~ 0xA0000) 用户可用
+<a href="http://web.archive.org/web/20040322145608/http://members.iweb.net.au:80/~pstorr/pcbook/book2/memory.htm">参考资料</a></p>
+<h3 id="gdb启动过程">GDB启动过程</h3>
+<p>首先打开一个终端到目的lab根文件夹
+<code>$ make qemu-nox-gdb</code>
+再打开一个新的终端窗口执行以下命令进行监听
+<code>$ make gdb</code></p>
+<p>以及一些常用的gdb命令
+b: 0xffff: 在0xffff出下断点
+c: continue to breakpoint
+si: 单步前进
+x/5: 0xFFFFF
+从0xFFFFF开始的5个命令</p>
+<hr>
+<h2 id="exercise-2">Exercise 2</h2>
+<p>第一条指令:
+[f000:fff0] 0xffff0:	ljmp   $0xf000,$0xe05b
+当处理器重置时，会进入实模式并将CS设置为0xf000，IP设置为0xfff0(CS:IP=0xffff0)。
+这个地址与BIOS的结束位置0x100000差16bytes。</p>
+<h3 id="启动后追踪bios的部分代码">启动后追踪BIOS的部分代码</h3>
+<pre tabindex="0"><code class="language-ARM" data-lang="ARM">[f000:e05b]    0xffff0:	ljmp   $0xf000,$0xe05b
+[f000:e05b]    0xfe05b:	cmpl   $0x0,%cs:0x6c48	;把0与cs:6c48所指向内存的值比较
+[f000:e062]    0xfe062:	jne    0xfd2e1          ;与CS:0x6c48(f6c48)处的值与0比较，不是0跳转
+[f000:e066]    0xfe066:	xor    %dx,%dx          ;dx清0
+[f000:e068]    0xfe068:	mov    %dx,%ss          ;ss置0,AT&amp;T汇编mov指令反向
+[f000:e06a]    0xfe06a:	mov    $0x7000,%esp     ;esp设置为0x7000,实模式引导区位置
+[f000:e070]    0xfe070:	mov    $0xf3691,%executed ;edx设置为0xf3691
+[f000:e076]    0xfe076:	jmp    0xfd165            ;跳转 0xfd165
+[f000:d165]    0xfd165:	mov    %eax,%ecx
+[f000:d168]    0xfd168:	cli                       ;屏蔽中断
+[f000:d169]    0xfd169:	cld                       ;DF设置为0，指在每次传送一次将esi和edi自动+1;std将DF设置为1,传送自减
+
+
+[f000:d16a]    0xfd16a:	mov    $0x8f,%eax
+[f000:d170]    0xfd170:	out    %al,$0x70          ;将al中的值0x8f输出到外部设备0x70端口,NMI不可屏蔽中断使能位为1
+[f000:d172]    0xfd172:	in     $0x71,%al          ;将0x71端口的值输出到al,GDB查看寄存器信息看见eax值被清0
+
+	;A20地址线使能,进入保护模式
+[f000:d174]    0xfd174:	in     $0x92,%al
+[f000:d176]    0xfd176:	or     $0x2,%al
+[f000:d178]    0xfd178:	out    %al,$0x92
+
+	;加载6个字节
+[f000:d17a]    0xfd17a:	lidtw  %cs:0x6c38          ;加载中断向量表 -&gt;idt寄存器
+[f000:d180]    0xfd180:	lgdtw  %cs:0x6bf4          ;加载全局描述符表-&gt;gdt寄存器
+
+	;cr0寄存器置为1，进入保护模式
+[f000:d186]    0xfd186:	mov    %cr0,%eax
+[f000:d189]    0xfd189:	or     $0x1,%eax
+[f000:d18d]    0xfd18d:	mov    %eax,%cr0
+	;重新加载全局描述符GDT
+   0xfd190:	ljmpl  $0x8,$0xfd198
+   0xfd198:	mov    $0x10,%ax
+   0xfd19b:	add    %al,(%bx,%si)
+   0xfd19d:	mov    %ax,%ds
+   0xfd19f:	mov    %ax,%es
+   0xfd1a1:	mov    %ax,%ss
+   0xfd1a3:	mov    %ax,%fs
+</code></pre><ul>
+<li><a href="https://en.wikibooks.org/wiki/X86_Assembly/Global_Descriptor_Table">重新加载的</a></li>
+<li><a href="http://www.cs.virginia.edu/~evans/cs216/guides/x86.html">x86汇编复习</a></li>
+<li><a href="http://bochs.sourceforge.net/techspec/PORTS.LST">外围设备端口</a></li>
+</ul>
+<h3 id="软盘硬盘">软盘硬盘</h3>
+<p>磁盘的最小传输单元(sector)： 512bytes
+16位机，在CD-ROM启动之前，后被扩展。xv6使用传统硬盘,512bytes/sector
+boot sector 在开机时被读入物理地址为 0x7c00 ~ 0x7dff</p>
+<hr>
+<h2 id="exercise-3">Exercise 3</h2>
+<ol>
+<li>在0x7c00设置断点,对比源代码boot/boot.S，GDB，反汇编文件obj/boot/boot.asm</li>
+<li>跟随boot/main.c文件的bootmain()函数到readsect()函数，弄清楚readsect()中的指令直至返回到bootmain()，确认从磁盘中读取kernel的for循环。跟随到bootloader完成引导。</li>
+</ol>
+<p>boot/boot.S: 源代码
+obj/boot/boot.asm: 反汇编代码
+boot/main.c: 加载kernel的C代码</p>
+<hr>
+<h3 id="boots">boot.S</h3>
+<p>打开/lab/boot可以看到一段注释，CPU启动后，切换至保护模式。BIOS把磁盘第一个扇区读入内存0x7c00处，并且在实模式下执行，将CS:IP指向0:7c00。
+代码基本有注释，有几个点得注意下:</p>
+<pre><code>inb     $0x64,%al               # Wait for not busy
+testb   $0x2,%al
+jnz     seta20.2
+</code></pre>
+<p>将外围设备0x64端口读1byte？到al中，0x64端口的第1位的 bit 1 = 1 input buffer full (input 60/64 has data for 8042)判断输入缓冲区是不是满的，再用test和jnz来循环等待。</p>
+<pre><code>movb    $0xd1,%al               # 0xd1 -&gt; port 0x64
+outb    %al,$0x64
+</code></pre>
+<p>下次下入0x60的数据将会写入804x控制器。</p>
+<pre><code>movb    $0xdf,%al               # 0xdf -&gt; port 0x60
+outb    %al,$0x60
+</code></pre>
+<p>0xdf写入到0x60中，让地址线A20使能，开启32位保护模式。</p>
+<pre><code>lgdt    gdtdesc
+</code></pre>
+<p>加载全局描述表，具体见:http://www.cnblogs.com/fatsheep9146/p/5115086.html</p>
+<pre><code>ljmp    $PROT_MODE_CSEG, $protcseg
+</code></pre>
+<p>关于这个跳转有一个好的解释如下图。
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3555.PNG" alt="IMG_3555.PNG">
+是保护模式下的跳转方法。</p>
+<pre><code>movl    $start, %esp
+</code></pre>
+<p>esp的值设置为0x7c00,准备开始执行boot loader 。</p>
+<hr>
+<h3 id="mainc">main.c</h3>
+<p>在这个文件内补充了一个启动过程和DISK的排布:
+disk layout</p>
+<ol>
+<li>
+<p>boot.S和main.c是启动器，存储在磁盘的第一个扇区。</p>
+</li>
+<li>
+<p>第二个扇区存储内核镜像。</p>
+</li>
+<li>
+<p>内核镜像必须是ELF文件格式。
+BOOT UP STEPS</p>
+</li>
+<li>
+<p>CPU读取BIOS到内存中并且执行。</p>
+</li>
+<li>
+<p>BIOS初始化设备，中断历程，并且读取第一个扇区并且跳转执行。</p>
+</li>
+<li>
+<p>如果boot loader存储在第一个扇区，那么cpu由其接管。</p>
+</li>
+<li>
+<p>boot.S开启保护模式，设置栈空间，调用bootmain()。</p>
+</li>
+<li>
+<p>然后bootmain()接管cpu，读取内核并且跳转。</p>
+<p>#define ELFHDR          ((struct Elf *) 0x10000) // scratch space
+ELFHDR为一个固定值 0x10000</p>
+<p>readseg((uint32_t) ELFHDR, SECTSIZE<em>8, 0);
+把磁盘中的ELF文件头(512</em>8=4MB？待解决)读到内存0x10000</p>
+<p>ph = (struct Proghdr *) ((uint8_t *) ELFHDR + ELFHDR-&gt;e_phoff);
+Proghdr结构体类型指针ph,指向Program Table表头</p>
+<p>eph = ph + ELFHDR-&gt;e_phnum;
+指向表尾</p>
+<p>for (; ph &lt; eph; ph++)
+readseg(ph-&gt;p_pa, ph-&gt;p_memsz, ph-&gt;p_offset);
+根据这从磁盘读出的4MB ELF文件头，再从磁盘中读取ELF文件的数据段，代码段&hellip;.</p>
+<p>((void (*)(void)) (ELFHDR-&gt;e_entry))();
+暂时不清楚，跳到elf文件执行入口？</p>
+</li>
+</ol>
+<hr>
+<p>The ELF file contains headers that describe how these sections should be stored in memory .</p>
+<blockquote>
+<p>ELF文件: <a href="/ELF.index">/ELF文件/</a>
+wiki-ELF: <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">https://en.wikipedia.org/wiki/Executable_and_Linkable_Format</a></p>
+</blockquote>
+<h3 id="gdb调试">GDB调试</h3>
+<hr>
+<h4 id="readsect">readsect()</h4>
+<pre><code>7d15:       55                      push   %ebp
+7d16:       89 e5                   mov    %esp,%ebp
+7d18:       56                      push   %esi
+7d19:       53                      push   %ebx
+</code></pre>
+<p>保存寄存器信息</p>
+<pre><code>7d1a:       6a 00                   push   $0x0
+7d1c:       68 00 10 00 00          push   $0x1000
+7d21:       68 00 00 01 00          push   $0x10000
+7d26:       e8 b1 ff ff ff          call   7cdc &lt;readseg&gt;
+</code></pre>
+<p>偏移0x0,大小0x1000(512x8),装载的内存地址0x10000</p>
+<pre><code>7ce1:       8b 7d 10                mov    0x10(%ebp),%edi
+7ce5:       8b 75 0c                mov    0xc(%ebp),%esi
+7ce8:       8b 5d 08                mov    0x8(%ebp),%ebx
+</code></pre>
+<blockquote>
+<p>因为此时的%ebp的值为0x7bdc，在这里面存放的是bootmain过程的%ebp值，0x04(%ebp)即0x7be0存&gt;放的是bootmain的返回地址，0x08(%ebp)存放的是第1个输入参数0x10000，0xc(%ebp)存放的是第2&gt;个参数0x1000，0x10(%ebp)中存放的是第3个参数0x00
+//具体原因:(待)</p>
+</blockquote>
+<p>执行完后ebx: 0x10000 esi: 0x1000 edi: 0x0</p>
+<pre><code>7cee:       01 de                   add    %ebx,%esi
+</code></pre>
+<p>从内存的开始到第一个扇区的结束。</p>
+<pre><code>7cf0:       47                      inc    %edi
+</code></pre>
+<p>edi+1</p>
+<pre><code>7cf7:       39 f3                   cmp    %esi,%ebx
+7cf9:       73 12                   jae    7d0d &lt;readseg+0x31&gt;
+</code></pre>
+<p>while的判断条件。</p>
+<pre><code>call readsect
+call waitdisk
+ret
+</code></pre>
+<hr>
+<h4 id="outb">outb()</h4>
+<p>返回后直接进入 outb()中</p>
+<pre><code>outb(0x1F2, 1);         // count = 1
+outb(0x1F3, offset);
+outb(0x1F4, offset &gt;&gt; 8);
+outb(0x1F5, offset &gt;&gt; 16);
+outb(0x1F6, (offset &gt;&gt; 24) | 0xE0);
+outb(0x1F7, 0x20);
+</code></pre>
+<p>&ldquo;通过这些指令可以看出，系统是先想0x1F2端口送入一个值1，代表取出一个扇区，然后向0x1F3~0x1F6中送入你要读取的扇区编号的32bit表示形式。最后向0x1F7端口输出0x20指令表示要读取这个扇区。&rdquo;</p>
+<hr>
+<h4 id="insl">insl()</h4>
+<pre><code>7cc9:       8b 7d 08                mov    0x8(%ebp),%edi
+7ccc:       b9 80 00 00 00          mov    $0x80,%ecx
+7cd1:       ba f0 01 00 00          mov    $0x1f0,%edx
+</code></pre>
+<p>edi = 0x10000 ecx = 0x80 edx = 0x1f0</p>
+<pre><code>repnz insl (%dx),%es:(%edi)
+</code></pre>
+<p>repnz为装饰符，重复执行后面的语句，直到cx寄存器为0。
+dx存要访问的端口，edi存要存放的内存起始地址。每次传输4字节
+执行前</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3528.PNG" alt="IMG_3528.PNG"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3529.PNG" alt="IMG_3529.PNG"></p>
+<p>执行2次
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3527.PNG" alt="IMG_3527.PNG"></p>
+<p>直到ecx减为0，继续接下来的执行。这个时候从0x10000~0x100200(512字节)已经加载完成。</p>
+<blockquote>
+<p>GDB查看内存信息: x/12xb 0x10000</p>
+</blockquote>
+<pre><code>7d09:       58                      pop    %eax
+7d0a:       5a                      pop    %edx
+7d0b:       eb ea                   jmp    7cf7 &lt;readseg+0x1b&gt;
+</code></pre>
+<p>把pa和end_pa拿出来，即while的条件比较。当pa = end_pa 跳出while。
+设置断点到while结束</p>
+<pre><code>7d0d:       8d 65 f4                lea    -0xc(%ebp),%esp
+7d10:       5b                      pop    %ebx
+7d11:       5e                      pop    %esi
+7d12:       5f                      pop    %edi
+7d13:       5d                      pop    %ebp
+7d14:       c3                      ret
+</code></pre>
+<p>恢复栈寄存器，返回到bootmain()</p>
+<hr>
+<h4 id="if判断">if判断</h4>
+<pre><code>7d2b:       83 c4 0c                add    $0xc,%esp
+7d2e:       81 3d 00 00 01 00 7f    cmpl   $0x464c457f,0x10000
+7d35:       45 4c 46
+7d38:       75 37                   jne    7d71 &lt;bootmain+0x5c&gt;
+</code></pre>
+<p>7d2b存疑
+7d2e:文件在内存中起始地址内容与0x464c467f比较，ELF文件头标志，16进制数分别代表‘F’,&lsquo;L&rsquo;,&lsquo;E&rsquo;,0X7F。
+7d38在文件内容不符合的条件下跳转。</p>
+<hr>
+<h4 id="for循环读取">for循环读取</h4>
+<pre><code>7d3a:       a1 1c 00 01 00          mov    0x1001c,%eax
+7d3f:       0f b7 35 2c 00 01 00    movzwl 0x1002c,%esi
+</code></pre>
+<p>分别对应ph和eph,ph为ELF文件的Program Table Headers起始偏移，eph存入的是Program Table Headers的个数。</p>
+<pre><code>7d46:       8d 98 00 00 01 00       lea    0x10000(%eax),%ebx
+</code></pre>
+<p>切换到Intel汇编是lea ebx,[eax+0x10000]，ebx = eax + 0x10000 。</p>
+<pre><code>7d4c:       c1 e6 05                shl    $0x5,%esi
+7d4f:       01 de                   add    %ebx,%esi
+</code></pre>
+<p>设定Program Table Headers结束地址？</p>
+<pre><code>7d55:       ff 73 04                pushl  0x4(%ebx)
+7d58:       ff 73 14                pushl  0x14(%ebx)
+7d5b:       83 c3 20                add    $0x20,%ebx
+7d5e:       ff 73 ec                pushl  -0x14(%ebx)
+7d61:       e8 76 ff ff ff          call   7cdc &lt;readseg&gt;
+</code></pre>
+<p>这四条指令应该可以理解为readseg(ebx+c,ebx+14,ebx+4)，类似于读取elf文件的第一个段，把磁盘的内容取到内存中去。操作系统内核到现在已经加载完成。</p>
+<hr>
+<h4 id="内核跳转">内核跳转</h4>
+<pre><code>7d6b:       ff 15 18 00 01 00       call   *0x10018
+((void (*)(void)) (ELFHDR-&gt;e_entry))();
+</code></pre>
+<p>最后一步，转到内核的开始点。</p>
+<blockquote>
+<p><strong>BIOS启动-&gt;保护模式-&gt;读取第一个扇区到内存-&gt;跳转至0x7c00地址执行bootstrap-&gt;加载磁盘中的系统内核elf文件到0x10000 -&gt; 最后跳转到内核开始处。</strong></p>
+</blockquote>
+<hr>
+<h3 id="问题">问题</h3>
+<ul>
+<li>
+<p>At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?</p>
+<p>movl    %cr0, %eax
+orl     $CR0_PE_ON, %eax
+movl    %eax, %cr0
+开启cr0寄存器最低位</p>
+</li>
+<li>
+<p>What is the last instruction of the boot loader executed, and what is the first instruction of the kernel it just loaded?</p>
+</li>
+</ul>
+<ol>
+<li>movl    $start, %esp ; bootloader开始地址压栈</li>
+<li>push   %ebp ;准备readseg()的参数</li>
+</ol>
+<ul>
+<li>Where is the first instruction of the kernel?
+0x1000c</li>
+<li>How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?
+在elf文件中，首先宏定义了一个结构体指针指向elf文件在内存中的加载处，然后利用elf文件提供的信息加载Program table Headers所指定的信息。ELFHDR-&gt;e_phnum这个偏移加上基础地址就得到了文件头的个数。</li>
+</ul>
+<h2 id="exercise-4">Exercise 4</h2>
+<h3 id="pointerc">pointer.c</h3>
+<pre><code>c[1] = 300;
+*(c + 2) = 301;
+3[c] = 302;
+</code></pre>
+<p>第三个输出的地方，有一个没有接触过的数组访问方法
+“3[c]”的结果和“c[3]”的结果一样，有点类似于at&amp;t汇编中的  mov 0x3(%ebx),eax ，也许是衍生出来的一种形式。</p>
+<pre><code>b = (int *) a + 1;
+c = (int *) ((char *) a + 1);
+</code></pre>
+<p>b为一个为整形指针，b的值+1，int指针的值+4
+而c为char形，c值+1，char形指针+1</p>
+<h3 id="elf">ELF</h3>
+<p>查看文件头</p>
+<pre><code>objdump -h obj/kern/kernel
+
+objdump -x obj/kern/kernel
+</code></pre>
+<p>kernel Program Header:</p>
+<pre><code>LOAD off    0x00001000 vaddr 0xf0100000 paddr 0x00100000 align 2**12
+     filesz 0x00007120 memsz 0x00007120 flags r-x
+LOAD off    0x00009000 vaddr 0xf0108000 paddr 0x00108000 align 2**12
+     filesz 0x0000a300 memsz 0x0000a944 flags rw-
+</code></pre>
+<p>STACK off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**4
+filesz 0x00000000 memsz 0x00000000 flags rwx</p>
+<p>vadd(virturl address),paddr(physical address),LOAD(ELF object need to be loaded)
+align的大小表示是我在用python的时候想起来的，2**n 表示的是 2^n次方。</p>
+<h2 id="exercise-5">Exercise 5</h2>
+<blockquote>
+<p>LOAD address and LINKER address</p>
+</blockquote>
+<p>关于link address 和load address,我在网上找到这样一个说法:
+load address，表示一个已确定对象的实际加载地址。如C中可执行程序的main函数的地址，在编译完成的时候其地址已经确认（当然在系统中这是一个逻辑地址）
+link address，表示一个未确定对象的应该加载的地址。如你使用C动态库中的printf函数的地址。在编译完成的时候不能确定其地址，因为它的实体是在动态链接库中，只能给它规定一个应该加载的地址，在程序加载的时候才能真正确认是否可以加载在这个地址上（可能出现动态库找不到的情况，这时候就加载错误了）
+<img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj8.png" alt="obj8.png">
+VMA为link address,程序开始执行的地方；LMA为load address,将会被bootloader读取到的内存地址。</p>
+<p>跟着这个<a href="http://www.cnblogs.com/fatsheep9146/p/5220004.html">链接</a>，改变boot/Makefrag的文件内容，原文件内容</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj1.png" alt="obj1.png"></p>
+<p>改-Ttext的参数，从0x7c00改为0x7e00</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj2.png" alt="obj2.png"></p>
+<p>原boot.asm(make后产生的)变为</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj3.png" alt="obj3.png"></p>
+<p>每个命令在这个asm文件内的地址都发生了变化。</p>
+<p>跟踪bootstrap,设置断点在0x7c00,si执行几步。</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj4.png" alt="obj4.png"></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj5.png" alt="obj5.png"></p>
+<p>lgdtw  0x7e64,本应该加载0x7c64的,但是内存区域内容没有内容</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj6.png" alt="obj6.png"></p>
+<p>ljmp   $0x8,$0x7e32,这是跳转到保护模式程序段的跳转命令，但是跳转失败</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj7.png" alt="obj7.png"></p>
+<p>我改变了boot/Makefrag中-Ttext的参数，把boot loader的link地址从0x7c00改成了0x7e00。由make命令从boot.S生成到boot.asm的文件中，命令的地址都发生了变化，但是BIOS默认读取boot到地址0x7c00，但是代码的性质，例如lgdtw加载全局描述符命令，已经发生了改变。代码本应被读到0x7e00执行，实际是在0x7c00执行，到最后一步一步的出错。</p>
+<h2 id="exercise-6">Exercise 6</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">objdump -f obj/kern/kernel
+</code></pre></div><p>得到内核ELF文件中程序入口 <strong>0x0010000c</strong></p>
+<p>这个练习的问题是：在0x7c00这个位置和在bootloader进入kernel的时候为什么从0x10000开始，8 word长的内存中内容不同？
+因为bootloader已经readseg()这个函数的时候，将ELF从磁盘读到了0x10000这个地址了。
+(还是没弄清如何确认读多少个扇区)</p>
+<hr>
+<h2 id="exercise-7">Exercise 7</h2>
+<ul>
+<li>kern/kernel.ld 存放link address 和load address
+ld文件格式：https://www.math.utah.edu/docs/info/ld_3.html</li>
+</ul>
+<p>entry_pgdir 将虚拟地址0xf0000000~0xf0400000 映射到 0x00000000~0x00400000</p>
+<blockquote>
+<p>文件 kern/entry.S</p>
+</blockquote>
+<p>根据练习的引导，将断点设置在mov eax,cr0处，查看0x00100000和0xf0100000的内存空间。
+运行前：</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/before.png" alt="before.png"></p>
+<p>运行后：</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/next.png" alt="next.png"></p>
+<p>地址0xf0100000被映射成功了，与0x00100000地址处内容相同。</p>
+<p>注释执行这个程序，往后面看几条汇编：</p>
+<pre><code>0x100025:	mov    $0xf010002c,%eax
+0x10002a:	jmp    *%eax
+</code></pre>
+<p>程序将会跳转到0xf010002c这个地址去，但是用gdb查看这个地址并没有指令：</p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/f010002c.png" alt="f010002c.png"></p>
+<p>程序就会往非预期的方向前进。</p>
+<hr>
+<h2 id="exercise-8">Exercise 8</h2>
+<p>阅读三个c文件：
+<strong>kern/printf.c
+lib/printfmt.c
+kern/console.c</strong></p>
+<p>从文件名上猜测，printf文件应该是实现输出的主体，printfmt.c应该是一个写满方法的库，console.c应该和shell类似，输出内容和交互的主体。</p>
+<h3 id="consolec">console.c</h3>
+<h4 id="cons_putc">cons_putc()</h4>
+<p>先从cons_putc()函数开始，代码注释为输出字符到console界面，跟随这个走应该能了解到字符的输出过程。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">cons_putc</span>(<span style="color:#66d9ef">int</span> c)
+{
+        serial_putc(c);
+        lpt_putc(c);
+        cga_putc(c);
+}
+</code></pre></div><p>跟随子程序：</p>
+<h4 id="serial_putc">serial_putc()</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">serial_putc</span>(<span style="color:#66d9ef">int</span> c)
+{
+	<span style="color:#66d9ef">int</span> i;
+
+	<span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+	     <span style="color:#f92672">!</span>(inb(COM1 <span style="color:#f92672">+</span> COM_LSR) <span style="color:#f92672">&amp;</span> COM_LSR_TXRDY) <span style="color:#f92672">&amp;&amp;</span> i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">12800</span>;
+	     i<span style="color:#f92672">++</span>)
+		delay();
+
+	outb(COM1 <span style="color:#f92672">+</span> COM_TX, c);
+}
+</code></pre></div><p>COM1 + COM_LSR = 0x03FD ，COM_LSR_TXRDY = 0x20 = 0010 0000
+根据这个<a href="http://bochs.sourceforge.net/techspec/PORTS.LST">链接</a>查询端口，(inb(COM1 + COM_LSR) &amp; COM_LSR_TXRDY)这一个判断条件就是取串口寄存器的第五位，判断transmitter holding register是否为空。
+COM1 + COM_TX = 0X03F8
+用for循环最多12800次来等待串口寄存器为空，然后执行outb，将参数 c 写入到串口transmitter holding register保存数据。</p>
+<h4 id="lpt_putc">lpt_putc()</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">lpt_putc</span>(<span style="color:#66d9ef">int</span> c)
+{
+	<span style="color:#66d9ef">int</span> i;
+
+	<span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#f92672">!</span>(inb(<span style="color:#ae81ff">0x378</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x80</span>) <span style="color:#f92672">&amp;&amp;</span> i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">12800</span>; i<span style="color:#f92672">++</span>)
+		delay();
+	outb(<span style="color:#ae81ff">0x378</span><span style="color:#f92672">+</span><span style="color:#ae81ff">0</span>, c);
+	outb(<span style="color:#ae81ff">0x378</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0x08</span><span style="color:#f92672">|</span><span style="color:#ae81ff">0x04</span><span style="color:#f92672">|</span><span style="color:#ae81ff">0x01</span>);
+	outb(<span style="color:#ae81ff">0x378</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0x08</span>);
+}
+</code></pre></div><p>0378-037A 被叫做并行打印端口（parallel printer port）
+0x378 : 数据端口 | 0x37A : 控制端口
+!(inb(0x378+1) &amp; 0x80) 用来判断端口是否闲置
+outb(0x378+0, c); 写进数据端口？
+接下来，对输出进行初始化等，具体不明确。
+bit 3 = 1  select printer
+bit 2 = 0  initialize printer
+bit 1 = 1  automatic line feed
+bit 0 = 1  strobe</p>
+<h4 id="cga_putc">cga_putc()</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">cga_putc</span>(<span style="color:#66d9ef">int</span> c)
+{
+	<span style="color:#75715e">// if no attribute given, then use black on white
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(c <span style="color:#f92672">&amp;</span> <span style="color:#f92672">~</span><span style="color:#ae81ff">0xFF</span>))
+		c <span style="color:#f92672">|=</span> <span style="color:#ae81ff">0x0700</span>;
+
+	<span style="color:#66d9ef">switch</span> (c <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xff</span>) {
+	...
+	}
+}
+</code></pre></div><p>这种形式和颜色表示有关，一部分比特位控制背景颜色，一部分控制前景颜色，还有一部分负责字符数据。</p>
+<p><a href="https://github.com/chyyuu/ucore_os_lab/blob/master/labcodes/lab1/kern/driver/console.c">cga的相关注释</a></p>
+<p>以及<a href="https://stackoverflow.com/questions/43221509/what-is-the-function-of-0x0700-in-cga-putc">what-is-the-function-of-0x0700-in-cga-putc</a></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> (crt_pos <span style="color:#f92672">&gt;=</span> CRT_SIZE) {
+	<span style="color:#66d9ef">int</span> i;
+
+	memmove(crt_buf, crt_buf <span style="color:#f92672">+</span> CRT_COLS, (CRT_SIZE <span style="color:#f92672">-</span> CRT_COLS) <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">uint16_t</span>));
+	<span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> CRT_SIZE <span style="color:#f92672">-</span> CRT_COLS; i <span style="color:#f92672">&lt;</span> CRT_SIZE; i<span style="color:#f92672">++</span>)
+		crt_buf[i] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0700</span> <span style="color:#f92672">|</span> <span style="color:#e6db74">&#39; &#39;</span>;
+	crt_pos <span style="color:#f92672">-=</span> CRT_COLS;
+}
+</code></pre></div><p>这段代码的作用当显示坐标超出了整个console的大小时进行的操作，先用memmove函数crt_buf + CRT_COLS复制crt_buf处，复制长度为CRT_SIZE - CRT_COLS，也就是把页面往上推了一行。然后在for循环中，将最后一行清空。</p>
+<h4 id="vprintfmt">vprintfmt</h4>
+<p>vprintfmt(void (<em>putch)(int, void</em>), void *putdat, const char <em>fmt, va_list ap)
+void (<em>putch)(int, void</em>): void (int, void</em> ) 类型函数指针
+putdat: 输出字符地址的指针
+fmt : 指向格式化字符串
+ap：  额外的参数
+printf(fmt, ap);</p>
+<h3 id="printc">print.c</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;inc/types.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;inc/stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;inc/stdarg.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">putch</span>(<span style="color:#66d9ef">int</span> ch, <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>cnt)
+{
+        cputchar(ch);
+        <span style="color:#f92672">*</span>cnt<span style="color:#f92672">++</span>;
+}
+
+<span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">vcprintf</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>fmt, va_list ap)
+{
+        <span style="color:#66d9ef">int</span> cnt <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+
+        vprintfmt((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)putch, <span style="color:#f92672">&amp;</span>cnt, fmt, ap);
+        <span style="color:#66d9ef">return</span> cnt;
+}
+
+<span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">cprintf</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>fmt, ...)
+{
+        va_list ap;
+        <span style="color:#66d9ef">int</span> cnt;
+
+        va_start(ap, fmt);
+        cnt <span style="color:#f92672">=</span> vcprintf(fmt, ap);
+        va_end(ap);
+
+        <span style="color:#66d9ef">return</span> cnt;
+}
+</code></pre></div><p>cprintf(&ldquo;string&rdquo;, arg1, arg2)这个函数的调用方法和printf相似，应该就是最终调用函数。
+关于ap这个变量，由下面这个程序：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdarg.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sum</span>(<span style="color:#66d9ef">int</span>, ...);
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+   printf(<span style="color:#e6db74">&#34;sum :%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,  sum(<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">15</span>, <span style="color:#ae81ff">56</span>, <span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">22</span>) );
+   <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sum</span>(<span style="color:#66d9ef">int</span> num_args, ...)
+{
+   <span style="color:#66d9ef">int</span> val <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+   va_list ap;
+   <span style="color:#66d9ef">int</span> i;
+   printf(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, num_args);
+
+   va_start(ap, num_args);
+   <span style="color:#66d9ef">for</span>(i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> num_args; i<span style="color:#f92672">++</span>)
+   {
+      val <span style="color:#f92672">+=</span> va_arg(ap, <span style="color:#66d9ef">int</span>);
+   }
+   va_end(ap);
+
+   <span style="color:#66d9ef">return</span> val;
+}
+</code></pre></div><ul>
+<li>补充十进制输出符号 “%o” 的代码片段</li>
+</ul>
+<p>根据之前10进制的改就好了:</p>
+<pre><code>num = getuint(&amp;ap, lflag);
+base = 8;
+goto number
+</code></pre>
+<p>题目:</p>
+<ol>
+<li>
+<p>Explain the interface between printf.c and console.c. Specifically, what function does console.c export? How is this function used by printf.c?
+printer.c中的函数是三个主要函数，cprintf()基本上算是c语言中printf()的复刻版，调用顺序：cprintf() -&gt; vcprintf() -&gt; putch() ,调用putch的时候就会发现会要用到console.c中接触底层的函数	serial_putc(c)判断串口为空，lpt_putc(c)判断并行读写？cga_putc(c)负责最后的输出。</p>
+</li>
+<li>
+<p>Explain the following from console.c:
+已分析。</p>
+</li>
+<li>
+<p>For the following questions you might wish to consult the notes for Lecture 2. These notes cover GCC&rsquo;s calling convention on the x86.
+Trace the execution of the following code step-by-step:</p>
+<p>int x = 1, y = 3, z = 4;
+cprintf(&ldquo;x %d, y %x, z %d\n&rdquo;, x, y, z);</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>In the call to cprintf(), to what does fmt point? To what does ap point?</p>
+</li>
+<li>
+<p>List (in order of execution) each call to cons_putc, va_arg, and vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. For vcprintf list the values of its two arguments.</p>
+<p>1.fmt-&gt; &ldquo;x %d, y %x, z %d\n&rdquo; , ap 应该是 x,y,z的集合
+2.va_arg这个调用,是每次从ap这个list中取一个值，比如原来参数列表中有x, y, z三个参数, va_arg(ap, int)调用一次，就会取出一个参数x，原列表a中只剩y, z了
+参考链接：http://www.cnblogs.com/fatsheep9146/p/5070145.html</p>
+</li>
+</ul>
+<ol start="4">
+<li>Run the following code.
+unsigned int i = 0x00646c72;
+cprintf(&ldquo;H%x Wo%s&rdquo;, 57616, &amp;i);
+What is the output?
+The output depends on that fact that the x86 is little-endian. If the x86 were instead big-endian what would you set i to in order to yield the same output? Would you need to change 57616 to a different value?</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {
+	<span style="color:#66d9ef">while</span> ((ch <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>) fmt<span style="color:#f92672">++</span>) <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;%&#39;</span>) {
+		<span style="color:#66d9ef">if</span> (ch <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\0&#39;</span>)
+			<span style="color:#66d9ef">return</span>;
+		putch(ch, putdat);
+	}
+</code></pre></div><p>1.首先这一个循环输出所有普通字符，直到fmt指到 %(开始switch) 和 \0(结束输出) 符号，
+2.先是&rsquo;x'16进制格式</p>
+<pre><code>case 'x':
+	num = getuint(&amp;ap, lflag);
+	base = 16;
+</code></pre>
+<p>getuint函数:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span>
+<span style="color:#a6e22e">getuint</span>(va_list <span style="color:#f92672">*</span>ap, <span style="color:#66d9ef">int</span> lflag) {
+	<span style="color:#66d9ef">if</span> (lflag <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">2</span>)
+		<span style="color:#66d9ef">return</span> va_arg(<span style="color:#f92672">*</span>ap, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span>);
+	<span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (lflag)
+		<span style="color:#66d9ef">return</span> va_arg(<span style="color:#f92672">*</span>ap, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>);
+	<span style="color:#66d9ef">else</span>
+		<span style="color:#66d9ef">return</span> va_arg(<span style="color:#f92672">*</span>ap, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>);
+}
+</code></pre></div><p>返回一个根据ap列表中的参数,类型由flag控制。flag的值由&rsquo;l&rsquo;来自增,例如: &ldquo;ld&rdquo; ,&ldquo;lld&rdquo;
+再调用
+printnum(putch, putdat, num, base, width, padc);
+这是个递归函数，根据base进制等参数输出数字。</p>
+<p>3.再是'%s&rsquo;格式,输出参数i所在地址的字符串。</p>
+<p>57616 = 0xe110 ,所以会输出He110
+x86是little-endian, i = 0x00646c72 , 实际在内存中存储是 72 6c 64 00 ,即 &lsquo;r&rsquo;, &lsquo;l&rsquo;, &rsquo;d', &lsquo;\0&rsquo;
+最后的输出结果应该为: &ldquo;He110 Worlds&rdquo;</p>
+<ol start="4">
+<li>In the following code, what is going to be printed after &lsquo;y=&rsquo;? (note: the answer is not a specific value.) Why does this happen?
+cprintf(&ldquo;x=%d y=%d&rdquo;, 3);</li>
+</ol>
+<p>这个问题和va_arg调用有关</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdarg.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">out_range</span>(<span style="color:#66d9ef">int</span>, ...);
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+{
+   out_range(<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">11</span>,<span style="color:#ae81ff">2</span>);
+   <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">out_range</span>(<span style="color:#66d9ef">int</span> num, ...)
+{
+	<span style="color:#66d9ef">int</span> val <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+	<span style="color:#66d9ef">int</span> i;
+	va_list ap;
+	va_start(ap, num);
+	<span style="color:#66d9ef">for</span>(i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>; <span style="color:#f92672">++</span>i)
+	{
+		val <span style="color:#f92672">=</span> va_arg(ap, <span style="color:#66d9ef">int</span>);
+		printf(<span style="color:#e6db74">&#34;%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,val);
+	}
+
+	va_end(ap);
+}
+
+<span style="color:#75715e">### result
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">11</span>
+<span style="color:#ae81ff">2</span>
+<span style="color:#ae81ff">1577856</span>
+
+</code></pre></div><p>情况和数组越界类似。</p>
+<h2 id="exercise-9">Exercise 9</h2>
+<p>内核什么时候初始化堆栈，堆栈在内存的什么地方，内核如何为堆栈保留空间，哪一个指针指向堆栈的结束处？
+在内核的入口设置断点，跟随几条指令：
+mov    $0x0,%ebp
+mov    $0xf0110000,%esp
+call   0xf0100094 &lt;i386_init&gt;
+esp指向栈顶指针,entry.S最后定义了bootstrap的大小KSTKSIZE = 8 * PGSIZE  = 8 * 4096 = 32KB
+所以堆栈位于内存的0x0010800 ~ 0x0011000,堆栈向下增长,esp指向栈顶</p>
+<h2 id="exercise-10-12">Exercise 10-12</h2>
+<p>每个函数调用时，父函数先将参数压栈，使用call命令的时候，将eip压栈。然后进入子函数的时候，将原来的ebp压栈，把esp赋值给ebp，此时两寄存器都指向同一个地址。
+接下来，子函数为程序分配内存空间，栈向下增长，即将esp减去一个值。
+内存结构就是：</p>
+<pre tabindex="0"><code>+-----+
+| ... |
++-----+
+| arg3|
++-----+
+| arg2|
++-----+
+| arg1|
++-----+
+| eip |
++-----+
+| ebp |
++-----+&lt;-(ebp)
+|unkn |
++-----+&lt;-(esp)
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">mon_backtrace</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv, <span style="color:#66d9ef">struct</span> Trapframe <span style="color:#f92672">*</span>tf)
+{
+    <span style="color:#75715e">// Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">uint32_t</span> <span style="color:#f92672">*</span>ebp <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint32_t</span><span style="color:#f92672">*</span>)read_ebp();
+    <span style="color:#66d9ef">struct</span> Eipdebuginfo info;
+    cprintf(<span style="color:#e6db74">&#34;Stack backtrace:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">for</span>(; ebp <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>; ebp <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint32_t</span><span style="color:#f92672">*</span>) <span style="color:#f92672">*</span>ebp)
+    {
+            cprintf(<span style="color:#e6db74">&#34;  ebp %x  eip %x  args %08x %08x %08x %08x %08x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+                     ebp, <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>), <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>), <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">3</span>), <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>), <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">5</span>), <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">6</span>));
+            <span style="color:#66d9ef">if</span>(debuginfo_eip(<span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>),<span style="color:#f92672">&amp;</span>info) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+                    cprintf(<span style="color:#e6db74">&#34;    %s:%d: %.*s+%d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, info.eip_file,
+                    info.eip_line, info.eip_fn_namelen,
+                    info.eip_fn_name, <span style="color:#f92672">*</span>(ebp<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">-</span> info.eip_fn_addr);
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>接下来要补全debuginfo_eip()中二分查找行的操作，根据前面的代码和提示，补全代码。
+stabs文档:http://www.sourceware.org/gdb/onlinedocs/stabs.html#Stab-Sections</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">stab_binsearch(stabs, <span style="color:#f92672">&amp;</span>lline, <span style="color:#f92672">&amp;</span>rline, N_SLINE, addr);
+        <span style="color:#66d9ef">if</span>(lline <span style="color:#f92672">&lt;=</span> rline)
+        {
+                info<span style="color:#f92672">-&gt;</span>eip_line <span style="color:#f92672">=</span> stabs[lline].n_desc;
+        } <span style="color:#66d9ef">else</span> {
+                <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+        }
+</code></pre></div><p>最后一步是输出调试信息，debuginfo_eip()是通过结构体Eipdebuginfo的成员值来返回的。
+这个结构体的定义在kern/kdebug.h中，根据结构体定义信息用cprintf输出就行了。练习最后提示了printf(&quot;%.*s&quot;,stringlength ,string)对练习中函数名输出有帮助。</p>
+<p><code>$ make grade</code></p>
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/lab1grade.png" alt="lab1grade.png"></p>
+<h2 id="总结">总结</h2>
+<ol>
+<li>开机时候，ip指向一个高地址，执行跳转命令到BIOS的程序段，通过BIOS将磁盘的Boot加载到内存地址0x7c00处。</li>
+<li>Boot程序加载全局描述符，将外围设备使能。进入保护模式，将扇区已ELF文件形式存在的系统内核加载到物理地址0x10000处，再通过ELF文件的程序入口，跳转到内核。</li>
+<li>内核开始时候，打开分页操作，分配堆栈，并将物理地址从0x10000映射到虚拟地址0xf010000处。</li>
+<li>最后就是理解系统调用时，堆栈的变化，还有修改一些类似printf函数的功能。</li>
+</ol>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/course-notes/6-828-%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%b7%a5%e7%a8%8b-Lab1-Booting%20a%20PC.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#exercise-1">Exercise 1</a>
+      <ul>
+        <li><a href="#gdb启动过程">GDB启动过程</a></li>
+      </ul>
+    </li>
+    <li><a href="#exercise-2">Exercise 2</a>
+      <ul>
+        <li><a href="#启动后追踪bios的部分代码">启动后追踪BIOS的部分代码</a></li>
+        <li><a href="#软盘硬盘">软盘硬盘</a></li>
+      </ul>
+    </li>
+    <li><a href="#exercise-3">Exercise 3</a>
+      <ul>
+        <li><a href="#boots">boot.S</a></li>
+        <li><a href="#mainc">main.c</a></li>
+        <li><a href="#gdb调试">GDB调试</a>
+          <ul>
+            <li><a href="#readsect">readsect()</a></li>
+            <li><a href="#outb">outb()</a></li>
+            <li><a href="#insl">insl()</a></li>
+            <li><a href="#if判断">if判断</a></li>
+            <li><a href="#for循环读取">for循环读取</a></li>
+            <li><a href="#内核跳转">内核跳转</a></li>
+          </ul>
+        </li>
+        <li><a href="#问题">问题</a></li>
+      </ul>
+    </li>
+    <li><a href="#exercise-4">Exercise 4</a>
+      <ul>
+        <li><a href="#pointerc">pointer.c</a></li>
+        <li><a href="#elf">ELF</a></li>
+      </ul>
+    </li>
+    <li><a href="#exercise-5">Exercise 5</a></li>
+    <li><a href="#exercise-6">Exercise 6</a></li>
+    <li><a href="#exercise-7">Exercise 7</a></li>
+    <li><a href="#exercise-8">Exercise 8</a>
+      <ul>
+        <li><a href="#consolec">console.c</a>
+          <ul>
+            <li><a href="#cons_putc">cons_putc()</a></li>
+            <li><a href="#serial_putc">serial_putc()</a></li>
+            <li><a href="#lpt_putc">lpt_putc()</a></li>
+            <li><a href="#cga_putc">cga_putc()</a></li>
+            <li><a href="#vprintfmt">vprintfmt</a></li>
+          </ul>
+        </li>
+        <li><a href="#printc">print.c</a></li>
+      </ul>
+    </li>
+    <li><a href="#exercise-9">Exercise 9</a></li>
+    <li><a href="#exercise-10-12">Exercise 10-12</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

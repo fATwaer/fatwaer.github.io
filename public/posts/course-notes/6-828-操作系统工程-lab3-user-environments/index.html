@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>6.828-操作系统工程-Lab3:User Environments</title>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+
+<link rel="stylesheet" href="/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/css/layouts/main.css"/>
+<link rel="stylesheet" href="/css/navigators/navbar.css"/>
+<link rel="stylesheet" href="/css/plyr.css"/>
+<link rel="stylesheet" href="/css/flag-icon.min.css"/>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Muli:wght@300;400;500;600" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" />
+
+
+
+
+  
+
+  
+  
+  
+    
+  
+  
+
+  <link rel="icon" type="image/png" href="/images/favicon_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" />
+
+<meta property="og:title" content="6.828-操作系统工程-Lab3:User Environments" />
+<meta property="og:description" content="4月22日 - 5月2日
+ PART A 这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。 这是关于这章节代码文件的介绍
+inc/env.h Public definitions for user-mode environments trap.h Public definitions for trap handling syscall.h Public definitions for system calls from user environments to the kernel lib.h Public definitions for the user-mode support library kern/env.h Kernel-private definitions for user-mode environments env.c Kernel code implementing user-mode environments trap.h Kernel-private trap handling definitions trap.c Trap handling code trapentry.S Assembly-language trap handler entry-points syscall.h Kernel-private definitions for system call handling syscall." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/posts/course-notes/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab3-user-environments/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-04-22T23:01:09+00:00" />
+<meta property="article:modified_time" content="2018-04-22T23:01:09+00:00" />
+
+
+
+    
+    
+<meta name="description" content="6.828-操作系统工程-Lab3:User Environments" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
+/>
+<link rel="stylesheet" href="/css/layouts/single.css"/>
+<link rel="stylesheet" href="/css/navigators/sidebar.css">
+
+<link rel="stylesheet" href="/css/style.css"/>
+
+
+
+    
+    
+        
+        
+          
+          
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': false });
+}
+</script>
+
+        
+    
+  </head>
+
+  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+    <div class="container-fluid bg-dimmed wrapper">
+      
+      
+    
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+  
+  
+    
+  
+  
+
+
+
+  
+  
+    
+  
+  
+
+
+<nav class="navbar navbar-expand-xl top-navbar final-navbar shadow">
+  <div class="container">
+      <button class="navbar-toggler navbar-light" id="sidebar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+      
+        <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" alt="Logo">
+      Pok</a>
+    <button class="navbar-toggler navbar-light" id="toc-toggler" type="button" onclick="toggleTOC()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse lang-selector" id="top-nav-items">
+      <ul class="navbar-nav ml-auto">
+      
+      </ul>
+    </div>
+  </div>
+  
+  
+    <img src="/images/main-logo_hu864bbe108f1be1ae04b57f7f2fd9d631_5637_42x0_resize_box_3.png" class="d-none" id="main-logo" alt="Logo">
+  
+  
+    <img src="/images/inverted-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_42x0_resize_box_3.png" class="d-none" id="inverted-logo" alt="Inverted Logo">
+  
+</nav>
+
+
+
+      
+      
+  <section class="sidebar-section" id="sidebar-section">
+    <div class="sidebar-holder">
+      <div class="sidebar" id="sidebar">
+        <form class="mx-auto" method="get" action="/search">
+          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+        </form>
+        <div class="sidebar-tree">
+          <ul class="tree" id="tree">
+            <li id="list-heading"><a href="/posts" data-filter="all">Posts</a></li>
+            <div class="subtree">
+                
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="Algorithm &amp; Data Structure">Algorithm &amp; Data Structure</a></li>
+  
+
+  
+  
+  
+  
+    
+    
+  
+  
+    
+    <li><a class="active" href="/posts/course-notes/" title="Course Notes">Course Notes</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/sys/" title="System">System</a></li>
+  
+
+  
+  
+  
+  
+  
+    
+    <li><a class="" href="/posts/%E5%BC%80%E6%BA%90%E7%BB%84%E4%BB%B6/" title="Tech Internals">Tech Internals</a></li>
+  
+
+
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+      
+      
+<section class="content-section" id="content-section">
+  <div class="content">
+    <div class="container p-0 read-area">
+      
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url(/images/default-hero.jpg);'>
+      </div>
+
+      
+      <div class="page-content">
+        <div class="author-profile ml-auto align-self-lg-center">
+          <img class="rounded-circle" src='/images/moon_hu77710dabc438ae34bb0da8e5939c3d87_626142_120x120_fit_q75_box.jpg' alt="Author Image">
+          <h5 class="author-name"></h5>
+          <p>April 22, 2018</p>
+        </div>
+
+        <div class="title">
+          <h1>6.828-操作系统工程-Lab3:User Environments</h1>
+        </div>
+        
+        <div class="post-content" id="post-content">
+          <blockquote>
+<p>4月22日 - 5月2日</p>
+</blockquote>
+<h1 id="part-a">PART A</h1>
+<p>这章的练习将会取实现一些基础的用户模式下的环境，也就是进程。在这章，创建一个用户环境，读取程序镜像并且运行。
+这是关于这章节代码文件的介绍</p>
+<pre tabindex="0"><code>inc/env.h   Public definitions for user-mode environments
+    trap.h  Public definitions for trap handling
+    syscall.h   Public definitions for system calls from user environments to the kernel
+    lib.h   Public definitions for the user-mode support library
+kern/env.h   Kernel-private definitions for user-mode environments
+    env.c   Kernel code implementing user-mode environments
+    trap.h  Kernel-private trap handling definitions
+    trap.c  Trap handling code
+    trapentry.S Assembly-language trap handler entry-points
+    syscall.h   Kernel-private definitions for system call handling
+    syscall.c   System call implementation code
+lib/Makefrag    Makefile fragment to build user-mode library, obj/lib/ libjos.a
+    entry.S Assembly-language entry-point for user environments
+    libmain.c   User-mode library setup code called from entry.S
+    syscall.c   User-mode system call stub functions
+    console.c   User-mode implementations of putchar and getchar, providing console I/O
+    exit.c  User-mode implementation of exit
+    panic.c User-mode implementation of panic
+user/   *   Various test programs to check kernel lab 3 code
+
+</code></pre><h1 id="内联汇编">内联汇编</h1>
+<p>简单描述:</p>
+<pre><code>__asm__(汇编语句模板: 输出部分: 输入部分: 破坏描述部分)
+</code></pre>
+<p><a href="http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html">具体详情</a></p>
+<h1 id="文件概述">文件概述</h1>
+<p>在文件<code>inc/env.h</code>中定义了<code>Env</code>结构体，用来存储一些关于用户环境(进程)的结构体。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> Env {
+    <span style="color:#66d9ef">struct</span> Trapframe env_tf;    <span style="color:#75715e">// Saved registers
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>env_link;       <span style="color:#75715e">// Next free Env
+</span><span style="color:#75715e"></span>    envid_t env_id;         <span style="color:#75715e">// Unique environment identifier
+</span><span style="color:#75715e"></span>    envid_t env_parent_id;      <span style="color:#75715e">// env_id of this env&#39;s parent
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">enum</span> EnvType env_type;      <span style="color:#75715e">// Indicates special system environments
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">unsigned</span> env_status;        <span style="color:#75715e">// Status of the environment
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">uint32_t</span> env_runs;      <span style="color:#75715e">// Number of times environment has run
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">// Address space
+</span><span style="color:#75715e"></span>    pde_t <span style="color:#f92672">*</span>env_pgdir;       <span style="color:#75715e">// Kernel virtual address of page dir
+</span><span style="color:#75715e"></span>};
+
+</code></pre></div><p>在这个结构体中，<code>env_status</code>用来指示当前进程的状态，有以下几种定义在一个枚举类型里面。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">enum</span> {
+    ENV_FREE <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>,
+    ENV_DYING,
+    ENV_RUNNABLE,
+    ENV_RUNNING,
+    ENV_NOT_RUNNABLE
+};
+
+</code></pre></div><p>文件<code>kern/env.c</code>文件中，有三个文件域的定义。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>envs <span style="color:#f92672">=</span> NULL;        <span style="color:#75715e">// All environments
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>curenv <span style="color:#f92672">=</span> NULL;      <span style="color:#75715e">// The current env
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>env_free_list;   <span style="color:#75715e">// Free environment list
+</span><span style="color:#75715e"></span>
+</code></pre></div><p><code>envs</code>指向保存所有<code>Env</code>结构体的内存页，并且指向虚拟内存<code>UTOP</code>。</p>
+<p><code>curenv</code>是字面意思，指向当前执行的进程。</p>
+<p><code>env_free_list</code>是一个链表表头，类似之前的<code>page_free_list</code>。</p>
+<h1 id="练习1">练习1</h1>
+<blockquote>
+<p>分配NENV个Env结构体，并且用envs指针指向它们</p>
+</blockquote>
+<hr>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">// Make &#39;envs&#39; point to an array of size &#39;NENV&#39; of &#39;struct Env&#39;.
+</span><span style="color:#75715e"></span>envs <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>)boot_alloc(NENV <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> Env));
+memset(envs, <span style="color:#ae81ff">0</span>, NENV <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> Env));
+
+<span style="color:#75715e">// Map the &#39;envs&#39; array read-only by the user at linear address UENVS
+</span><span style="color:#75715e">// (ie. perm = PTE_U | PTE_P).
+</span><span style="color:#75715e"></span>boot_map_region(kern_pgdir, UENVS, PTSIZE, PADDR(envs), PTE_U <span style="color:#f92672">|</span> PTE_P);
+</code></pre></div><h1 id="练习2">练习2</h1>
+<blockquote>
+<p>创建并且运行进程</p>
+</blockquote>
+<p>完成以下函数:</p>
+<pre tabindex="0"><code>env_init()
+    Initialize all of the Env structures in the envs array and add them to the
+    env_free_list. Also calls env_init_percpu, which configures the
+    segmentation hardware with separate segments for privilege level 0 (
+    kernel) and privilege level 3 (user).
+env_setup_vm()
+    Allocate a page directory for a new environment and initialize the kernel
+    portion of the new environment's address space.
+region_alloc()
+    Allocates and maps physical memory for an environment
+load_icode()
+    You will need to parse an ELF binary image, much like the boot loader
+    already does, and load its contents into the user address space of a new
+    environment.
+env_create()
+    Allocate an environment with env_alloc and call load_icode to load an ELF
+    binary into it.
+env_run()
+    Start a given environment running in user mode.
+    As you write these functions, you might find the new cprintf verb %e
+    useful -- it prints a description corresponding to an error code. For
+    example,
+
+r = -E_NO_MEM;
+panic(&quot;env_alloc: %e&quot;, r);
+will panic with the message &quot;env_alloc: out of memory&quot;.
+</code></pre><hr>
+<h2 id="env_init">env_init()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">env_init</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#75715e">// Set up envs array
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> i;
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> NENV <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>; i <span style="color:#f92672">&gt;=</span> <span style="color:#ae81ff">0</span>; i<span style="color:#f92672">--</span>) { <span style="color:#75715e">// reversal order
+</span><span style="color:#75715e"></span>        envs[i].env_id <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+        envs[i].env_status <span style="color:#f92672">=</span> ENV_FREE;
+        envs[i].env_link <span style="color:#f92672">=</span> env_free_list;
+        env_free_list <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>envs[i];
+    }
+
+    <span style="color:#75715e">// Per-CPU part of the initialization
+</span><span style="color:#75715e"></span>    env_init_percpu();
+
+}
+</code></pre></div><h2 id="env_setup_vm">env_setup_vm()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">env_setup_vm</span>(<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>e)
+{
+    <span style="color:#66d9ef">int</span> i;
+    <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> NULL;
+
+    <span style="color:#75715e">// Allocate a page for the page directory
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(p <span style="color:#f92672">=</span> page_alloc(ALLOC_ZERO)))
+        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>E_NO_MEM;
+
+
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    e<span style="color:#f92672">-&gt;</span>env_pgdir <span style="color:#f92672">=</span> (pte_t <span style="color:#f92672">*</span>)page2kva(p);
+    p<span style="color:#f92672">-&gt;</span>pp_ref<span style="color:#f92672">++</span>;
+
+    <span style="color:#75715e">/* copy structs to UTOP*/</span>
+    memcpy(e<span style="color:#f92672">-&gt;</span>env_pgdir, kern_pgdir, PGSIZE);
+
+    <span style="color:#75715e">// UVPT maps the env&#39;s own page table read-only.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Permissions: kernel R, user R
+</span><span style="color:#75715e"></span>    e<span style="color:#f92672">-&gt;</span>env_pgdir[PDX(UVPT)] <span style="color:#f92672">=</span> PADDR(e<span style="color:#f92672">-&gt;</span>env_pgdir) <span style="color:#f92672">|</span> PTE_P <span style="color:#f92672">|</span> PTE_U;
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><h2 id="region_alloc">region_alloc()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">region_alloc</span>(<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>e, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va, size_t len)
+{
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// (But only if you need it for load_icode.)
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Hint: It is easier to use region_alloc if the caller can pass
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//   &#39;va&#39; and &#39;len&#39; values that are not page-aligned.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//   You should round va down, and round (va + len) up.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//   (Watch out for corner-cases!)
+</span><span style="color:#75715e"></span>    uintptr_t va_beg <span style="color:#f92672">=</span> ROUNDDOWN((<span style="color:#66d9ef">uint32_t</span>)va, PGSIZE);
+    uintptr_t va_end <span style="color:#f92672">=</span> ROUNDUP((<span style="color:#66d9ef">uint32_t</span>)(va<span style="color:#f92672">+</span>len), PGSIZE);
+    uintptr_t i;
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> va_beg; i <span style="color:#f92672">&lt;</span> va_end; i <span style="color:#f92672">+=</span> PGSIZE) {  <span style="color:#75715e">/* maps each page to pa */</span>
+        <span style="color:#66d9ef">struct</span> PageInfo <span style="color:#f92672">*</span>p;
+        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>(p <span style="color:#f92672">=</span> page_alloc(ALLOC_ZERO)))
+            panic(<span style="color:#e6db74">&#34;lack of free pages&#34;</span>);
+
+        <span style="color:#66d9ef">if</span> ((page_insert(e<span style="color:#f92672">-&gt;</span>env_pgdir, p, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)i, PTE_P <span style="color:#f92672">|</span> PTE_U <span style="color:#f92672">|</span> PTE_W)) <span style="color:#f92672">==</span> <span style="color:#f92672">-</span>E_NO_MEM)
+            panic(<span style="color:#e6db74">&#34;lack memmory&#34;</span>);
+
+    }
+
+}
+
+</code></pre></div><h2 id="load_icode">load_icode()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">load_icode</span>(<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>e, <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>binary)
+{
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">/* user mode */</span>
+    lcr3(PADDR(e<span style="color:#f92672">-&gt;</span>env_pgdir));
+
+    <span style="color:#66d9ef">struct</span> Elf <span style="color:#f92672">*</span>elf <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> Elf <span style="color:#f92672">*</span>)binary;
+
+    <span style="color:#75715e">/* check file format */</span>
+    <span style="color:#66d9ef">if</span> (elf<span style="color:#f92672">-&gt;</span>e_magic <span style="color:#f92672">!=</span> ELF_MAGIC)
+        panic(<span style="color:#e6db74">&#34;load_icode() : format error &#34;</span>);
+
+    <span style="color:#66d9ef">if</span> (elf<span style="color:#f92672">-&gt;</span>e_entry <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+        panic(<span style="color:#e6db74">&#34;load_icode() : ELF file loads failed&#34;</span>);
+
+    e<span style="color:#f92672">-&gt;</span>env_tf.tf_eip <span style="color:#f92672">=</span> elf<span style="color:#f92672">-&gt;</span>e_entry;
+
+    <span style="color:#66d9ef">struct</span> Proghdr <span style="color:#f92672">*</span>ph, <span style="color:#f92672">*</span>eph;
+    ph <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> Proghdr <span style="color:#f92672">*</span>)(binary <span style="color:#f92672">+</span> elf<span style="color:#f92672">-&gt;</span>e_phoff);
+    eph <span style="color:#f92672">=</span> ph <span style="color:#f92672">+</span> elf<span style="color:#f92672">-&gt;</span>e_phnum;
+
+    <span style="color:#66d9ef">for</span> (; ph <span style="color:#f92672">&lt;</span> eph; ph<span style="color:#f92672">++</span>) {
+        <span style="color:#66d9ef">if</span> (ph<span style="color:#f92672">-&gt;</span>p_type <span style="color:#f92672">==</span> ELF_PROG_LOAD) {
+        region_alloc(e, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)(ph<span style="color:#f92672">-&gt;</span>p_va), ph<span style="color:#f92672">-&gt;</span>p_memsz);
+
+        memcpy((<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)ph<span style="color:#f92672">-&gt;</span>p_va, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)binary <span style="color:#f92672">+</span> ph<span style="color:#f92672">-&gt;</span>p_offset, (size_t)(ph<span style="color:#f92672">-&gt;</span>p_filesz));
+        }
+    }
+
+    lcr3(PADDR(kern_pgdir));
+    <span style="color:#75715e">// Now map one page for the program&#39;s initial stack
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// at virtual address USTACKTOP - PGSIZE.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    region_alloc(e, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)USTACKTOP<span style="color:#f92672">-</span>PGSIZE, PGSIZE);
+}
+
+</code></pre></div><h2 id="env_create">env_create()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">env_create</span>(<span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>binary, <span style="color:#66d9ef">enum</span> EnvType type)
+{
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span> env;
+    <span style="color:#66d9ef">if</span> (env_alloc(<span style="color:#f92672">&amp;</span>env, <span style="color:#ae81ff">0</span>) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>)
+        panic(<span style="color:#e6db74">&#34;env_alloc error !&#34;</span>);
+
+
+    load_icode(env, binary);
+    env<span style="color:#f92672">-&gt;</span>env_type <span style="color:#f92672">=</span> type;
+}
+
+</code></pre></div><h2 id="env_run">env_run()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">env_run</span>(<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>e)
+{
+    <span style="color:#66d9ef">if</span> (curenv <span style="color:#f92672">!=</span> NULL <span style="color:#f92672">&amp;&amp;</span> curenv<span style="color:#f92672">-&gt;</span>env_status <span style="color:#f92672">==</span> ENV_RUNNING)
+        curenv<span style="color:#f92672">-&gt;</span>env_status <span style="color:#f92672">=</span> ENV_RUNNABLE;
+
+    curenv <span style="color:#f92672">=</span> e;
+
+    curenv<span style="color:#f92672">-&gt;</span>env_status <span style="color:#f92672">=</span> ENV_RUNNING;
+    curenv<span style="color:#f92672">-&gt;</span>env_runs<span style="color:#f92672">++</span>;
+    lcr3(PADDR(curenv<span style="color:#f92672">-&gt;</span>env_pgdir));
+
+    env_pop_tf(<span style="color:#f92672">&amp;</span>(curenv<span style="color:#f92672">-&gt;</span>env_tf));
+    <span style="color:#75715e">// Hint: This function loads the new environment&#39;s state from
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//  e-&gt;env_tf.  Go back through the code you wrote above
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//  and make sure you have set the relevant parts of
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">//  e-&gt;env_tf to sensible values.
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>
+    <span style="color:#75715e">//panic(&#34;env_run not yet implemented&#34;);
+</span><span style="color:#75715e"></span>}
+
+</code></pre></div><p>代码完成后应该还是会无限重启，因为，在执行完<code>env_pop_tf</code>的时候会去调用用户自己写的代码，但是会要用到从用户态到内核态的跳转，这部分代码并没有完成。</p>
+<pre tabindex="0"><code>start (kern/entry.S)
+i386_init (kern/init.c)
+    cons_init
+    mem_init
+    env_init
+    trap_init (still incomplete at this point)
+    env_create
+    env_run
+    env_pop_tf
+</code></pre><p>在qemu上运行这个内核，如果调用了成功执行到env_pop_tf的话，基本成功了。此时，内核会去执行一个<code>hello</code>的二进制文件，但是会用到系统调用和使用<code>int</code>中断指令。但是此时的JOS并没有完成用户空间到内核空间的跳转。CPU发现没有办法解决这个的办法，于是生成一个__二重错误异常__，然后继续发现还是没有办法去处理这个错误机制，于是引发__三重错误异常__，这时候，CPU就会要重置，使得整个系统重新启动。这就是现在看到的无限重启的行为。</p>
+<p>用<code>make-qemu</code>和<code>make gdb</code>编译出内核，用<code>break env_pop_tf</code>在函数env_pop_tf处设置断点，单步执行，看能否能进入hello.asm中，地址在用户内存空间(0x08000000+)。然后在<code>obj/user/hello.asm</code>中找到<code>sys_cputs</code>中的<code>int $0x30</code>指令。如果成功执行到了这儿，说明之前的代码没有问题。</p>
+<h1 id="练习3">练习3</h1>
+<p>阅读<a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/c09.htm">Chapter 9, Exceptions and Interrupts</a></p>
+<hr>
+<p>中断是外部发给CPU的信号，而异常是CPU在自己处理命令时候出现的错误。
+其中中断分为可屏蔽和不可屏蔽的。</p>
+<p>异常也有三种(Faults/Traps/Aborts)，Faults异常是在执行这条指令之前就被指出的错误，但是如果在执行的过程中遇到了faults级的错误，CPU将会让机器保存状态，并且允许被修正重新执行。</p>
+<p>第二种是Traps异常，是一种执行完后立即报告的异常，允许程序连续性执行，异常处理的返回地址就是trap指令后的那条。</p>
+<p>第三种是Aborts异常，这种异常不报告异常发生的精确位置，也不运行程序继续往下执行。往往是发生了严重的错误，例如硬件错误和不合法的数值。</p>
+<pre tabindex="0"><code>Table 9-1. Interrupt and Exception ID Assignments
+
+Identifier   Description
+
+0            Divide error
+1            Debug exceptions
+2            Nonmaskable interrupt
+3            Breakpoint (one-byte INT 3 instruction)
+4            Overflow (INTO instruction)
+5            Bounds check (BOUND instruction)
+6            Invalid opcode
+7            Coprocessor not available
+8            Double fault
+9            (reserved)
+10           Invalid TSS
+11           Segment not present
+12           Stack exception
+13           General protection
+14           Page fault
+15           (reserved)
+16           Coprecessor error
+17-31        (reserved)
+32-255       Available for external interrupts via INTR pin
+</code></pre><hr>
+<p><code>IF</code>(interrput-enable flag)是控制屏蔽外中断的标志位。当IF=0，中断会被屏蔽，IF=1，中断才会被接收。
+CLI (Clear Interrupt-Enable Flag) and STI (Set Interrupt-Enable Flag) explicitly alter IF (bit 9 in the flag register).</p>
+<p><code>IF</code>标志位被以下三种情况隐性影响：</p>
+<ul>
+<li><code>PUSHF</code>存储所有flag，包括IF。在栈中的IF，可以被修改。</li>
+<li>任务切换时，<code>POP</code>和<code>IRET</code>读取flag寄存器，因此，这步操作能修改IF</li>
+<li>中断通过interrupt gates(?)能自动重置IF，也就关闭外中断。</li>
+</ul>
+<hr>
+<p>设置段地址的时候也会发生中断，影响程式的执行。通常设置栈区的段的时候通常使用以下这一对指令。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">    <span style="color:#a6e22e">MOV</span> <span style="color:#66d9ef">SS</span>, <span style="color:#66d9ef">AX</span>
+    <span style="color:#a6e22e">MOV</span> <span style="color:#66d9ef">ESP</span>, <span style="color:#66d9ef">StackTop</span>
+</code></pre></div><p>如果这时候发生中断或者异常，SS已经被设置成了AX，而ESP的值还没被传达到，栈指针，SS:ESP在处理中断和异常的时候是不正常的，所以80386CPU在处理这两条指令的时候会屏蔽NMI, INTR, debug exceptions, and single-step traps这些中断。</p>
+<h1 id="练习4">练习4</h1>
+<blockquote>
+<p>编辑trapentry.S和trap.c安装中断向量，宏TRAPHADNLER和TRAPHANDLER_NOEC可以帮助安装向量，中断向量被定义在inc/trap.h中。然后提供一共_alltraps去准备堆栈。在函数trap_init()中初始化idt中断向量数组，并且使用SETGATE去指向相关的函数。</p>
+</blockquote>
+<hr>
+<p>为不同的中断生成入口，两个宏的差别在于是否有<a href="https://pdos.csail.mit.edu/6.828/2017/readings/i386/s09_10.htm">error code</a>。，如果有的话，硬件会自动将错误信息压栈。如果没有的话，宏<code>TRAPHANDLER_NOEC</code>会压入一个0值。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">divid_entry</span>, <span style="color:#66d9ef">T_DIVIDE</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">debug_entry</span>, <span style="color:#66d9ef">T_DEBUG</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">nmi_entry</span>, <span style="color:#66d9ef">T_NMI</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">brkpt_entry</span>, <span style="color:#66d9ef">T_BRKPT</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">oflow_entry</span>, <span style="color:#66d9ef">T_OFLOW</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">bound_entry</span>, <span style="color:#66d9ef">T_BOUND</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">illop_entry</span>, <span style="color:#66d9ef">T_ILLOP</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">device_entry</span>, <span style="color:#66d9ef">T_DEVICE</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">dblflt_entry</span>, <span style="color:#66d9ef">T_DBLFLT</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">tss_entry</span>, <span style="color:#66d9ef">T_TSS</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">segnp_entry</span>, <span style="color:#66d9ef">T_SEGNP</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">stack_entry</span>, <span style="color:#66d9ef">T_STACK</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">gpflt_entry</span>, <span style="color:#66d9ef">T_GPFLT</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER</span>(<span style="color:#66d9ef">pgflt_entry</span>, <span style="color:#66d9ef">T_PGFLT</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">fperr_entry</span>, <span style="color:#66d9ef">T_FPERR</span>)<span style="color:#75715e">;
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">TRAPHANDLER_NOEC</span>(<span style="color:#66d9ef">syscall_entry</span>, <span style="color:#66d9ef">T_SYSCALL</span>)<span style="color:#75715e">;
+</span></code></pre></div><p><code>_alltraps</code>将所有的寄存器状态保存，压栈。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm">_alltraps:
+    <span style="color:#a6e22e">pushl</span> %ds
+    <span style="color:#a6e22e">pushl</span> %es
+    <span style="color:#a6e22e">pushal</span>
+
+    <span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">$GD_KD</span>, %ax
+    <span style="color:#a6e22e">mov</span> %ax, %es
+    <span style="color:#a6e22e">mov</span> %ax, %ds
+
+    <span style="color:#a6e22e">push</span> %esp
+
+    <span style="color:#a6e22e">call</span> <span style="color:#66d9ef">trap</span>
+</code></pre></div><p><img src="/images/operating-system/6.828/lab3/stack.png" alt="stack.png"></p>
+<p>根据练习提示，将段寄存器<code>es</code>和<code>ds</code>设置为GDT的kernel数据段，然后将esp压栈，调用trap。</p>
+<p>这里直接调用trap就行，调用函数的参数已经在堆栈中，跳转到函数开始的地方就是一个普通的函数调用。</p>
+<p>回顾之前的<code>Lab2</code>，在<code>env_run()</code>之前，会执行<code>trap_init()</code>，目的就是为了安装中断向量表。
+<code>trap.c/trap_init()</code>中，将<code>idt</code>数组已知中断全部设置好，并将处理这个中断或者异常的handler安装到GDT中的<code>.text</code>域中，并且设置好权限。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span>
+<span style="color:#a6e22e">trap_init</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">struct</span> Segdesc gdt[];
+
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> divid_entry();
+    <span style="color:#66d9ef">void</span> debug_entry();
+    <span style="color:#66d9ef">void</span> nmi_entry();
+    <span style="color:#66d9ef">void</span> brkpt_entry();
+    <span style="color:#66d9ef">void</span> oflow_entry();
+    <span style="color:#66d9ef">void</span> bound_entry();
+    <span style="color:#66d9ef">void</span> illop_entry();
+    <span style="color:#66d9ef">void</span> device_entry();
+    <span style="color:#66d9ef">void</span> dblflt_entry();
+    <span style="color:#66d9ef">void</span> tss_entry();
+    <span style="color:#66d9ef">void</span> segnp_entry();
+    <span style="color:#66d9ef">void</span> stack_entry();
+    <span style="color:#66d9ef">void</span> gpflt_entry();
+    <span style="color:#66d9ef">void</span> pgflt_entry();
+    <span style="color:#66d9ef">void</span> fperr_entry();
+    <span style="color:#66d9ef">void</span> syscall_entry();
+
+    SETGATE(idt[T_DIVIDE], <span style="color:#ae81ff">1</span>, GD_KT, divid_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_DEBUG], <span style="color:#ae81ff">1</span>, GD_KT, debug_entry, <span style="color:#ae81ff">3</span>);
+    SETGATE(idt[T_NMI], <span style="color:#ae81ff">1</span>, GD_KT, nmi_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_BRKPT], <span style="color:#ae81ff">1</span>, GD_KT, brkpt_entry, <span style="color:#ae81ff">3</span>);
+    SETGATE(idt[T_OFLOW], <span style="color:#ae81ff">1</span>, GD_KT, oflow_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_BOUND], <span style="color:#ae81ff">1</span>, GD_KT, bound_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_ILLOP], <span style="color:#ae81ff">1</span>, GD_KT, illop_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_DEVICE], <span style="color:#ae81ff">1</span>, GD_KT, device_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_DBLFLT], <span style="color:#ae81ff">1</span>, GD_KT, dblflt_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_TSS], <span style="color:#ae81ff">1</span>, GD_KT, tss_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_SEGNP], <span style="color:#ae81ff">1</span>, GD_KT, segnp_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_STACK], <span style="color:#ae81ff">1</span>, GD_KT, stack_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_GPFLT], <span style="color:#ae81ff">1</span>, GD_KT, gpflt_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_PGFLT], <span style="color:#ae81ff">1</span>, GD_KT, pgflt_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_FPERR], <span style="color:#ae81ff">1</span>, GD_KT, fperr_entry, <span style="color:#ae81ff">0</span>);
+    SETGATE(idt[T_SYSCALL], <span style="color:#ae81ff">1</span>, GD_KT, syscall_entry, <span style="color:#ae81ff">3</span>);
+
+    <span style="color:#75715e">// Per-CPU setup
+</span><span style="color:#75715e"></span>    trap_init_percpu();
+}
+</code></pre></div><blockquote>
+<p>Q1:What is the purpose of having an individual handler function for each exception/interrupt? (i.e., if all exceptions/interrupts were delivered to the same handler, what feature that exists in the current implementation could not be provided?)</p>
+</blockquote>
+<p>不同的权限组应该要有不同的解决办法。</p>
+<blockquote>
+<p>Q2:Did you have to do anything to make the user/softint program behave correctly? The grade script expects it to produce a general protection fault (trap 13), but softint&rsquo;s code says int 14. Why should this produce interrupt vector 13? What happens if the kernel actually allows softint&rsquo;s int 14 instruction to invoke the kernel&rsquo;s page fault handler (which is interrupt vector 14)?</p>
+</blockquote>
+<p><code>user/softint</code>用户程序中就只有一句:</p>
+<pre><code>asm volatile (&quot;int $14&quot;);
+</code></pre>
+<p>用来产生<code>page fault</code>，但是这是用户程序产生的。一般产生页错误，查看page fault的处理办法<code>page_fault_handler()</code>中<code>env_destroy(curenv);</code>会将这个用户环境销毁。一般用户应该没有这样的权限。</p>
+<p>所以对于权限不够的用户，应该产生<code>General protection fault </code>。</p>
+<p>This concludes part A of the lab.</p>
+<hr>
+<h1 id="part-b">PART B</h1>
+<p>这一部分解决__Page Faults, Breakpoints Exceptions, System Calls__</p>
+<p><code>_alltraps</code>会调用traps
+<code>traps</code>可以分为四个部分</p>
+<ol>
+<li>关闭中断</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#66d9ef">asm</span> <span style="color:#a6e22e">volatile</span>(<span style="color:#e6db74">&#34;cld&#34;</span> <span style="color:#f92672">:::</span> <span style="color:#e6db74">&#34;cc&#34;</span>);
+    assert(<span style="color:#f92672">!</span>(read_eflags() <span style="color:#f92672">&amp;</span> FL_IF));
+</code></pre></div><ol start="2">
+<li>如果是用户模式，复制一份用户栈。</li>
+</ol>
+<pre tabindex="0"><code>    if ((tf-&gt;tf_cs &amp; 3) == 3) {
+        assert(curenv);
+        curenv-&gt;env_tf = *tf;
+        tf = &amp;curenv-&gt;env_tf;
+    }
+    last_tf = tf;
+</code></pre><ol start="3">
+<li>处理中断</li>
+</ol>
+<pre tabindex="0"><code>    trap_dispatch(tf);
+</code></pre><ol start="4">
+<li>如果这个用户环境未被销毁，那么继续执行。</li>
+</ol>
+<pre tabindex="0"><code>    assert(curenv &amp;&amp; curenv-&gt;env_status == ENV_RUNNING);
+    env_run(curenv);
+</code></pre><hr>
+<h1 id="练习5--6">练习5 , 6</h1>
+<blockquote>
+<p>让14号中断调用page_fault_handler()函数</p>
+</blockquote>
+<blockquote>
+<p>breakpoint异常，3号中断通常是用来给调试器使用，它允许程序代码临时性地代替程序指令。在JOS中使用monitor()来执行处理异常。</p>
+</blockquote>
+<hr>
+<p><code>page_fault_handler</code>函数中通过<code>fault_va = rcr2()</code>获取页出错的虚拟地址。</p>
+<p>这两个练习都是在<code>trap_dispatch</code>中修改，代码如下。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#75715e">// Handle page fault exceptions.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (tf<span style="color:#f92672">-&gt;</span>tf_trapno <span style="color:#f92672">==</span> T_PGFLT) {
+        page_fault_handler(tf);
+        <span style="color:#66d9ef">return</span> ;
+    }
+
+    <span style="color:#75715e">// after int 3 interrupt , this function
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// uses panic() to output debugger infomations.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (tf<span style="color:#f92672">-&gt;</span>tf_trapno <span style="color:#f92672">==</span> T_BRKPT) {
+        monitor(tf);
+        <span style="color:#66d9ef">return</span> ;
+    }
+</code></pre></div><h1 id="challenge">Challenge</h1>
+<p>//想做做不出来&hellip;留个思路</p>
+<ol>
+<li>monitor中执行函数</li>
+<li>激活tf栈中的eflags中TF位，开启单步调试</li>
+<li>然后使用<code>IRET</code>返回中断，弹栈。
+<a href="https://pdos.csail.mit.edu/6.828/2017/labs/lab3/#Exercise-6">optional</a></li>
+</ol>
+<blockquote>
+<p>Q1:The break point test case will either generate a break point exception or a general protection fault depending on how you initialized the break point entry in the IDT (i.e., your call to SETGATE from trap_init). Why? How do you need to set it up in order to get the breakpoint exception to work as specified above and what incorrect setup would cause it to trigger a general protection fault?</p>
+</blockquote>
+<p><code>interrupt gate</code>中<code>DPL</code>影响这两种情况，当调用的时候，<code>eflags</code>中的<code>CPL</code>的值大于DPL的时候会产生<code>general protection fault</code>，因为特权等级不够。</p>
+<blockquote>
+<p>Q2:What do you think is the point of these mechanisms, particularly in light of what the user/softint test program does?</p>
+</blockquote>
+<p>用户不能产生14中断，特权级不够。</p>
+<h1 id="练习7">练习7</h1>
+<blockquote>
+<p>完成系统调用</p>
+</blockquote>
+<hr>
+<p>用户通过系统调用进入内核态，并且保存用户的状态信息，内核执行合适的处理代码，然后恢复到用户态，当然，也需要确定调用是从内核态到用户态还是内核自身调用系统函数。
+JOS中系统调用的中断号是0x30，不会由计算机硬件产生，所以需要写好相应的调用代码。</p>
+<p>应用程序将会把系统调用的编号和系统调用的参数保存在寄存器中。system call number将会保存在<code>%eax</code>中，接下来最多五个参数分别保存在 <code>%edx</code>, <code>%ecx</code>, <code>%ebx</code>, <code>%edi</code>, <code>%esi</code>中。system call函数已经写好在了文件<code>lib/syscall.c</code>中。</p>
+<h2 id="trap_init">trap_init()</h2>
+<p>在<code>trap_init()</code>中添加相应的handler:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">syscall_entry</span>();
+
+    ...
+
+    ...
+
+    SETGATE(idt[T_SYSCALL], <span style="color:#ae81ff">1</span>, GD_KT, syscall_entry, <span style="color:#ae81ff">3</span>);
+
+</code></pre></div><h2 id="trap_dispatch">trap_dispatch()</h2>
+<p>然后在<code>trap_dispatch()</code>中为中断添加调用：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#75715e">// system call
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (tf<span style="color:#f92672">-&gt;</span>tf_trapno <span style="color:#f92672">==</span> T_SYSCALL) {
+        tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_eax <span style="color:#f92672">=</span> syscall(
+                tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_eax, tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_edx,
+                tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_ecx, tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_ebx,
+                tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_edi, tf<span style="color:#f92672">-&gt;</span>tf_regs.reg_esi);
+        <span style="color:#66d9ef">return</span> ;
+    }
+
+</code></pre></div><hr>
+<h2 id="syscall">syscall()</h2>
+<p>利用<code>lib/syscall.c</code>中的syscall进行转移到真正处理通用系统调用的文件中，根据<code>inc/syscall.h</code>中的enum定义分发到相应的系统调用的处理函数去。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#75715e">// Dispatches to the correct kernel function, passing the arguments.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int32_t</span>
+<span style="color:#a6e22e">syscall</span>(<span style="color:#66d9ef">uint32_t</span> syscallno, <span style="color:#66d9ef">uint32_t</span> a1, <span style="color:#66d9ef">uint32_t</span> a2, <span style="color:#66d9ef">uint32_t</span> a3, <span style="color:#66d9ef">uint32_t</span> a4, <span style="color:#66d9ef">uint32_t</span> a5)
+{
+    <span style="color:#75715e">// Call the function corresponding to the &#39;syscallno&#39; parameter.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Return any appropriate return value.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>
+    cprintf(<span style="color:#e6db74">&#34;call number:%d  </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, syscallno);
+    <span style="color:#66d9ef">switch</span> (syscallno) {
+
+    <span style="color:#66d9ef">case</span> SYS_cputs:
+        sys_cputs((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)a1, a2);
+        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+
+    <span style="color:#66d9ef">case</span> SYS_cgetc:
+        <span style="color:#66d9ef">return</span> sys_cgetc();
+
+    <span style="color:#66d9ef">case</span> SYS_getenvid:
+        <span style="color:#66d9ef">return</span> sys_getenvid();
+
+    <span style="color:#66d9ef">case</span> SYS_env_destroy:
+        <span style="color:#66d9ef">return</span> sys_env_destroy(a1);
+
+    <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>E_INVAL;
+    }
+}
+</code></pre></div><p>完成这里，利用<code>make run-hello</code>检测自己的系统调用是否成功。</p>
+<h1 id="练习8">练习8</h1>
+<p>用户程序从这里开始执行，确认好相关信息后跳转到 <code>libmain</code>执行。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">.text</span>
+<span style="color:#a6e22e">.globl</span> <span style="color:#66d9ef">_start</span>
+_start:
+    <span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#a6e22e">See</span> <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">we</span> <span style="color:#66d9ef">were</span> <span style="color:#66d9ef">started</span> <span style="color:#66d9ef">with</span> <span style="color:#66d9ef">arguments</span> <span style="color:#66d9ef">on</span> <span style="color:#66d9ef">the</span> <span style="color:#66d9ef">stack</span>
+    <span style="color:#a6e22e">cmpl</span> <span style="color:#66d9ef">$USTACKTOP</span>, %esp
+    <span style="color:#a6e22e">jne</span> <span style="color:#66d9ef">args_exist</span>
+
+    <span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#a6e22e">If</span> <span style="color:#66d9ef">not</span>, <span style="color:#66d9ef">push</span> <span style="color:#66d9ef">dummy</span> <span style="color:#66d9ef">argc</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">argv</span> <span style="color:#66d9ef">arguments.</span>
+    <span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#a6e22e">This</span> <span style="color:#66d9ef">happens</span> <span style="color:#66d9ef">when</span> <span style="color:#66d9ef">we</span> <span style="color:#66d9ef">are</span> <span style="color:#66d9ef">loaded</span> <span style="color:#66d9ef">by</span> <span style="color:#66d9ef">the</span> <span style="color:#66d9ef">kernel</span>,
+    <span style="color:#960050;background-color:#1e0010">//</span> <span style="color:#a6e22e">because</span> <span style="color:#66d9ef">the</span> <span style="color:#66d9ef">kernel</span> <span style="color:#66d9ef">does</span> <span style="color:#66d9ef">not</span> <span style="color:#66d9ef">know</span> <span style="color:#66d9ef">about</span> <span style="color:#66d9ef">passing</span> <span style="color:#66d9ef">arguments.</span>
+    <span style="color:#a6e22e">pushl</span> <span style="color:#66d9ef">$0</span>
+    <span style="color:#a6e22e">pushl</span> <span style="color:#66d9ef">$0</span>
+
+args_exist:
+    <span style="color:#a6e22e">call</span> <span style="color:#66d9ef">libmain</span>
+<span style="color:#960050;background-color:#1e0010">1:</span>  <span style="color:#a6e22e">jmp</span> <span style="color:#ae81ff">1</span><span style="color:#66d9ef">b</span>
+</code></pre></div><p>将<code>libmain()</code>改成</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    thisenv <span style="color:#f92672">=</span> envs <span style="color:#f92672">+</span> ENVX(sys_getenvid());
+</code></pre></div><p>ENVX宏定义在<code>env.h</code>文件中。
+然后接下来调用用户程序<code>umain</code>和<code>exit()</code>，<code>umain</code>就相当于平时执行的C程序中main函数，<code>exit()</code>执行系统调用函数<code>sys_env_destroy()</code>。</p>
+<h1 id="练习910">练习9/10</h1>
+<p>修改kern/trap.c,当内核页错误的时候调用<code>panic</code>，检查tf_cs的低位。
+阅读kern/pmap.c中user_mem_assert函数，并且实现user_mem_check函数。
+修改kern/syscall.c，检查系统调用的参数。
+修改kern/kdebug.c中的debuginfo_eip，调用user_mem_check检查<code>usd</code>,<code>stabs</code>,<code>stabstr</code>。</p>
+<hr>
+<p>内存保护是操作系统的一个决定性的特性，确保程序的BUG不会影响到其他程序和操作系统自己。</p>
+<p>操作系统通常依赖硬件去实现内存保护，当程序使用一个非法的内存地址或者对指定的虚拟地址没有访问权，处理器会中断程序指令并且产生一个fault级别异常，然后陷入内核态，去处理这个操作。如果这个错误可以修复，内核通过代码修复，然后让程序继续运行，否则，摧毁该程序。</p>
+<p>一种常见的可以修复的错误就是栈增长，大多数系统初始化一个进程通常只会分配一个stack页，当程序使用这个分配好的栈的更下层的时候，内核将会自动分配更多的空间，当然会有一个分配的最大值。</p>
+<p>大多数系统调用接口让用户程序传递一个指针给系统内核，这个指针指向一个用户内存空间的一个可读可写的缓冲区。系统内核通过解引用这个指针和用户程序进行交互，但是存在以下两个问题。</p>
+<ol>
+<li>
+<p>内核态出现页错误比在用户态出现页错误可能更加严重，如果内核在操作自己的数据结构的时候发生了页错误，这是一个内核BUG，解决错误的handler此时应该<code>panic</code>。但是当内核解引用用户程序传递过来的指针的时候，内核需要确认这个指针的是属于该用户程序的。</p>
+</li>
+<li>
+<p>内核的权限通常高于用户程序，用户可能会传递一个内核可以读取，但是该程序不能读取的内存地址。内核需要非常仔细的检查这类指针，因为这样可能会造成隐私信息泄露和破坏内核完整性。</p>
+</li>
+</ol>
+<h2 id="page_fault_handler">page_fault_handler()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#75715e">// LAB 3: Your code here.(1)
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> ((tf<span style="color:#f92672">-&gt;</span>tf_cs <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>)
+        panic(<span style="color:#e6db74">&#34;kernel page fault&#34;</span>);
+
+</code></pre></div><p>在8086模式下，寄存器CS,DS,ES等被称作段偏移，但是在保护模式下，CS,DS,ES等寄存器被用作段选择子，在<code>GDT</code>中选定相应的段，根据全局描述符中的信息，程序只能在相应的内存段中运行，读取，写入，否则会发生中断或者异常。</p>
+<h2 id="user_mem_check"><code>user_mem_check</code></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C"><span style="color:#66d9ef">int</span>
+<span style="color:#a6e22e">user_mem_check</span>(<span style="color:#66d9ef">struct</span> Env <span style="color:#f92672">*</span>env, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>va, size_t len, <span style="color:#66d9ef">int</span> perm)
+{
+    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> ((uintptr_t)va <span style="color:#f92672">&gt;=</span> ULIM)  {
+        user_mem_check_addr <span style="color:#f92672">=</span> (uintptr_t) va;
+        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>E_FAULT;
+    }
+
+
+    uintptr_t beg <span style="color:#f92672">=</span> ROUNDDOWN((<span style="color:#66d9ef">uint32_t</span>)va, PGSIZE);
+    uintptr_t end <span style="color:#f92672">=</span> ROUNDUP((uintptr_t)va<span style="color:#f92672">+</span>len, PGSIZE);
+    uintptr_t i;
+    pte_t <span style="color:#f92672">*</span>phaddr_entry;
+
+    <span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> beg; i <span style="color:#f92672">!=</span> end; i <span style="color:#f92672">+=</span> PGSIZE) {
+        phaddr_entry <span style="color:#f92672">=</span> pgdir_walk(env<span style="color:#f92672">-&gt;</span>env_pgdir, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)i, false);
+        <span style="color:#66d9ef">if</span> ( phaddr_entry <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>(<span style="color:#f92672">*</span>phaddr_entry <span style="color:#f92672">&amp;</span> PTE_P)  <span style="color:#f92672">||</span> (<span style="color:#f92672">*</span>phaddr_entry <span style="color:#f92672">&amp;</span> perm ) <span style="color:#f92672">!=</span> perm) {
+            user_mem_check_addr <span style="color:#f92672">=</span> i <span style="color:#f92672">&lt;</span> (uintptr_t)va <span style="color:#f92672">?</span> (uintptr_t)va : i;
+            cprintf(<span style="color:#e6db74">&#34;%x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, user_mem_check_addr);
+            <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>E_FAULT;
+        }
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+</code></pre></div><p><code>BUG</code> ： 这里在调用pgdir_walk的时候把env-&gt;env_pgdir写成了kern_pgdir，用户一般都不会有内核的地址空间的读写权限，导致<code>make run</code>相关程序的时候发生失败。</p>
+<h2 id="sys_cputs">sys_cputs()</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C" data-lang="C">    <span style="color:#75715e">// Check that the user has permission to read memory [s, s+len).
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Destroy the environment if not.
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// LAB 3: Your code here.
+</span><span style="color:#75715e"></span>    user_mem_assert(curenv, s, len, PTE_U);
+</code></pre></div><h2 id="debuginfo_eip">debuginfo_eip()</h2>
+<pre tabindex="0"><code>    // Make sure this memory is valid.
+    // Return -1 if it is not.  Hint: Call user_mem_check.
+    // LAB 3: Your code here.
+    if (user_mem_check(curenv, usd, sizeof(struct UserStabData), PTE_U) &lt; 0)
+        return -1;
+
+    stabs = usd-&gt;stabs;
+    stab_end = usd-&gt;stab_end;
+    stabstr = usd-&gt;stabstr;
+    stabstr_end = usd-&gt;stabstr_end;
+
+    // Make sure the STABS and string table memory is valid.
+    // LAB 3: Your code here.
+    if (user_mem_check(curenv, stabs, stab_end - stabs, PTE_U) &lt; 0)
+        return -1;
+    if (user_mem_check(curenv, stabstr, stabstr_end - stabstr, PTE_U) &lt; 0)
+        return -1;
+</code></pre><blockquote>
+<p>Q: run user/breakpoint, you should be able to run backtrace from the kernel monitor and see the backtrace traverse into lib/libmain.c before the kernel panics with a page fault. What causes this page fault? You don&rsquo;t need to fix it, but you should understand why it happens.</p>
+</blockquote>
+<p>// todo</p>
+<h1 id="make-grade">make grade</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">
+make<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span>: Leaving directory <span style="color:#e6db74">&#39;/home/moonlight/lab&#39;</span>
+divzero: OK <span style="color:#f92672">(</span>1.3s<span style="color:#f92672">)</span>
+softint: OK <span style="color:#f92672">(</span>1.0s<span style="color:#f92672">)</span>
+badsegment: OK <span style="color:#f92672">(</span>1.1s<span style="color:#f92672">)</span>
+Part A score: 30/30
+
+faultread: OK <span style="color:#f92672">(</span>0.9s<span style="color:#f92672">)</span>
+faultreadkernel: OK <span style="color:#f92672">(</span>1.9s<span style="color:#f92672">)</span>
+faultwrite: OK <span style="color:#f92672">(</span>1.1s<span style="color:#f92672">)</span>
+faultwritekernel: OK <span style="color:#f92672">(</span>1.7s<span style="color:#f92672">)</span>
+breakpoint: OK <span style="color:#f92672">(</span>1.4s<span style="color:#f92672">)</span>
+testbss: OK <span style="color:#f92672">(</span>1.7s<span style="color:#f92672">)</span>
+hello: OK <span style="color:#f92672">(</span>2.2s<span style="color:#f92672">)</span>
+buggyhello: OK <span style="color:#f92672">(</span>2.0s<span style="color:#f92672">)</span>
+buggyhello2: OK <span style="color:#f92672">(</span>2.1s<span style="color:#f92672">)</span>
+evilhello: OK <span style="color:#f92672">(</span>1.7s<span style="color:#f92672">)</span>
+Part B score: 50/50
+
+Score: 80/80
+
+</code></pre></div><p>This completes the lab.</p>
+
+        </div>
+
+        
+        <div class="row pl-3 pr-3">
+        
+        <div class="col-md-6 share-buttons">
+        
+          </div>
+
+        
+        
+          
+            
+          
+          <div class="col-md-6 btn-improve-page">
+             
+               <a href="https://github.com/fatwaer/fatwaer.github.io/edit/main/content/posts/course-notes/6-828-%e6%93%8d%e4%bd%9c%e7%b3%bb%e7%bb%9f%e5%b7%a5%e7%a8%8b-Lab3-User-Environments.md" title="Improve this page" target="_blank" rel="noopener">
+            
+                <i class="fas fa-code-branch"></i>
+                Improve this page
+              </a>
+          </div>
+        
+        </div>
+
+
+
+      
+      <hr />
+        
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+<div class="row next-prev-navigator">
+  
+  
+</div>
+
+      <hr />
+
+      
+      
+      
+      
+
+      </div>
+    </div>
+  </div>
+  
+  <a id="scroll-to-top" class="btn"><i class="fas fa-chevron-circle-up"></i></a>
+  
+</section>
+
+
+      
+      
+  <section class="toc-section" id="toc-section">
+    
+    <div class="toc-holder">
+      <h5 class="text-center pl-3">Table of Contents</h5>
+      <hr>
+      <div class="toc">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#env_init">env_init()</a></li>
+    <li><a href="#env_setup_vm">env_setup_vm()</a></li>
+    <li><a href="#region_alloc">region_alloc()</a></li>
+    <li><a href="#load_icode">load_icode()</a></li>
+    <li><a href="#env_create">env_create()</a></li>
+    <li><a href="#env_run">env_run()</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#trap_init">trap_init()</a></li>
+    <li><a href="#trap_dispatch">trap_dispatch()</a></li>
+    <li><a href="#syscall">syscall()</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#page_fault_handler">page_fault_handler()</a></li>
+    <li><a href="#user_mem_check"><code>user_mem_check</code></a></li>
+    <li><a href="#sys_cputs">sys_cputs()</a></li>
+    <li><a href="#debuginfo_eip">debuginfo_eip()</a></li>
+  </ul>
+</nav>
+      </div>
+    </div>
+    
+  </section>
+
+    </div>
+
+    
+    
+
+
+
+
+
+
+
+
+
+  
+      
+  
+
+
+
+  
+  
+
+  
+  
+    
+  
+
+  
+  
+
+
+  
+  
+  
+
+  
+  
+  
+
+  
+  
+  
+    
+  
+  
+
+  
+  
+  
+
+  <footer class="container-fluid text-center align-content-center footer pb-2">
+    <div class="container pt-5">
+      <div class="row text-left">
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Navigation</h5>
+          
+          <ul>
+              
+                
+                
+                  
+                
+                <li class="nav-item">
+                  <a class="smooth-scroll" href="/#about">About</a>
+                </li>
+              
+              
+          </ul>
+          
+        </div>
+        
+        
+        <div class="col-md-4 col-sm-12">
+          <h5>Contact me:</h5>
+          <ul>
+            
+            <li><span>Email: </span> <span>fatwaer@gmail.com</span></li>
+            
+            <li><span>Phone: </span> <span>&#43;0123456789</span></li>
+            
+          </ul>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+    
+    
+    <hr />
+    <div class="container">
+      <div class="row text-left">
+        <div class="col-md-4">
+          <a id="theme" href="https://github.com/hossainemruz/toha" target="_blank" rel="noopener">
+            <img src="/images/theme-logo_hu8376fd15465fef26ffe66b6bcf0ca686_13669_32x0_resize_box_3.png" alt="Toha Theme Logo">
+            Toha
+          </a>
+        </div>
+        <div class="col-md-4 text-center">© 2021 Copyright.</div>
+        <div class="col-md-4 text-right">
+          <a id="hugo" href="https://gohugo.io/" target="_blank" rel="noopener">Powered by
+          <img
+            src="/images/hugo-logo.svg"
+            alt="Hugo Logo"
+            height="18"
+          />
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </footer>
+
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/popper.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/js/navbar.js"></script>
+<script type="text/javascript" src="/js/plyr.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script src="/js/single.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+  </body>
+</html>

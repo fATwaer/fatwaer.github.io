@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Project on Pwaer&#39;s Blog</title>
+    <link>https://pwaer.ink/blog/sys/</link>
+    <description>Recent content in Project on Pwaer&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 09 Apr 2014 00:00:00 +0000</lastBuildDate><atom:link href="https://pwaer.ink/blog/sys/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>google benchmark：利用 perf 工具查看程序热点</title>
+      <link>https://pwaer.ink/blog/sys/google-benchmark/</link>
+      <pubDate>Fri, 30 Apr 2021 13:09:26 +0800</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/google-benchmark/</guid>
+      <description>前言 准确的度量系统的开销是很重要的, 系统级别比较出名的是 Latency Numbers Every Programmer Should Know, 而在各种变成语言中, 需要依赖基准测试来判断程序实际的耗时。
+Latency Comparison Numbers (~2012) ---------------------------------- L1 cache reference 0.5 ns Branch mispredict 5 ns L2 cache reference 7 ns 14x L1 cache Mutex lock/unlock 25 ns Main memory reference 100 ns 20x L2 cache, 200x L1 cache Compress 1K bytes with Zippy 3,000 ns 3 us Send 1K bytes over 1 Gbps network 10,000 ns 10 us Read 4K randomly from SSD* 150,000 ns 150 us ~1GB/sec SSD Read 1 MB sequentially from memory 250,000 ns 250 us Round trip within same datacenter 500,000 ns 500 us Read 1 MB sequentially from SSD* 1,000,000 ns 1,000 us 1 ms ~1GB/sec SSD, 4X memory Disk seek 10,000,000 ns 10,000 us 10 ms 20x datacenter roundtrip Read 1 MB sequentially from disk 20,000,000 ns 20,000 us 20 ms 80x memory, 20X SSD Send packet CA-&amp;gt;Netherlands-&amp;gt;CA 150,000,000 ns 150,000 us 150 ms Notes ----- 1 ns = 10^-9 seconds 1 us = 10^-6 seconds = 1,000 ns 1 ms = 10^-3 seconds = 1,000 us = 1,000,000 ns Credit ------ By Jeff Dean: http://research.</description>
+    </item>
+    
+    <item>
+      <title>利用Jemalloc进行内存泄漏的调试</title>
+      <link>https://pwaer.ink/blog/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/</link>
+      <pubDate>Fri, 18 Dec 2020 22:56:03 +0800</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/%E5%88%A9%E7%94%A8jemalloc%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E8%B0%83%E8%AF%95/</guid>
+      <description>内存不符预期的不断上涨，可能的原因是内存泄漏，例如new出来的对象未进行delete就重新进行复制，使得之前分配的内存块被悬空，应用程序没办法访问到那部分内存，并且也没有办法释放；在C++中，STL容器都会有clear()方法并且伴随RAII原则对容器里元素进行清理，但除了STL还有可能是字符串不断地在进行累加，不断的分配出新的内存块存放增长的字符串。
+在cppzh 群 内看到讨论利用jemalloc对内存占用的调试，能够清楚的 dump 出内存的使用情况，便尝试了下。
+安装 # 用于生成 pdf yum -y install graphviz ghostscript wget https://github.com/jemalloc/jemalloc/archive/5.1.0.tar.gz tar zxvf 5.1.0.tar.gz cd jemalloc-5.1.0/ ./autogen.sh ./configure --prefix=/usr/local/jemalloc-5.1.0 --enable-prof make -j make install 程序退出时的用例和检查 # run MALLOC_CONF=prof_leak:true,lg_prof_sample:0,prof_final:true LD_PRELOAD=/usr/local/jemalloc-5.1.0/lib/libjemalloc.so.2 ./a.out # 查看内存占用情况 /usr/local/jemalloc-5.1.0/bin/jeprof a.out jeprof.34447.0.f.heap &amp;gt; top 长时间运行-测试用例 对于长时间运行的程序，例如服务端程序通常不能够退出，jemalloc提供每增长指定大小进行一次内存dump。
+下面这个例子mock长时间运行的程序，分别测试顺序容器(vector)和关联容器(map)，string 和最基本的new，并且每100ms执行1000次，代表服务端的运行情况。
+#include &amp;lt;iostream&amp;gt;#include &amp;lt;string&amp;gt;#include &amp;lt;vector&amp;gt;#include &amp;lt;map&amp;gt;#include &amp;lt;chrono&amp;gt;#include &amp;lt;thread&amp;gt; int main() { std::vector&amp;lt;int&amp;gt; vec; std::map&amp;lt;int, int&amp;gt; mp; std::string s; for (;;) { for (int i = 0; i &amp;lt; 1000; ++i) { vec.</description>
+    </item>
+    
+    <item>
+      <title>gRPC：复用CompletionQueue</title>
+      <link>https://pwaer.ink/blog/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/</link>
+      <pubDate>Mon, 19 Oct 2020 22:56:03 +0800</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/</guid>
+      <description>异步请求过程 在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起异步请求，并通过CompletionQueue中的Next()阻塞机制等待请求的完成。
+异步请求流程应该如下：
+在greeter_async_client2.cc中，每一个请求都会创建一个AsyncClientCall，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，
+// struct for keeping state and data information  struct AsyncClientCall { // Container for the data we expect from the server.  HelloReply reply; // Context for the client. It could be used to convey extra information to  // the server and/or tweak certain RPC behaviors.  ClientContext context; // Storage for the status of the RPC upon completion.  Status status; std::unique_ptr&amp;lt;ClientAsyncResponseReader&amp;lt;HelloReply&amp;gt;&amp;gt; response_reader; }; void SayHello(const std::string&amp;amp; user) { // Data we are sending to the server.</description>
+    </item>
+    
+    <item>
+      <title>线程同步</title>
+      <link>https://pwaer.ink/blog/sys/thread-synchronization/</link>
+      <pubDate>Mon, 15 Oct 2018 08:36:39 +0000</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/thread-synchronization/</guid>
+      <description>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。
+在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。
+struct job { struct job *j_next; struct job *j_prev; pthread_t j_id; /** job */ int (*j_add)(int); int j_num; }; 然后写一个简单的作业函数，完成j_num的累加工作，已经初始化结构体job的作业分配函数，并且将这个作业加入到作业队列中去：
+ 累加函数  int add(int i) { int sum; sum = 0; while (i) sum += i--; return sum; }  作业分配  struct job * job_alloc(struct queue *qp, int num) { struct job *jp; if ((jp = (struct job *)malloc(sizeof(struct job))) == NULL) return (NULL); jp-&amp;gt;j_add = add; jp-&amp;gt;j_num = num; jp-&amp;gt;j_id = pthread_self(); job_insert(qp, jp); return (jp); } 然后可以创建一个线程去完成作业分配工作，生成一个待执行的作业队列，虽然在这里使用主线程来创建会更好。</description>
+    </item>
+    
+    <item>
+      <title>apue-file and directory</title>
+      <link>https://pwaer.ink/blog/sys/apue-file-and-directory/</link>
+      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/apue-file-and-directory/</guid>
+      <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取这些文件的特殊信息。 文件类型包括普通文件，目录文件，块特殊文件,字符特殊文件，ＦＩＦＯ，套接字，符号链接。可以向函数(S_ISREG(), S_ISDIR()&amp;hellip;)传入结构体中的st_stat获取文件类型。
+文件访问权限  读权限允许我们读取目录，获得在该目录下的文件名列表，但是当某个目录是　路径名　的一部分的时候，必须有该目录的可执行权限。 在目录下创建一个文件，是需要对该目录有写权限和执行权限，删除一个文件也是一样，但是不需要对该文件有读写权限。  书上有一个关于access的实例，虽然有些文件可以不能通过可读权限，但是open()函数仍然能打开但是不能用read()等方法进行读操作。
+文件系统 现代unix和以前学的有些不同，其中JOS不支持inode，但是还是有相似的地方。重新翻了下前面的文章。文件系统都有一个boot块用来自启，紧接着的是叫做super块来描述文件系统的性质，例如目录地址，上次检错时间等。现代unix在之后的磁盘块中以超级块副本，配置信息，Ｉ节点图，bitmap，ｉ节点，数据块依次排开构成文件系统。JOS就要简化了一些，因为不存在ｉnode，所以数据和目录都是放在bitmap后的数据块中。
+硬链接是指inode的引用计数，当计数为０时才是真正从磁盘中擦去该目录项，保存在结构体stat的st_nlink中。
+inode节点包含了文件所有信息，文件类型，文件访问权限位，文件长度，指向文件数据块的指针（JOS中的FILE结构体）。
+$ mkdir test  该命令执行后，会创建一个新的文件目录，任何新目录创建后的引用数都为２．该test目录在创建后，父目录中的test指向该目录，以及test目录中的 .　也指向该目录，所以引用计数为２。
+以此类推，其父目录的引用计数应该为３，１是该目录的父目录的指向，２是该目录下.文件的指向，３是test文件中..的指向。所以没创建一个文件目录，该目录的引用计数都会增加１。
+unlink 当文件的引用计数为０时，就会从磁盘中擦去，像vim打开一个文件，填入内容保存后，就会在该目录下引用了这个普通文件，引用计数为１，使用unlink可以解除即删去该文件。
+当一个程序用open()打开一个文件后，马上调用unlink()，那么只有当进程关闭改文件或者进程终止的时候，文件内容才被删除。
+if (open(&amp;#34;tempfile&amp;#34;, O_RDWR) &amp;lt; 0) err_sys(&amp;#34;open error&amp;#34;); if (unlink(&amp;#34;tempfile&amp;#34;) &amp;lt; 0) err_sys(&amp;#34;unlink errorr&amp;#34;); 符号链接 符号链接是一种与硬链接相比较限制宽松的链接方式，不用接触到文件系统底层。
+使用命令ln来创建一个符号链接
+$ln -s ~/file file  然后使用 ls -l 查看文件
+lrwxrwxrwx 1 moonlight users 26 Aug 14 16:07 sp -&amp;gt; /home/moonlight/hotspot.py  可以看到对一个文件的链接，但是使用cat命令确并不存在。
+文件的时间 最后访问时间(st_atim) ： 文件数据最后被read操作的最后一次时间。</description>
+    </item>
+    
+    <item>
+      <title>apue-file I/O</title>
+      <link>https://pwaer.ink/blog/sys/apue-chapter3/</link>
+      <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/apue-chapter3/</guid>
+      <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言API的书籍，中间穿插了关于UNIX操作系统的知识，趁这个机会，利用6.828的知识，来提高下在linux下的编程水平，比完赛回来后，换成了arch linux，这是一款非常轻量级的操作系统，比较适合用来做自己的开发环境，另一方面也减少了游戏对自己的干扰。 本书第一章节主要讲的标准输入输出的一些基本操作，第二章提到了一些POSIX的标准，快速浏览一遍就好。
+学习笔记  文件描述符 文件描述符这个概念已经比较熟悉了，是一个 0~OPEN_MAX-1 的正整数，也是一个程序中方便操作的对象。一般来说，0代表的标准输入，1代表标准输出，2代表的是标准错误输出。
+open()标志位 O_RDONLY : 只读打开
+O_WRONLY : 只写打开，后面会发现如果尝试读取只写的文件会出现乱码
+O_RDWR : 读写打开
+O_EXEC : 只执行打开
+O_SEARCH : 用于搜索*
+以上是打开文件必须选择的标志
+O_APPEND : 附加
+O_CLOEXEC: 这个以前做过验证: 链接
+O_CREAT : 不存在就创建
+O_EXCL : 在创建文件时，如果指定了该标志位，文件存在，那么open返回失败值
+O_DIRECTORY: 目录判断
+O_NOFOLLOW: 需要是非链接文件
+O_NOBLOCK : 以非阻塞模式打开FIFO，块设备，字符特殊文件
+O_SYNC : 每次write都需要写入磁盘(同步写)，然后等待磁盘返回
+O_TRUNC: 打开已存在的文件，并且将长度截为0，也就是原来的文件内容不能再进行访问，文件变为新文件,需要有写权限。
+*O_TTY_INIT/O_DSYNC/O_RSYNC 还不清楚
+习题 writeup 3.3 在该题目中，fd1和fd2当然都指向同一个文件表，因为执行了dup操作，所以相关的文件描述符标志等信息都会被复制，对于fd3，我理解为这是打开的同一个文件，在自己尝试写出的代码中，可以反复打开同一个文件多次，但是不会指向同一个文件表项。
+首先打开两个相同的文件
+fd1 = open(&amp;#34;file&amp;#34;, O_RDONLY); fd2 = open(&amp;#34;file&amp;#34;, O_RDONLY); 然后读取分别读取fd1，fd2几个字符，再用lseek()获取当前文件偏移。
+read(fd1, buf, 3); off1 = lseek(fd1, 0, SEEK_CUR); read(fd2, buf, 5); off2 = lseek(fd2, 0, SEEK_CUR); 结果显示这两个文件偏移off1和off2并没有相互叠加。</description>
+    </item>
+    
+    <item>
+      <title>static,extern关键词和函数指针数组</title>
+      <link>https://pwaer.ink/blog/sys/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</link>
+      <pubDate>Thu, 19 Apr 2018 23:49:06 +0000</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</guid>
+      <description>extern 从该文件外部获取变量定义，在文件域默认有extern属性。存储属性为static，也就是在文件执行前就被放在静态数据区。
+static 只在该文件域可以使用，存储属性为static。
+实例 extern.c
+#include &amp;lt;stdio.h&amp;gt; int k = 10; extern void print(void); int main() { printf(&amp;#34;k: %d\n&amp;#34;, k); print(); } extern2.c
+#include &amp;lt;stdio.h&amp;gt; void print(void) { extern int k; printf(&amp;#34;extern int k: %d\n&amp;#34;, k); } shell
+$ gcc -o ex extern.c extern2.c $ ./ex  函数指针数组 #include &amp;lt;stdio.h&amp;gt; static int print1(void) { printf(&amp;#34;function: print1()\n&amp;#34;); } static int print2(void) { printf(&amp;#34;function: print2()\n&amp;#34;); } static int (*arr[])(void) = { [0] print1, [1] print2, }; int (* foo)(void); int main(void) { foo = arr[0]; foo(); } __static int (*arr[])(void)__可以理解为arr[]数组中存有两个类型为__static int(void)__的函数指针</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43; iterater</title>
+      <link>https://pwaer.ink/blog/sys/c&#43;&#43;/</link>
+      <pubDate>Fri, 02 Jun 2017 11:15:08 +0800</pubDate>
+      
+      <guid>https://pwaer.ink/blog/sys/c&#43;&#43;/</guid>
+      <description>There have serveral methods: /***overload function****/ void print(int* pi) { if (pi) cout &amp;lt;&amp;lt; *pi &amp;lt;&amp;lt; endl; } void print(const char* p) { if (p) while (*p) cout &amp;lt;&amp;lt; *p++; cout &amp;lt;&amp;lt; endl; } void print(const int* beg, const int* end) { while (beg != end) cout &amp;lt;&amp;lt; *beg++ &amp;lt;&amp;lt; endl; } void print(const int ia[], size_t size) { for (size_t i = 0; i != size; ++i) { cout &amp;lt;&amp;lt; ia[i] &amp;lt;&amp;lt; endl; } } void print(const int(&amp;amp;arr)[2]) { for (auto i : arr) cout &amp;lt;&amp;lt; i &amp;lt;&amp;lt; endl; } int main() { int i = 0, j[2] = {0, 1}; char ch[5] = &amp;#34;Getup!</description>
+    </item>
+    
+  </channel>
+</rss>

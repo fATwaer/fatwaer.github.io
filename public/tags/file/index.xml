@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>file on Pok</title>
+    <link>/tags/file/</link>
+    <description>Recent content in file on Pok</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 14 Aug 2018 10:42:10 +0000</lastBuildDate><atom:link href="/tags/file/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>apue-file and directory</title>
+      <link>/posts/sys/apue-file-and-directory/</link>
+      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
+      
+      <guid>/posts/sys/apue-file-and-directory/</guid>
+      <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取这些文件的特殊信息。 文件类型包括普通文件，目录文件，块特殊文件,字符特殊文件，ＦＩＦＯ，套接字，符号链接。可以向函数(S_ISREG(), S_ISDIR()&amp;hellip;)传入结构体中的st_stat获取文件类型。
+文件访问权限  读权限允许我们读取目录，获得在该目录下的文件名列表，但是当某个目录是　路径名　的一部分的时候，必须有该目录的可执行权限。 在目录下创建一个文件，是需要对该目录有写权限和执行权限，删除一个文件也是一样，但是不需要对该文件有读写权限。  书上有一个关于access的实例，虽然有些文件可以不能通过可读权限，但是open()函数仍然能打开但是不能用read()等方法进行读操作。
+文件系统 现代unix和以前学的有些不同，其中JOS不支持inode，但是还是有相似的地方。重新翻了下前面的文章。文件系统都有一个boot块用来自启，紧接着的是叫做super块来描述文件系统的性质，例如目录地址，上次检错时间等。现代unix在之后的磁盘块中以超级块副本，配置信息，Ｉ节点图，bitmap，ｉ节点，数据块依次排开构成文件系统。JOS就要简化了一些，因为不存在ｉnode，所以数据和目录都是放在bitmap后的数据块中。
+硬链接是指inode的引用计数，当计数为０时才是真正从磁盘中擦去该目录项，保存在结构体stat的st_nlink中。
+inode节点包含了文件所有信息，文件类型，文件访问权限位，文件长度，指向文件数据块的指针（JOS中的FILE结构体）。
+$ mkdir test  该命令执行后，会创建一个新的文件目录，任何新目录创建后的引用数都为２．该test目录在创建后，父目录中的test指向该目录，以及test目录中的 .　也指向该目录，所以引用计数为２。
+以此类推，其父目录的引用计数应该为３，１是该目录的父目录的指向，２是该目录下.文件的指向，３是test文件中..的指向。所以没创建一个文件目录，该目录的引用计数都会增加１。
+unlink 当文件的引用计数为０时，就会从磁盘中擦去，像vim打开一个文件，填入内容保存后，就会在该目录下引用了这个普通文件，引用计数为１，使用unlink可以解除即删去该文件。
+当一个程序用open()打开一个文件后，马上调用unlink()，那么只有当进程关闭改文件或者进程终止的时候，文件内容才被删除。
+if (open(&amp;quot;tempfile&amp;quot;, O_RDWR) &amp;lt; 0) err_sys(&amp;quot;open error&amp;quot;); if (unlink(&amp;quot;tempfile&amp;quot;) &amp;lt; 0) err_sys(&amp;quot;unlink errorr&amp;quot;); 符号链接 符号链接是一种与硬链接相比较限制宽松的链接方式，不用接触到文件系统底层。
+使用命令ln来创建一个符号链接
+$ln -s ~/file file  然后使用 ls -l 查看文件
+lrwxrwxrwx 1 moonlight users 26 Aug 14 16:07 sp -&amp;gt; /home/moonlight/hotspot.py  可以看到对一个文件的链接，但是使用cat命令确并不存在。
+文件的时间 最后访问时间(st_atim) ： 文件数据最后被read操作的最后一次时间。</description>
+    </item>
+    
+    <item>
+      <title>apue-file I/O</title>
+      <link>/posts/sys/apue-chapter3/</link>
+      <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
+      
+      <guid>/posts/sys/apue-chapter3/</guid>
+      <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言API的书籍，中间穿插了关于UNIX操作系统的知识，趁这个机会，利用6.828的知识，来提高下在linux下的编程水平，比完赛回来后，换成了arch linux，这是一款非常轻量级的操作系统，比较适合用来做自己的开发环境，另一方面也减少了游戏对自己的干扰。 本书第一章节主要讲的标准输入输出的一些基本操作，第二章提到了一些POSIX的标准，快速浏览一遍就好。
+学习笔记  文件描述符 文件描述符这个概念已经比较熟悉了，是一个 0~OPEN_MAX-1 的正整数，也是一个程序中方便操作的对象。一般来说，0代表的标准输入，1代表标准输出，2代表的是标准错误输出。
+open()标志位 O_RDONLY : 只读打开
+O_WRONLY : 只写打开，后面会发现如果尝试读取只写的文件会出现乱码
+O_RDWR : 读写打开
+O_EXEC : 只执行打开
+O_SEARCH : 用于搜索*
+以上是打开文件必须选择的标志
+O_APPEND : 附加
+O_CLOEXEC: 这个以前做过验证: 链接
+O_CREAT : 不存在就创建
+O_EXCL : 在创建文件时，如果指定了该标志位，文件存在，那么open返回失败值
+O_DIRECTORY: 目录判断
+O_NOFOLLOW: 需要是非链接文件
+O_NOBLOCK : 以非阻塞模式打开FIFO，块设备，字符特殊文件
+O_SYNC : 每次write都需要写入磁盘(同步写)，然后等待磁盘返回
+O_TRUNC: 打开已存在的文件，并且将长度截为0，也就是原来的文件内容不能再进行访问，文件变为新文件,需要有写权限。
+*O_TTY_INIT/O_DSYNC/O_RSYNC 还不清楚
+习题 writeup 3.3 在该题目中，fd1和fd2当然都指向同一个文件表，因为执行了dup操作，所以相关的文件描述符标志等信息都会被复制，对于fd3，我理解为这是打开的同一个文件，在自己尝试写出的代码中，可以反复打开同一个文件多次，但是不会指向同一个文件表项。
+首先打开两个相同的文件
+	fd1 = open(&amp;quot;file&amp;quot;, O_RDONLY); fd2 = open(&amp;quot;file&amp;quot;, O_RDONLY); 然后读取分别读取fd1，fd2几个字符，再用lseek()获取当前文件偏移。
+read(fd1, buf, 3); off1 = lseek(fd1, 0, SEEK_CUR); read(fd2, buf, 5); off2 = lseek(fd2, 0, SEEK_CUR); 结果显示这两个文件偏移off1和off2并没有相互叠加。</description>
+    </item>
+    
+  </channel>
+</rss>

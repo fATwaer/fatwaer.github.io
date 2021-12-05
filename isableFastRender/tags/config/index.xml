@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>config on fatwaer</title>
+    <link>http://localhost:1313/tags/config/</link>
+    <description>Recent content in config on fatwaer</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 18 Sep 2019 14:11:14 +0800</lastBuildDate>
+    
+	<atom:link href="http://localhost:1313/tags/config/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hugo is comming !</title>
+      <link>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
+      <description> 末尾两个空格换行
+6 organization content 7 front matter 8 archetypes 9 shortcodes 10 taxonomies 11 template basic 12 list template 13 single template 14 homepage template 15 section template 16 base template https://discourse.gohugo.io/t/baseof-html-block-templates-and-list-types-results-in-empty-pages/5612&amp;gt;   </description>
+    </item>
+    
+    <item>
+      <title>hexo 配置</title>
+      <link>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Thu, 05 Apr 2018 15:17:47 +0000</pubDate>
+      
+      <guid>http://localhost:1313/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。&lt;/p&gt;
+
+&lt;h2 id=&#34;categories和tags&#34;&gt;categories和tags&lt;/h2&gt;
+
+&lt;p&gt;themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;type: &amp;quot;categories&amp;quot;
+layout: &amp;quot;categories&amp;quot;
+comments: false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;type: &amp;quot;tags&amp;quot;
+layout: &amp;quot;tags&amp;quot;
+comments: false
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

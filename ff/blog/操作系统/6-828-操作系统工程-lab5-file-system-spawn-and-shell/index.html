@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>6-828-操作系统工程-Lab5-File system, Spawn and Shell&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="6-828-操作系统工程-Lab5-File system, Spawn and Shell" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">6-828-操作系统工程-Lab5-File system, Spawn and Shell</h1><p class="article date">Sunday, May 20, 2018</p></section><article class="article markdown-body"><p>这个实验主要是实现<code>spawn</code>库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库
+，使得足以在控制台上运行<code>shell</code>。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。</p>
+<h1 id="准备">准备</h1>
+<p><code>git</code></p>
+<pre><code>    $ find . -name &quot;*.swp&quot; | xargs rm 
+    $ git add .
+    $ git commit -m &quot;lab4 done&quot;
+    $ git pull 
+    $ git merge lab4
+        Auto-merging kern/trap.c
+        CONFLICT (content): Merge conflict in kern/trap.c
+        Auto-merging kern/syscall.c
+        Auto-merging kern/init.c
+        CONFLICT (content): Merge conflict in kern/init.c
+        Auto-merging kern/env.c
+        CONFLICT (content): Merge conflict in kern/env.c
+        Auto-merging inc/lib.h
+        Automatic merge failed; fix conflicts and then commit the result.
+</code></pre><p>解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</p>
+<hr>
+<h1 id="文件系统">文件系统</h1>
+<p>这里将使用一个比实际更简单的文件系统，但这足以提供一些基本的特点：创建，读取，写入和删在除文件在一个具有层级结构的文件结构。</p>
+<p>到目前为止已经完成了单用户操作系统，能够提供足够的保护去捕获bug但是不会阻止来自其他可疑用户的操作。新的文件系统暂时不支持硬链接(hard link),符号链接(symbolic links),时间戳(time stamps)或者特殊设备文件(device files).</p>
+<p>磁盘文件系统的结构：大多数UNIX文件系统将磁盘空间分成两类，<code>inode</code>区域和<code>data</code>区域。UNIX文件系统给每一个文件都赋予一个<code>inode</code>值，文件的<code>inode</code>保持这个文件的临界元数据(critical meta-data)例如文件的<code>stat</code>属性和指向数据块的指针。数据区域被分成了更大的<code>data block</code>，文件系统将文件数据和目录元数据存储在其中。目录的入口包含了文件名和指向<code>inode</code>的指针。一个文件能被硬链接只有多个文件目录入口引用了这个文件的<code>inode</code>。因为这里不支持硬链接，所以可以做一个方便的转化：完全不使用<code>inode</code>而简单地存储所有的文件的元数据在目录入口来描述每个文件。</p>
+<p>文件和目录逻辑上组成了一连串的数据块(data block)，可能被散布在磁盘也有可能在一个环境的虚拟地址空间所映射的物理内存上。文件系统隐藏了这些数据块的存放细节，为在一个绝对的文件偏移提供了接口方便读写字节流。文件系统对目录的修改表现为创建文件或者删除文件。这里的文件系统云溪用户环境读取目录的元数据，这意味着用户环境能自己扫描文件目录而不是依赖于一个二外的调用。这样做也有缺点，现代大多是UNIX的变体都不推荐使用它，这使得应用程序依赖于文件目录的格式，这让在没有改变或者编译应用程序的情况下很难改变文件系统内部存放。</p>
+<p>扇区和块
+大多数磁盘不支持字节粒度的读写而是通过读写一个扇区单元。JOS中，每个区块都是512字节。文件系统实际上在块的单元分配和使用磁盘存储。注意：sector取决于磁盘硬件，然而block的大小是操作系统使用磁盘的一个大小。所以文件系统的块大小必须是块的整数倍。</p>
+<p><img  src="/images/operating-system/6.828/lab5/disk.png"
+        alt="disk.png"/></p>
+<p>superblock
+文件系统通常保留一个确定位置(最前面或者最末尾)的磁盘块来保存描述文件系统特性的元数据。任何元数据被要求找到根目录，文件系统上次被增减的时间，上次检查错误的时间等等。在这里的文件系统中将会有一个确定的superblock，它将总是在block1的位置，被定义在<code>stuct Super</code>。Block0通常被用来保存boot loaders和分区表(partition tables)。大多是实际的文件系统维护多个superblock，散布在disk中，所以其中的一个块发生了损毁或者介质错误，其他的superbloock仍能被找到。</p>
+<hr>
+<p>文件元数据</p>
+<p>在这个文件系统中，meta-data的存放在<code>stuct File</code>中定义了。其中包含了文件名，文件大小，文件类型(普通文件或者目录)，以及一个指针指向下一个包含文件的块，因为不支持<code>inode</code>，所以这些元数据被存储在了目录入口，为了简化，将会直用File这一个结构体去表示即在磁盘和内存的元数据。</p>
+<p>结构体中<code>f_direct</code>数据包含了文件空间的前十个块，称之为文件的直接块。从小到大共40KB，这意味着这10个块号可以被这个File结构体直接引用。对于更大的文件，分配一个额外的磁盘块，被称作文件的间接块(indirect block)，能够保存1024个额外的块号。所以，文件系统因此能允许文件最大到1034个块已经大于了4M，当然实际的文件系统通常支持多个<code>double-</code>和<code>triple</code> <code>indrect block</code>。</p>
+<p>目录 vs. 普通文件
+文件系统中的<code>File</code>结构体既能表示一个普通文件也能表示一个目录。它们的区别在于结构体的<code>。type</code>，两者的管理方法基本相同，除了目录文件不会解析普通文件的数据块，但是他会解析文件对目录文件的描述和子目录。</p>
+<p><img  src="/images/operating-system/6.828/lab5/file.png"
+        alt="file.png"/></p>
+<p>superblock包含了一个<code>File</code>结构体，<code>Super</code>结构体中的<code>root</code>域保存了系统根目录的元数据。目录文件的内容是一系列<code>File</code>结构体，所有在根目录下的子目录也许会有多个<code>File</code>结构体用来表示次次级目录。</p>
+<p>x86使用EFLAGS寄存器中的<code>IOPL</code>位来决定在保护模式下的代码是否被允许执行例如<code>in</code>或者<code>out</code>这样的指令。因为所有的在x86 IO空间的IDE(Integrated Drive Electronics)磁盘寄存器都需要访问，而不是被映射到内存。给予文件系统的IO权限是为了能偶个访问所有的寄存器，同时是一种办法来控制其他用户环境的代码是否有权限来访问I/O空间。</p>
+<hr>
+<h1 id="练习1">练习1</h1>
+<blockquote>
+</blockquote>
+<hr>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="k">if</span> <span class="p">(</span><span class="n">type</span> <span class="o">==</span> <span class="n">ENV_TYPE_FS</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">-&gt;</span><span class="n">env_tf</span><span class="p">.</span><span class="n">tf_eflags</span> <span class="o">|=</span> <span class="n">FL_IOPL_3</span><span class="p">;</span> 
+</code></pre></div><p>一开始的想法是使用privilige 0，也就是FL_IOPL_0，但是出错了。</p>
+<blockquote>
+<p>Indicates the I/O privilege
+level (IOPL) of the currently running program or task. The CPL of the
+currently running program or task must be less than or equal to the IOPL to
+access the I/O address space. This field can only be modified by the POPF
+and IRET instructions when operating at a CPL of 0.</p>
+</blockquote>
+<p>解释是当前用户环境的CPL(current privilege level)必须小于或等于IOPL等级才行。普通用户环境默认被初始化为0，而CPL是3，所以正常的进程是不能直接执行IO操作的。在后面的测试<code>spawnfaultio</code>测试中有测试。如果需要文件系统能进行IO，则将IOPL值置为3即可。</p>
+<blockquote>
+<p>Q1:Do you have to do anything else to ensure that this I/O privilege setting is saved and restored properly when you subsequently switch from one environment to another? Why?</p>
+</blockquote>
+<p>前面的实验中有想过，每当一个环境开始运行的时候，也就是调用<code>env_run</code>函数的适合都会执行<code>iret</code>以恢复寄存器状态。</p>
+<hr>
+<p>块高速缓存</p>
+<p>在这个文件系统中，将会在处理器的虚拟内存系统中实现一个简单的缓冲区，代码在<code>fs/bc.c</code>
+文件系统将会限制可操作的磁盘大小是3G或者更少，保留一个够大的3GB区域在文件系统的内存空间，从0x10000000 (DISKMAP) 到 0xD0000000 (DISKMAP+DISKMAX)，作为一个映射在内存的磁盘版本。例如，block0被映射在0x1000000，block1映射在0x10001000等等。<code>diskaddr</code>函数实现了从块号到虚拟内存的转换，并且做了一些正常的检测。</p>
+<p>文件系统拥有其自己的虚拟内存空间独立于其他所有的用户环境，并且文件系统的仅需要做的一件事就是实现文件访问，有理由去保留大多数文件系统的内存空间。</p>
+<p>当然，读取整个磁盘到内存中将会花费相当长的时间，所以实现一种<code>demand paging</code>仅仅分配那些需要相应块号对应的页，以可信的方式引发一个页错误，再分配。通过这种方式，能假定整个磁盘是在内存中。</p>
+<hr>
+<h1 id="练习2">练习2</h1>
+<blockquote>
+<p>实现fs/bc.c中的bc_pgfault函数和flush_block函数
+bc_pgfault是一个页错误处理handler，就像之前的cow fork，希望从磁盘读取页会产生页错误。
+1.addr 也许不是与block边界对齐的。
+2.ide_read 是在扇区操作不是块。
+flush_block 函数如果有必要的话需要写一个块到磁盘中，如果没有block cache或者不是&quot;dirty&quot;状态(5.2.4.3),fluash_block什么也不会做。</p>
+</blockquote>
+<p><code>ide_write</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">ide_write</span><span class="p">(</span><span class="n">uint32_t</span> <span class="n">secno</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">src</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">nsecs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="n">assert</span><span class="p">(</span><span class="n">nsecs</span> <span class="o">&lt;=</span> <span class="mi">256</span><span class="p">);</span>
+
+    <span class="n">ide_wait_ready</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F2</span><span class="p">,</span> <span class="n">nsecs</span><span class="p">);</span> <span class="c1">//sector count 
+</span><span class="c1"></span>    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F3</span><span class="p">,</span> <span class="n">secno</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span> <span class="c1">//sector number
+</span><span class="c1"></span>    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F4</span><span class="p">,</span> <span class="p">(</span><span class="n">secno</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span> <span class="c1">//clinder low
+</span><span class="c1"></span>    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F5</span><span class="p">,</span> <span class="p">(</span><span class="n">secno</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span> <span class="c1">//clinder high
+</span><span class="c1"></span>    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F6</span><span class="p">,</span> <span class="mh">0xE0</span> <span class="o">|</span> <span class="p">((</span><span class="n">diskno</span><span class="o">&amp;</span><span class="mi">1</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="p">((</span><span class="n">secno</span><span class="o">&gt;&gt;</span><span class="mi">24</span><span class="p">)</span><span class="o">&amp;</span><span class="mh">0x0F</span><span class="p">));</span> <span class="c1">//select driver 1
+</span><span class="c1"></span>    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F7</span><span class="p">,</span> <span class="mh">0x30</span><span class="p">);</span>  <span class="c1">// CMD 0x30 means write sector
+</span><span class="c1"></span>
+    <span class="k">for</span> <span class="p">(;</span> <span class="n">nsecs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">;</span> <span class="n">nsecs</span><span class="o">--</span><span class="p">,</span> <span class="n">src</span> <span class="o">+=</span> <span class="n">SECTSIZE</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">ide_wait_ready</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+        <span class="n">outsl</span><span class="p">(</span><span class="mh">0x1F0</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">SECTSIZE</span><span class="o">/</span><span class="mi">4</span><span class="p">);</span><span class="c1">//data register
+</span><span class="c1"></span>    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><p>这个函数和ide_read基本相同，往磁盘寄存器内读写数据，设置读写计数器，读写的扇区号，柱面等等，然后通过一个for循环读取写入数据。CPU之前已经将相应的内存页在UVPT中标记为了<code>dirty</code>状态，也就是页重写标志位，当把内容读到内存中去的适合发生页错误，引发陷入从而分配一个新的物理页，并且写入数据。JOS用bc_pgfault作为handler处理这种页错误，代码如下。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="cp"># bc_pgfault
+</span><span class="cp"></span>    <span class="c1">// Allocate a page in the disk map region, read the contents
+</span><span class="c1"></span>    <span class="c1">// of the block from the disk into that page.
+</span><span class="c1"></span>    <span class="c1">// Hint: first round addr to page boundary. fs/ide.c has code to read
+</span><span class="c1"></span>    <span class="c1">// the disk.
+</span><span class="c1"></span>    <span class="c1">//
+</span><span class="c1"></span>    <span class="c1">// LAB 5: you code here:
+</span><span class="c1"></span>    <span class="n">addr</span> <span class="o">=</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ROUNDDOWN</span><span class="p">((</span><span class="n">uint32_t</span><span class="p">)</span><span class="n">addr</span><span class="p">,</span> <span class="n">PGSIZE</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_W</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">panic</span><span class="p">(</span><span class="s">&#34;in sys_page_alloc, %e&#34;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">ide_read</span><span class="p">(</span><span class="n">blockno</span> <span class="o">*</span> <span class="n">BLKSECTS</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">BLKSECTS</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">panic</span><span class="p">(</span><span class="s">&#34;in ide_read , %e&#34;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+</code></pre></div><hr>
+<p>flush_content的主要作用就是把数据写回到磁盘中去，然后清楚PTE_D页面重写标记为，代码如下：</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">flush_block</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">addr</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">uint32_t</span> <span class="n">blockno</span> <span class="o">=</span> <span class="p">((</span><span class="n">uint32_t</span><span class="p">)</span><span class="n">addr</span> <span class="o">-</span> <span class="n">DISKMAP</span><span class="p">)</span> <span class="o">/</span> <span class="n">BLKSIZE</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">addr</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">DISKMAP</span> <span class="o">||</span> <span class="n">addr</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)(</span><span class="n">DISKMAP</span> <span class="o">+</span> <span class="n">DISKSIZE</span><span class="p">))</span>
+        <span class="n">panic</span><span class="p">(</span><span class="s">&#34;flush_block of bad va %08x&#34;</span><span class="p">,</span> <span class="n">addr</span><span class="p">);</span>
+
+    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="n">addr</span> <span class="o">=</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">ROUNDDOWN</span><span class="p">((</span><span class="n">uint32_t</span><span class="p">)</span><span class="n">addr</span><span class="p">,</span> <span class="n">PGSIZE</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">va_is_mapped</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">va_is_dirty</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">ide_write</span><span class="p">(</span><span class="n">blockno</span><span class="o">*</span><span class="n">BLKSECTS</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">BLKSECTS</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">panic</span><span class="p">(</span><span class="s">&#34;ide_write fault : %e&#34;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">addr</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_SYSCALL</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">panic</span><span class="p">(</span><span class="s">&#34;map fault : %e&#34;</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+
+    <span class="c1">//panic(&#34;flush_block not implemented&#34;);
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></div><p><code>fs_init</code>函数是一个范例使用block cache，初始化后super存储指向磁盘映射范围的指针。在此之后，就能从super结构体读取数据就好像是从磁盘读取一样。</p>
+<blockquote>
+<p>Challenge:淘汰机制.</p>
+</blockquote>
+<p>块位图(Block Bitmap)
+在<code>fs_init</code>设置好了<code>bitmap</code>指针后，可以将<code>bitmap</code>看作一个比特数组，其中一位对应着在磁盘中的一个块。例如，<code>block_is_free</code>就是检测一个跟定的块是否在<code>bitmap</code>中被标记。</p>
+<hr>
+<h1 id="练习3">练习3</h1>
+<blockquote>
+<p>使用<code>free_block</code>作为一个范例去实现<code>alloc_block</code>函数，如果能在位图里找到空闲的磁盘块，标记其已经被使用，并且返回块号。当分配好了块，需要马上改变磁盘中的的位图块，使用<code>flush_block</code>函数，使得文件系统在内存的内容和在硬盘中内容一致。</p>
+</blockquote>
+<pre><code>int
+alloc_block(void)
+{
+    // The bitmap consists of one or more blocks.  A single bitmap block
+    // contains the in-use bits for BLKBITSIZE blocks.  There are
+    // super-&gt;s_nblocks blocks in the disk altogether.
+
+    // LAB 5: Your code here.
+    //panic(&quot;alloc_block not implemented&quot;);
+    int i;
+    
+    for (i = 2; i &lt; super-&gt;s_nblocks; i++)
+        if (block_is_free(i)) {
+            bitmap[i/32] ^= 1&lt;&lt;(i%32);
+            flush_block(bitmap);
+            return i;
+        }
+    return -E_NO_DISK;
+}
+</code></pre><p>块的位图将每一个整形的bit最为一个块的使用标志，3G区域共3GB/4KB个块，所对应的位图共96KB。PS：位图中置0表示已经使用。</p>
+<hr>
+<h1 id="文件操作">文件操作</h1>
+<p>在文件fs/fs.c中提供了一些函数管理<code>File</code>结构体的函数，解释结构体，扫描管理目录文件的入口，从根目录遍历整个文件系统。</p>
+<p>fs_init()：找到JOS的磁盘，全局变量<code>super</code> block指向第1号扇区在内存中的映射(第0号扇区是bootloader)，<code>bitmap</code>指向第2号扇区所对应在内存中的映射。</p>
+<p>static int
+file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool alloc)
+找到文件结构体中的文件块号对应的全局文件块号，将块号存在*ppdiskbno中，如果没有根据<code>alloc</code>的值判断是否分配。</p>
+<p>int
+file_get_block(struct File *f, uint32_t filebno, char **blk)
+获得一个文件结构体文件块号所对应在内存中的映射，把结果存在*blk中。</p>
+<p>static int
+dir_lookup(struct File *dir, const char *name, struct File **file)
+通过<code>file_get_block</code>获得这个目录文件结构体所在的块，再用一个文件一个文件结构体的对照文件名，直到相等再把<code>file</code>指向这个找到的文件。</p>
+<p>static int
+dir_alloc_file(struct File *dir, struct File **file)
+首先现在目录本身的结构体中寻找可以用的空文件结构体，如果找不到则新分配一个块并且目录文件大小也会增加，<code>file</code>指向这个空闲的文件结构体。</p>
+<p>walk_path()：和HOMEWORK中做的命令解释器很像，从根目录开始迭代，例如<code>/usr/bin</code>就会被一步一步地解析为 super-&gt;usr-&gt;bin，usr和bin分别作为目录和文件返回。</p>
+<p>file_create(const char *path, struct File **pf)
+在<code>path</code>目录下创建一个文件，通过指针返回一个文件，并且会把文件写回磁盘。</p>
+<p>file_open()
+file_read()
+file_write()
+都是基本的文件操作，不过要注意的是，文件的写操作只是写在了磁盘所映射的内存，没有存回磁盘，所以应该需要flush操作。</p>
+<p>file_free_block()：在块的位图上释放文件块</p>
+<p>file_truncate_blocks()：缩小文件大小，释放掉保持的磁盘块，但是不会修改结构体中的f-&gt;f_size的值。
+file_set_size()：设置文件的大小，并且写回磁盘。</p>
+<p>file_flush()把一个单独的文件写回磁盘而fs_sync()将整个内存映射都写回磁盘。</p>
+<h1 id="练习4">练习4</h1>
+<p>实现file_block_walk和file_get_block函数。
+file_block_walk通过一个在文件内的偏移，映射结构体所直接指向的块或者间接指向的块。
+file_get_block更及进一步地映射实际的磁盘块，如果有必要的话分配一个新磁盘块。
+代码如下：</p>
+<h2 id="file_block_walk">file_block_walk()</h2>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">static</span> <span class="kt">int</span>
+<span class="nf">file_block_walk</span><span class="p">(</span><span class="k">struct</span> <span class="n">File</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="n">uint32_t</span> <span class="n">filebno</span><span class="p">,</span> <span class="n">uint32_t</span> <span class="o">**</span><span class="n">ppdiskbno</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">alloc</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="c1">//panic(&#34;file_block_walk not implemented&#34;);
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="c1">//  cprintf(&#34;filebno %d\n&#34;, filebno);
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">filebno</span> <span class="o">&gt;</span> <span class="n">NDIRECT</span> <span class="o">+</span> <span class="n">NINDIRECT</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">E_INVAL</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">filebno</span> <span class="o">&lt;</span> <span class="n">NDIRECT</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ppdiskbno</span><span class="p">)</span>
+            <span class="o">*</span><span class="n">ppdiskbno</span> <span class="o">=</span> <span class="n">f</span><span class="o">-&gt;</span><span class="n">f_direct</span> <span class="o">+</span> <span class="n">filebno</span><span class="p">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">//cprintf(&#34;indirect: %08x logic: %d\n&#34;, f-&gt;f_indirect, !f-&gt;f_indirect);
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_indirect</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">alloc</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">alloc_block</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+            <span class="n">memset</span><span class="p">(</span><span class="n">diskaddr</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">BLKSIZE</span><span class="p">);</span>
+            <span class="n">f</span><span class="o">-&gt;</span><span class="n">f_indirect</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+            <span class="n">flush_block</span><span class="p">(</span><span class="n">diskaddr</span><span class="p">(</span><span class="n">r</span><span class="p">));</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">E_NOT_FOUND</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="o">*</span><span class="n">ppdiskbno</span> <span class="o">=</span> <span class="p">(</span><span class="n">uint32_t</span> <span class="o">*</span><span class="p">)</span><span class="n">diskaddr</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_indirect</span><span class="p">)</span> <span class="o">+</span> <span class="n">filebno</span> <span class="o">-</span> <span class="n">NDIRECT</span><span class="p">;</span>
+    <span class="c1">//cprintf(&#34;fileno : %d -&gt; diskno: %x -&gt; %x\n&#34;, filebno, *ppdiskbno, **ppdiskbno);
+</span><span class="c1"></span>    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div><p>做的后面踩了前面的坑，<code>diskaddr</code>的返回类型需要坐下强制类型转换，<code>void *</code>指针类型p与<code>uint32_t</code>的n相加等于<code>p + n * 1</code>，而这里需要的是整形指针相加的结果<code>p + n * 4</code>。</p>
+<h2 id="file_get_block">file_get_block()</h2>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">file_get_block</span><span class="p">(</span><span class="k">struct</span> <span class="n">File</span> <span class="o">*</span><span class="n">f</span><span class="p">,</span> <span class="n">uint32_t</span> <span class="n">filebno</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">blk</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="c1">//panic(&#34;file_get_block not implemented&#34;);
+</span><span class="c1"></span>    <span class="n">uint32_t</span> <span class="o">*</span><span class="n">bno</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">file_block_walk</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">filebno</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bno</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="c1">// allocate a block if the block number is zero
+</span><span class="c1"></span>    <span class="c1">// meaning that it hasn&#39;t refered to any block by now.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">bno</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">alloc_block</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+        <span class="o">*</span><span class="n">bno</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+        <span class="n">memset</span><span class="p">(</span><span class="n">diskaddr</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">BLKSIZE</span><span class="p">);</span>
+        <span class="n">flush_block</span><span class="p">(</span><span class="n">diskaddr</span><span class="p">(</span><span class="n">r</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="c1">// *bno is the number of blocks
+</span><span class="c1"></span>    <span class="o">*</span><span class="n">blk</span> <span class="o">=</span> <span class="n">diskaddr</span><span class="p">(</span><span class="o">*</span><span class="n">bno</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>做到这里可以发现，当往文件写内容的适合，实际是先写入内存的缓冲区的，只有最后执行了flush操作，才会真正把内容保存到磁盘中去。</p>
+<hr>
+<h1 id="文件系统接口">文件系统接口</h1>
+<p>现在有必要为文件系统自己提供一些功能/接口，必须文件系统能够被其他用户环境使用。因为其他环境不能直接调用文件系统环境中的函数，所以通过远程程序调用RPC(remote procedure call)能访问文件系统的接口。</p>
+<pre><code>      Regular env           FS env
+   +---------------+   +---------------+
+   |      read     |   |   file_read   |
+   |   (lib/fd.c)  |   |   (fs/fs.c)   |
+...|.......|.......|...|.......^.......|...............
+   |       v       |   |       |       | RPC mechanism
+   |  devfile_read |   |  serve_read   |
+   |  (lib/file.c) |   |  (fs/serv.c)  |
+   |       |       |   |       ^       |
+   |       v       |   |       |       |
+   |     fsipc     |   |     serve     |
+   |  (lib/file.c) |   |  (fs/serv.c)  |
+   |       |       |   |       ^       |
+   |       v       |   |       |       |
+   |   ipc_send    |   |   ipc_recv    |
+   |       |       |   |       ^       |
+   +-------|-------+   +-------|-------+
+           |                   |
+           +-------------------+
+</code></pre><p>在点线之下是从普通用户环境发送到文件系统环境的一个读请求。开始的时候，<code>read</code>工作在任何文件描述符上，并且分发到合适的设备读函数，这里是使用的<code>devfile_read</code>函数，当然还有其他各种的设备类型比如管道。<code>devfile_read</code>实现了读对磁盘上文件的操作，这个函数和其他<code>devfile_*</code>函数是实现了客户端这边的文件系统的操作，并且所有的工作几乎相同，绑定参数到request结构体，并且调用<code>fsipc</code>发送IPC请求和解析返回的值。<code>fsipc</code>函数完成了发送请求到服务端和接收回复的细节。</p>
+<p>文件系统服务端代码在fs/serv.c中，服务端循环<code>serve</code>函数，接收来自IPC的请求，分发请求到合适的handler函数，并且将访问的结果通过IPC返回。在读操作的例子中，<code>serve</code>分发请求到<code>serve_read</code>，这个函数将会关注IPC的读请求细节，例如解包request结构体后调用<code>file_read</code>去执行文件读操作。</p>
+<p>回顾JOS的IPC机制，让一个环境发送一个32位的数字，并且有选择性的分享页。为了从客户端到服务端发送一个请求，这里使用32位的数字去指定request类型，并且存储request参数到<code>union Fsipc</code>所在的共享页上去。在客户端，总是将共享页放在<code>fsipcbuf</code>处；在服务端，将即将到来的请求页映射在<code>fsreq</code>(0x0ffff000)处。</p>
+<p>服务端也会通过IPC发送回复消息，将ipc参数中的32位值设置为相关函数的返回值。大多数RPC都会有它们自己的返回类型，<code>FSREQ_READ</code>和<code>FSREQ_STAT</code>总是返回数据，这两个函数将数据写到客户端所发送的request页上。但是不需要通过IPC发送这个页，因为客户端已经分享了这个物理页。当然，例如<code>FSREQ_OPEN</code>分享给客户端一个新的Fd页,将会很快的返回文件描述符指定的页。</p>
+<h1 id="练习5">练习5</h1>
+<p>实现<code>serve_read</code>
+<code>serve_read</code>的艰苦工作已经被<code>file_read</code>实现了，它只需要位文件的读提供RPC的接口，可以参照<code>serve_set_size</code>函数。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">serve_read</span><span class="p">(</span><span class="n">envid_t</span> <span class="n">envid</span><span class="p">,</span> <span class="k">union</span> <span class="n">Fsipc</span> <span class="o">*</span><span class="n">ipc</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">Fsreq_read</span> <span class="o">*</span><span class="n">req</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ipc</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">Fsret_read</span> <span class="o">*</span><span class="n">ret</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ipc</span><span class="o">-&gt;</span><span class="n">readRet</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">OpenFile</span> <span class="o">*</span><span class="n">o</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">PGSIZE</span><span class="p">];</span>
+    <span class="n">size_t</span> <span class="n">read_count</span><span class="p">,</span> <span class="n">remainder</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">debug</span><span class="p">)</span>
+        <span class="n">cprintf</span><span class="p">(</span><span class="s">&#34;serve_read %08x %08x %08x</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">envid</span><span class="p">,</span> <span class="n">req</span><span class="o">-&gt;</span><span class="n">req_fileid</span><span class="p">,</span> <span class="n">req</span><span class="o">-&gt;</span><span class="n">req_n</span><span class="p">);</span>
+    <span class="c1">// Lab 5: Your code here:
+</span><span class="c1"></span>    <span class="c1">// same as before, find the file firstly.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">openfile_lookup</span><span class="p">(</span><span class="n">envid</span><span class="p">,</span> <span class="n">req</span><span class="o">-&gt;</span><span class="n">req_fileid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">o</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">file_read</span><span class="p">(</span><span class="n">o</span><span class="o">-&gt;</span><span class="n">o_file</span><span class="p">,</span> <span class="n">ret</span><span class="o">-&gt;</span><span class="n">ret_buf</span><span class="p">,</span> <span class="n">req</span><span class="o">-&gt;</span><span class="n">req_n</span><span class="p">,</span> <span class="n">o</span><span class="o">-&gt;</span><span class="n">o_fd</span><span class="o">-&gt;</span><span class="n">fd_offset</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+    <span class="n">o</span><span class="o">-&gt;</span><span class="n">o_fd</span><span class="o">-&gt;</span><span class="n">fd_offset</span> <span class="o">+=</span> <span class="n">r</span><span class="p">;</span>
+    <span class="c1">//memcpy(ret, buf, PGSIZE);
+</span><span class="c1"></span>    <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><p>关于偏移的到结束的大小，这里不用再做判断了，已经<code>file_read</code>函数中实现了。</p>
+<h1 id="练习6">练习6</h1>
+<p>实现<code>serve_write</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">static</span> <span class="n">ssize_t</span>
+<span class="nf">devfile_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">Fd</span> <span class="o">*</span><span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// Make an FSREQ_WRITE request to the file system server.  Be
+</span><span class="c1"></span>    <span class="c1">// careful: fsipcbuf.write.req_buf is only so large, but
+</span><span class="c1"></span>    <span class="c1">// remember that write is always allowed to write *fewer*
+</span><span class="c1"></span>    <span class="c1">// bytes than requested.
+</span><span class="c1"></span>    <span class="c1">// LAB 5: Your code here
+</span><span class="c1"></span>    <span class="c1">//panic(&#34;devfile_write not implemented&#34;);
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="n">fsipcbuf</span><span class="p">.</span><span class="n">write</span><span class="p">.</span><span class="n">req_fileid</span> <span class="o">=</span> <span class="n">fd</span><span class="o">-&gt;</span><span class="n">fd_file</span><span class="p">.</span><span class="n">id</span><span class="p">;</span>
+    <span class="n">fsipcbuf</span><span class="p">.</span><span class="n">write</span><span class="p">.</span><span class="n">req_n</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+        
+    <span class="n">memmove</span><span class="p">(</span><span class="n">fsipcbuf</span><span class="p">.</span><span class="n">write</span><span class="p">.</span><span class="n">req_buf</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">fsipc</span><span class="p">(</span><span class="n">FSREQ_WRITE</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>这两个实现比较简单，跟着指导做就好，但不能仅仅满足于函数天空，这些函数都是一层一层包装上去的，省去了背后的原理和操作，例如设置页位&quot;dirty状态&quot;，引发页错误分配映射，避免磁盘全部映射而占据大量内存空间。文件的读写操作都被简化了，在<code>testfile.c</code>源码中都是使用的<code>write</code>,<code>open</code>,<code>read</code>等被抽象的操作，而实际的过程比如<code>write</code>操作会被分发到<code>devfile_write</code>通过IPC发送写信号并且共享传递的页，文件系统进程收到写信号并将传递过来的页映射在一个固定的位置，找到文件描述符所指定的文件，然后将共享页buf中的内容复制到磁盘映射页上面，最后在关闭文件的时候flush进行保存；文件系统服务端这边处理完文件后，会把文件写操作的字节数返回做为操作成功的信号通过IPC返回给客户端，并且取消映射共享页。给人的直接感受就是，操作者通过<code>write</code>操作直接写入了文件中。</p>
+<h1 id="产生子进程">产生子进程</h1>
+<p><code>spawn</code>操作创建一个新的环境，从文件系统中读取程序镜像运行此程序，父进程独立于子进程继续运行。<code>spwan</code>函数的操作就像UNIX中<code>fork</code>后立马在子进程执行<code>exec</code>。</p>
+<h1 id="练习7">练习7</h1>
+<p><code>spwan</code>依赖于新的系统调用<code>sys_env_set_trapframe</code>来初始化新被创建的环境状态，完成这个函数后，尝试运行<code>user/spanhello</code>程序。</p>
+<h1 id="通过fork和spawn分享库状态">通过fork和spawn分享库状态</h1>
+<p>UNIX文件描述符是一个泛指的概念，其中包含了pipe,控制台I/O等。在JOS中，每一种设备类型都有一个对应的<code>struct Dev</code>，使用指针实现读写等操作。对于这些设备类型，<code>lib/fd.c</code>实现了像UNIX的文件描述符的接口，每一个Fd结构体指定它自己的设备类型，fd.c中的函数分发分发各自的操作到相应的Dev结构体中去。
+fd.c为每一个应用程序维护文件描述符表在它们各自的内存空间，地址起始于<code>FDTABLE</code>。这片4KB的页很值得为最多32个文件描述符保留在内存空间，使得应用程序能立即打开。在任意时刻，一个指定的文件描述符表页当且仅当对应的文件描述符是在被使用的。每一个文件描述符在这片区域还拥有一个可选的<code>data page</code>在地址<code>FILEDATA</code>处，设备可以用来使用。</p>
+<p>因为可能需要通过<code>fork</code>和<code>spawn</code>来分享文件描述符的状态，但是文件描述符的状态是保存在各自用户内存空间中的。现在，fork已经标记那些需要被复制的页为cow状态。这里需要不同的用户环境共享用户环境，与cow分配并复制不同，PTE_SHARE的标记意味着直接映射该物理帧，达到共享的效果。</p>
+<h1 id="练习8">练习8</h1>
+<p>修改<code>lib/fork.c</code>中的<code>duppage</code>
+实现<code>lib/spawn.c</code>中的<code>copy_shared_pages</code>函数</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">va</span> <span class="o">=</span> <span class="n">pn</span><span class="o">*</span><span class="n">PGSIZE</span><span class="p">;</span> 
+    <span class="c1">//cprintf(&#34;%x\n&#34;, va);
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">uvpt</span><span class="p">[</span><span class="n">pn</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">PTE_SHARE</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="n">thisenv</span><span class="o">-&gt;</span><span class="n">env_id</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">va</span><span class="p">,</span> <span class="n">envid</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">va</span><span class="p">,</span> <span class="n">uvpt</span><span class="p">[</span><span class="n">pn</span><span class="p">]</span> <span class="o">&amp;</span>  <span class="n">PTE_SYSCALL</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>   
+    <span class="p">}</span>
+
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">static</span> <span class="kt">int</span>
+<span class="nf">copy_shared_pages</span><span class="p">(</span><span class="n">envid_t</span> <span class="n">child</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="n">int32_t</span> <span class="n">va</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">va</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">va</span> <span class="o">&lt;</span> <span class="n">USTACKTOP</span><span class="p">;</span> <span class="n">va</span> <span class="o">+=</span> <span class="n">PGSIZE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">uvpd</span><span class="p">[</span><span class="n">PDX</span><span class="p">(</span><span class="n">va</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_P</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">va</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_P</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">va</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_SHARE</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">va</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span>
+                    <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">va</span><span class="p">,</span> <span class="n">PTE_SYSCALL</span><span class="o">&amp;</span><span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">va</span><span class="p">)]))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+        <span class="p">}</span>
+
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>代码中的spawn已经实现了，并且加了很多注释，在这做下笔记。</p>
+<ol>
+<li>打开程序文件</li>
+<li>读取ELF文件头，检测它的魔数(magic number)</li>
+<li>使用系统调用<code>sys_exofork()</code>创建一个新的环境</li>
+<li>设置子进程的初始栈，例如传递的参数</li>
+<li>调用<code>init_stack()</code>设置好栈页</li>
+<li>映射程序的各个段到新环境的内存空间</li>
+</ol>
+<ul>
+<li>如果ELF文件flag没有包含<code>ELF_PROG_FLAG_WRITE</code>，那么短包含了代码正文和只读的数据。</li>
+<li>如果ELF文件flag包含了<code>ELF_PROG_FLAG_WRITE</code>，那么代表这个段包含了可读写的数据和<code>bss</code>段</li>
+</ul>
+<ol start="7">
+<li>调用<code>sys_env_set_trapframe</code>设置子程序的栈</li>
+<li>调用<code>sys_env_set_status</code>表明程序可以确认运行了。</li>
+</ol>
+<p>这里设置栈帧的时候，要压入像<code>main(int argc, char **argv)</code>中argc,argv两个参数，这里的操作给出了更加准确的答复(函数init_stack(envid_t child, const char **argv, uintptr_t *init_esp)。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">string_size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">argc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">argv</span><span class="p">[</span><span class="n">argc</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">argc</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">string_size</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="n">argc</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+</code></pre></div><p>首先确定字符串总长度，并且包含每个字符串结尾的<code>null</code>字节。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">string_store</span> <span class="o">=</span> <span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span> <span class="n">UTEMP</span> <span class="o">+</span> <span class="n">PGSIZE</span> <span class="o">-</span> <span class="n">string_size</span><span class="p">;</span>
+    <span class="n">argv_store</span> <span class="o">=</span> <span class="p">(</span><span class="n">uintptr_t</span><span class="o">*</span><span class="p">)</span> <span class="p">(</span><span class="n">ROUNDDOWN</span><span class="p">(</span><span class="n">string_store</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">argc</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+
+</code></pre></div><p>string_store ~ UTEMP+PGSIZE用来存放参数中的字符串，argv_store ~ string_store存放argv[i]这个二维数组指向各自字符串的指针。</p>
+<p><img  src="/images/operating-system/6.828/lab5/pic.png"
+        alt="pic.png"/></p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="n">UTEMP</span><span class="p">,</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_W</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">argc</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">argv_store</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">UTEMP2USTACK</span><span class="p">(</span><span class="n">string_store</span><span class="p">);</span>
+        <span class="n">strcpy</span><span class="p">(</span><span class="n">string_store</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="n">string_store</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+</code></pre></div><p>设置栈帧的时候先在UTEMP这分配一个页面，然后才进行存放。这里有一点引起了我注意，argv_storep[i]也就是二维数组中的字符串指针都是指向USTACK的，但是字符串的内容还是存放在UTEMP~UTEMP+PGSIZE的范围中，因为最后程序正式开始执行的时候，指针不可能指向UTEMP，所以这里可以看作是一个小tricks。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="n">argv_store</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">UTEMP2USTACK</span><span class="p">(</span><span class="n">argv_store</span><span class="p">);</span>
+    <span class="n">argv_store</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">argc</span><span class="p">;</span>
+
+    <span class="o">*</span><span class="n">init_esp</span> <span class="o">=</span> <span class="n">UTEMP2USTACK</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argv_store</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">UTEMP</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="p">(</span><span class="n">USTACKTOP</span> <span class="o">-</span> <span class="n">PGSIZE</span><span class="p">),</span> <span class="n">PTE_P</span> <span class="o">|</span> <span class="n">PTE_U</span> <span class="o">|</span> <span class="n">PTE_W</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_unmap</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">UTEMP</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">error</span><span class="p">;</span>
+</code></pre></div><p>接下来就是把argv_store这个在USTACK中对应的位置压栈，它指向字符串指针数组的开头，其次再压入的argc参数的个数，并将esp栈顶指针设置好后映射到USTACK去，解开UTEMP的映射回收内存页，这里就完成了栈的初始化。
+PS: 这里的数组角标为负数时头次在C中见到，虽然理解不难，但是看到在python中常用的语法在C中出现还挺意外的。</p>
+<p>所以最后<code>spawn</code>出来的程序所拥有的栈结构如下：</p>
+<p><img  src="/images/operating-system/6.828/lab5/stack.png"
+        alt="stack.png"/></p>
+<h1 id="键盘接口">键盘接口</h1>
+<p>为了shell能工作，现在需要一种方式来打字。QEMU已经显示了输入到CGA(Color Graphics Adapter)和串口，但是到目前为止只能在内核的显示器上获取输入。从键盘的输入显示在图形窗口上，然而串口的输入会被显示到控制台上。<code>kern/console.c</code>已经完成键盘和串口驱动被用作内核的监视器，但是现在需要附加剩下的功能。
+在代码中必定会接触到大量串口操作，与其<a href="https://blog.csdn.net/jn1158359135/article/details/7583967"target="_blank" rel="noopener noreferrer">外围寄存器</a>
+相关，现在看着还是挺懵的，所以暂时不去关注端口的实现。</p>
+<blockquote>
+<p>Q: 串口中断和按键中断有什么区别</p>
+</blockquote>
+<h1 id="练习9">练习9</h1>
+<p>分发按键中断IRQ_OFFSET+IRQ_KBD和串口中断IRQ_OFFSET+IRQ_SERIAL。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="c1">// Handle keyboard and serial interrupts.
+</span><span class="c1"></span>    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_trapno</span> <span class="o">==</span> <span class="n">IRQ_OFFSET</span> <span class="o">+</span> <span class="n">IRQ_KBD</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">kbd_intr</span><span class="p">();</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_trapno</span> <span class="o">==</span> <span class="n">IRQ_OFFSET</span> <span class="o">+</span> <span class="n">IRQ_SERIAL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">serial_intr</span><span class="p">();</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+</code></pre></div><p>当键盘键入或者有串口中断发生的时候，串口和键盘分别通过各自的例程获取字符，并且调用<code>cons_intr</code>将字符放入结构体cons的缓冲区中，自增写端<code>wpos</code>。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="k">static</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">uint8_t</span> <span class="n">buf</span><span class="p">[</span><span class="n">CONSBUFSIZE</span><span class="p">];</span>
+    <span class="n">uint32_t</span> <span class="n">rpos</span><span class="p">;</span>
+    <span class="n">uint32_t</span> <span class="n">wpos</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">cons</span><span class="p">;</span>
+</code></pre></div><p>在当程序需要进行获取输入的时候，会调用<code>kern/console.c</code>中的<code>cons_getc()</code>，这个函数首先会调用<code>serial_intr()</code>和<code>kbd_intr()</code>先获取串口或者键盘输入，然后通过将从缓冲区<code>buf</code>中获取一个字符，并且自增<code>rpos</code>读端。</p>
+<h1 id="练习10">练习10</h1>
+<p>这个练习基本上就是高层的命令解释器的实现，hw2中已经实现过了。</p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C">    <span class="c1">// LAB 5: Your code here.
+</span><span class="c1"></span>    <span class="c1">//panic(&#34;&lt; redirection not implemented&#34;);
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">((</span><span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cprintf</span><span class="p">(</span><span class="s">&#34;open %s for read: %e&#34;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">fd</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">dup</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">break</span><span class="p">;</span>
+</code></pre></div><p>和<code>&gt;</code>操作一样，代码基本相似，但是可以顺便看一下<code>pipe</code>和<code>dup</code>的实现。</p>
+<p><code>dup()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">dup</span><span class="p">(</span><span class="kt">int</span> <span class="n">oldfdnum</span><span class="p">,</span> <span class="kt">int</span> <span class="n">newfdnum</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">ova</span><span class="p">,</span> <span class="o">*</span><span class="n">nva</span><span class="p">;</span>
+    <span class="n">pte_t</span> <span class="n">pte</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">Fd</span> <span class="o">*</span><span class="n">oldfd</span><span class="p">,</span> <span class="o">*</span><span class="n">newfd</span><span class="p">;</span>
+    
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">fd_lookup</span><span class="p">(</span><span class="n">oldfdnum</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">oldfd</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span><span class="p">;</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">newfdnum</span><span class="p">);</span>
+
+    <span class="n">newfd</span> <span class="o">=</span> <span class="n">INDEX2FD</span><span class="p">(</span><span class="n">newfdnum</span><span class="p">);</span>
+    <span class="n">ova</span> <span class="o">=</span> <span class="n">fd2data</span><span class="p">(</span><span class="n">oldfd</span><span class="p">);</span>
+    <span class="n">nva</span> <span class="o">=</span> <span class="n">fd2data</span><span class="p">(</span><span class="n">newfd</span><span class="p">);</span>
+    
+    <span class="k">if</span> <span class="p">((</span><span class="n">uvpd</span><span class="p">[</span><span class="n">PDX</span><span class="p">(</span><span class="n">ova</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_P</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">ova</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_P</span><span class="p">))</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ova</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nva</span><span class="p">,</span> <span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">ova</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_SYSCALL</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">goto</span> <span class="n">err</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">oldfd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">newfd</span><span class="p">,</span> <span class="n">uvpt</span><span class="p">[</span><span class="n">PGNUM</span><span class="p">(</span><span class="n">oldfd</span><span class="p">)]</span> <span class="o">&amp;</span> <span class="n">PTE_SYSCALL</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">err</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">newfdnum</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p><code>dup</code>首先将新的文件描述符关闭，例如dup(fd, 0)会先将0也就是标准输出关闭(写回磁盘，取消物理帧的映射)，然后将fd所指向的数据块和文件描述符所占的页映射到根据文件描述符号转换到的虚存地址去，所以写入标准输出的内容可以写到fd所指向的文件中去了。
+<code>dup</code>后一般有一个close()操作，这一步只是取消对物理块的引用而已，多出来文件描述符既不安全又不美观。</p>
+<p><code>pipe()</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">pipe</span><span class="p">(</span><span class="kt">int</span> <span class="n">pfd</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span> 
+    <span class="k">struct</span> <span class="n">Fd</span> <span class="o">*</span><span class="n">fd0</span><span class="p">,</span> <span class="o">*</span><span class="n">fd1</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">va</span><span class="p">;</span>
+    
+    <span class="c1">// allocate the file descriptor table entries
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">fd_alloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fd0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="o">||</span> <span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd0</span><span class="p">,</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_W</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_SHARE</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">err</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">fd_alloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fd1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="o">||</span> <span class="p">(</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd1</span><span class="p">,</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_W</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_SHARE</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">err1</span><span class="p">;</span>
+    
+    <span class="c1">// allocate the pipe structure as first data page in both
+</span><span class="c1"></span>    <span class="n">va</span> <span class="o">=</span> <span class="n">fd2data</span><span class="p">(</span><span class="n">fd0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_alloc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">va</span><span class="p">,</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_W</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_SHARE</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">err2</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">r</span> <span class="o">=</span> <span class="n">sys_page_map</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">va</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">fd2data</span><span class="p">(</span><span class="n">fd1</span><span class="p">),</span> <span class="n">PTE_P</span><span class="o">|</span><span class="n">PTE_W</span><span class="o">|</span><span class="n">PTE_U</span><span class="o">|</span><span class="n">PTE_SHARE</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">goto</span> <span class="n">err3</span><span class="p">;</span>
+    
+    <span class="c1">// set up fd structures
+</span><span class="c1"></span>    <span class="n">fd0</span><span class="o">-&gt;</span><span class="n">fd_dev_id</span> <span class="o">=</span> <span class="n">devpipe</span><span class="p">.</span><span class="n">dev_id</span><span class="p">;</span>
+    <span class="n">fd0</span><span class="o">-&gt;</span><span class="n">fd_omode</span> <span class="o">=</span> <span class="n">O_RDONLY</span><span class="p">;</span>
+    
+    <span class="n">fd1</span><span class="o">-&gt;</span><span class="n">fd_dev_id</span> <span class="o">=</span> <span class="n">devpipe</span><span class="p">.</span><span class="n">dev_id</span><span class="p">;</span>
+    <span class="n">fd1</span><span class="o">-&gt;</span><span class="n">fd_omode</span> <span class="o">=</span> <span class="n">O_WRONLY</span><span class="p">;</span>
+
+
+    <span class="n">pfd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd2num</span><span class="p">(</span><span class="n">fd0</span><span class="p">);</span>
+    <span class="n">pfd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd2num</span><span class="p">(</span><span class="n">fd1</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>pipe()首先引起注意的就是权限设置，这也是为什么一段只能读一段只能写。首先为每个描述符提供一个页存储文件结构体，再分配一个页给<code>0</code>一个数据页，将这个页映射到<code>0</code>和<code>1</code>文件描述符对应的数据页，并且将页标记为<code>PTE_SHARE</code>。在任意一段尝试读或者写的时候，触发页错误，使用<code>bc_pgfault</code>进行实际映射。最后进行权限设置，完成管道的创建。</p>
+<h1 id="make-grade">make grade</h1>
+<div class="highlight"><pre class="chroma"><code class="language-C" data-lang="C"><span class="n">make</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">:</span> <span class="n">Leaving</span> <span class="n">directory</span> <span class="err">&#39;</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">moonlight</span><span class="o">/</span><span class="n">lab</span><span class="err">&#39;</span>
+<span class="n">internal</span> <span class="n">FS</span> <span class="n">tests</span> <span class="p">[</span><span class="n">fs</span><span class="o">/</span><span class="n">test</span><span class="p">.</span><span class="n">c</span><span class="p">]</span><span class="o">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">1.9</span><span class="n">s</span><span class="p">)</span> 
+  <span class="n">fs</span> <span class="n">i</span><span class="o">/</span><span class="nl">o</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">check_bc</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">check_super</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">check_bitmap</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">alloc_block</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">file_open</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">file_get_block</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="n">file_flush</span><span class="o">/</span><span class="n">file_truncate</span><span class="o">/</span><span class="n">file</span> <span class="nl">rewrite</span><span class="p">:</span> <span class="n">OK</span> 
+<span class="nl">testfile</span><span class="p">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">1.7</span><span class="n">s</span><span class="p">)</span> 
+  <span class="n">serve_open</span><span class="o">/</span><span class="n">file_stat</span><span class="o">/</span><span class="nl">file_close</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">file_read</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">file_write</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="n">file_read</span> <span class="n">after</span> <span class="nl">file_write</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="nl">open</span><span class="p">:</span> <span class="n">OK</span> 
+  <span class="n">large</span> <span class="nl">file</span><span class="p">:</span> <span class="n">OK</span> 
+<span class="n">spawn</span> <span class="n">via</span> <span class="nl">spawnhello</span><span class="p">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">1.2</span><span class="n">s</span><span class="p">)</span> 
+<span class="n">Protection</span> <span class="n">I</span><span class="o">/</span><span class="n">O</span> <span class="nl">space</span><span class="p">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">1.3</span><span class="n">s</span><span class="p">)</span> 
+<span class="n">PTE_SHARE</span> <span class="p">[</span><span class="n">testpteshare</span><span class="p">]</span><span class="o">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">2.0</span><span class="n">s</span><span class="p">)</span> 
+<span class="n">PTE_SHARE</span> <span class="p">[</span><span class="n">testfdsharing</span><span class="p">]</span><span class="o">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">1.2</span><span class="n">s</span><span class="p">)</span> 
+<span class="n">start</span> <span class="n">the</span> <span class="n">shell</span> <span class="p">[</span><span class="n">icode</span><span class="p">]</span><span class="o">:</span> <span class="n">Timeout</span><span class="o">!</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">31.4</span><span class="n">s</span><span class="p">)</span> 
+<span class="nl">testshell</span><span class="p">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">3.9</span><span class="n">s</span><span class="p">)</span> 
+<span class="nl">primespipe</span><span class="p">:</span> <span class="n">OK</span> <span class="p">(</span><span class="mf">11.1</span><span class="n">s</span><span class="p">)</span> 
+<span class="nl">Score</span><span class="p">:</span> <span class="mi">150</span><span class="o">/</span><span class="mi">150</span>
+</code></pre></div><p>This completes the lab</p>
+<p>这一节实验代码量较小，但是实现了很多日常接触到的概念，例如管道，dup，文件描述符等。在完成实验的时候踩了很多坑，比如虽然通过了阶段性的测试，但是前面留下的错误代码影响到了后面的整个系统，仔细观察程序可以观察到代码都是一层一层抽象上去的，所以越是底层越需要仔细，考虑清楚corner case。每发生一个BUG都花了大量时间去寻找问题所在，这是很不应该的。</p>
+</article><section class="article labels"><a class="category" href=/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/>操作系统</a><a class="tag" href=/tags/os/>OS</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab6-network-driver/"><span class="iconfont icon-article"></span>6-828-操作系统工程-Lab6-Network Driver(Final)</a></p><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab4-preemptive-multitasking/"><span class="iconfont icon-article"></span>6.828-操作系统工程-Lab4:Preemptive Multitasking</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

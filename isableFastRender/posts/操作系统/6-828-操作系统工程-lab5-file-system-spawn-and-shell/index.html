@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="generator" content="Hugo 0.57.2" />
+  <link rel="canonical" href="http://localhost:1313/posts/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab5-file-system-spawn-and-shell/">
+
+  
+
+  
+   
+   <link rel="shortcut icon" href="/11.jpeg" >
+   
+  <link rel="manifest" href="/site.webmanifest">
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/prism.css" media="none" onload="this.media='all';">
+
+  
+  
+  <link rel="stylesheet" type="text/css" href="http://localhost:1313/css/styles.css">
+
+  <style id="inverter" media="none">
+    html { filter: invert(100%) }
+    * { background-color: inherit }
+    img:not([src*=".svg"]), .colors, iframe, .demo-container { filter: invert(100%) }
+  </style>
+
+  
+  
+  <title>6-828-操作系统工程-Lab5-File system, Spawn and Shell | fatwaer</title>
+</head>
+
+  <body>
+    <a href="#main">skip to content</a>
+    <svg style="display: none">
+  <symbol id="bookmark" viewBox="0 0 40 50">
+   <g transform="translate(2266 3206.2)">
+    <path style="stroke:currentColor;stroke-width:3.2637;fill:none" d="m-2262.2-3203.4-.2331 42.195 16.319-16.318 16.318 16.318.2331-42.428z"/>
+   </g>
+  </symbol>
+
+  <symbol id="w3c" viewBox="0 0 127.09899 67.763">
+   <text font-size="83" style="font-size:83px;font-family:Trebuchet;letter-spacing:-12;fill-opacity:0" letter-spacing="-12" y="67.609352" x="-26.782778">W3C</text>
+   <text font-size="83" style="font-size:83px;font-weight:bold;font-family:Trebuchet;fill-opacity:0" y="67.609352" x="153.21722" font-weight="bold">SVG</text>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m33.695.377 12.062 41.016 12.067-41.016h8.731l-19.968 67.386h-.831l-12.48-41.759-12.479 41.759h-.832l-19.965-67.386h8.736l12.061 41.016 8.154-27.618-3.993-13.397h8.737z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m91.355 46.132c0 6.104-1.624 11.234-4.862 15.394-3.248 4.158-7.45 6.237-12.607 6.237-3.882 0-7.263-1.238-10.148-3.702-2.885-2.47-5.02-5.812-6.406-10.022l6.82-2.829c1.001 2.552 2.317 4.562 3.953 6.028 1.636 1.469 3.56 2.207 5.781 2.207 2.329 0 4.3-1.306 5.909-3.911 1.609-2.606 2.411-5.738 2.411-9.401 0-4.049-.861-7.179-2.582-9.399-1.995-2.604-5.129-3.912-9.397-3.912h-3.327v-3.991l11.646-20.133h-14.062l-3.911 6.655h-2.493v-14.976h32.441v4.075l-12.31 21.217c4.324 1.385 7.596 3.911 9.815 7.571 2.22 3.659 3.329 7.953 3.329 12.892z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.21 0 1.414 8.6-5.008 9.583s-1.924-4.064-5.117-6.314c-2.693-1.899-4.447-2.309-7.186-1.746-3.527.73-7.516 4.938-9.258 10.13-2.084 6.21-2.104 9.218-2.178 11.978-.115 4.428.58 7.043.58 7.043s-3.04-5.626-3.011-13.866c.018-5.882.947-11.218 3.666-16.479 2.404-4.627 5.954-7.404 9.114-7.728 3.264-.343 5.848 1.229 7.841 2.938 2.089 1.788 4.213 5.698 4.213 5.698l4.94-9.837z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.82 48.674s-2.208 3.957-3.589 5.48c-1.379 1.524-3.849 4.209-6.896 5.555-3.049 1.343-4.646 1.598-7.661 1.306-3.01-.29-5.807-2.032-6.786-2.764-.979-.722-3.486-2.864-4.897-4.854-1.42-2-3.634-5.995-3.634-5.995s1.233 4.001 2.007 5.699c.442.977 1.81 3.965 3.749 6.572 1.805 2.425 5.315 6.604 10.652 7.545 5.336.945 9.002-1.449 9.907-2.031.907-.578 2.819-2.178 4.032-3.475 1.264-1.351 2.459-3.079 3.116-4.108.487-.758 1.276-2.286 1.276-2.286l-1.276-6.644z"/>
+  </symbol>
+
+  <symbol id="tag" viewBox="0 0 177.16535 177.16535">
+    <g transform="translate(0 -875.2)">
+     <path style="fill-rule:evenodd;stroke-width:0;fill:currentColor" d="m159.9 894.3-68.79 8.5872-75.42 77.336 61.931 60.397 75.429-76.565 6.8495-69.755zm-31.412 31.835a10.813 10.813 0 0 1 1.8443 2.247 10.813 10.813 0 0 1 -3.5174 14.872l-.0445.0275a10.813 10.813 0 0 1 -14.86 -3.5714 10.813 10.813 0 0 1 3.5563 -14.863 10.813 10.813 0 0 1 13.022 1.2884z"/>
+    </g>
+  </symbol>
+
+  <symbol id="balloon" viewBox="0 0 141.73228 177.16535">
+   <g transform="translate(0 -875.2)">
+    <g>
+     <path style="fill:currentColor" d="m68.156 882.83-.88753 1.4269c-4.9564 7.9666-6.3764 17.321-5.6731 37.378.36584 10.437 1.1246 23.51 1.6874 29.062.38895 3.8372 3.8278 32.454 4.6105 38.459 4.6694-.24176 9.2946.2879 14.377 1.481 1.2359-3.2937 5.2496-13.088 8.886-21.623 6.249-14.668 8.4128-21.264 10.253-31.252 1.2464-6.7626 1.6341-12.156 1.4204-19.764-.36325-12.93-2.1234-19.487-6.9377-25.843-2.0833-2.7507-6.9865-7.6112-7.9127-7.8436-.79716-.20019-6.6946-1.0922-6.7755-1.0248-.02213.0182-5.0006-.41858-7.5248-.22808l-2.149-.22808h-3.3738z"/>
+     <path style="fill:currentColor" d="m61.915 883.28-3.2484.4497c-1.7863.24724-3.5182.53481-3.8494.63994-2.4751.33811-4.7267.86957-6.7777 1.5696-.28598 0-1.0254.20146-2.3695.58589-5.0418 1.4418-6.6374 2.2604-8.2567 4.2364-6.281 7.6657-11.457 18.43-12.932 26.891-1.4667 8.4111.71353 22.583 5.0764 32.996 3.8064 9.0852 13.569 25.149 22.801 37.517 1.3741 1.841 2.1708 2.9286 2.4712 3.5792 3.5437-1.1699 6.8496-1.9336 10.082-2.3263-1.3569-5.7831-4.6968-21.86-6.8361-33.002-.92884-4.8368-2.4692-14.322-3.2452-19.991-.68557-5.0083-.77707-6.9534-.74159-15.791.04316-10.803.41822-16.162 1.5026-21.503 1.4593-5.9026 3.3494-11.077 6.3247-15.852z"/>
+     <path style="fill:currentColor" d="m94.499 885.78c-.10214-.0109-.13691 0-.0907.0409.16033.13489 1.329 1.0675 2.5976 2.0723 6.7003 5.307 11.273 14.568 12.658 25.638.52519 4.1949.24765 14.361-.5059 18.523-2.4775 13.684-9.7807 32.345-20.944 53.519l-3.0559 5.7971c2.8082.76579 5.7915 1.727 8.9926 2.8441 11.562-11.691 18.349-19.678 24.129-28.394 7.8992-11.913 11.132-20.234 12.24-31.518.98442-10.02-1.5579-20.876-6.7799-28.959-.2758-.4269-.57803-.86856-.89617-1.3166-3.247-6.13-9.752-12.053-21.264-16.131-2.3687-.86369-6.3657-2.0433-7.0802-2.1166z"/>
+     <path style="fill:currentColor" d="m32.52 892.22c-.20090-.13016-1.4606.81389-3.9132 2.7457-11.486 9.0476-17.632 24.186-16.078 39.61.79699 7.9138 2.4066 13.505 5.9184 20.562 5.8577 11.77 14.749 23.219 30.087 38.74.05838.059.12188.1244.18052.1838 1.3166-.5556 2.5965-1.0618 3.8429-1.5199-.66408-.32448-1.4608-1.3297-3.8116-4.4602-5.0951-6.785-8.7512-11.962-13.051-18.486-5.1379-7.7948-5.0097-7.5894-8.0586-13.054-6.2097-11.13-8.2674-17.725-8.6014-27.563-.21552-6.3494.13041-9.2733 1.775-14.987 2.1832-7.5849 3.9273-10.986 9.2693-18.07 1.7839-2.3656 2.6418-3.57 2.4409-3.7003z"/>
+     <path style="fill:currentColor" d="m69.133 992.37c-6.2405.0309-12.635.76718-19.554 2.5706 4.6956 4.7759 9.935 10.258 12.05 12.625l4.1272 4.6202h11.493l3.964-4.4516c2.0962-2.3541 7.4804-7.9845 12.201-12.768-8.378-1.4975-16.207-2.6353-24.281-2.5955z"/>
+     <rect style="stroke-width:0;fill:currentColor" ry="2.0328" height="27.746" width="22.766" y="1017.7" x="60.201"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="info" viewBox="0 0 41.667 41.667">
+   <g transform="translate(-37.035 -1004.6)">
+    <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m76.25 1030.2a18.968 18.968 0 0 1 -23.037 13.709 18.968 18.968 0 0 1 -13.738 -23.019 18.968 18.968 0 0 1 23.001 -13.768 18.968 18.968 0 0 1 13.798 22.984"/>
+    <g transform="matrix(1.1146 0 0 1.1146 -26.276 -124.92)">
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m75.491 1039.5v-8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" transform="scale(-1)" d="m-73.193-1024.5a2.3719 2.3719 0 0 1 -2.8807 1.7142 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="warning" viewBox="0 0 48.430474 41.646302">
+    <g transform="translate(-1.1273 -1010.2)">
+     <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:4.151;fill:none" d="m25.343 1012.3-22.14 37.496h44.28z"/>
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:4.1512;fill:none" d="m25.54 1027.7v8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" d="m27.839 1042.8a2.3719 2.3719 0 0 1 -2.8807 1.7143 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+  </symbol>
+
+  <symbol id="menu" viewBox="0 0 50 50">
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="0" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="20" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="40" x="0"/>
+   </symbol>
+
+   <symbol id="link" viewBox="0 0 50 50">
+    <g transform="translate(0 -1002.4)">
+     <g transform="matrix(.095670 0 0 .095670 2.3233 1004.9)">
+      <g>
+       <path style="stroke-width:0;fill:currentColor" d="m452.84 192.9-128.65 128.65c-35.535 35.54-93.108 35.54-128.65 0l-42.881-42.886 42.881-42.876 42.884 42.876c11.845 11.822 31.064 11.846 42.886 0l128.64-128.64c11.816-11.831 11.816-31.066 0-42.9l-42.881-42.881c-11.822-11.814-31.064-11.814-42.887 0l-45.928 45.936c-21.292-12.531-45.491-17.905-69.449-16.291l72.501-72.526c35.535-35.521 93.136-35.521 128.64 0l42.886 42.881c35.535 35.523 35.535 93.141-.001 128.66zm-254.28 168.51-45.903 45.9c-11.845 11.846-31.064 11.817-42.881 0l-42.884-42.881c-11.845-11.821-11.845-31.041 0-42.886l128.65-128.65c11.819-11.814 31.069-11.814 42.884 0l42.886 42.886 42.876-42.886-42.876-42.881c-35.54-35.521-93.113-35.521-128.65 0l-128.65 128.64c-35.538 35.545-35.538 93.146 0 128.65l42.883 42.882c35.51 35.54 93.11 35.54 128.65 0l72.496-72.499c-23.956 1.597-48.092-3.784-69.474-16.283z"/>
+      </g>
+     </g>
+    </g>
+  </symbol>
+
+  <symbol id="doc" viewBox="0 0 35 45">
+   <g transform="translate(-147.53 -539.83)">
+    <path style="stroke:currentColor;stroke-width:2.4501;fill:none" d="m149.38 542.67v39.194h31.354v-39.194z"/>
+    <g style="stroke-width:25" transform="matrix(.098003 0 0 .098003 133.69 525.96)">
+     <path d="m220 252.36h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path style="stroke:currentColor;stroke-width:25;fill:none" d="m220 409.95h200"/>
+     <path d="m220 488.74h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path d="m220 331.15h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+    </g>
+   </g>
+ </symbol>
+
+ <symbol id="tick" viewBox="0 0 177.16535 177.16535">
+  <g transform="translate(0 -875.2)">
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="155" width="40" y="702.99" x="556.82"/>
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="40" width="90.404" y="817.99" x="506.42"/>
+  </g>
+ </symbol>
+</svg>
+
+    <div class="wrapper">
+      <header class="intro-and-nav" role="banner">
+  <div>
+    <div class="intro">
+      <a class="logo" href="/" aria-label="fatwaer home page">
+        <img src="http://localhost:1313/images/11.jpeg" alt="">
+      </a>
+      <p class="library-desc">
+        
+          Here&rsquo;s fatwaer&rsquo;s blog, recording some technical problems and  notes about open-source courses
+        
+      </p>
+    </div>
+    <nav id="patterns-nav" class="patterns" role="navigation">
+  <h2 class="vh">Main navigation</h2>
+  <button id="menu-button" aria-expanded="false">
+    <svg viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+      <use xlink:href="#menu"></use>
+    </svg>
+    Menu
+  </button>
+  
+  <ul id="patterns-list">
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/posts/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Home</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/tags/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Tags</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/about/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">About</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/todo/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Todo</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/index.xml" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">RSS</span>
+      </a>
+    </li>
+  
+  </ul>
+</nav>
+  </div>
+</header>
+      <div class="main-and-footer">
+        <div>
+          
+  <main id="main">
+    <h1>
+      <svg class="bookmark-icon" aria-hidden="true" viewBox="0 0 40 50" focusable="false">
+        <use xlink:href="#bookmark"></use>
+      </svg>
+      6-828-操作系统工程-Lab5-File system, Spawn and Shell
+    </h1>
+
+    <div class="date">
+      
+      
+      <strong aria-hidden="true">Publish date: </strong>5-20, 2018
+      
+        
+      
+    </div>
+
+    
+      <div class="tags">
+        <strong aria-hidden="true">Tags: </strong>
+        <ul aria-label="tags">
+          
+            <li>
+              <svg class="tag-icon" aria-hidden="true" viewBox="0 0 177.16535 177.16535" focusable="false">
+                <use xlink:href="#tag"></use>
+              </svg>
+              
+              <a href="http://localhost:1313/tags/os/">OS</a>
+            </li>
+          
+        </ul>
+      </div>
+    
+    
+    
+      
+
+  <nav class="toc" aria-labelledby="toc-heading">
+    <h2 id="toc-heading">Table of contents</h2>
+    <ol>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#file-block-walk">
+            file_block_walk()
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#file-get-block">
+            file_get_block()
+          </a>
+        </li>
+      
+    </ol>
+  </nav>
+
+
+    
+
+    
+
+<p>这个实验主要是实现<code>spawn</code>库函数用来读取并运行可执行文件，然后扩充操作系统的内核和库
+，使得足以在控制台上运行<code>shell</code>。实现这些特性需要一个文件系统，而接下来就会介绍一个简单的可读写的文件系统。</p>
+
+<h1 id="准备">准备</h1>
+
+<p><code>git</code></p>
+
+<pre><code>    $ find . -name &quot;*.swp&quot; | xargs rm 
+    $ git add .
+    $ git commit -m &quot;lab4 done&quot;
+    $ git pull 
+    $ git merge lab4
+        Auto-merging kern/trap.c
+        CONFLICT (content): Merge conflict in kern/trap.c
+        Auto-merging kern/syscall.c
+        Auto-merging kern/init.c
+        CONFLICT (content): Merge conflict in kern/init.c
+        Auto-merging kern/env.c
+        CONFLICT (content): Merge conflict in kern/env.c
+        Auto-merging inc/lib.h
+        Automatic merge failed; fix conflicts and then commit the result.
+</code></pre>
+
+<p>解决conflict，并且确认pingpong, primes, 和forktree这三个用户程序可以正常运行。</p>
+
+<hr />
+
+<h1 id="文件系统">文件系统</h1>
+
+<p>这里将使用一个比实际更简单的文件系统，但这足以提供一些基本的特点：创建，读取，写入和删在除文件在一个具有层级结构的文件结构。</p>
+
+<p>到目前为止已经完成了单用户操作系统，能够提供足够的保护去捕获bug但是不会阻止来自其他可疑用户的操作。新的文件系统暂时不支持硬链接(hard link),符号链接(symbolic links),时间戳(time stamps)或者特殊设备文件(device files).</p>
+
+<p>磁盘文件系统的结构：大多数UNIX文件系统将磁盘空间分成两类，<code>inode</code>区域和<code>data</code>区域。UNIX文件系统给每一个文件都赋予一个<code>inode</code>值，文件的<code>inode</code>保持这个文件的临界元数据(critical meta-data)例如文件的<code>stat</code>属性和指向数据块的指针。数据区域被分成了更大的<code>data block</code>，文件系统将文件数据和目录元数据存储在其中。目录的入口包含了文件名和指向<code>inode</code>的指针。一个文件能被硬链接只有多个文件目录入口引用了这个文件的<code>inode</code>。因为这里不支持硬链接，所以可以做一个方便的转化：完全不使用<code>inode</code>而简单地存储所有的文件的元数据在目录入口来描述每个文件。</p>
+
+<p>文件和目录逻辑上组成了一连串的数据块(data block)，可能被散布在磁盘也有可能在一个环境的虚拟地址空间所映射的物理内存上。文件系统隐藏了这些数据块的存放细节，为在一个绝对的文件偏移提供了接口方便读写字节流。文件系统对目录的修改表现为创建文件或者删除文件。这里的文件系统云溪用户环境读取目录的元数据，这意味着用户环境能自己扫描文件目录而不是依赖于一个二外的调用。这样做也有缺点，现代大多是UNIX的变体都不推荐使用它，这使得应用程序依赖于文件目录的格式，这让在没有改变或者编译应用程序的情况下很难改变文件系统内部存放。</p>
+
+<p>扇区和块
+大多数磁盘不支持字节粒度的读写而是通过读写一个扇区单元。JOS中，每个区块都是512字节。文件系统实际上在块的单元分配和使用磁盘存储。注意：sector取决于磁盘硬件，然而block的大小是操作系统使用磁盘的一个大小。所以文件系统的块大小必须是块的整数倍。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/disk.png" alt="disk.png" /></p>
+
+<p>superblock
+文件系统通常保留一个确定位置(最前面或者最末尾)的磁盘块来保存描述文件系统特性的元数据。任何元数据被要求找到根目录，文件系统上次被增减的时间，上次检查错误的时间等等。在这里的文件系统中将会有一个确定的superblock，它将总是在block1的位置，被定义在<code>stuct Super</code>。Block0通常被用来保存boot loaders和分区表(partition tables)。大多是实际的文件系统维护多个superblock，散布在disk中，所以其中的一个块发生了损毁或者介质错误，其他的superbloock仍能被找到。</p>
+
+<hr />
+
+<p>文件元数据</p>
+
+<p>在这个文件系统中，meta-data的存放在<code>stuct File</code>中定义了。其中包含了文件名，文件大小，文件类型(普通文件或者目录)，以及一个指针指向下一个包含文件的块，因为不支持<code>inode</code>，所以这些元数据被存储在了目录入口，为了简化，将会直用File这一个结构体去表示即在磁盘和内存的元数据。</p>
+
+<p>结构体中<code>f_direct</code>数据包含了文件空间的前十个块，称之为文件的直接块。从小到大共40KB，这意味着这10个块号可以被这个File结构体直接引用。对于更大的文件，分配一个额外的磁盘块，被称作文件的间接块(indirect block)，能够保存1024个额外的块号。所以，文件系统因此能允许文件最大到1034个块已经大于了4M，当然实际的文件系统通常支持多个<code>double-</code>和<code>triple</code> <code>indrect block</code>。</p>
+
+<p>目录 vs. 普通文件
+文件系统中的<code>File</code>结构体既能表示一个普通文件也能表示一个目录。它们的区别在于结构体的<code>。type</code>，两者的管理方法基本相同，除了目录文件不会解析普通文件的数据块，但是他会解析文件对目录文件的描述和子目录。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/file.png" alt="file.png" /></p>
+
+<p>superblock包含了一个<code>File</code>结构体，<code>Super</code>结构体中的<code>root</code>域保存了系统根目录的元数据。目录文件的内容是一系列<code>File</code>结构体，所有在根目录下的子目录也许会有多个<code>File</code>结构体用来表示次次级目录。</p>
+
+<p>x86使用EFLAGS寄存器中的<code>IOPL</code>位来决定在保护模式下的代码是否被允许执行例如<code>in</code>或者<code>out</code>这样的指令。因为所有的在x86 IO空间的IDE(Integrated Drive Electronics)磁盘寄存器都需要访问，而不是被映射到内存。给予文件系统的IO权限是为了能偶个访问所有的寄存器，同时是一种办法来控制其他用户环境的代码是否有权限来访问I/O空间。</p>
+
+<hr />
+
+<h1 id="练习1">练习1</h1>
+
+<blockquote>
+<hr />
+</blockquote>
+
+<pre><code class="language-C">    if (type == ENV_TYPE_FS)
+        env-&gt;env_tf.tf_eflags |= FL_IOPL_3; 
+</code></pre>
+
+<p>一开始的想法是使用privilige 0，也就是FL_IOPL_0，但是出错了。(官方文档)[<a href="https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf]解释是当前用户环境的CPL(current">https://pdos.csail.mit.edu/6.828/2017/readings/ia32/IA32-3A.pdf]解释是当前用户环境的CPL(current</a> privilege level)必须小于或等于IOPL等级才行。普通用户环境默认被初始化为0，而CPL是3，所以正常的进程是不能直接执行IO操作的。在后面的测试<code>spawnfaultio</code>测试中有测试。如果需要文件系统能进行IO，则将IOPL值置为3即可。</p>
+
+<blockquote>
+<p>Q1:Do you have to do anything else to ensure that this I/O privilege setting is saved and restored properly when you subsequently switch from one environment to another? Why?</p>
+</blockquote>
+
+<p>前面的实验中有想过，每当一个环境开始运行的时候，也就是调用<code>env_run</code>函数的适合都会执行<code>iret</code>以恢复寄存器状态。</p>
+
+<hr />
+
+<p>块高速缓存</p>
+
+<p>在这个文件系统中，将会在处理器的虚拟内存系统中实现一个简单的缓冲区，代码在<code>fs/bc.c</code>
+文件系统将会限制可操作的磁盘大小是3G或者更少，保留一个够大的3GB区域在文件系统的内存空间，从0x10000000 (DISKMAP) 到 0xD0000000 (DISKMAP+DISKMAX)，作为一个映射在内存的磁盘版本。例如，block0被映射在0x1000000，block1映射在0x10001000等等。<code>diskaddr</code>函数实现了从块号到虚拟内存的转换，并且做了一些正常的检测。</p>
+
+<p>文件系统拥有其自己的虚拟内存空间独立于其他所有的用户环境，并且文件系统的仅需要做的一件事就是实现文件访问，有理由去保留大多数文件系统的内存空间。</p>
+
+<p>当然，读取整个磁盘到内存中将会花费相当长的时间，所以实现一种<code>demand paging</code>仅仅分配那些需要相应块号对应的页，以可信的方式引发一个页错误，再分配。通过这种方式，能假定整个磁盘是在内存中。</p>
+
+<hr />
+
+<h1 id="练习2">练习2</h1>
+
+<blockquote>
+<p>实现fs/bc.c中的bc_pgfault函数和flush_block函数
+bc_pgfault是一个页错误处理handler，就像之前的cow fork，希望从磁盘读取页会产生页错误。
+ 1.addr 也许不是与block边界对齐的。
+ 2.ide_read 是在扇区操作不是块。
+flush_block 函数如果有必要的话需要写一个块到磁盘中，如果没有block cache或者不是&rdquo;dirty&rdquo;状态(5.2.4.3),fluash_block什么也不会做。</p>
+</blockquote>
+
+<p><code>ide_write</code></p>
+
+<pre><code class="language-C">int
+ide_write(uint32_t secno, const void *src, size_t nsecs)
+{
+    int r;
+
+    assert(nsecs &lt;= 256);
+
+    ide_wait_ready(0);
+
+    outb(0x1F2, nsecs); //sector count 
+    outb(0x1F3, secno &amp; 0xFF); //sector number
+    outb(0x1F4, (secno &gt;&gt; 8) &amp; 0xFF); //clinder low
+    outb(0x1F5, (secno &gt;&gt; 16) &amp; 0xFF); //clinder high
+    outb(0x1F6, 0xE0 | ((diskno&amp;1)&lt;&lt;4) | ((secno&gt;&gt;24)&amp;0x0F)); //select driver 1
+    outb(0x1F7, 0x30);  // CMD 0x30 means write sector
+
+    for (; nsecs &gt; 0; nsecs--, src += SECTSIZE) {
+        if ((r = ide_wait_ready(1)) &lt; 0)
+            return r;
+        outsl(0x1F0, src, SECTSIZE/4);//data register
+    }
+
+    return 0;
+}
+
+</code></pre>
+
+<p>这个函数和ide_read基本相同，往磁盘寄存器内读写数据，设置读写计数器，读写的扇区号，柱面等等，然后通过一个for循环读取写入数据。CPU之前已经将相应的内存页在UVPT中标记为了<code>dirty</code>状态，也就是页重写标志位，当把内容读到内存中去的适合发生页错误，引发陷入从而分配一个新的物理页，并且写入数据。JOS用bc_pgfault作为handler处理这种页错误，代码如下。</p>
+
+<pre><code class="language-C"># bc_pgfault
+    // Allocate a page in the disk map region, read the contents
+    // of the block from the disk into that page.
+    // Hint: first round addr to page boundary. fs/ide.c has code to read
+    // the disk.
+    //
+    // LAB 5: you code here:
+    addr = (void *)ROUNDDOWN((uint32_t)addr, PGSIZE);
+    if ((r = sys_page_alloc(0, addr, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        panic(&quot;in sys_page_alloc, %e&quot;, r);
+    if ((r = ide_read(blockno * BLKSECTS, addr, BLKSECTS) &lt; 0))
+        panic(&quot;in ide_read , %e&quot;, r);
+</code></pre>
+
+<hr />
+
+<p>flush_content的主要作用就是把数据写回到磁盘中去，然后清楚PTE_D页面重写标记为，代码如下：</p>
+
+<pre><code class="language-C">void
+flush_block(void *addr)
+{
+    uint32_t blockno = ((uint32_t)addr - DISKMAP) / BLKSIZE;
+    int r;
+
+    if (addr &lt; (void*)DISKMAP || addr &gt;= (void*)(DISKMAP + DISKSIZE))
+        panic(&quot;flush_block of bad va %08x&quot;, addr);
+
+    // LAB 5: Your code here.
+    addr = (void *)ROUNDDOWN((uint32_t)addr, PGSIZE);
+    if (!va_is_mapped(addr))
+        return;
+    if (!va_is_dirty(addr))
+        return;
+    if ((r = ide_write(blockno*BLKSECTS, addr, BLKSECTS)) &lt; 0)
+        panic(&quot;ide_write fault : %e&quot;, r);
+    if ((r = sys_page_map(0, addr, 0, addr, uvpt[PGNUM(addr)] &amp; PTE_SYSCALL)) &lt; 0)
+        panic(&quot;map fault : %e&quot;, r);
+
+    //panic(&quot;flush_block not implemented&quot;);
+}
+</code></pre>
+
+<p><code>fs_init</code>函数是一个范例使用block cache，初始化后super存储指向磁盘映射范围的指针。在此之后，就能从super结构体读取数据就好像是从磁盘读取一样。</p>
+
+<blockquote>
+<p>Challenge:淘汰机制.</p>
+</blockquote>
+
+<p>块位图(Block Bitmap)
+在<code>fs_init</code>设置好了<code>bitmap</code>指针后，可以将<code>bitmap</code>看作一个比特数组，其中一位对应着在磁盘中的一个块。例如，<code>block_is_free</code>就是检测一个跟定的块是否在<code>bitmap</code>中被标记。</p>
+
+<hr />
+
+<h1 id="练习3">练习3</h1>
+
+<blockquote>
+<p>使用<code>free_block</code>作为一个范例去实现<code>alloc_block</code>函数，如果能在位图里找到空闲的磁盘块，标记其已经被使用，并且返回块号。当分配好了块，需要马上改变磁盘中的的位图块，使用<code>flush_block</code>函数，使得文件系统在内存的内容和在硬盘中内容一致。</p>
+</blockquote>
+
+<pre><code>int
+alloc_block(void)
+{
+    // The bitmap consists of one or more blocks.  A single bitmap block
+    // contains the in-use bits for BLKBITSIZE blocks.  There are
+    // super-&gt;s_nblocks blocks in the disk altogether.
+
+    // LAB 5: Your code here.
+    //panic(&quot;alloc_block not implemented&quot;);
+    int i;
+    
+    for (i = 2; i &lt; super-&gt;s_nblocks; i++)
+        if (block_is_free(i)) {
+            bitmap[i/32] ^= 1&lt;&lt;(i%32);
+            flush_block(bitmap);
+            return i;
+        }
+    return -E_NO_DISK;
+}
+</code></pre>
+
+<p>块的位图将每一个整形的bit最为一个块的使用标志，3G区域共3GB/4KB个块，所对应的位图共96KB。PS：位图中置0表示已经使用。</p>
+
+<hr />
+
+<h1 id="文件操作">文件操作</h1>
+
+<p>在文件fs/fs.c中提供了一些函数管理<code>File</code>结构体的函数，解释结构体，扫描管理目录文件的入口，从根目录遍历整个文件系统。</p>
+
+<p>fs_init()：找到JOS的磁盘，全局变量<code>super</code> block指向第1号扇区在内存中的映射(第0号扇区是bootloader)，<code>bitmap</code>指向第2号扇区所对应在内存中的映射。</p>
+
+<p>static int
+file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool alloc)
+找到文件结构体中的文件块号对应的全局文件块号，将块号存在*ppdiskbno中，如果没有根据<code>alloc</code>的值判断是否分配。</p>
+
+<p>int
+file_get_block(struct File *f, uint32_t filebno, char **blk)
+获得一个文件结构体文件块号所对应在内存中的映射，把结果存在*blk中。</p>
+
+<p>static int
+dir_lookup(struct File *dir, const char *name, struct File **file)
+通过<code>file_get_block</code>获得这个目录文件结构体所在的块，再用一个文件一个文件结构体的对照文件名，直到相等再把<code>file</code>指向这个找到的文件。</p>
+
+<p>static int
+dir_alloc_file(struct File *dir, struct File **file)
+首先现在目录本身的结构体中寻找可以用的空文件结构体，如果找不到则新分配一个块并且目录文件大小也会增加，<code>file</code>指向这个空闲的文件结构体。</p>
+
+<p>walk_path()：和HOMEWORK中做的命令解释器很像，从根目录开始迭代，例如<code>/usr/bin</code>就会被一步一步地解析为 super-&gt;usr-&gt;bin，usr和bin分别作为目录和文件返回。</p>
+
+<p>file_create(const char *path, struct File **pf)
+在<code>path</code>目录下创建一个文件，通过指针返回一个文件，并且会把文件写回磁盘。</p>
+
+<p>file_open()
+file_read()
+file_write()
+都是基本的文件操作，不过要注意的是，文件的写操作只是写在了磁盘所映射的内存，没有存回磁盘，所以应该需要flush操作。</p>
+
+<p>file_free_block()：在块的位图上释放文件块</p>
+
+<p>file_truncate_blocks()：缩小文件大小，释放掉保持的磁盘块，但是不会修改结构体中的f-&gt;f_size的值。
+file_set_size()：设置文件的大小，并且写回磁盘。</p>
+
+<p>file_flush()把一个单独的文件写回磁盘而fs_sync()将整个内存映射都写回磁盘。</p>
+
+<h1 id="练习4">练习4</h1>
+
+<p>实现file_block_walk和file_get_block函数。
+file_block_walk通过一个在文件内的偏移，映射结构体所直接指向的块或者间接指向的块。
+file_get_block更及进一步地映射实际的磁盘块，如果有必要的话分配一个新磁盘块。
+代码如下：</p>
+
+<h2 id="file-block-walk">file_block_walk()</h2>
+
+<pre><code class="language-C">static int
+file_block_walk(struct File *f, uint32_t filebno, uint32_t **ppdiskbno, bool alloc)
+{
+    // LAB 5: Your code here.
+    //panic(&quot;file_block_walk not implemented&quot;);
+    int r;
+
+    //  cprintf(&quot;filebno %d\n&quot;, filebno);
+    if (filebno &gt; NDIRECT + NINDIRECT)
+        return -E_INVAL;
+    if (filebno &lt; NDIRECT) {
+        if (ppdiskbno)
+            *ppdiskbno = f-&gt;f_direct + filebno;
+        return 0;
+    }
+    //cprintf(&quot;indirect: %08x logic: %d\n&quot;, f-&gt;f_indirect, !f-&gt;f_indirect);
+    if (!f-&gt;f_indirect) {
+        if (alloc) {
+            if ((r = alloc_block()) &lt; 0)
+                return r;
+            memset(diskaddr(r), 0, BLKSIZE);
+            f-&gt;f_indirect = r;
+            flush_block(diskaddr(r));
+        }
+        else
+            return -E_NOT_FOUND;
+    }
+    *ppdiskbno = (uint32_t *)diskaddr(f-&gt;f_indirect) + filebno - NDIRECT;
+    //cprintf(&quot;fileno : %d -&gt; diskno: %x -&gt; %x\n&quot;, filebno, *ppdiskbno, **ppdiskbno);
+    return 0;
+
+}
+</code></pre>
+
+<p>做的后面踩了前面的坑，<code>diskaddr</code>的返回类型需要坐下强制类型转换，<code>void *</code>指针类型p与<code>uint32_t</code>的n相加等于<code>p + n * 1</code>，而这里需要的是整形指针相加的结果<code>p + n * 4</code>。</p>
+
+<h2 id="file-get-block">file_get_block()</h2>
+
+<pre><code class="language-C">int
+file_get_block(struct File *f, uint32_t filebno, char **blk)
+{
+    // LAB 5: Your code here.
+    //panic(&quot;file_get_block not implemented&quot;);
+    uint32_t *bno;
+    int r;
+
+    if ((r = file_block_walk(f, filebno, &amp;bno, 1)) &lt; 0)
+        return r;
+
+    // allocate a block if the block number is zero
+    // meaning that it hasn't refered to any block by now.
+    if (*bno == 0) {
+        if ((r = alloc_block()) &lt; 0)
+            return r;
+        *bno = r;
+        memset(diskaddr(r), 0, BLKSIZE);
+        flush_block(diskaddr(r));
+    }
+    // *bno is the number of blocks
+    *blk = diskaddr(*bno);
+    return 0;
+}
+</code></pre>
+
+<p>做到这里可以发现，当往文件写内容的适合，实际是先写入内存的缓冲区的，只有最后执行了flush操作，才会真正把内容保存到磁盘中去。</p>
+
+<hr />
+
+<h1 id="文件系统接口">文件系统接口</h1>
+
+<p>现在有必要为文件系统自己提供一些功能/接口，必须文件系统能够被其他用户环境使用。因为其他环境不能直接调用文件系统环境中的函数，所以通过远程程序调用RPC(remote procedure call)能访问文件系统的接口。</p>
+
+<pre><code>      Regular env           FS env
+   +---------------+   +---------------+
+   |      read     |   |   file_read   |
+   |   (lib/fd.c)  |   |   (fs/fs.c)   |
+...|.......|.......|...|.......^.......|...............
+   |       v       |   |       |       | RPC mechanism
+   |  devfile_read |   |  serve_read   |
+   |  (lib/file.c) |   |  (fs/serv.c)  |
+   |       |       |   |       ^       |
+   |       v       |   |       |       |
+   |     fsipc     |   |     serve     |
+   |  (lib/file.c) |   |  (fs/serv.c)  |
+   |       |       |   |       ^       |
+   |       v       |   |       |       |
+   |   ipc_send    |   |   ipc_recv    |
+   |       |       |   |       ^       |
+   +-------|-------+   +-------|-------+
+           |                   |
+           +-------------------+
+</code></pre>
+
+<p>在点线之下是从普通用户环境发送到文件系统环境的一个读请求。开始的时候，<code>read</code>工作在任何文件描述符上，并且分发到合适的设备读函数，这里是使用的<code>devfile_read</code>函数，当然还有其他各种的设备类型比如管道。<code>devfile_read</code>实现了读对磁盘上文件的操作，这个函数和其他<code>devfile_*</code>函数是实现了客户端这边的文件系统的操作，并且所有的工作几乎相同，绑定参数到request结构体，并且调用<code>fsipc</code>发送IPC请求和解析返回的值。<code>fsipc</code>函数完成了发送请求到服务端和接收回复的细节。</p>
+
+<p>文件系统服务端代码在fs/serv.c中，服务端循环<code>serve</code>函数，接收来自IPC的请求，分发请求到合适的handler函数，并且将访问的结果通过IPC返回。在读操作的例子中，<code>serve</code>分发请求到<code>serve_read</code>，这个函数将会关注IPC的读请求细节，例如解包request结构体后调用<code>file_read</code>去执行文件读操作。</p>
+
+<p>回顾JOS的IPC机制，让一个环境发送一个32位的数字，并且有选择性的分享页。为了从客户端到服务端发送一个请求，这里使用32位的数字去指定request类型，并且存储request参数到<code>union Fsipc</code>所在的共享页上去。在客户端，总是将共享页放在<code>fsipcbuf</code>处；在服务端，将即将到来的请求页映射在<code>fsreq</code>(0x0ffff000)处。</p>
+
+<p>服务端也会通过IPC发送回复消息，将ipc参数中的32位值设置为相关函数的返回值。大多数RPC都会有它们自己的返回类型，<code>FSREQ_READ</code>和<code>FSREQ_STAT</code>总是返回数据，这两个函数将数据写到客户端所发送的request页上。但是不需要通过IPC发送这个页，因为客户端已经分享了这个物理页。当然，例如<code>FSREQ_OPEN</code>分享给客户端一个新的Fd页,将会很快的返回文件描述符指定的页。</p>
+
+<h1 id="练习5">练习5</h1>
+
+<p>实现<code>serve_read</code>
+<code>serve_read</code>的艰苦工作已经被<code>file_read</code>实现了，它只需要位文件的读提供RPC的接口，可以参照<code>serve_set_size</code>函数。</p>
+
+<pre><code class="language-C">int
+serve_read(envid_t envid, union Fsipc *ipc)
+{
+    struct Fsreq_read *req = &amp;ipc-&gt;read;
+    struct Fsret_read *ret = &amp;ipc-&gt;readRet;
+    struct OpenFile *o;
+    int r;
+    char buf[PGSIZE];
+    size_t read_count, remainder;
+
+    if (debug)
+        cprintf(&quot;serve_read %08x %08x %08x\n&quot;, envid, req-&gt;req_fileid, req-&gt;req_n);
+    // Lab 5: Your code here:
+    // same as before, find the file firstly.
+    if ((r = openfile_lookup(envid, req-&gt;req_fileid, &amp;o)) &lt; 0)
+        return r;
+
+    if ((r = file_read(o-&gt;o_file, ret-&gt;ret_buf, req-&gt;req_n, o-&gt;o_fd-&gt;fd_offset)) &lt; 0)
+        return r;
+    o-&gt;o_fd-&gt;fd_offset += r;
+    //memcpy(ret, buf, PGSIZE);
+    return r;
+}
+
+</code></pre>
+
+<p>关于偏移的到结束的大小，这里不用再做判断了，已经<code>file_read</code>函数中实现了。</p>
+
+<h1 id="练习6">练习6</h1>
+
+<p>实现<code>serve_write</code></p>
+
+<pre><code class="language-C">static ssize_t
+devfile_write(struct Fd *fd, const void *buf, size_t n)
+{
+    // Make an FSREQ_WRITE request to the file system server.  Be
+    // careful: fsipcbuf.write.req_buf is only so large, but
+    // remember that write is always allowed to write *fewer*
+    // bytes than requested.
+    // LAB 5: Your code here
+    //panic(&quot;devfile_write not implemented&quot;);
+    int r;
+
+    fsipcbuf.write.req_fileid = fd-&gt;fd_file.id;
+    fsipcbuf.write.req_n = n;
+        
+    memmove(fsipcbuf.write.req_buf, buf, n);
+    if ((r = fsipc(FSREQ_WRITE, NULL)) &lt; 0) 
+        return r;
+    return r;
+}
+</code></pre>
+
+<p>这两个实现比较简单，跟着指导做就好，但不能仅仅满足于函数天空，这些函数都是一层一层包装上去的，省去了背后的原理和操作，例如设置页位&rdquo;dirty状态&rdquo;，引发页错误分配映射，避免磁盘全部映射而占据大量内存空间。文件的读写操作都被简化了，在<code>testfile.c</code>源码中都是使用的<code>write</code>,<code>open</code>,<code>read</code>等被抽象的操作，而实际的过程比如<code>write</code>操作会被分发到<code>devfile_write</code>通过IPC发送写信号并且共享传递的页，文件系统进程收到写信号并将传递过来的页映射在一个固定的位置，找到文件描述符所指定的文件，然后将共享页buf中的内容复制到磁盘映射页上面，最后在关闭文件的时候flush进行保存；文件系统服务端这边处理完文件后，会把文件写操作的字节数返回做为操作成功的信号通过IPC返回给客户端，并且取消映射共享页。给人的直接感受就是，操作者通过<code>write</code>操作直接写入了文件中。</p>
+
+<h1 id="产生子进程">产生子进程</h1>
+
+<p><code>spawn</code>操作创建一个新的环境，从文件系统中读取程序镜像运行此程序，父进程独立于子进程继续运行。<code>spwan</code>函数的操作就像UNIX中<code>fork</code>后立马在子进程执行<code>exec</code>。</p>
+
+<h1 id="练习7">练习7</h1>
+
+<p><code>spwan</code>依赖于新的系统调用<code>sys_env_set_trapframe</code>来初始化新被创建的环境状态，完成这个函数后，尝试运行<code>user/spanhello</code>程序。</p>
+
+<h1 id="通过fork和spawn分享库状态">通过fork和spawn分享库状态</h1>
+
+<p>UNIX文件描述符是一个泛指的概念，其中包含了pipe,控制台I/O等。在JOS中，每一种设备类型都有一个对应的<code>struct Dev</code>，使用指针实现读写等操作。对于这些设备类型，<code>lib/fd.c</code>实现了像UNIX的文件描述符的接口，每一个Fd结构体指定它自己的设备类型，fd.c中的函数分发分发各自的操作到相应的Dev结构体中去。
+fd.c为每一个应用程序维护文件描述符表在它们各自的内存空间，地址起始于<code>FDTABLE</code>。这片4KB的页很值得为最多32个文件描述符保留在内存空间，使得应用程序能立即打开。在任意时刻，一个指定的文件描述符表页当且仅当对应的文件描述符是在被使用的。每一个文件描述符在这片区域还拥有一个可选的<code>data page</code>在地址<code>FILEDATA</code>处，设备可以用来使用。</p>
+
+<p>因为可能需要通过<code>fork</code>和<code>spawn</code>来分享文件描述符的状态，但是文件描述符的状态是保存在各自用户内存空间中的。现在，fork已经标记那些需要被复制的页为cow状态。这里需要不同的用户环境共享用户环境，与cow分配并复制不同，PTE_SHARE的标记意味着直接映射该物理帧，达到共享的效果。</p>
+
+<h1 id="练习8">练习8</h1>
+
+<p>修改<code>lib/fork.c</code>中的<code>duppage</code>
+实现<code>lib/spawn.c</code>中的<code>copy_shared_pages</code>函数</p>
+
+<pre><code class="language-C">    va = pn*PGSIZE; 
+    //cprintf(&quot;%x\n&quot;, va);
+    if (uvpt[pn] &amp; PTE_SHARE) {
+        if ((r = sys_page_map(thisenv-&gt;env_id, (void *)va, envid, (void *)va, uvpt[pn] &amp;  PTE_SYSCALL)) &lt; 0)
+            return r;
+        return 0;   
+    }
+
+</code></pre>
+
+<pre><code class="language-C">static int
+copy_shared_pages(envid_t child)
+{
+    // LAB 5: Your code here.
+    int32_t va;
+    int r;
+
+    for (va = 0; va &lt; USTACKTOP; va += PGSIZE)
+        if ((uvpd[PDX(va)] &amp; PTE_P) &amp;&amp; (uvpt[PGNUM(va)] &amp; PTE_P) &amp;&amp; (uvpt[PGNUM(va)] &amp; PTE_SHARE)) {
+            if ((r = sys_page_map(0, (void *)va, child,
+                    (void *)va, PTE_SYSCALL&amp;uvpt[PGNUM(va)])) &lt; 0)
+                return r;
+        }
+
+
+    return 0;
+}
+</code></pre>
+
+<p>代码中的spawn已经实现了，并且加了很多注释，在这做下笔记。
+1. 打开程序文件
+2. 读取ELF文件头，检测它的魔数(magic number)
+3. 使用系统调用<code>sys_exofork()</code>创建一个新的环境
+4. 设置子进程的初始栈，例如传递的参数
+5. 调用<code>init_stack()</code>设置好栈页
+6. 映射程序的各个段到新环境的内存空间
+- 如果ELF文件flag没有包含<code>ELF_PROG_FLAG_WRITE</code>，那么短包含了代码正文和只读的数据。
+- 如果ELF文件flag包含了<code>ELF_PROG_FLAG_WRITE</code>，那么代表这个段包含了可读写的数据和<code>bss</code>段
+7. 调用<code>sys_env_set_trapframe</code>设置子程序的栈
+8. 调用<code>sys_env_set_status</code>表明程序可以确认运行了。</p>
+
+<p>这里设置栈帧的时候，要压入像<code>main(int argc, char **argv)</code>中argc,argv两个参数，这里的操作给出了更加准确的答复(函数init_stack(envid_t child, const char **argv, uintptr_t *init_esp)。</p>
+
+<pre><code class="language-C">    string_size = 0;
+    for (argc = 0; argv[argc] != 0; argc++)
+        string_size += strlen(argv[argc]) + 1;
+</code></pre>
+
+<p>首先确定字符串总长度，并且包含每个字符串结尾的<code>null</code>字节。</p>
+
+<pre><code class="language-C">    string_store = (char*) UTEMP + PGSIZE - string_size;
+    argv_store = (uintptr_t*) (ROUNDDOWN(string_store, 4) - 4 * (argc + 1));
+
+</code></pre>
+
+<p>string_store ~ UTEMP+PGSIZE用来存放参数中的字符串，argv_store ~ string_store存放argv[i]这个二维数组指向各自字符串的指针。</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/pic.png" alt="pic.png" /></p>
+
+<pre><code class="language-C">    if ((r = sys_page_alloc(0, (void*) UTEMP, PTE_P|PTE_U|PTE_W)) &lt; 0)
+        return r;
+    for (i = 0; i &lt; argc; i++) {
+        argv_store[i] = UTEMP2USTACK(string_store);
+        strcpy(string_store, argv[i]);
+        string_store += strlen(argv[i]) + 1;
+    }
+
+</code></pre>
+
+<p>设置栈帧的时候先在UTEMP这分配一个页面，然后才进行存放。这里有一点引起了我注意，argv_storep[i]也就是二维数组中的字符串指针都是指向USTACK的，但是字符串的内容还是存放在UTEMP~UTEMP+PGSIZE的范围中，因为最后程序正式开始执行的时候，指针不可能指向UTEMP，所以这里可以看作是一个小tricks。</p>
+
+<pre><code class="language-C">    argv_store[-1] = UTEMP2USTACK(argv_store);
+    argv_store[-2] = argc;
+
+    *init_esp = UTEMP2USTACK(&amp;argv_store[-2]);
+    if ((r = sys_page_map(0, UTEMP, child, (void*) (USTACKTOP - PGSIZE), PTE_P | PTE_U | PTE_W)) &lt; 0)
+        goto error;
+    if ((r = sys_page_unmap(0, UTEMP)) &lt; 0)
+        goto error;
+</code></pre>
+
+<p>接下来就是把argv_store这个在USTACK中对应的位置压栈，它指向字符串指针数组的开头，其次再压入的argc参数的个数，并将esp栈顶指针设置好后映射到USTACK去，解开UTEMP的映射回收内存页，这里就完成了栈的初始化。
+PS: 这里的数组角标为负数时头次在C中见到，虽然理解不难，但是看到在python中常用的语法在C中出现还挺意外的。</p>
+
+<p>所以最后<code>spawn</code>出来的程序所拥有的栈结构如下：</p>
+
+<p><img src="http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab5/stack.png" alt="stack.png" /></p>
+
+<h1 id="键盘接口">键盘接口</h1>
+
+<p>为了shell能工作，现在需要一种方式来打字。QEMU已经显示了输入到CGA(Color Graphics Adapter)和串口，但是到目前为止只能在内核的显示器上获取输入。从键盘的输入显示在图形窗口上，然而串口的输入会被显示到控制台上。<code>kern/console.c</code>已经完成键盘和串口驱动被用作内核的监视器，但是现在需要附加剩下的功能。
+在代码中必定会接触到大量串口操作，与其<a href="https://blog.csdn.net/jn1158359135/article/details/7583967">外围寄存器</a>相关，现在看着还是挺懵的，所以暂时不去关注端口的实现。</p>
+
+<blockquote>
+<p>Q: 串口中断和按键中断有什么区别</p>
+</blockquote>
+
+<h1 id="练习9">练习9</h1>
+
+<p>分发按键中断IRQ_OFFSET+IRQ_KBD和串口中断IRQ_OFFSET+IRQ_SERIAL。</p>
+
+<pre><code class="language-C">    // Handle keyboard and serial interrupts.
+    // LAB 5: Your code here.
+    if (tf-&gt;tf_trapno == IRQ_OFFSET + IRQ_KBD) {
+        kbd_intr();
+        return;
+    }
+    if (tf-&gt;tf_trapno == IRQ_OFFSET + IRQ_SERIAL) {
+        serial_intr();
+        return;
+    }
+</code></pre>
+
+<p>当键盘键入或者有串口中断发生的时候，串口和键盘分别通过各自的例程获取字符，并且调用<code>cons_intr</code>将字符放入结构体cons的缓冲区中，自增写端<code>wpos</code>。</p>
+
+<pre><code class="language-C">static struct {
+    uint8_t buf[CONSBUFSIZE];
+    uint32_t rpos;
+    uint32_t wpos;
+} cons;
+</code></pre>
+
+<p>在当程序需要进行获取输入的时候，会调用<code>kern/console.c</code>中的<code>cons_getc()</code>，这个函数首先会调用<code>serial_intr()</code>和<code>kbd_intr()</code>先获取串口或者键盘输入，然后通过将从缓冲区<code>buf</code>中获取一个字符，并且自增<code>rpos</code>读端。</p>
+
+<h1 id="练习10">练习10</h1>
+
+<p>这个练习基本上就是高层的命令解释器的实现，hw2中已经实现过了。</p>
+
+<pre><code class="language-C">    // LAB 5: Your code here.
+    //panic(&quot;&lt; redirection not implemented&quot;);
+    if ((fd = open(t, O_RDONLY)) &lt; 0) {
+        cprintf(&quot;open %s for read: %e&quot;, t, fd);
+    }
+    if (fd != 0) {
+        dup(fd, 0);
+        close(fd);
+    }
+    break;
+</code></pre>
+
+<p>和<code>&gt;</code>操作一样，代码基本相似，但是可以顺便看一下<code>pipe</code>和<code>dup</code>的实现。</p>
+
+<p><code>dup()</code></p>
+
+<pre><code class="language-C">int
+dup(int oldfdnum, int newfdnum)
+{
+    int r;
+    char *ova, *nva;
+    pte_t pte;
+    struct Fd *oldfd, *newfd;
+    
+    if ((r = fd_lookup(oldfdnum, &amp;oldfd)) &lt; 0)
+        return r;
+    close(newfdnum);
+
+    newfd = INDEX2FD(newfdnum);
+    ova = fd2data(oldfd);
+    nva = fd2data(newfd);
+    
+    if ((uvpd[PDX(ova)] &amp; PTE_P) &amp;&amp; (uvpt[PGNUM(ova)] &amp; PTE_P))
+        if ((r = sys_page_map(0, ova, 0, nva, uvpt[PGNUM(ova)] &amp; PTE_SYSCALL)) &lt; 0)
+            goto err;
+    if ((r = sys_page_map(0, oldfd, 0, newfd, uvpt[PGNUM(oldfd)] &amp; PTE_SYSCALL)) &lt; 0)
+        goto err;
+
+    return newfdnum;
+}
+</code></pre>
+
+<p><code>dup</code>首先将新的文件描述符关闭，例如dup(fd, 0)会先将0也就是标准输出关闭(写回磁盘，取消物理帧的映射)，然后将fd所指向的数据块和文件描述符所占的页映射到根据文件描述符号转换到的虚存地址去，所以写入标准输出的内容可以写到fd所指向的文件中去了。
+<code>dup</code>后一般有一个close()操作，这一步只是取消对物理块的引用而已，多出来文件描述符既不安全又不美观。</p>
+
+<p><code>pipe()</code></p>
+
+<pre><code class="language-C">int
+pipe(int pfd[2])
+{
+    int r; 
+    struct Fd *fd0, *fd1;
+    void *va;
+    
+    // allocate the file descriptor table entries
+    if ((r = fd_alloc(&amp;fd0)) &lt; 0
+        || (r = sys_page_alloc(0, fd0, PTE_P|PTE_W|PTE_U|PTE_SHARE)) &lt; 0)
+        goto err;
+
+    if ((r = fd_alloc(&amp;fd1)) &lt; 0
+        || (r = sys_page_alloc(0, fd1, PTE_P|PTE_W|PTE_U|PTE_SHARE)) &lt; 0)
+        goto err1;
+    
+    // allocate the pipe structure as first data page in both
+    va = fd2data(fd0);
+    if ((r = sys_page_alloc(0, va, PTE_P|PTE_W|PTE_U|PTE_SHARE)) &lt; 0)
+        goto err2;
+    if ((r = sys_page_map(0, va, 0, fd2data(fd1), PTE_P|PTE_W|PTE_U|PTE_SHARE)) &lt; 0)
+        goto err3;
+    
+    // set up fd structures
+    fd0-&gt;fd_dev_id = devpipe.dev_id;
+    fd0-&gt;fd_omode = O_RDONLY;
+    
+    fd1-&gt;fd_dev_id = devpipe.dev_id;
+    fd1-&gt;fd_omode = O_WRONLY;
+
+
+    pfd[0] = fd2num(fd0);
+    pfd[1] = fd2num(fd1);
+    return 0;
+}
+</code></pre>
+
+<p>pipe()首先引起注意的就是权限设置，这也是为什么一段只能读一段只能写。首先为每个描述符提供一个页存储文件结构体，再分配一个页给<code>0</code>一个数据页，将这个页映射到<code>0</code>和<code>1</code>文件描述符对应的数据页，并且将页标记为<code>PTE_SHARE</code>。在任意一段尝试读或者写的时候，触发页错误，使用<code>bc_pgfault</code>进行实际映射。最后进行权限设置，完成管道的创建。</p>
+
+<h1 id="make-grade">make grade</h1>
+
+<pre><code class="language-C">make[1]: Leaving directory '/home/moonlight/lab'
+internal FS tests [fs/test.c]: OK (1.9s) 
+  fs i/o: OK 
+  check_bc: OK 
+  check_super: OK 
+  check_bitmap: OK 
+  alloc_block: OK 
+  file_open: OK 
+  file_get_block: OK 
+  file_flush/file_truncate/file rewrite: OK 
+testfile: OK (1.7s) 
+  serve_open/file_stat/file_close: OK 
+  file_read: OK 
+  file_write: OK 
+  file_read after file_write: OK 
+  open: OK 
+  large file: OK 
+spawn via spawnhello: OK (1.2s) 
+Protection I/O space: OK (1.3s) 
+PTE_SHARE [testpteshare]: OK (2.0s) 
+PTE_SHARE [testfdsharing]: OK (1.2s) 
+start the shell [icode]: Timeout! OK (31.4s) 
+testshell: OK (3.9s) 
+primespipe: OK (11.1s) 
+Score: 150/150
+</code></pre>
+
+<p>This completes the lab</p>
+
+<p>这一节实验代码量较小，但是实现了很多日常接触到的概念，例如管道，dup，文件描述符等。在完成实验的时候踩了很多坑，比如虽然通过了阶段性的测试，但是前面留下的错误代码影响到了后面的整个系统，仔细观察程序可以观察到代码都是一层一层抽象上去的，所以越是底层越需要仔细，考虑清楚corner case。每发生一个BUG都花了大量时间去寻找问题所在，这是很不应该的。</p>
+
+    
+    <div>
+      <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    </div>
+    <script src="http://localhost:1313/js/back2top.js"></script>
+  </main>
+  <div id="disqus-container">
+  
+    <button id="disqus-button" onclick="showComments()">Show comments</button>
+    <div id="disqus-comments">
+      
+      
+      
+        <p><em>Disqus comments are disabled.</em></p>
+        <script type="application/javascript">
+          function showComments() {
+            // Remove button
+var disqusButton = document.getElementById('disqus-button');
+disqusButton.parentNode.removeChild(disqusButton); 
+// Un-hide comments
+var disqusComments = document.getElementById('disqus-comments');
+disqusComments.style.display = 'block'; 
+          }
+        </script>
+      
+      <noscript>Enable JavaScript to view Disqus comments.</noscript>
+    </div>
+  
+</div>
+
+
+          <footer role="contentinfo">
+  
+  
+    Made with <a href="https://gohugo.io/">Hugo</a>. Themed by <a href="https://github.com/zwbetz-gh/cupper-hugo-theme">Cupper</a>. Analytics in comming.
+  
+</footer>
+
+        </div>
+      </div>
+    </div>
+    <script src="http://localhost:1313/js/prism.js"></script>
+<script src="http://localhost:1313/js/dom-scripts.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Pwaer&nbsp;&ndash;&nbsp;Being learning machine...</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><link rel="alternate" type="application/rss+xml" href="/index.xml" title="Pwaer" /><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Pwaer" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">Being learning machine...</span></div></section><section id="content"><ul class="note list"><li class="item"><a class="note" href="/blog/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/">
+            <p class="note title">hexo 配置</p><p class="note date">Thursday, April 5, 2018</p><p class="note content">注： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。
+categories和tags themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。
+type: &#34;categories&#34; layout: &#34;categories&#34; comments: false type: &#34;tags&#34; layout: &#34;tags&#34; comments: false <span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="tag" href="/tags/config/">config</a></p></li><li class="item"><a class="note" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/lab1/">
+            <p class="note title">6.828-操作系统工程-Lab1:Booting a PC</p><p class="note date">Wednesday, March 14, 2018</p><p class="note content">Exercise 1: 内存分布和相关启动信息 memory layout 8088 可以寻址到 1MB，其中640K-1M 作为非易失性存储(ROM)，依次为 vga，其他设备，bios 使用。bio<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a><a class="tag" href="/tags/os/">OS</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/">
+            <p class="note title">《汇编语言》 Lab11</p><p class="note date">Wednesday, November 22, 2017</p><p class="note content">为了循环方便，我们设置SI为**-1**
+<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/">
+            <p class="note title">《汇编语言》 Lab10</p><p class="note date">Tuesday, November 21, 2017</p><p class="note content">实验10 一共3个小实验，分别完成三个函数。
+<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/">
+            <p class="note title">《汇编语言》 Lab8</p><p class="note date">Friday, November 17, 2017</p><p class="note content">assume cs:codesg codesg segment mov ax,4c00h int 21h start: mov ax,0 s: nop nop mov di,offset s mov si,offset s2 mov ax,cs:[si] mov cs:[di],ax s0: jmp short s s1: mov ax,0 int 21h mov ax,0 s2: jmp short s1 nop codesg ends end start 其中 jmp short s 命令占用两个字节</p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/">
+            <p class="note title">DOS实模式的搭建</p><p class="note date">Friday, November 17, 2017</p><p class="note content">前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/">
+            <p class="note title">《汇编语言》 Lab6</p><p class="note date">Monday, November 13, 2017</p><p class="note content">datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace &#39; db &#39;4. modify &#39; datasg ends 将数据段前四个字母改为大写字母 &amp;nbsp代码如下: assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg ends datasg segment db &#39;1. display &#39; db &#39;2. brows &#39; db &#39;3. replace<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/">
+            <p class="note title">《汇编语言》 Lab5</p><p class="note date">Monday, November 13, 2017</p><p class="note content">根据程序编译连接并用Debug加载、跟踪，然后回答问题。 (1) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h,0789h,0abch,0defh,0fedh,0cbah,0987h data ends stack segment dw 0,0,0,0,0,0,0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop ds:[0] mov ax,4c00h int 21h code ends<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/">
+            <p class="note title">《汇编语言》 Lab1</p><p class="note date">Monday, November 13, 2017</p><p class="note content">assume cs:codesg codesg segment mov ax,2000 mov ss,ax mov sp,0 add sp,10 pop ax pop bx push ax push bx pop ax pop bx move ax,4c00 int 21 codesg ends end</p></a><p class="note labels"><a class="category" href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/">汇编语言</a><a class="tag" href="/tags/assembly/">Assembly</a></p></li><li class="item"><a class="note" href="/blog/c-i-c&#43;&#43;/c&#43;&#43;/">
+            <p class="note title">C++ iterater</p><p class="note date">Friday, June 2, 2017</p><p class="note content">There have serveral methods: /***overload function****/ void print(int* pi) { if (pi) cout &lt;&lt; *pi &lt;&lt; endl; } void print(const char* p) { if (p) while (*p) cout &lt;&lt; *p++; cout &lt;&lt; endl; } void print(const int* beg, const int* end) { while (beg != end) cout &lt;&lt; *beg++ &lt;&lt; endl; } void print(const int ia[], size_t size) { for (size_t i = 0; i != size; ++i) { cout &lt;&lt; ia[i] &lt;&lt; endl; } } void print(const int(&amp;arr)[2]) { for (auto i : arr) cout &lt;&lt; i &lt;&lt; endl; } int main() { int i = 0, j[2] = {0, 1}; char ch[5] = &#34;Getup!<span class="mldr">&mldr;</span></p></a><p class="note labels"><a class="tag" href="/tags/c/c&#43;&#43;/">c/c&#43;&#43;</a></p></li></ul><div class="pagination">
+    <ul><li><a class="" href="/">1</a></li><li><a class="" href="/page/2/">2</a></li><li><a class="" href="/page/3/">3</a></li><li><a class="active" href="/page/4/">4</a></li><li><a class="" href="/page/5/">5</a></li></ul>
+</div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'G-LGMCE8D1GT', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LGMCE8D1GT');
+</script></body>
+
+</html>

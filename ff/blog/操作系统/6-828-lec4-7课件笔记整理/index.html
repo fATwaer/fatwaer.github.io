@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.81.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>6-828-操作系统工程-Lec4-7课件笔记整理&nbsp;&ndash;&nbsp;Pwaer</title><link rel="stylesheet" href="/css/core.min.7aa9d4cc04ba4a82c92b7646faa3856d1ab5b339e635dde4d873668e74feeaea520ef4746058ac8a8526f8c66462907f.css" integrity="sha384-eqnUzAS6SoLJK3ZG&#43;qOFbRq1sznmNd3k2HNmjnT&#43;6upSDvR0YFisioUm&#43;MZkYpB/"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="6-828-操作系统工程-Lec4-7课件笔记整理" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/whoami/1.jpg" alt /><span class="site name">Pwaer</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="/categories/">Categories</a><a class="nav item" href="/tags/">Tags</a><a class="nav item" href="/about">About</a><a class="nav item" href="https://gohugo%2eio/"target="_blank" rel="noopener noreferrer">Hugo</a></nav></div></span></div><div class="site slogan"><span class="title">There're learning machine...</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">6-828-操作系统工程-Lec4-7课件笔记整理</h1><p class="article date">Wednesday, April 11, 2018</p></section><article class="article markdown-body"><h1 id="lec4-shell--os">Lec4 shell / OS</h1>
+<hr>
+<p><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-shell.txt</a>
+process = address space + thread
+app -&gt; printf() -&gt; write() -&gt; SYSTEM CALL -&gt; sys_write() -&gt; ..</p>
+<p><code>Homework2</code></p>
+<ul>
+<li>
+<p>exec:
+execv()一个参数是用来执行命令，另一个让函数知道参数的结束。
+exec程序结束后
+execv()会占用调用execv()进程的内存空间，不会返回，所以一般要fork()</p>
+</li>
+<li>
+<p>redirect
+关闭标准输出FD，Open重新打开一个文件，进程输出到这个文件内。</p>
+</li>
+<li>
+<p>pipe
+如果ls慢于wc，wc会被阻塞，一直等到pipe中有内容写入。
+reader不关掉写端，读不到数据。
+writer不关读段，正常执行。
+pipe的好处，例如 <code>ls | sort | uniq | wc</code>指令，如果没有pipe的话，指令则只能这样写<code>ls &gt; temp1 ; sort temp1 &gt; temp2; uniq temp2 &gt; temp3; wc temp3 &gt; temp4; cat temp4</code>
+<em>how does the kernel know when to free the pipe buffer?</em></p>
+</li>
+</ul>
+<p><code>fork</code></p>
+<p>sleep 5 | ls</p>
+<p>left | right | result
+unfork | fork | sleep -&gt; ls
+fork | fork | ls / not sleep
+fork | unfork | ls / not sleep</p>
+<p>linux 情况是 ls -&gt; sleep，最后发现父进程并没有等子进程完成就结束了。
+正常流程应该是 主进程-&gt;fork1()-&gt;fork2()-&gt;exec &lsquo;ls&rsquo;
+-&gt;exec &lsquo;sleep 5&rsquo;
+-&gt;wait(fork1()) -&gt; wait(fork2()) -&gt; 主进程回收。</p>
+<p><code>UNIX system call observations</code></p>
+<p>The fork/exec split looks wasteful &ndash; fork() copies mem, exec() discards.</p>
+<p>FDs hide specifics that may be important
+e.g. block size for on-disk files
+e.g. timing and size of network messages</p>
+<p>kernel:
+abstract resources rather than raw hardware
+File system, not raw disk
+Processes, not raw CPU/memory
+TCP, not ethernet packets
+abstractions often ease isolation, multiplexing and interaction
+also more convenient and portable</p>
+<ul>
+<li>Processors provide mechanisms that help with isolation
+<ul>
+<li>Hardware provides user mode and kernel mode
+<ul>
+<li>some instructions can only be executed in kernel mode
+device access, processor configuration, isolation mechanisms</li>
+</ul>
+</li>
+<li>Hardware forbids apps from executing privileged instructions
+<ul>
+<li>instead traps to kernel mode</li>
+<li>kernel can clean up (e.g., kill the process)</li>
+</ul>
+</li>
+<li>Hardware lets kernel mode configure various constraints on user mode
+most critical: page tables to limit user s/w to its own address space</li>
+</ul>
+</li>
+</ul>
+<h1 id="lecture-5-isolation-mechanisms">Lecture 5: Isolation mechanisms</h1>
+<h2 id="httpspdoscsailmitedu68282017lecl-internaltxt"><a href="https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt">https://pdos.csail.mit.edu/6.828/2017/lec/l-internal.txt</a></h2>
+<ul>
+<li>
+<p>What is isolation?</p>
+<ol>
+<li>进程隔离内存空间</li>
+<li>阻止进程X破坏偷取进程Y内存空间，或者使用100%CPU，改变FD，进程状态等</li>
+<li>阻止进程影响操作系统</li>
+</ol>
+</li>
+<li>
+<p>the kernel uses hardware mechanisms as part of process isolation:</p>
+<ol>
+<li>user/kernel mode flag</li>
+<li>address spaces</li>
+<li>timeslicing</li>
+<li>system call interface</li>
+</ol>
+</li>
+</ul>
+<h2 id="implement-system-call">implement system call</h2>
+<ul>
+<li>how to do a system call &ndash; switching CPL
+Q: would this be an OK design for user programs to make a system call:
+set CPL=0
+jmp sys_open
+bad: user-specified instructions with CPL=0
+Q: how about a combined instruction that sets CPL=0,
+but <em>requires</em> an immediate jump to someplace in the kernel?
+bad: user might jump somewhere awkward in the kernel
+<em>the x86 answer</em>:
+<strong>there are only a few permissible kernel entry points (&ldquo;vectors&rdquo;) INT instruction sets CPL=0 and jumps to an entry point but user code can&rsquo;t otherwise modify CPL or jump anywhere else in kernel system call return sets CPL=3 before returning to user code also a combined instruction (can&rsquo;t separately set CPL and jmp)</strong></li>
+</ul>
+<p><strong>使用INT指令将CPL位置为0，存储少量用户寄存器的值（  err, eip, cs, eflags, esp, ss）到内核的栈中，并且跳转到内核空间，IRET指令相反。</strong></p>
+<ul>
+<li>how to create isolated address spaces?
+xv6 uses x86 &ldquo;paging hardware&rdquo; in the <em>memory management unit</em> (MMU)
+MMU translates (or &ldquo;maps&rdquo;) every address issued by program</li>
+</ul>
+<pre><code>    CPU -&gt; MMU -&gt; RAM
+            |
+         pagetable
+</code></pre><pre><code>VA -&gt; PA
+MMU translates all memory references: user and kernel, instructions and data
+instructions use only VAs, never PAs
+</code></pre>
+<p>kernel sets up a different page table for each process
+each process&rsquo;s page table allows access only to that process&rsquo;s RAM
+<strong>lab2中Page Table的实现就有关于虚拟内存到物理内存的映射</strong></p>
+<p><strong>虚拟内存模型</strong></p>
+<pre><code>  FFFFFFFF:
+            ...
+  80000000: kernel
+            user stack
+            user data
+  00000000: user instructions
+</code></pre><h2 id="fork出一个新的进程">Fork出一个新的进程</h2>
+</article><section class="article labels"><a class="category" href=/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/>操作系统</a><a class="tag" href=/tags/os/>OS</a></section><section class="article license">CC</section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B-lab2-memory-management/"><span class="iconfont icon-article"></span>6.828-操作系统工程-Lab2:Memory Management</a></p><p><a class="link" href="/blog/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/6-828-lec1-3%E8%AF%BE%E4%BB%B6%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/"><span class="iconfont icon-article"></span>6.828-操作系统工程-Lec1-3课件笔记和作业</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "fatwaer" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 Notepadium.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a>
+<a href='https://ipv6-test.com/validate.php?url=referer'
+  ><img src='https://ipv6-test.com/button-ipv6-80x15.png' 
+        alt='ipv6 ready' title='ipv6 ready' border='0' 
+/></a>
+</p></div>
+</section></body>
+
+</html>

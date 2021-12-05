@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="generator" content="Hugo 0.57.2" />
+  <link rel="canonical" href="http://localhost:1313/posts/jvm%E7%9B%B8%E5%85%B3/core-java-for-database/">
+
+  
+
+  
+   
+   <link rel="shortcut icon" href="/11.jpeg" >
+   
+  <link rel="manifest" href="/site.webmanifest">
+
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="/css/prism.css" media="none" onload="this.media='all';">
+
+  
+  
+  <link rel="stylesheet" type="text/css" href="http://localhost:1313/css/styles.css">
+
+  <style id="inverter" media="none">
+    html { filter: invert(100%) }
+    * { background-color: inherit }
+    img:not([src*=".svg"]), .colors, iframe, .demo-container { filter: invert(100%) }
+  </style>
+
+  
+  
+  <title>Core Java for DataBase | fatwaer</title>
+</head>
+
+  <body>
+    <a href="#main">skip to content</a>
+    <svg style="display: none">
+  <symbol id="bookmark" viewBox="0 0 40 50">
+   <g transform="translate(2266 3206.2)">
+    <path style="stroke:currentColor;stroke-width:3.2637;fill:none" d="m-2262.2-3203.4-.2331 42.195 16.319-16.318 16.318 16.318.2331-42.428z"/>
+   </g>
+  </symbol>
+
+  <symbol id="w3c" viewBox="0 0 127.09899 67.763">
+   <text font-size="83" style="font-size:83px;font-family:Trebuchet;letter-spacing:-12;fill-opacity:0" letter-spacing="-12" y="67.609352" x="-26.782778">W3C</text>
+   <text font-size="83" style="font-size:83px;font-weight:bold;font-family:Trebuchet;fill-opacity:0" y="67.609352" x="153.21722" font-weight="bold">SVG</text>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m33.695.377 12.062 41.016 12.067-41.016h8.731l-19.968 67.386h-.831l-12.48-41.759-12.479 41.759h-.832l-19.965-67.386h8.736l12.061 41.016 8.154-27.618-3.993-13.397h8.737z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m91.355 46.132c0 6.104-1.624 11.234-4.862 15.394-3.248 4.158-7.45 6.237-12.607 6.237-3.882 0-7.263-1.238-10.148-3.702-2.885-2.47-5.02-5.812-6.406-10.022l6.82-2.829c1.001 2.552 2.317 4.562 3.953 6.028 1.636 1.469 3.56 2.207 5.781 2.207 2.329 0 4.3-1.306 5.909-3.911 1.609-2.606 2.411-5.738 2.411-9.401 0-4.049-.861-7.179-2.582-9.399-1.995-2.604-5.129-3.912-9.397-3.912h-3.327v-3.991l11.646-20.133h-14.062l-3.911 6.655h-2.493v-14.976h32.441v4.075l-12.31 21.217c4.324 1.385 7.596 3.911 9.815 7.571 2.22 3.659 3.329 7.953 3.329 12.892z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.21 0 1.414 8.6-5.008 9.583s-1.924-4.064-5.117-6.314c-2.693-1.899-4.447-2.309-7.186-1.746-3.527.73-7.516 4.938-9.258 10.13-2.084 6.21-2.104 9.218-2.178 11.978-.115 4.428.58 7.043.58 7.043s-3.04-5.626-3.011-13.866c.018-5.882.947-11.218 3.666-16.479 2.404-4.627 5.954-7.404 9.114-7.728 3.264-.343 5.848 1.229 7.841 2.938 2.089 1.788 4.213 5.698 4.213 5.698l4.94-9.837z"/>
+   <path style="fill:currentColor;image-rendering:optimizeQuality;shape-rendering:geometricPrecision" d="m125.82 48.674s-2.208 3.957-3.589 5.48c-1.379 1.524-3.849 4.209-6.896 5.555-3.049 1.343-4.646 1.598-7.661 1.306-3.01-.29-5.807-2.032-6.786-2.764-.979-.722-3.486-2.864-4.897-4.854-1.42-2-3.634-5.995-3.634-5.995s1.233 4.001 2.007 5.699c.442.977 1.81 3.965 3.749 6.572 1.805 2.425 5.315 6.604 10.652 7.545 5.336.945 9.002-1.449 9.907-2.031.907-.578 2.819-2.178 4.032-3.475 1.264-1.351 2.459-3.079 3.116-4.108.487-.758 1.276-2.286 1.276-2.286l-1.276-6.644z"/>
+  </symbol>
+
+  <symbol id="tag" viewBox="0 0 177.16535 177.16535">
+    <g transform="translate(0 -875.2)">
+     <path style="fill-rule:evenodd;stroke-width:0;fill:currentColor" d="m159.9 894.3-68.79 8.5872-75.42 77.336 61.931 60.397 75.429-76.565 6.8495-69.755zm-31.412 31.835a10.813 10.813 0 0 1 1.8443 2.247 10.813 10.813 0 0 1 -3.5174 14.872l-.0445.0275a10.813 10.813 0 0 1 -14.86 -3.5714 10.813 10.813 0 0 1 3.5563 -14.863 10.813 10.813 0 0 1 13.022 1.2884z"/>
+    </g>
+  </symbol>
+
+  <symbol id="balloon" viewBox="0 0 141.73228 177.16535">
+   <g transform="translate(0 -875.2)">
+    <g>
+     <path style="fill:currentColor" d="m68.156 882.83-.88753 1.4269c-4.9564 7.9666-6.3764 17.321-5.6731 37.378.36584 10.437 1.1246 23.51 1.6874 29.062.38895 3.8372 3.8278 32.454 4.6105 38.459 4.6694-.24176 9.2946.2879 14.377 1.481 1.2359-3.2937 5.2496-13.088 8.886-21.623 6.249-14.668 8.4128-21.264 10.253-31.252 1.2464-6.7626 1.6341-12.156 1.4204-19.764-.36325-12.93-2.1234-19.487-6.9377-25.843-2.0833-2.7507-6.9865-7.6112-7.9127-7.8436-.79716-.20019-6.6946-1.0922-6.7755-1.0248-.02213.0182-5.0006-.41858-7.5248-.22808l-2.149-.22808h-3.3738z"/>
+     <path style="fill:currentColor" d="m61.915 883.28-3.2484.4497c-1.7863.24724-3.5182.53481-3.8494.63994-2.4751.33811-4.7267.86957-6.7777 1.5696-.28598 0-1.0254.20146-2.3695.58589-5.0418 1.4418-6.6374 2.2604-8.2567 4.2364-6.281 7.6657-11.457 18.43-12.932 26.891-1.4667 8.4111.71353 22.583 5.0764 32.996 3.8064 9.0852 13.569 25.149 22.801 37.517 1.3741 1.841 2.1708 2.9286 2.4712 3.5792 3.5437-1.1699 6.8496-1.9336 10.082-2.3263-1.3569-5.7831-4.6968-21.86-6.8361-33.002-.92884-4.8368-2.4692-14.322-3.2452-19.991-.68557-5.0083-.77707-6.9534-.74159-15.791.04316-10.803.41822-16.162 1.5026-21.503 1.4593-5.9026 3.3494-11.077 6.3247-15.852z"/>
+     <path style="fill:currentColor" d="m94.499 885.78c-.10214-.0109-.13691 0-.0907.0409.16033.13489 1.329 1.0675 2.5976 2.0723 6.7003 5.307 11.273 14.568 12.658 25.638.52519 4.1949.24765 14.361-.5059 18.523-2.4775 13.684-9.7807 32.345-20.944 53.519l-3.0559 5.7971c2.8082.76579 5.7915 1.727 8.9926 2.8441 11.562-11.691 18.349-19.678 24.129-28.394 7.8992-11.913 11.132-20.234 12.24-31.518.98442-10.02-1.5579-20.876-6.7799-28.959-.2758-.4269-.57803-.86856-.89617-1.3166-3.247-6.13-9.752-12.053-21.264-16.131-2.3687-.86369-6.3657-2.0433-7.0802-2.1166z"/>
+     <path style="fill:currentColor" d="m32.52 892.22c-.20090-.13016-1.4606.81389-3.9132 2.7457-11.486 9.0476-17.632 24.186-16.078 39.61.79699 7.9138 2.4066 13.505 5.9184 20.562 5.8577 11.77 14.749 23.219 30.087 38.74.05838.059.12188.1244.18052.1838 1.3166-.5556 2.5965-1.0618 3.8429-1.5199-.66408-.32448-1.4608-1.3297-3.8116-4.4602-5.0951-6.785-8.7512-11.962-13.051-18.486-5.1379-7.7948-5.0097-7.5894-8.0586-13.054-6.2097-11.13-8.2674-17.725-8.6014-27.563-.21552-6.3494.13041-9.2733 1.775-14.987 2.1832-7.5849 3.9273-10.986 9.2693-18.07 1.7839-2.3656 2.6418-3.57 2.4409-3.7003z"/>
+     <path style="fill:currentColor" d="m69.133 992.37c-6.2405.0309-12.635.76718-19.554 2.5706 4.6956 4.7759 9.935 10.258 12.05 12.625l4.1272 4.6202h11.493l3.964-4.4516c2.0962-2.3541 7.4804-7.9845 12.201-12.768-8.378-1.4975-16.207-2.6353-24.281-2.5955z"/>
+     <rect style="stroke-width:0;fill:currentColor" ry="2.0328" height="27.746" width="22.766" y="1017.7" x="60.201"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="info" viewBox="0 0 41.667 41.667">
+   <g transform="translate(-37.035 -1004.6)">
+    <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m76.25 1030.2a18.968 18.968 0 0 1 -23.037 13.709 18.968 18.968 0 0 1 -13.738 -23.019 18.968 18.968 0 0 1 23.001 -13.768 18.968 18.968 0 0 1 13.798 22.984"/>
+    <g transform="matrix(1.1146 0 0 1.1146 -26.276 -124.92)">
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:3.728;fill:none" d="m75.491 1039.5v-8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" transform="scale(-1)" d="m-73.193-1024.5a2.3719 2.3719 0 0 1 -2.8807 1.7142 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+   </g>
+  </symbol>
+
+  <symbol id="warning" viewBox="0 0 48.430474 41.646302">
+    <g transform="translate(-1.1273 -1010.2)">
+     <path style="stroke-linejoin:round;stroke:currentColor;stroke-linecap:round;stroke-width:4.151;fill:none" d="m25.343 1012.3-22.14 37.496h44.28z"/>
+     <path style="stroke:currentColor;stroke-linecap:round;stroke-width:4.1512;fill:none" d="m25.54 1027.7v8.7472"/>
+     <path style="stroke-width:0;fill:currentColor" d="m27.839 1042.8a2.3719 2.3719 0 0 1 -2.8807 1.7143 2.3719 2.3719 0 0 1 -1.718 -2.8785 2.3719 2.3719 0 0 1 2.8763 -1.7217 2.3719 2.3719 0 0 1 1.7254 2.8741"/>
+    </g>
+  </symbol>
+
+  <symbol id="menu" viewBox="0 0 50 50">
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="0" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="20" x="0"/>
+     <rect style="stroke-width:0;fill:currentColor" height="10" width="50" y="40" x="0"/>
+   </symbol>
+
+   <symbol id="link" viewBox="0 0 50 50">
+    <g transform="translate(0 -1002.4)">
+     <g transform="matrix(.095670 0 0 .095670 2.3233 1004.9)">
+      <g>
+       <path style="stroke-width:0;fill:currentColor" d="m452.84 192.9-128.65 128.65c-35.535 35.54-93.108 35.54-128.65 0l-42.881-42.886 42.881-42.876 42.884 42.876c11.845 11.822 31.064 11.846 42.886 0l128.64-128.64c11.816-11.831 11.816-31.066 0-42.9l-42.881-42.881c-11.822-11.814-31.064-11.814-42.887 0l-45.928 45.936c-21.292-12.531-45.491-17.905-69.449-16.291l72.501-72.526c35.535-35.521 93.136-35.521 128.64 0l42.886 42.881c35.535 35.523 35.535 93.141-.001 128.66zm-254.28 168.51-45.903 45.9c-11.845 11.846-31.064 11.817-42.881 0l-42.884-42.881c-11.845-11.821-11.845-31.041 0-42.886l128.65-128.65c11.819-11.814 31.069-11.814 42.884 0l42.886 42.886 42.876-42.886-42.876-42.881c-35.54-35.521-93.113-35.521-128.65 0l-128.65 128.64c-35.538 35.545-35.538 93.146 0 128.65l42.883 42.882c35.51 35.54 93.11 35.54 128.65 0l72.496-72.499c-23.956 1.597-48.092-3.784-69.474-16.283z"/>
+      </g>
+     </g>
+    </g>
+  </symbol>
+
+  <symbol id="doc" viewBox="0 0 35 45">
+   <g transform="translate(-147.53 -539.83)">
+    <path style="stroke:currentColor;stroke-width:2.4501;fill:none" d="m149.38 542.67v39.194h31.354v-39.194z"/>
+    <g style="stroke-width:25" transform="matrix(.098003 0 0 .098003 133.69 525.96)">
+     <path d="m220 252.36h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path style="stroke:currentColor;stroke-width:25;fill:none" d="m220 409.95h200"/>
+     <path d="m220 488.74h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+     <path d="m220 331.15h200" style="stroke:currentColor;stroke-width:25;fill:none"/>
+    </g>
+   </g>
+ </symbol>
+
+ <symbol id="tick" viewBox="0 0 177.16535 177.16535">
+  <g transform="translate(0 -875.2)">
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="155" width="40" y="702.99" x="556.82"/>
+   <rect style="stroke-width:0;fill:currentColor" transform="rotate(30)" height="40" width="90.404" y="817.99" x="506.42"/>
+  </g>
+ </symbol>
+</svg>
+
+    <div class="wrapper">
+      <header class="intro-and-nav" role="banner">
+  <div>
+    <div class="intro">
+      <a class="logo" href="/" aria-label="fatwaer home page">
+        <img src="http://localhost:1313/images/11.jpeg" alt="">
+      </a>
+      <p class="library-desc">
+        
+          Here&rsquo;s fatwaer&rsquo;s blog, recording some technical problems and  notes about open-source courses
+        
+      </p>
+    </div>
+    <nav id="patterns-nav" class="patterns" role="navigation">
+  <h2 class="vh">Main navigation</h2>
+  <button id="menu-button" aria-expanded="false">
+    <svg viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+      <use xlink:href="#menu"></use>
+    </svg>
+    Menu
+  </button>
+  
+  <ul id="patterns-list">
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/posts/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Home</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/tags/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Tags</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/about/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">About</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/todo/" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">Todo</span>
+      </a>
+    </li>
+  
+    <li class="pattern">
+      
+      
+      
+      
+      <a href="/index.xml" >
+        <svg class="bookmark-icon" aria-hidden="true" focusable="false" viewBox="0 0 40 50">
+          <use xlink:href="#bookmark"></use>
+        </svg>
+        <span class="text">RSS</span>
+      </a>
+    </li>
+  
+  </ul>
+</nav>
+  </div>
+</header>
+      <div class="main-and-footer">
+        <div>
+          
+  <main id="main">
+    <h1>
+      <svg class="bookmark-icon" aria-hidden="true" viewBox="0 0 40 50" focusable="false">
+        <use xlink:href="#bookmark"></use>
+      </svg>
+      Core Java for DataBase
+    </h1>
+
+    <div class="date">
+      
+      
+      <strong aria-hidden="true">Publish date: </strong>11-18, 2018
+      
+        
+      
+    </div>
+
+    
+      <div class="tags">
+        <strong aria-hidden="true">Tags: </strong>
+        <ul aria-label="tags">
+          
+            <li>
+              <svg class="tag-icon" aria-hidden="true" viewBox="0 0 177.16535 177.16535" focusable="false">
+                <use xlink:href="#tag"></use>
+              </svg>
+              
+              <a href="http://localhost:1313/tags/java/">Java</a>
+            </li>
+          
+        </ul>
+      </div>
+    
+    
+    
+      
+
+  <nav class="toc" aria-labelledby="toc-heading">
+    <h2 id="toc-heading">Table of contents</h2>
+    <ol>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%ad%97%e7%ac%a6%e4%b8%b2">
+            字符串
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e4%bd%9c%e7%94%a8%e5%9f%9f">
+            作用域
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e6%95%b0%e7%bb%84">
+            数组
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#final-%e5%85%b3%e9%94%ae%e5%ad%97">
+            final 关键字
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#static-%e5%85%b3%e9%94%ae%e5%ad%97">
+            static 关键字
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#main%e6%96%b9%e6%b3%95">
+            main方法
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%88%9d%e5%a7%8b%e5%8c%96%e5%9d%97">
+            初始化块
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%bc%ba%e5%88%b6%e8%bd%ac%e5%8c%96">
+            强制转化
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e6%8a%bd%e8%b1%a1%e7%b1%bb">
+            抽象类
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%8f%97%e4%bf%9d%e6%8a%a4%e8%ae%bf%e9%97%ae">
+            受保护访问
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e7%bb%a7%e6%89%bf%e7%9a%84%e8%ae%be%e8%ae%a1%e6%8a%80%e5%b7%a7">
+            继承的设计技巧
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e6%8e%a5%e5%8f%a3">
+            接口
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#lambda%e8%a1%a8%e8%be%be%e5%bc%8f">
+            lambda表达式
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%86%85%e9%83%a8%e7%b1%bb">
+            内部类
+          </a>
+        </li>
+      
+        <li>
+          
+          
+          
+          
+          <a href="#%e5%8c%bf%e5%90%8d%e5%86%85%e9%83%a8%e7%b1%bb">
+            匿名内部类
+          </a>
+        </li>
+      
+    </ol>
+  </nav>
+
+
+    
+
+    
+
+<h1 id="前言">前言</h1>
+
+<p>最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。</p>
+
+<p>这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。</p>
+
+<h1 id="基本结构">基本结构</h1>
+
+<p>基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。</p>
+
+<h2 id="字符串">字符串</h2>
+
+<p>字符串判断为空：</p>
+
+<pre><code>if (str.length() == 0)
+or 
+if (str.equals(&quot;&quot;))    
+</code></pre>
+
+<p>虽然可以进行字符串拼接，但是效率比较低，可以使用<code>StringBuilder</code>类:</p>
+
+<pre><code>StringBuilder builder = new StringBuilder();
+builder.append(ch);
+builder.append(str);
+builder.toString();
+</code></pre>
+
+<h2 id="作用域">作用域</h2>
+
+<p>JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用<code>this</code>指针来指定变量。</p>
+
+<h2 id="数组">数组</h2>
+
+<p>JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：</p>
+
+<p>JAVA中的:</p>
+
+<pre><code>int[] a = new int[100];
+</code></pre>
+
+<p>等同于C/C++中的:</p>
+
+<pre><code>int* a = new int[100];
+</code></pre>
+
+<p>不同于:</p>
+
+<pre><code>int a[100];
+</code></pre>
+
+<p>并且数组的完整拷贝通过方法<code>Arrays.copyOf()</code>:</p>
+
+<pre><code>newArr = Arrays.copyOf(oldArr, oldArr.lenght());
+</code></pre>
+
+<p>也可以通过这个方法来扩展数组：</p>
+
+<pre><code>Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());
+</code></pre>
+
+<h1 id="对象与类">对象与类</h1>
+
+<p>OO应该是JAVA的重点，OOP三个特性：
+- 封装：用一个类将实现和使用分开，只保留接口与外部进行联系。
+- 继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。
+- 多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</p>
+
+<p>通过下面的方法实例化一个类：</p>
+
+<pre><code>new Date();
+</code></pre>
+
+<p>如果想使用类中的一个方法：</p>
+
+<pre><code>System.out.println(new Date().toString());
+</code></pre>
+
+<h2 id="final-关键字">final 关键字</h2>
+
+<p><code>const</code>关键字相当于<code>const</code>关键字即不可变的意思，并且在构造一个类的时候必须要被初始化。</p>
+
+<h2 id="static-关键字">static 关键字</h2>
+
+<p><code>static</code>关键字其实也很类似，将<code>static</code>理解为类的方法和域即可而不是对象的方法和域。
+例如:</p>
+
+<pre><code class="language-java">class Employee {
+    ...
+    public static currentId;
+    
+    public static int getId() {
+        return currentId;
+    }
+    ...
+}
+</code></pre>
+
+<p>调用使用</p>
+
+<pre><code class="language-java">    int id = Employee.curremtID;
+    int id = Employee.getId();
+</code></pre>
+
+<h2 id="main方法">main方法</h2>
+
+<p>有意思的是java的每一个类里面都可以有main函数，这方便了java为每一个类做单元测试，自己在coding的时候也确实经常用到类的main函数进行测试。</p>
+
+<h2 id="初始化块">初始化块</h2>
+
+<p>初始化块也非常有意思，直接在类域里面输入大括号就能在调用构造器的时候执行。例如：</p>
+
+<pre><code class="language-java">class Employee {
+    private int id;
+
+    // initializeation block
+    {
+        id = 1;
+    }
+}
+</code></pre>
+
+<h1 id="类继承">类继承</h1>
+
+<p>java中继承的关键字是<code>extends</code>,并且注意子类中的方法不能直接访问超类中的<code>private</code>域，所以需要通过在超类中准备<code>访问器</code>，利用<code>super</code>关键字来获取<code>private</code>域，构造函数也是如此。</p>
+
+<pre><code class="language-java">class Manager extends Employee{
+    public Manager(String name) {
+        super(name);
+        ... // other initialization
+    }
+}
+</code></pre>
+
+<h2 id="强制转化">强制转化</h2>
+
+<p><code>强制转化</code>可以发生在类的子类和超类转化中，进行类型转化的唯一原因是：<strong>在暂时忽视对象的实际类型后，使用对象的全部功能</strong>。并且，将一个子类的引用赋值给超类的时候，编译器是允许的，但是将一个超类赋值给一个子类变量，必须进行类型转化。</p>
+
+<p>对于测试强制类型转化，可以使用下面的tricks:</p>
+
+<pre><code class="language-java">if (staff instanceof Manager)
+{
+    boss = (Manager) staff;
+    ...
+}
+</code></pre>
+
+<p>意思是，如果staff是<code>Manager</code>的一个实例，那么可以发生强制转化，当然必须是一个继承链才能成立。</p>
+
+<h2 id="抽象类">抽象类</h2>
+
+<p>抽象类的意义是提供一个较高层次的抽象，作为基类的存在，关键词是<code>abstract</code>。抽象类中的方法只是充当占位的角色，真正对方法的实现发生在子类中，并且抽象类不能被实例化。</p>
+
+<p>如果子类实现了全部的抽象方法，那么子类就不是抽象的。但若子类只定义了部分抽象类或不定义抽象类的方法，子类也必须标记为抽象类。</p>
+
+<h2 id="受保护访问">受保护访问</h2>
+
+<p><code>protected</code>关键词可以使得子类能够访问该域，但是外部代码不行，不过通常都是谨慎使用protected类，因为违背了OOP提倡的数据封装原则。</p>
+
+<h2 id="继承的设计技巧">继承的设计技巧</h2>
+
+<ol>
+<li>将公共操作和域放在超类中</li>
+<li>不使用<code>protected</code></li>
+<li>使用继承实现&rdquo;is-a&rdquo;关系</li>
+<li>除非所有的继承方法都有意义，否则不使用继承</li>
+<li>覆盖方法时，不要改变预期行为</li>
+<li>使用多态，而非类型信息</li>
+</ol>
+
+<h1 id="接口-lambda-内部类">接口、lambda、内部类</h1>
+
+<p>java提供的这三种机制是用来弥补类和类继承一些地方的不灵活性而创立的高级技术。</p>
+
+<h2 id="接口">接口</h2>
+
+<p>书上给了一个很好的理解接口的解释：”如果类遵从某个特定的接口，那么就履行这项服务“。即如果要调用数组的排序服务，那么这个数组中的类需要提供一个不同对象之间进行比较的接口。</p>
+
+<p>比如，用<code>Employee</code>类提供接口,关键词是<code>implements</code>，之后跟随的是要提供的接口:</p>
+
+<pre><code class="language-java">class Employee implements Compareble&lt;Employee&gt; {
+    public int compareTo(Employee other) {
+        ... // implements
+    }
+    ...
+}
+</code></pre>
+
+<p>当然，在某一处提供了接口的代码，类似于声明的作用：</p>
+
+<pre><code class="language-java">public interface Comparable {
+    int compareTo&lt;Object other&gt;
+}
+</code></pre>
+
+<p>其中<code>Object</code>类是所有类的超类。</p>
+
+<p>接口不是类，所以不能被实例化，但是可以声明接口的变量：</p>
+
+<pre><code>Comparable x;
+</code></pre>
+
+<p>然后引用实现了接口的类对象：</p>
+
+<pre><code>x = new Employee(...);
+</code></pre>
+
+<p>接口不能包含实例域和静态方法，但是可以包含常量。</p>
+
+<p>接口概念对于抽象类来说是不同的，抽象类只能用在继承链之中，每个子类只能继承一个超类，但是接口可以实现多个，提高了代码复用。</p>
+
+<h3 id="深拷贝和浅拷贝">深拷贝和浅拷贝</h3>
+
+<p>java每个变量其实可以理解为一个指针或者引用，它们引用一个内存空间作为对象实例的存储位置，但是对象实例中也可能引用了其他的对象。</p>
+
+<p>浅拷贝就是单单拷贝该变量引用的内存部分，但是深拷贝会将该对象内部所引用的对象也拷一份。</p>
+
+<p>比如：</p>
+
+<pre><code class="language-java">class Employee implements Cloneable {
+    ...
+    public Employee clone() {
+        Employee cloned = (Employee) super.clone();
+        cloned.hireDay = (Date) hireDay.clone();
+    }
+}
+</code></pre>
+
+<p>这样就是深拷贝，在拷贝完本身的内容后还会递归拷贝所引用对象的内存。</p>
+
+<h2 id="lambda表达式">lambda表达式</h2>
+
+<p>lambda就是一个代码块，表达形式为 (参数) -&gt; 表达式。
+例如:</p>
+
+<pre><code class="language-java">Comparator&lt;String&gt; comp = (first, second)
+        -&gt; first.length() - second.length();
+</code></pre>
+
+<hr />
+
+<p>如果出现如下类似的lambda表达式:</p>
+
+<pre><code class="language-java">x-&gt;System.out.println(x)
+</code></pre>
+
+<p>那么可以简写为:</p>
+
+<pre><code class="language-java">System.out::println
+</code></pre>
+
+<p>lambda表达式中的一些限制：</p>
+
+<ol>
+<li>只能引用不会改变的变量</li>
+<li>表达式捕获的变量必须是实际上的最终变量</li>
+<li>lambda中的局部变量不能与外部变量重名</li>
+</ol>
+
+<p>可以使用<code>Runable</code>来保存一个lambda,类似于回调：</p>
+
+<pre><code class="language-java">Runable an = (int a, int b)-&gt;System.out.println(a+b);
+...
+...
+an.run();
+</code></pre>
+
+<h2 id="内部类">内部类</h2>
+
+<p>顾名思义，内部类就是定义在一个class内部的类，使用原因：
+- 内部类方法可以访问该类定义所在作用域中的数据，包括私有数据
+- 内部类可以对同一类中的其他类隐藏起来
+- 若想定义一个回调函数，使用匿名内部类会比较便捷</p>
+
+<p>内部类其实是相对于所在类的一个独立的类，当<code>new</code>操作符新建一个实体的时候，并不会实体化内部类，内部类需要独立进行实例化。不过，内部类和所在类建立了一定的联系使得内部类可以访问外围类的数据。</p>
+
+<p>内部类的初始化语法稍微有点复杂：</p>
+
+<pre><code>outerObject.new InnerClass(construction parmeter)
+</code></pre>
+
+<p>例如：</p>
+
+<pre><code class="language-java">TalkingClock jabberer = new TalkingClock(1000, true);
+TalkingClock.TimePrinter listener = jabberer.new TimerPrinter();
+</code></pre>
+
+<p>内部类的一些限制：
+- 内部类声明所有的静态域必须要<code>final</code>，对于每一个外围类只需要有一个静态域的实例，若不是<code>final</code>，则分别会有单独的内部类实例。
+- 类似于lambda，访问外围局部变量也需要保证被引用的局部变量是事实上的<code>final</code>,内部类引用的时候，实际上创建了一份备份，防止外围类被垃圾回收的时候，引用出错，并且声明为<code>final</code>使得内部类和外围类引用的同一个实体。</p>
+
+<p>有一种方法来绕过这个限制，使用长度为1的数组：</p>
+
+<pre><code class="language-java">int[] conuter new int[1];
+for (int i = 0; i &lt; dates.length; i++)
+    dates[i] = new Date()
+        {
+            public int compareTo(Date other);
+            return super.compareTo(other);
+        };
+</code></pre>
+
+<h2 id="匿名内部类">匿名内部类</h2>
+
+<p>匿名内部类是一种很方便的工具来扩充某个接口，它的语法如下：</p>
+
+<pre><code class="language-java">new SuperType(construction parameters)
+    {
+        inner class methods and data
+    }
+</code></pre>
+
+<p>常用的使用方式为</p>
+
+<pre><code class="language-java">Person queen = new Person(&quot;Mary&quot;);
+    // normal object
+Person count = new Person(&quot;Dracula&quot;) 
+    {
+        ...
+    };
+    // a object extending Person
+</code></pre>
+
+    
+    <div>
+      <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+    </div>
+    <script src="http://localhost:1313/js/back2top.js"></script>
+  </main>
+  <div id="disqus-container">
+  
+    <button id="disqus-button" onclick="showComments()">Show comments</button>
+    <div id="disqus-comments">
+      
+      
+      
+        <p><em>Disqus comments are disabled.</em></p>
+        <script type="application/javascript">
+          function showComments() {
+            // Remove button
+var disqusButton = document.getElementById('disqus-button');
+disqusButton.parentNode.removeChild(disqusButton); 
+// Un-hide comments
+var disqusComments = document.getElementById('disqus-comments');
+disqusComments.style.display = 'block'; 
+          }
+        </script>
+      
+      <noscript>Enable JavaScript to view Disqus comments.</noscript>
+    </div>
+  
+</div>
+
+
+          <footer role="contentinfo">
+  
+  
+    Made with <a href="https://gohugo.io/">Hugo</a>. Themed by <a href="https://github.com/zwbetz-gh/cupper-hugo-theme">Cupper</a>. Analytics in comming.
+  
+</footer>
+
+        </div>
+      </div>
+    </div>
+    <script src="http://localhost:1313/js/prism.js"></script>
+<script src="http://localhost:1313/js/dom-scripts.js"></script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    
+    
+    
+  <script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10&v=2"></' + 'script>')</script></body>
+</html>
