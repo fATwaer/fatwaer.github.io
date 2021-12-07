@@ -329,7 +329,7 @@ if (p[j-1] == '*') {
 }
 ```
 
-## 368. 最大整除子集 (51c, 72m)
+## 368. 最大整除子集 (51c,72m)
 
 ``` cpp
 class Solution {
@@ -433,3 +433,80 @@ public:
 ```
 
 和不同路径一题一样的解法，初始化+定义转移方程即可解出来。
+
+
+## 095. 最长公共子序列 (57c,56m)
+
+``` cpp
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        int m = text1.size();
+        int n = text2.size();
+        vector<vector<int>> dp(m+1, vector<int>(n+1, 0));
+
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (text1[i-1] == text2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                } else {
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+经典问题：`dp[i][j]` 的定义为第 i 和第 j 结尾的字符的最小子序列长度。
+
+## 1092. 最短公共超序列(34c,31m)
+
+``` cpp
+class Solution {
+public:
+    string shortestCommonSupersequence(string str1, string str2) {
+        int m = str1.size();
+        int n = str2.size();
+        vector<vector<string>> dp(m+1, vector<string>(n+1));
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (str1[i-1] == str2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1] + str1[i-1];
+                } else {
+                    int l1 = dp[i-1][j].size();
+                    int l2 = dp[i][j-1].size();
+                    if (l1 > l2) dp[i][j] = dp[i-1][j];
+                    else         dp[i][j] = dp[i][j-1];
+                }
+                // std::cout << "[" << dp[i][j] << "] ";
+            }
+            // std::cout << std::endl;
+        }
+        // return dp[m][n];
+        string lcs = dp[m][n];
+        int p1 = 0, p2 = 0;
+        string scs;
+        for (auto c : lcs) {
+            while (p1 < m && str1[p1] != c) {
+                scs += str1[p1];
+                ++p1;
+            }
+            while (p2 < n && str2[p2] != c) {
+                scs += str2[p2];
+                ++p2;
+            }
+            scs += c;
+            ++p1;
+            ++p2;
+        }
+        scs += str1.substr(p1);
+        scs += str2.substr(p2);
+        return scs;
+    }
+};
+```
+
+1. 通过 LCS 得到最长公共子序列
+2. 公共子序列的每一个字符是一个关键节点，相当于一个栅栏，两个序列在这个点同步了，先把公共节点前面的处理完，追加公共节点，再依此类推，最后再追加一下在公共子序列后面的字符。

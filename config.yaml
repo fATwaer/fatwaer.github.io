@@ -11,6 +11,7 @@ footnotereturnlinkcontents: "↩"
 hasCJKLanguage: true
 enableEmoji: true
 paginate: 1000
+disqusShortname: "fatwaer" 
 
 googleAnalytics : "G-LGMCE8D1GT"
 
