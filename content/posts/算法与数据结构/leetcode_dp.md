@@ -510,3 +510,135 @@ public:
 
 1. 通过 LCS 得到最长公共子序列
 2. 公共子序列的每一个字符是一个关键节点，相当于一个栅栏，两个序列在这个点同步了，先把公共节点前面的处理完，追加公共节点，再依此类推，最后再追加一下在公共子序列后面的字符。
+
+## 72. 编辑距离(20c, 19m)
+
+``` cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int m = word1.size();
+        int n = word2.size();
+        vector<vector<int>> dp(m+1, vector<int>(n+1, 0));
+        for (int i = 0; i <= m; ++i) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= n; ++j) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (word1[i-1] == word2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1];
+                } else {
+                    dp[i][j] = std::min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])) + 1;
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+题目中要注意的点：
+1、word1和word2都是可以修改的。
+2、给word1追加一个字符和给word2删除一个字符是等价的。
+
+定义 `dp[i][j]` 为 word1 前i个元素和 word2 的前j个元素最小需要的变化操作数量。
+
+状态转移：
+
+如果 `word1[i] = word2[j]`：
+
+`dp[i][j] = dp[i-1][j-1]`
+
+否则：
+
+给 word1 追加：`dp[i][j-1]+1`，追加的字符补充在 word1 后面，即`word1[i+1] = word2[j]`，所以 `word1[0:i]` 需要和 `word2[0:j-1]` 相等。
+给 word2 追加：`dp[i-1][j]+1`
+给 word1 替换：`dp[i-1][j-1]+1`，替换使得 `word1[i] = word2[j]`，(i, j) 前面的操作次数加1即可。
+
+并且取最小值即可。
+
+最后初始化部分：一个字符串变成空串操作次数为字符串的长度。
+
+
+
+## 72. 编辑距离(100c, 93m)
+
+``` cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int m = word1.size();
+        int n = word2.size();
+        // A
+        if (m*n == 0) return n+m;
+        // B
+        // vector<vector<int>> dp(m+1, vector<int>(n+1, 0));
+        int dp[m+1][n+1];       
+        for (int i = 0; i <= m; ++i) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= n; ++j) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (word1[i-1] == word2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1];
+                } else {
+                    dp[i][j] = std::min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])) + 1;
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+前一种解法耗时和内存都很高，对比提交记录里面更加快速的答案，看到有几个优化点：
+
+- A：如果任意一个是空串，那返回另外一个的长度即可。
+- B：`dp[i][j]` 的值由子结构确定，不需要和自己比较，不用走 memset 之类的初始化也可以得到最终的结果。
+
+
+## 97. 交错字符串(79c, 57m)
+
+``` cpp
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        int m = s1.size();
+        int n = s2.size();
+        
+        if (m + n != s3.size())  return false;
+        vector<vector<bool>> dp (m+1, vector<bool>(n+1, false));
+
+        dp[0][0] = true;
+        for (int i = 1; i <= m; ++i) {
+            dp[i][0] = (s3[i-1] == s1[i-1] && dp[i-1][0]);
+        }
+        for (int j = 1; j <= n; ++j) {
+            dp[0][j] = (s3[j-1] == s2[j-1] && dp[0][j-1]);
+        }
+
+        // i + j 是否能交错成非空
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (s3[i+j-1] == s1[i-1] && dp[i-1][j] != false) {
+                    dp[i][j] = true;
+                }
+                if (s3[i+j-1] == s2[j-1] && dp[i][j-1] != false) {
+                    dp[i][j] = true;
+                }
+            }  
+        }
+        return dp[m][n];
+    }
+};
+```
+
+1、单纯双指针是不行的，因为s1/s2同时碰到相同的字符的时候，选错指针移动就会错过合适的序列，除非加上回溯和其他方法。
+2、dp 状态定义为，`s1[0:i]` 和 `s2[0:j]` 是否能交错成 `s3[0:i+j]` 的字符串，再关联 `dp[i][j]` 和前面一个子问题的关系，并且处理好初始化即可。
