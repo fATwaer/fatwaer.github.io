@@ -181,7 +181,7 @@ theme = "DoIt"
 
   # 作者的社交信息设置
   [params.social]
-    GitHub = "github.com/fatwaer"
+    GitHub = "fatwaer"
     Telegram = "fatwaer"
     Youtubechannel = ""
     Weibo = ""
