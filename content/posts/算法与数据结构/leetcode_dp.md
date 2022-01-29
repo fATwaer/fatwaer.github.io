@@ -678,3 +678,151 @@ public:
 1. 这题中间值有溢出，扩大一下数据类型的范围。
 2. 这题的 dp 和编辑距离那题比较相似，`dp[i][j]` 代表前 i 和 j 个字符的子序列个数。如果不相等，只能让 `i-1`（删除掉i），因为 t 是 s 的子序列。如果相等，就会有两种情况，删除掉这个 i 字母，以及同时向前挪一格检查子结构。
 
+
+## 813. 最大平均值和的分组(7c, 38m)
+
+``` cpp
+class Solution {
+public:
+    double largestSumOfAverages(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<vector<double>> dp(n + 1, vector<double>(k + 1, 0));
+
+        auto avg = [&](int p1, int p2) -> double {
+            double res = 0.0;
+            for (int i = p1; i <= p2; ++i) {
+                res += nums[i];
+            }
+            return res / (p2 - p1 + 1);
+        };
+
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 1; j <= min(i, k); ++j) {
+                if (j == 1) {
+                    dp[i][j] = avg(0, i-1);
+                    continue;
+                }
+                for (int i0 = j - 1; i0 < i; ++i0) {
+                    dp[i][j] = max(dp[i][j], dp[i0][j-1] + avg(i0, i-1));
+                }
+            }
+        }
+        return dp[n][k];
+    }
+};
+```
+
+## 410. 分割数组的最大值(20c, 5m)
+``` cpp
+class Solution {
+public:
+    int splitArray(vector<int>& nums, int m) {
+        int n = nums.size();
+        vector<vector<int>> dp(n + 1, vector<int>(m + 1, INT_MAX));
+        vector<vector<int>> sum(n + 1, vector<int>(n + 1, 0));
+
+        for (int i = 1; i <= n; ++i) {
+            for (int j = i; j <= n; ++j) {
+                sum[i][j] = sum[i][j-1] + nums[j-1];
+            }
+        }
+
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 1; j <= min(m, i); ++j) {
+                if (j == 1) {
+                    dp[i][j] = sum[1][i];
+                    continue;
+                }
+                for (int i0 = j - 1; i0 < i; ++i0) {
+                    dp[i][j] = min(dp[i][j], max(dp[i0][j-1], sum[i0+1][i]));
+                }
+            }
+        }
+        return dp[n][m];
+    }
+};
+```
+
+区间型dp，在最内层循环中，做了两个区间的约束和求值，即从（0 ～ i0）区间里面的最值和当前区间 (i0+1, i) 找到结果，通过不断移动 i0 来寻找。
+
+
+## 1335. 工作计划的最低难度 (66c, 24m)
+
+``` cpp
+class Solution {
+public:
+    int minDifficulty(vector<int>& jobDifficulty, int d) {
+        int n = jobDifficulty.size();
+
+        if (n < d) {
+            return -1;
+        }
+
+        vector<vector<int>> dp (n + 1, vector<int>(d + 1, INT_MAX));
+        vector<vector<int>> max_cache(n + 1, vector<int>(n + 1, 0));
+
+        for (int i = 1; i <= n; ++i) {
+            for (int j = i; j <= n; ++j) {
+                max_cache[i][j] = max(max_cache[i][j-1], jobDifficulty[j-1]);
+            }
+        }
+
+        for (int i = 1; i <= n; ++i) {
+            for (int j = 1; j <= min(d, i); ++j) {
+                if (j == 1) {
+                    dp[i][j] = max_cache[1][i];
+                    continue;
+                }
+                for (int i0 = j - 1; i0 < i; ++i0) {
+                    dp[i][j] = min(dp[i][j], dp[i0][j-1] + max_cache[i0+1][i]);
+                }
+            }
+        }
+
+        return dp[n][d];
+    }
+};
+```
+
+和分割数组最大值几乎一样，dp方程有少许改动，dp求值的结果代表是所有工作日的难度。
+
+## 516. 最长回文子序列
+
+``` cpp
+class Solution {
+public:
+    int longestPalindromeSubseq(string s) {
+        int n = s.size();
+        vector<vector<int>> dp (n + 1, vector<int>(n + 1, 0));
+        for (int len = 1; len <= n; ++len) {
+            for (int i = 1; i + len - 1 <= n ; ++i) {
+                int j = i + len - 1;
+                if (len == 1) {
+                    dp[i][j] = 1;
+                } else if (s[i-1] == s[j-1]) {
+                    dp[i][j] = dp[i+1][j-1] + 2;
+                } else {
+                    dp[i][j] = max(dp[i+1][j], dp[i][j-1]);
+                }
+            }
+        }
+
+        return dp[1][n];
+    }
+};
+```
+
+`dp[i][j]` 的定义为 i 到 j 最长的公共子序列，状态转移方程和最长公共子序列比较类似，检查端点，如果相同，同时向中心靠拢。不相同则找到最大值。
+
+比如："bbbab" 到计算逻辑为：
+
+``` 
+1-1(1) 2-2(1) 3-3(1) 4-4(1) 5-5(1) 
+1-2(2) 2-3(2) 3-4(2) 4-5(2) 
+1-3(3) 2-4(3) 3-5(3) 
+1-4(4) 2-5(4) 
+1-5(5) 
+```
+
+首先计算好子问题的值，再递推开始字符索引为1，结束字符为n的结果。
+
