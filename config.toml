@@ -183,57 +183,6 @@ theme = "DoIt"
   [params.social]
     GitHub = "fatwaer"
     Telegram = "fatwaer"
-    Youtubechannel = ""
-    Weibo = ""
-    Odnoklassniki = ""
-    VK = ""
-    Flickr = ""
-    Xing = ""
-    Snapchat = ""
-    Soundcloud = ""
-    Spotify = ""
-    Bandcamp = ""
-    Paypal = ""
-    Fivehundredpx = ""
-    Mix = ""
-    Goodreads = ""
-    Lastfm = ""
-    Foursquare = ""
-    Hackernews = ""
-    Kickstarter = ""
-    Patreon = ""
-    Steam = ""
-    Twitch = ""
-    Strava = ""
-    Skype = ""
-    Whatsapp = ""
-    Zhihu = ""
-    Douban = ""
-    Angellist = ""
-    Slidershare = ""
-    Jsfiddle = ""
-    Deviantart = ""
-    Behance = ""
-    Dribbble = ""
-    Wordpress = ""
-    Vine = ""
-    Googlescholar = ""
-    Researchgate = ""
-    Mastodon = ""
-    Thingiverse = ""
-    Devto = ""
-    Gitea = ""
-    XMPP = ""
-    Matrix = ""
-    Bilibili = ""
-    ORCID = ""
-    Liberapay = ""
-    Ko-Fi = ""
-    BuyMeACoffee = ""
-    Linktree = ""
-    QQ = ""
-    QQGroup = ""
-    Email = "xxxx@xxxx.com"
     RSS = true # 
 
   #  文章页面配置
@@ -327,41 +276,15 @@ theme = "DoIt"
       fullscreen = true
     #  文章页面的分享信息设置
     [params.page.share]
-      enable = true
+      enable = false
       Twitter = true
-      Facebook = true
-      Linkedin = false
-      Whatsapp = true
-      Pinterest = false
-      Tumblr = false
-      HackerNews = false
-      Reddit = false
-      VK = false
-      Buffer = false
-      Xing = false
-      Line = true
-      Instapaper = false
-      Pocket = false
-      Digg = false
-      Stumbleupon = false
-      Flipboard = false
-      Weibo = true
-      Renren = false
-      Myspace = true
-      Blogger = true
-      Baidu = false
-      Odnoklassniki = false
-      Evernote = true
-      Skype = false
-      Trello = false
-      Mix = false
     #  评论系统设置
     [params.page.comment]
       enable = true
       # Disqus 评论系统设置
       [params.page.comment.disqus]
         # 
-        enable = false
+        enable = true
         # Disqus 的 shortname, 用来在文章中启用 Disqus 评论系统
         shortname = "fatwaer"
       # Gitalk 评论系统设置
@@ -373,147 +296,7 @@ theme = "DoIt"
         clientId = ""
         clientSecret = ""
       # Valine 评论系统设置
-      [params.page.comment.valine]
-        enable = false
-        appId = ""
-        appKey = ""
-        placeholder = ""
-        avatar = "mp"
-        meta= ""
-        pageSize = 10
-        lang = ""
-        visitor = true
-        recordIP = true
-        highlight = true
-        enableQQ = false
-        serverURLs = ""
-        #  emoji 数据文件名称, 默认是 "google.yml"
-        # ("apple.yml", "google.yml", "facebook.yml", "twitter.yml")
-        # 位于 "themes/DoIt/assets/data/emoji/" 目录
-        # 可以在你的项目下相同路径存放你自己的数据文件:
-        # "assets/data/emoji/"
-        emoji = ""
-      # Waline 评论系统设置
-      [params.page.comment.waline]
-        # 
-        enable = false
-        serverURL = ""
-        visitor = false
-        emoji = ['https://cdn.jsdelivr.net/gh/walinejs/emojis/weibo']
-        meta = ['nick', 'mail', 'link']
-        requiredMeta = []
-        login = 'enable'
-        wordLimit = 0
-        pageSize = 10
-        uploadImage = false
-        highlight = true
-        mathTagSupport = false
-        commentCount = true
-      # Facebook 评论系统设置
-      [params.page.comment.facebook]
-        enable = false
-        width = "100%"
-        numPosts = 10
-        appId = ""
-        languageCode = "zh_CN"
-      #  Telegram Comments 评论系统设置
-      [params.page.comment.telegram]
-        enable = false
-        siteID = ""
-        limit = 5
-        height = ""
-        color = ""
-        colorful = true
-        dislikes = false
-        outlined = false
-        dark = false
-      #  Commento 评论系统设置
-      [params.page.comment.commento]
-        enable = false
-      #  Utterances 评论系统设置
-      [params.page.comment.utterances]
-        enable = false
-        # owner/repo
-        repo = ""
-        issueTerm = "pathname"
-        label = ""
-        lightTheme = "github-light"
-        darkTheme = "github-dark"
-      #  Twikoo 评论系统设置
-      [params.page.comment.twikoo]
-        enable = false
-        envId = ""
-        region = ""
-        path = ""
-        visitor = true
-        commentCount = true
-      #  Vssue 评论系统设置
-      [params.page.comment.vssue]
-        enable = false
-        platform = "" # ("bitbucket", "gitea", "gitee", "github", "gitlab")
-        owner = ""
-        repo = ""
-        clientId = ""
-        clientSecret = ""
-      #  Remark42 评论系统设置
-      [params.page.comment.remark42]
-        enable = false
-        host = ""
-        site_id = ""
-        max_shown_comments = 15
-        show_email_subscription = true
-        simple_view = false
-      #  giscus 评论系统设置
-      [params.page.comment.giscus]
-        enable = false
-        # owner/repo
-        dataRepo = ""
-        dataRepoId = ""
-        dataCategory = ""
-        dataCategoryId = ""
-        dataMapping = "pathname"
-        dataReactionsEnabled = "1"
-        dataEmitMetadata = "0"
-        lightTheme = "light"
-        darkTheme = "dark"
-    #  第三方库配置
-    [params.page.library]
-      [params.page.library.css]
-        # someCSS = "some.css"
-        #  更多第三方库配置
-        # [params.page.library.css.someOtherCSS]
-        #   src = "someOther.css"
-        #   defer = true
-        #   attr = "customAttribute"
-        # 位于 "assets/"
-        # 或者
-        # someCSS = "https://cdn.example.com/some.css"
-      [params.page.library.js]
-        # someJavaScript = "some.js"
-        #  更多第三方库配置
-        # [params.page.library.js.someOtherJavaScript]
-        #   src = "someOther.js"
-        #   defer = false
-        #   async = true
-        #   attr = "customAttribute"
-        # 位于 "assets/"
-        # 或者
-        # someJavaScript = "https://cdn.example.com/some.js"
-    #  页面 SEO 配置
-    [params.page.seo]
-      # 图片 URL
-      images = []
-      # 出版者信息
-      [params.page.seo.publisher]
-        name = ""
-        logoUrl = ""
-
-  #  赞赏配置
-  [params.sponsor]
-    enable = false
-    bio = "如果你觉得这篇文章对你有所帮助，欢迎赞赏~"
-    link = "https://www.buymeacoffee.com" # 你的赞赏页面的地址
-    custom = "" # 自定义 HTML 
+ 
 
   #  TypeIt 配置
   [params.typeit]
@@ -539,7 +322,7 @@ theme = "DoIt"
   #  网站 SEO 配置
   [params.seo]
     # 图片 URL
-    image = ""
+    image = "https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/"
     # 缩略图 URL
     thumbnailUrl = ""
 
@@ -690,13 +473,13 @@ series = "series"
     pre = ""
     # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
     post = ""
-    name = "文章"
+    name = "所有文章"
     url = "/posts/"
     # 当你将鼠标悬停在此菜单链接上时, 将显示的标题
     title = ""
     weight = 1
   [[menu.main]]
-    identifier = "categories"
+    identifier = "文章分类"
     pre = ""
     post = ""
     name = "分类"
