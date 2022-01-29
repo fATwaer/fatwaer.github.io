@@ -12,7 +12,7 @@ categories:
 一篇文档会被分词分解成一个个词语，生成一个倒排索引，一个倒排索引是一个 Lucene 索引的段，多个段组成一个 Lucene 索引，而一个 Lucene 索引被称之为一个 ElasticSearch 的分片，将多个分片分布式存储形成了 ElasticSearch。
 。
 
-![Pasted_image_20210804132530.png](/blog/开源组件/imgs/Pasted_image_20210804132530.png)
+![Pasted_image_20210804132530.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210804132530.png)
 
 ## ES 倒排索引的特性
 
@@ -162,19 +162,19 @@ read 系统调用：
 
 1、一篇文档被索引后会被写入内存缓冲区，并追加到translog。（数据内存中）
 
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210810131414.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210810131414.png)
 
 2、内存缓冲区的数据被写入到一个新段，但是没有fsync，但是可以被用于搜索。（文件系统缓存，仍旧在内存中）
 
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210810131726.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210810131726.png)
 
 3、数据不断积累，执行索引刷新（flush），新的 translog 创建，执行全量提交，内存中的数据写入新段，缓冲区清空，通过fsync将提交点写入硬盘，删除老的translog。
 > translog 提供所有还没有被刷到磁盘的操作的一个持久化纪录。当 Elasticsearch 启动的时候， 它会从磁盘中使用最后一个提交点去恢复已知的段，并且会重放 translog 中所有在最后一次提交后发生的变更操作。
 
 > translog 也被用来提供实时 CRUD 。当你试着通过ID查询、更新、删除一个文档，它会在尝试从相应的段中检索之前， 首先检查 translog 任何最近的变更。这意味着它总是能够实时地获取到文档的最新版本。
 
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210810132149.png)
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210810132712.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210810132149.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210810132712.png)
 
 flush API 可以用于手动刷新数据，将页缓存刷入磁盘中去。
 
@@ -205,8 +205,8 @@ translog 默认5s刷一次，或者在每次写请求完成之后执行(e.g. ind
 4、新段可以被打开搜索
 5、老段被删除
 
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210811132719.png)
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210811132727.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210811132719.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210811132727.png)
 
 强制合并API：
 
@@ -218,7 +218,7 @@ POST /logstash-2014-10/_optimize?max_num_segments=1
 
 ## 总结
 
-![this's an img](/blog/开源组件/imgs/Pasted_image_20210825132839.png)
+![this's an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210825132839.png)
 
 es 的索引写入分成两个部分：
 

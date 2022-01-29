@@ -15,7 +15,7 @@ categories:
 2、协调节点把搜索请求发送到其他节点的索引分片上搜索数据
 3、然后再汇总数据返回给客户端。
 
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210818194118.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210818194118.png)
 
 
 文档路由的规则比较常见，对文档ID进行hash得到具体分片，es 不能扩容，扩容就会存在节点对应不上的情况。
@@ -34,7 +34,7 @@ GET /_search
 
 的查询流程如下：
 
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210729132723.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210729132723.png)
 
 1.  客户端发送一个 `search` 请求到 `Node 3` ， `Node 3` 会创建一个大小为 `from + size` 的空优先队列。
 2.  `Node 3` 将查询请求转发到索引的每个主分片或副本分片中。每个分片在本地执行查询并添加结果到大小为 `from + size` 的本地有序优先队列中。

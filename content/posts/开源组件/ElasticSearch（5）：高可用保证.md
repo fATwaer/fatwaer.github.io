@@ -23,7 +23,7 @@ PUT /blogs
 
 当集群中只有一个节点时，状态为：
 
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210819190821.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210819190821.png)
 但是可以看到，`NODE1` 上只有主分片，没有副本分片，因为在同一个节点上既保存原始数据又保存副本是没有意义的。
 
 通过 `_health` 接口查询，
@@ -43,10 +43,10 @@ red：有主分片没能正常运行。
 ## 多节点分片
 
 当加入新物理节点后，es集群就会在新节点上创建副本节点，此时集群状态就会转变为`green`，因为所有主副分片都正常运行了。
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210819191400.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210819191400.png)
 ## 多节点负载
 当拥有三个节点后，es 会为了分散负载而对分片进行重新分配，分片数据，如：
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210819193032.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210819193032.png)
 每一个分片都是一个独立的功能完整的搜索引擎，拥有使用一个节点上的所有资源的能力。
 
 ## 继续扩容
@@ -64,7 +64,7 @@ PUT /blogs/_settings
 ```
 
 
-![there is an img](/blog/开源组件/imgs/Pasted_image_20210819200815.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Pasted_image_20210819200815.png)
 
 原本3主3副个节点就会扩充到3主6副个节点，这样即使两个节点宕机，也不会丢失数据。其次，有多个副本节点能够获得更高的吞吐，因为在不同的节点上都能处理相同分片的请求了，当然副本节点的数量提升的吞吐取决于机器性能，分片越多，从机器获取的资源也就更少。
 

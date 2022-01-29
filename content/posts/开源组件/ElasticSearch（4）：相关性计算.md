@@ -182,19 +182,19 @@ GET /megacorp/_search
 
 其中 idf 的计算公式为：
 
-![there is an img](/blog/开源组件/imgs/MommyTalk1629458124028.png)
+![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/MommyTalk1629458124028.png)
 - `n` 为含有该词语文档的个数
 
 - `N` 为含有这个字段的文档总数（包括曾经被索引过的文档数）
 
 
 tf 的计算公式为：
- ![there is an img](/blog/开源组件/imgs/MommyTalk1629459556826.png)
+ ![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/MommyTalk1629459556826.png)
 
  公式中有`k1`，`b` 这两个常量，在这里先不用关系它们。变量有 `freq` 代表词语在文档中出现的频次，`avgdl` 平均文档长度，以及 `dl` 当前文档长度。我们可以稍微化简下公式：
 
 
- ![there is an img](/blog/开源组件/imgs/MommyTalk1629458073299.png)
+ ![there is an img](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/MommyTalk1629458073299.png)
 
 那么就能分析到，`freq` 越大，频次越高，文档也就越相关；`dl` 越大，值就会更小，文档就更加不相干；`avgdl` 越大，平局文档长度越长（词越稀有），文档就会越相关。
 

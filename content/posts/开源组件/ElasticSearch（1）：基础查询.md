@@ -22,7 +22,7 @@ POST /<target>/_create/<_id>
 下面的例子利用`PUT`方法创建一个 id 为1的文档：
 
 
-![1626509597720.png](/blog/开源组件/imgs/1626509597720.png)
+![1626509597720.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/1626509597720.png)
 
 
 其中，version字段为1，并且result的值为`created`。
@@ -30,11 +30,11 @@ POST /<target>/_create/<_id>
 另一种创建文档的方式是通过`POST`，又ES自动生成一个全局唯一的 `_id` 给新的文档：
 
 
-![1626509630285.png](/blog/开源组件/imgs/1626509630285.png)
+![1626509630285.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/1626509630285.png)
 
 ### 更新的文档
 
-![1626509615300.png](/blog/开源组件/imgs/1626509615300.png)
+![1626509615300.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/1626509615300.png)
 
 
 如果重复对这个文档执行PUT操作，那么ES就会转变为更新，并且自增`version`字段。
@@ -52,7 +52,7 @@ GET /<index_name>
 例如：
 
 
-![1626511976668.png](/blog/开源组件/imgs/1626511976668.png)
+![1626511976668.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/1626511976668.png)
 
 
 通常会得到三个信息：
@@ -76,7 +76,7 @@ DELETE /<index>/_doc/<_id>
 
 例如：
 
-![1626511896634.png](/blog/开源组件/imgs/1626511896634.png)
+![1626511896634.png](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/1626511896634.png)
 
 
 
@@ -161,7 +161,7 @@ GET /megacorp/_search
 
 ### 查询返回结构
 
-![IMG_0560.jpg](/blog/开源组件/imgs/IMG_0560.jpg)
+![IMG_0560.jpg](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/IMG_0560.jpg)
 
 ### 查询字符串(query_string)
 ```
