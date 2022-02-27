@@ -247,7 +247,7 @@ theme = "DoIt"
       sort = true
     #  KaTeX 数学公式
     [params.page.math]
-      enable = false
+      enable = true
       # 默认块定界符是 $$ ... $$ 和 \\[ ... \\]
       blockLeftDelimiter = ""
       blockRightDelimiter = ""
