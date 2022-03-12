@@ -1,5 +1,5 @@
 ---
-title: "google benchmark：利用 perf 工具查看程序热点"
+title: "google benchmark 的初体验"
 date: 2021-04-30T13:09:26+08:00
 draft: false
 categories:
