@@ -341,7 +341,7 @@ theme = "DoIt"
       server = ""
     #  Baidu Analytics
     [params.analytics.baidu]
-      id = "ed5af46fc1373440bd8ae49a358a2958"
+      id = "bf07771626af6858dadc890bb335c55a"
     #  Umami Analytics
     [params.analytics.umami]
       data_website_id = ""
