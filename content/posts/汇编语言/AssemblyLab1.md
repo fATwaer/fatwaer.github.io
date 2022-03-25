@@ -8,7 +8,7 @@ date: 2017-11-13 22:05:05
 ---
 
 
-```asm
+``` assembly
 assume cs:codesg
 
 

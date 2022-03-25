@@ -1,5 +1,5 @@
 ---
-title: Core Java for DataBase
+title: Java 核心技术卷1 笔记
 date: 2018-11-18 16:36:16
 tags:
     - Java
