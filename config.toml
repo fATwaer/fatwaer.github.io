@@ -6,7 +6,7 @@ languageCode = "zh-CN"
 # 是否包括中日韩文字
 hasCJKLanguage = true
 # 网站标题
-title = "北极乌布的研究日志"
+title = "pokpok的研究日志"
 
 # 更改使用 Hugo 构建网站时使用的默认主题
 theme = "DoIt"
@@ -14,13 +14,13 @@ theme = "DoIt"
   #  DoIt 主题版本
   version = "0.2.X"
   # 网站名称
-  title = "北极乌布的研究日志"
+  title = "PokPok的研究日志"
   # 网站描述
-  description = "北极乌布的研究日志，记录折腾的时光"
+  description = "pokpok的研究日志"
   # 网站关键词
   keywords = ["c++", "jemalloc", "分布式系统", "system"]
   #  网站默认主题样式 ("light", "dark", "black", "auto")
-  defaultTheme = "black"
+  defaultTheme = "light"
   # 公共 git 仓库路径, 仅在 enableGitInfo 设为 true 时有效
   gitRepo = ""
   #  哪种哈希函数用来 SRI, 为空时表示不使用 SRI
@@ -94,13 +94,13 @@ theme = "DoIt"
       # LOGO 的 URL
       logo = ""
       # 标题名称
-      name = "北极乌布的研究日志"
+      name = "PokPok的研究日志"
       # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
       pre = ""
       # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
       post = ""
       #  是否为标题显示打字机动画
-      typeit = false
+      typeit = true
 
   # 页面底部信息配置
   [params.footer]
@@ -155,15 +155,15 @@ theme = "DoIt"
     [params.home.profile]
       enable = true
       # Gravatar 邮箱, 用于优先在主页显示的头像
-      gravatarEmail = "fatwaer@gmail.com"
+      # gravatarEmail = "fatwaer@gmail.com"
       # 主页显示头像的 URL
       # 将你的头像文件放置于 static 或者 assets 目录下
       # 文件路径是相对于 static 或者 assets 目录的
-      avatarURL = "/images/avatar.webp"
+      avatarURL = "/images/avatar.png"
       #  主页显示的网站标题 (支持 HTML 格式)
-      title = "北极乌布的研究日志"
+      title = "PokPok"
       # 主页显示的网站副标题
-      subtitle = "北极乌布的研究日志"
+      subtitle = "pokpok的研究日志"
       # 是否为副标题显示打字机动画
       typeit = false
       # 是否显示社交账号
@@ -188,7 +188,7 @@ theme = "DoIt"
   #  文章页面配置
   [params.page]
     #  是否在主页隐藏一篇文章
-    hiddenFromHomePage = false
+    hiddenFromHomePage = true
     #  是否在搜索结果中隐藏一篇文章
     hiddenFromSearch = false
     #  是否使用 twemoji
@@ -234,7 +234,7 @@ theme = "DoIt"
       #  是否保持使用文章前面的静态目录
       keepStatic = false
       # 是否使侧边目录自动折叠展开
-      auto = true
+      auto = false
     #  代码配置
     [params.page.code]
       # 是否显示代码块的复制按钮
@@ -386,7 +386,7 @@ theme = "DoIt"
   [markup.highlight]
     codeFences = true
     guessSyntax = true
-    lineNos = true
+    lineNos = false
     lineNumbersInTable = true
     # false 是必要的设置
     # (https://github.com/dillonzq/LoveIt/issues/158)

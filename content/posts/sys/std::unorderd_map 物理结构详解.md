@@ -1,5 +1,5 @@
 ---
-title: "C++ STL：std::unorderd_map 物理结构详解"
+title: "std::unorderd_map 物理结构详解"
 date: 2022-02-05T11:59:46+08:00
 draft: false
 ---

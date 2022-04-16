@@ -500,11 +500,11 @@ function initHighlight () {
       const $header = document.createElement('div')
       $header.className = 'code-header ' + $code.className.toLowerCase()
       const $title = document.createElement('span')
-      $title.classList.add('code-title')
-      $title.insertAdjacentHTML('afterbegin', '<i class="arrow fas fa-chevron-right fa-fw"></i>')
-      $title.addEventListener('click', () => {
-        $chroma.classList.toggle('open')
-      }, false)
+      // $title.classList.add('code-title')
+      // $title.insertAdjacentHTML('afterbegin', '<i class="arrow fas fa-chevron-right fa-fw"></i>')
+      // $title.addEventListener('click', () => {
+      //   $chroma.classList.toggle('open')
+      // }, false)
       $header.appendChild($title)
       const $ellipses = document.createElement('span')
       $ellipses.insertAdjacentHTML('afterbegin', '<i class="fas fa-ellipsis-h fa-fw"></i>')
