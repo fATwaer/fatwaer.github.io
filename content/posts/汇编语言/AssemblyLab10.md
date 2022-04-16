@@ -5,6 +5,7 @@ categories:
 tags: 
   - Assembly
 date: 2017-11-21 22:41:02
+draft: true
 ---
 
 实验10 一共3个小实验，分别完成三个函数。
@@ -75,7 +76,7 @@ end start
 
 程序编译执行后的结果:
 
-![lab10.1.png]( http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.1.png)
+![lab10.1.png]( /images/assembly/lab10.1.png)
 
 
 ### 解决除法溢出问题
@@ -141,7 +142,7 @@ end start
 ** DX = 0001H , AX = 86A0H , CX = 0 **
 
 
-![lab10.2.png]( http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.2.png)
+![lab10.2.png]( /images/assembly/lab10.2.png)
 
 ### 数据显示
 
@@ -244,7 +245,7 @@ end start
 
 如图，测试结果
 
-![lab10.3.png]( http://py2h8wxnt.bkt.clouddn.com/assembly/lab10.3.png)
+![lab10.3.png]( /images/assembly/lab10.3.png)
 
 
 

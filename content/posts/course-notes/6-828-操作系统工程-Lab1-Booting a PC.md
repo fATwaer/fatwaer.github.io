@@ -126,7 +126,7 @@ boot/main.c: 加载kernel的C代码
 
 	ljmp    $PROT_MODE_CSEG, $protcseg
 关于这个跳转有一个好的解释如下图。
-![IMG_3555.PNG]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3555.PNG)
+![IMG_3555.PNG]( /images/operating-system/6.828/lab1/IMG_3555.PNG)
 是保护模式下的跳转方法。
 
 	movl    $start, %esp
@@ -238,12 +238,12 @@ repnz为装饰符，重复执行后面的语句，直到cx寄存器为0。
 dx存要访问的端口，edi存要存放的内存起始地址。每次传输4字节
 执行前
 
-![IMG_3528.PNG]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3528.PNG)
+![IMG_3528.PNG]( /images/operating-system/6.828/lab1/IMG_3528.PNG)
 
-![IMG_3529.PNG]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3529.PNG)
+![IMG_3529.PNG]( /images/operating-system/6.828/lab1/IMG_3529.PNG)
 
 执行2次
-![IMG_3527.PNG]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/IMG_3527.PNG)
+![IMG_3527.PNG]( /images/operating-system/6.828/lab1/IMG_3527.PNG)
 
 直到ecx减为0，继续接下来的执行。这个时候从0x10000~0x100200(512字节)已经加载完成。
 > GDB查看内存信息: x/12xb 0x10000
@@ -362,36 +362,36 @@ align的大小表示是我在用python的时候想起来的，2**n 表示的是 
 关于link address 和load address,我在网上找到这样一个说法:
 load address，表示一个已确定对象的实际加载地址。如C中可执行程序的main函数的地址，在编译完成的时候其地址已经确认（当然在系统中这是一个逻辑地址）
 link address，表示一个未确定对象的应该加载的地址。如你使用C动态库中的printf函数的地址。在编译完成的时候不能确定其地址，因为它的实体是在动态链接库中，只能给它规定一个应该加载的地址，在程序加载的时候才能真正确认是否可以加载在这个地址上（可能出现动态库找不到的情况，这时候就加载错误了）
-![obj8.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj8.png)
+![obj8.png]( /images/operating-system/6.828/lab1/obj8.png)
 VMA为link address,程序开始执行的地方；LMA为load address,将会被bootloader读取到的内存地址。
 
 跟着这个[链接](http://www.cnblogs.com/fatsheep9146/p/5220004.html)，改变boot/Makefrag的文件内容，原文件内容
 
-![obj1.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj1.png)
+![obj1.png]( /images/operating-system/6.828/lab1/obj1.png)
 
 改-Ttext的参数，从0x7c00改为0x7e00
 
-![obj2.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj2.png)
+![obj2.png]( /images/operating-system/6.828/lab1/obj2.png)
 
 原boot.asm(make后产生的)变为
 
-![obj3.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj3.png)
+![obj3.png]( /images/operating-system/6.828/lab1/obj3.png)
 
 每个命令在这个asm文件内的地址都发生了变化。
 
 跟踪bootstrap,设置断点在0x7c00,si执行几步。
 
-![obj4.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj4.png)
+![obj4.png]( /images/operating-system/6.828/lab1/obj4.png)
 
-![obj5.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj5.png)
+![obj5.png]( /images/operating-system/6.828/lab1/obj5.png)
 
 lgdtw  0x7e64,本应该加载0x7c64的,但是内存区域内容没有内容
 
-![obj6.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj6.png)
+![obj6.png]( /images/operating-system/6.828/lab1/obj6.png)
 
 ljmp   $0x8,$0x7e32,这是跳转到保护模式程序段的跳转命令，但是跳转失败
 
-![obj7.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/obj7.png)
+![obj7.png]( /images/operating-system/6.828/lab1/obj7.png)
 
 我改变了boot/Makefrag中-Ttext的参数，把boot loader的link地址从0x7c00改成了0x7e00。由make命令从boot.S生成到boot.asm的文件中，命令的地址都发生了变化，但是BIOS默认读取boot到地址0x7c00，但是代码的性质，例如lgdtw加载全局描述符命令，已经发生了改变。代码本应被读到0x7e00执行，实际是在0x7c00执行，到最后一步一步的出错。
 
@@ -420,11 +420,11 @@ entry_pgdir 将虚拟地址0xf0000000~0xf0400000 映射到 0x00000000~0x00400000
 根据练习的引导，将断点设置在mov eax,cr0处，查看0x00100000和0xf0100000的内存空间。
 运行前：
 
-![before.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/before.png)
+![before.png]( /images/operating-system/6.828/lab1/before.png)
 
 运行后：
 
-![next.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/next.png)
+![next.png]( /images/operating-system/6.828/lab1/next.png)
 
 
 地址0xf0100000被映射成功了，与0x00100000地址处内容相同。
@@ -435,7 +435,7 @@ entry_pgdir 将虚拟地址0xf0000000~0xf0400000 映射到 0x00000000~0x00400000
 	0x10002a:	jmp    *%eax
 程序将会跳转到0xf010002c这个地址去，但是用gdb查看这个地址并没有指令：
 
-![f010002c.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/f010002c.png)
+![f010002c.png]( /images/operating-system/6.828/lab1/f010002c.png)
 
 程序就会往非预期的方向前进。
 
@@ -803,7 +803,7 @@ stab_binsearch(stabs, &lline, &rline, N_SLINE, addr);
 
 `$ make grade`
 
-![lab1grade.png]( http://py2h8wxnt.bkt.clouddn.com/operating-system/6.828/lab1/lab1grade.png)
+![lab1grade.png]( /images/operating-system/6.828/lab1/lab1grade.png)
 
 ## 总结
 1. 开机时候，ip指向一个高地址，执行跳转命令到BIOS的程序段，通过BIOS将磁盘的Boot加载到内存地址0x7c00处。

@@ -5,6 +5,7 @@ categories:
 tags: 
   - Assembly
 date: 2017-11-17 12:15:41
+draft: true
 ---
 
 
@@ -48,5 +49,5 @@ jmp short s
 ```
 **命令占用两个字节**
 
-![lab8.1](http://py2h8wxnt.bkt.clouddn.com/assembly/lab8.1.png)
+![lab8.1](/images/assembly/lab8.1.png)
 

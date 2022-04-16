@@ -5,6 +5,7 @@ categories:
 tags: 
   - Assembly
 date: 2017-11-13 22:49:40
+draft: true
 ---
 根据程序编译连接并用Debug加载、跟踪，然后回答问题。
 

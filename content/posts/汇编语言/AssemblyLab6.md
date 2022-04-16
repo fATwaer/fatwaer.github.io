@@ -5,6 +5,7 @@ categories:
 tags: 
   - Assembly
 date: 2017-11-13 23:11:53
+draft: true
 ---
 
 

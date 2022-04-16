@@ -5,6 +5,7 @@ categories:
 tags: 
   - Assembly
 date: 2017-11-22 22:39:56
+draft: true
 ---
 
 
@@ -75,4 +76,4 @@ end begin
 
 实验结果如下：
 
-![lab11.png]( http://py2h8wxnt.bkt.clouddn.com/assembly/lab11.png)
+![lab11.png]( /images/assembly/lab11.png)
