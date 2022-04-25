@@ -1,33 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>unix on Pok</title>
-    <link>/tags/unix/</link>
-    <description>Recent content in unix on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Tue, 14 Aug 2018 10:42:10 +0000</lastBuildDate><atom:link href="/tags/unix/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>apue-file and directory</title>
-      <link>/posts/sys/apue-file-and-directory/</link>
-      <pubDate>Tue, 14 Aug 2018 10:42:10 +0000</pubDate>
-      
-      <guid>/posts/sys/apue-file-and-directory/</guid>
-      <description>文件类型 stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取这些文件的特殊信息。 文件类型包括普通文件，目录文件，块特殊文件,字符特殊文件，ＦＩＦＯ，套接字，符号链接。可以向函数(S_ISREG(), S_ISDIR()&amp;hellip;)传入结构体中的st_stat获取文件类型。
-文件访问权限  读权限允许我们读取目录，获得在该目录下的文件名列表，但是当某个目录是　路径名　的一部分的时候，必须有该目录的可执行权限。 在目录下创建一个文件，是需要对该目录有写权限和执行权限，删除一个文件也是一样，但是不需要对该文件有读写权限。  书上有一个关于access的实例，虽然有些文件可以不能通过可读权限，但是open()函数仍然能打开但是不能用read()等方法进行读操作。
-文件系统 现代unix和以前学的有些不同，其中JOS不支持inode，但是还是有相似的地方。重新翻了下前面的文章。文件系统都有一个boot块用来自启，紧接着的是叫做super块来描述文件系统的性质，例如目录地址，上次检错时间等。现代unix在之后的磁盘块中以超级块副本，配置信息，Ｉ节点图，bitmap，ｉ节点，数据块依次排开构成文件系统。JOS就要简化了一些，因为不存在ｉnode，所以数据和目录都是放在bitmap后的数据块中。
-硬链接是指inode的引用计数，当计数为０时才是真正从磁盘中擦去该目录项，保存在结构体stat的st_nlink中。
-inode节点包含了文件所有信息，文件类型，文件访问权限位，文件长度，指向文件数据块的指针（JOS中的FILE结构体）。
-$ mkdir test  该命令执行后，会创建一个新的文件目录，任何新目录创建后的引用数都为２．该test目录在创建后，父目录中的test指向该目录，以及test目录中的 .　也指向该目录，所以引用计数为２。
-以此类推，其父目录的引用计数应该为３，１是该目录的父目录的指向，２是该目录下.文件的指向，３是test文件中..的指向。所以没创建一个文件目录，该目录的引用计数都会增加１。
-unlink 当文件的引用计数为０时，就会从磁盘中擦去，像vim打开一个文件，填入内容保存后，就会在该目录下引用了这个普通文件，引用计数为１，使用unlink可以解除即删去该文件。
-当一个程序用open()打开一个文件后，马上调用unlink()，那么只有当进程关闭改文件或者进程终止的时候，文件内容才被删除。
-if (open(&amp;quot;tempfile&amp;quot;, O_RDWR) &amp;lt; 0) err_sys(&amp;quot;open error&amp;quot;); if (unlink(&amp;quot;tempfile&amp;quot;) &amp;lt; 0) err_sys(&amp;quot;unlink errorr&amp;quot;); 符号链接 符号链接是一种与硬链接相比较限制宽松的链接方式，不用接触到文件系统底层。
-使用命令ln来创建一个符号链接
-$ln -s ~/file file  然后使用 ls -l 查看文件
-lrwxrwxrwx 1 moonlight users 26 Aug 14 16:07 sp -&amp;gt; /home/moonlight/hotspot.py  可以看到对一个文件的链接，但是使用cat命令确并不存在。
-文件的时间 最后访问时间(st_atim) ： 文件数据最后被read操作的最后一次时间。</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>unix - 标签 - pokpok的研究日志</title>
+        <link>/tags/unix/</link>
+        <description>unix - 标签 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Tue, 14 Aug 2018 10:42:10 &#43;0000</lastBuildDate><atom:link href="/tags/unix/" rel="self" type="application/rss+xml" /><item>
+    <title>apue-file and directory</title>
+    <link>/apue-file-and-directory/</link>
+    <pubDate>Tue, 14 Aug 2018 10:42:10 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/apue-file-and-directory/</guid>
+    <description><![CDATA[文件类型stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取]]></description>
+</item></channel>
 </rss>

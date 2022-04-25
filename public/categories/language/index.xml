@@ -1,38 +1,21 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>language on Pok</title>
-    <link>/categories/language/</link>
-    <description>Recent content in language on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Thu, 13 Feb 2020 20:55:13 +0800</lastBuildDate><atom:link href="/categories/language/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Shell Tools and Scripting</title>
-      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/</link>
-      <pubDate>Thu, 13 Feb 2020 20:55:13 +0800</pubDate>
-      
-      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/shell-tools-and-scripting/</guid>
-      <description>前言 这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在shell环境下提高工作效率的工具，例如查看使用方法的时候，可以快速翻阅 TLDR 获取命令的用法，而不用使用 man 手册慢慢地找相关的参数等。
-基本变量 赋值变量通过 foo=bar 来完成，并且带空格的 foo = bar 不会成功，因为相当于直接连续调用 foo 、 = 、 bar 三个命令，另外双引号 &amp;quot; 会展开变量而单引号不会 &#39; 。
-foo=bar echo &amp;#34;$foo&amp;#34; # prints bar echo &amp;#39;$foo&amp;#39; # prints $foo 函数 mcd.sh
-mcd () { mkdir -p &amp;#34;$1&amp;#34; cd &amp;#34;$1&amp;#34; } Here $1 is the first argument to the script/function
- $0 - Name of the script $1 to $9 - Arguments to the script.</description>
-    </item>
-    
-    <item>
-      <title>static,extern关键词和函数指针数组</title>
-      <link>/posts/sys/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</link>
-      <pubDate>Thu, 19 Apr 2018 23:49:06 +0000</pubDate>
-      
-      <guid>/posts/sys/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</guid>
-      <description>extern 从该文件外部获取变量定义，在文件域默认有extern属性。存储属性为static，也就是在文件执行前就被放在静态数据区。
-static 只在该文件域可以使用，存储属性为static。
-实例 extern.c
-#include &amp;lt;stdio.h&amp;gt; int k = 10; extern void print(void); int main() { printf(&amp;#34;k: %d\n&amp;#34;, k); print(); } extern2.c
-#include &amp;lt;stdio.h&amp;gt; void print(void) { extern int k; printf(&amp;#34;extern int k: %d\n&amp;#34;, k); } shell
-$ gcc -o ex extern.c extern2.c $ ./ex  函数指针数组 #include &amp;lt;stdio.h&amp;gt; static int print1(void) { printf(&amp;#34;function: print1()\n&amp;#34;); } static int print2(void) { printf(&amp;#34;function: print2()\n&amp;#34;); } static int (*arr[])(void) = { [0] print1, [1] print2, }; int (* foo)(void); int main(void) { foo = arr[0]; foo(); } __static int (*arr[])(void)__可以理解为arr[]数组中存有两个类型为__static int(void)__的函数指针</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>language - 分类 - pokpok的研究日志</title>
+        <link>/categories/language/</link>
+        <description>language - 分类 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Thu, 13 Feb 2020 20:55:13 &#43;0800</lastBuildDate><atom:link href="/categories/language/" rel="self" type="application/rss+xml" /><item>
+    <title>Shell Tools and Scripting</title>
+    <link>/shell-tools-and-scripting/</link>
+    <pubDate>Thu, 13 Feb 2020 20:55:13 &#43;0800</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/shell-tools-and-scripting/</guid>
+    <description><![CDATA[前言这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在]]></description>
+</item><item>
+    <title>static,extern关键词和函数指针数组</title>
+    <link>/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</link>
+    <pubDate>Thu, 19 Apr 2018 23:49:06 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/static-extern%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84/</guid>
+    <description><![CDATA[extern从该文件外部获取变量定义，在文件域默认有extern属性。存储属性为static，也就是在文件执行前就被放在静态数据区。 stat]]></description>
+</item></channel>
 </rss>

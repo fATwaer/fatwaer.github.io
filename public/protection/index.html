@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Protection Mechanism on 80386 - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="Protection Mechanism on 80386" />
+<meta property="og:description" content="80386 下的保护模式划为5个部分： 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制 事实上按照段页机制又需要分为段机制下的保护和页机制下的保" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/protection/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-11-11T12:34:17+08:00" />
+<meta property="article:modified_time" content="2019-11-11T12:34:17+08:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="Protection Mechanism on 80386"/>
+<meta name="twitter:description" content="80386 下的保护模式划为5个部分： 类型检查 界限检查 可寻址域的限制 过程调用的限制 指令集的限制 事实上按照段页机制又需要分为段机制下的保护和页机制下的保"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/protection/" /><link rel="prev" href="/hugo%E9%85%8D%E7%BD%AE/" /><link rel="next" href="/kv-server/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Protection Mechanism on 80386",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/protection\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","wordcount":  4643 ,
+        "url": "\/protection\/","datePublished": "2019-11-11T12:34:17+08:00","dateModified": "2019-11-11T12:34:17+08:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#段机制的类型检查">段机制的类型检查</a></li>
+    <li><a href="#段机制的界限检查">段机制的界限检查</a>
+      <ul>
+        <li><a href="#特权等级">特权等级</a></li>
+      </ul>
+    </li>
+    <li><a href="#段机制的数据的访问限制">段机制的数据的访问限制</a></li>
+    <li><a href="#段机制的控制转移限制">段机制的控制转移限制</a>
+      <ul>
+        <li><a href="#门限描述符对过程调用的保护">门限描述符对过程调用的保护</a></li>
+        <li><a href="#栈切换">栈切换</a></li>
+        <li><a href="#从过程调用中返回ret">从过程调用中返回（ret）</a></li>
+      </ul>
+    </li>
+    <li><a href="#指令集的限制">指令集的限制</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#页机制中的寻址限制">页机制中的寻址限制</a></li>
+    <li><a href="#页机制中的类型检查">页机制中的类型检查</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Protection Mechanism on 80386</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/sys/"><i class="far fa-folder fa-fw"></i>sys</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2019-11-11">2019-11-11</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2019-11-11">2019-11-11</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 4643 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 10 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#段机制的类型检查">段机制的类型检查</a></li>
+    <li><a href="#段机制的界限检查">段机制的界限检查</a>
+      <ul>
+        <li><a href="#特权等级">特权等级</a></li>
+      </ul>
+    </li>
+    <li><a href="#段机制的数据的访问限制">段机制的数据的访问限制</a></li>
+    <li><a href="#段机制的控制转移限制">段机制的控制转移限制</a>
+      <ul>
+        <li><a href="#门限描述符对过程调用的保护">门限描述符对过程调用的保护</a></li>
+        <li><a href="#栈切换">栈切换</a></li>
+        <li><a href="#从过程调用中返回ret">从过程调用中返回（ret）</a></li>
+      </ul>
+    </li>
+    <li><a href="#指令集的限制">指令集的限制</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#页机制中的寻址限制">页机制中的寻址限制</a></li>
+    <li><a href="#页机制中的类型检查">页机制中的类型检查</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>80386 下的保护模式划为5个部分：</p>
+<ol>
+<li>类型检查</li>
+<li>界限检查</li>
+<li>可寻址域的限制</li>
+<li>过程调用的限制</li>
+<li>指令集的限制</li>
+</ol>
+<p>事实上按照段页机制又需要分为段机制下的保护和页机制下的保护。</p>
+<h1 id="段级别的保护" class="headerLink">
+    <a href="#%e6%ae%b5%e7%ba%a7%e5%88%ab%e7%9a%84%e4%bf%9d%e6%8a%a4" class="header-mark"></a>段级别的保护</h1><p>段描述符中存储了保护参数，当段描述符到段寄存器中和访问相应的段时，CPU 会自动启用保护机制进行检测。</p>
+<blockquote>
+<p>段描述符格式</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-1.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-1.gif, /images/operating-system/6.828/protection/fig6-1.gif 1.5x, /images/operating-system/6.828/protection/fig6-1.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-1.gif"
+        title="fig6-1.gif"></p>
+<p>上图中一共有三种段，除了常被应用程序使用的数据段和可执行段外，还有一种用作门（gate）的描述符。</p>
+<p>当段寄存器加载一个段的时候，不仅仅只是加载了段的基地址，还会加载其他的保护机制所需要用到的信息。在段寄存器的不可见部分存储了段基地址，界限，特权等级，所以在保护机制在检查合法性时没有额外的时钟周期损耗。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/segment-register.png"
+        data-srcset="/images/operating-system/6.828/protection/segment-register.png, /images/operating-system/6.828/protection/segment-register.png 1.5x, /images/operating-system/6.828/protection/segment-register.png 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/segment-register.png"
+        title="segment-register.png"></p>
+<h2 id="段机制的类型检查" class="headerLink">
+    <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5" class="header-mark"></a>段机制的类型检查</h2><p>描述符中的 TYPE 域用来区分不同描述符的格式和描述符的作用。</p>
+<ul>
+<li>
+<p>在数据段的 writable bit 代表正在执行的指令可否写入到该段。</p>
+</li>
+<li>
+<p>代码段中的 readable bit 代表正在执行的指令能否读取该段中的数据，例如操作数为常量的情况。</p>
+<p>一个可读可执行的段可以被两种形式加载：</p>
+<ol>
+<li>通过 CS 寄存器，例如 ljmp cs:addr</li>
+<li>加载到通用段寄存器中</li>
+</ol>
+</li>
+</ul>
+<p>类型检查会在两种情况下进行：</p>
+<ol>
+<li>
+<p>当描述符被加载到到段寄存器时，相应的段寄存器只能加载对应的描述符种类，例如：</p>
+<ul>
+<li>CS 寄存器只能加载可执行的段</li>
+<li>不可读但是可执行的段不能被加载到数据段寄存器中</li>
+<li>只有科协的数据段能被加载到SS寄存器</li>
+</ul>
+</li>
+<li>
+<p>当指令显式或者隐式地引用段寄存器，相应的段只能被预先定义好的方式来使用，例如：</p>
+<ul>
+<li>不能尝试往可执行的段中写入</li>
+<li>不能往w位未置位的数据段中写入</li>
+<li>不能读取r位未置位的可执行段（数据段默认可读）</li>
+</ul>
+</li>
+</ol>
+<h2 id="段机制的界限检查" class="headerLink">
+    <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e7%95%8c%e9%99%90%e6%a3%80%e6%9f%a5" class="header-mark"></a>段机制的界限检查</h2><p>故名思意，界限（limit）域在描述符中被处理器阻止程序寻址到超出段界限外的地方，与段界限相关的还有 G (granularity) bit，对于数据段，还有 E-bit (expansion-direction bit) 和 the B-bit (big bit)。</p>
+<blockquote>
+<p>bit 组合</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/table6-2.png"
+        data-srcset="/images/operating-system/6.828/protection/table6-2.png, /images/operating-system/6.828/protection/table6-2.png 1.5x, /images/operating-system/6.828/protection/table6-2.png 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/table6-2.png"
+        title="table6-2.png"></p>
+<p>除去 expand-down 类型的数据段，下列这些情况会产生一般保护错误（general-protection exception）：</p>
+<ol>
+<li>尝试访问1字节的地址，地址大于界限</li>
+<li>尝试访问1字的地址，地址大于等于界限</li>
+<li>尝试访问2字的地址，地址大于等于界限值-2</li>
+</ol>
+<p>界限的检查能捕获一些程序的运行错误例如非法的指针计算。这些错误会在刚刚发生时被检测到，所以检测这些错误更加简单，如果没有这个机制，这些错误可能会影响到其他的部件，到那时候再去追踪就难多了。</p>
+<h3 id="特权等级" class="headerLink">
+    <a href="#%e7%89%b9%e6%9d%83%e7%ad%89%e7%ba%a7" class="header-mark"></a>特权等级</h3><p>特权等级分为四级，但是基本只会用到两级，最高特权级别 ring 0和最低的特权级别 ring 3。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/ring.png"
+        data-srcset="/images/operating-system/6.828/protection/ring.png, /images/operating-system/6.828/protection/ring.png 1.5x, /images/operating-system/6.828/protection/ring.png 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/ring.png"
+        title="ring.png"></p>
+<p>特权等级在以下这些地方展现：</p>
+<ul>
+<li>
+<p>CPL(Current privilege level): CPL 代表当前正在运行的程序或者任务的权限等级，存储在CS或者SS段寄存器的第0和1位。通常CPL和当前运行的代码段的等级相同，当CPL发生改变时，代表程序在不同特权等级之间的控制转移。</p>
+<p>但是当代码段描述符的 conforming 位置位时，情况有所不同，conforming 置位的代码段能被特权等级与其相等或者更低权限的任务所访问，并且，在执行 conforming 置位的代码时，CPL不会发生改变，所以通常 conforming 代码段用于低权限任务需要执行数学函数或者异常处理函数等情况。</p>
+</li>
+<li>
+<p>DPL(descriptor privilege level): 在段描述符或者门描述符中存在一个域用于表明这个描述符的特权等级，当正在执行的代码段尝试去访问一个段或者门时，CPL和RPL就会与DPL进行比较，DPL根据段或门的类型不同会有不同的解释方法：</p>
+<ul>
+<li>数据段：DPL代表可以访问该段的最低权限，比如数据段的DPL位1，仅只有程序运行在CPL为0或1时才能访问该段。</li>
+<li>非 conforming 的代码段（不使用 call gate）：DPL代表程序必须运行在的特权等级（即使特权等级大于DPL也不行）</li>
+<li>Call gate：DPL代表可以访问该段的最低权限，同数据段</li>
+<li>使用call gate 访问代码段：DPL代表可以访问该段的最高权限，比如某个代码段的DPL为2，运行在特权等级 0 或者 1 的程序无法访问。</li>
+<li>TSS：DPL代表可以访问该段的最低权限，同数据段</li>
+</ul>
+</li>
+<li>
+<p>RPL(Requested privilege level): RPL 是存储在段选择子第0 和 1 位，处理器在检查特权等级时会同时检查 CPL 和 RPL。即使程序运行的特权等级 (CPL) 已经满足了相应段的特权等级 (DPL)，如果 RPL 不能满足 DPL 的话，访问段的操作仍然会被拒绝。这意味着，如果 RPL 树枝上大于 CPL，那么RPL将会作为尝试去访问相应段的特权等级，反之亦然。RPL 可以被保证 特权代码不会代表应用程序去访问一个该应用程序并没有权限的段。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/segment-register-format.png"
+        data-srcset="/images/operating-system/6.828/protection/segment-register-format.png, /images/operating-system/6.828/protection/segment-register-format.png 1.5x, /images/operating-system/6.828/protection/segment-register-format.png 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/segment-register-format.png"
+        title="segment-register-format.png"></p>
+<p>关于 RPL 的作用在  Intel® 64 Developer’s Manual : <strong>4.10.4 Checking Caller Access Privileges (ARPL Instruction)</strong> 里面有几个例子进行说明。</p>
+<p>当一个应用程序过程(the calling procedure)调用操作系统 的一个过程(the called procedure)时，在执行操作系统过程中会将特权等级设置为应用程序的段选择子的 RPL。当操作系统尝试去访问相关的段时，处理器会对 RPL 而不是特权等级值更低的 CPL（此时为0）进行特权等级检查。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/rpl.png"
+        data-srcset="/images/operating-system/6.828/protection/rpl.png, /images/operating-system/6.828/protection/rpl.png 1.5x, /images/operating-system/6.828/protection/rpl.png 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/rpl.png"
+        title="rpl.png"></p>
+<p>在上图中，应用程序正运行在代码段A中，处理数据段D1中的数据，此时在数据段D1中指向了一个特权数据结构（在数据段D中的操作系统数据结构，数据段的 DPL 为0）。因为 CPL 的值大于特权等级值，权限不足以访问。</p>
+<p>为了访问到数据段 D，应用程序执行了一个调用，并且通过栈传递了段选择子 D1（存在RPL） 到操作系统。在传递段选择子前，应用程序会将段选择子设置为当前的 CPL （SS或者CS中）。当通过门 C （运行在特权等级0）利用段选择子 D1 （栈上的值）访问数据段 D时，由于D1的RPL要大于DPL，访问数据段 D 的操作被拒绝。</p>
+<p>该部分后面还有一种情况，通过门调用时，由于应用程序可以修改栈上的段选择器中的 RPL 值（对应图中数据段D2），这会导致保护机制被破坏，于是有了 ARPL 指令对栈上的 RPL 和调用此操作系统过程的程序的 CPL 进行比较。</p>
+</li>
+</ul>
+<h2 id="段机制的数据的访问限制" class="headerLink">
+    <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e6%95%b0%e6%8d%ae%e7%9a%84%e8%ae%bf%e9%97%ae%e9%99%90%e5%88%b6" class="header-mark"></a>段机制的数据的访问限制</h2><p>为了访问到在内存中的操作数，程序必须将数据段加载到数据段(DS, ES, FS, GS, SS)寄存器中。处理器会在访问数据段时自动比较特权等级。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-3.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-3.gif, /images/operating-system/6.828/protection/fig6-3.gif 1.5x, /images/operating-system/6.828/protection/fig6-3.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-3.gif"
+        title="fig6-3.gif"></p>
+<p>数据段寄存器能加载一个数据段的前提是DPL大于RPL和CPL。</p>
+<h2 id="段机制的控制转移限制" class="headerLink">
+    <a href="#%e6%ae%b5%e6%9c%ba%e5%88%b6%e7%9a%84%e6%8e%a7%e5%88%b6%e8%bd%ac%e7%a7%bb%e9%99%90%e5%88%b6" class="header-mark"></a>段机制的控制转移限制</h2><p>控制转移往往伴随着JMP, CALL, RET, INT, IRET指令以及中断和异常机制。在同一个代码段的JMP, CALL, RET仅仅只有段界限检查。远距离的调用或者跳转会引用到其他段，因此，处理器会进行特权检查。</p>
+<p>例如：ljmp   $0x8,$0x7c32，$0x8为段寄存器值。</p>
+<p>JMP 或者 CALL 会通过两种方式引用另外一个段：</p>
+<ol>
+<li>操作数中存在另一个可执行的代码段描述符</li>
+<li>操作数中有一个调用门描述符</li>
+</ol>
+<p>一般情况下，处理器正在运行的代码段的 DPL 和 CPL 相等，但是如果代码段的 conforming 位置位时，CPL 可能大于 DPL。所以只有当 DPL 和 CPL 相等时或者代码段的conforming 位置位并且 DPL 小于等于 CPL 时，JMP和CALL能够直接从原先的代码段跳转到另一个代码段。</p>
+<blockquote>
+<p>代码段的检查</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-4.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-4.gif, /images/operating-system/6.828/protection/fig6-4.gif 1.5x, /images/operating-system/6.828/protection/fig6-4.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-4.gif"
+        title="fig6-4.gif"></p>
+<h3 id="门限描述符对过程调用的保护" class="headerLink">
+    <a href="#%e9%97%a8%e9%99%90%e6%8f%8f%e8%bf%b0%e7%ac%a6%e5%af%b9%e8%bf%87%e7%a8%8b%e8%b0%83%e7%94%a8%e7%9a%84%e4%bf%9d%e6%8a%a4" class="header-mark"></a>门限描述符对过程调用的保护</h3><p>一共有4中描述符用于在不同特权等级间进行跳转：</p>
+<ul>
+<li>call gate</li>
+<li>Trap gates</li>
+<li>Interrupt gates</li>
+<li>Task gates</li>
+</ul>
+<p>call gate 和普通描述符一样，定义在GDT或者LDT中，它定义了一个过程调用的入口和调用该过程所需要的特权等级。call gate描述符对于jmp和call指令来说和代码段的处理方式一样。</p>
+<blockquote>
+<p>call gate</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-5.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-5.gif, /images/operating-system/6.828/protection/fig6-5.gif 1.5x, /images/operating-system/6.828/protection/fig6-5.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-5.gif"
+        title="fig6-5.gif"></p>
+<p>selector 和 offset 域能形成一个到调用过程入口的指针，call gate 保证能跳转到另一个段的合法地址，而不是跳转到一个过程调用的中间或者&hellip;.一条指令的中间。一条指令的控制转移的偏移地址不会在call gate跳转中使用（前面那种跳转到中途的情况）。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-6.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-6.gif, /images/operating-system/6.828/protection/fig6-6.gif 1.5x, /images/operating-system/6.828/protection/fig6-6.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-6.gif"
+        title="fig6-6.gif"></p>
+<p>执行指令时，首先通过操作数中的段选择器得到门限描述符的偏移，在门限描述符中的 selector 字段获得目标调用过程的代码段描述符，执行过程调用，在这过程中，一共涉及到4个特权等级，CPL，RPL，门限的 DPL 和目标代码段的 DPL。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-7.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-7.gif, /images/operating-system/6.828/protection/fig6-7.gif 1.5x, /images/operating-system/6.828/protection/fig6-7.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-7.gif"
+        title="fig6-7.gif"></p>
+<p>通过 gate 可以实现不同特权等级的转移，但是只有通过 call 指令能切换到更低的特权等级上，而 jmp 指令只能在同特权等级之间跳转（不考虑comforming 代码段）。</p>
+<p>对于 jmp 指令，要求：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL = CPL
+</code></pre></div><p>对于 call 指令或者 jmp 目的代码段为 comforming：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MAX (CPL,RPL) &lt;= gate DPL
+target segment DPL &lt;= CPL
+</code></pre></div><h3 id="栈切换" class="headerLink">
+    <a href="#%e6%a0%88%e5%88%87%e6%8d%a2" class="header-mark"></a>栈切换</h3><p>为了维护系统的整体性，任意特权等级拥有各自独立的栈，处理器通过TSS（task state segment）定位这些不同特权等级的栈。比如通过call gate切换特权等级时，新的栈指针将会从tss中读取出来。</p>
+<blockquote>
+<p>TSS</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-8.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-8.gif, /images/operating-system/6.828/protection/fig6-8.gif 1.5x, /images/operating-system/6.828/protection/fig6-8.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-8.gif"
+        title="fig6-8.gif"></p>
+<p>处理器会利用目标代码段的DPL找到对应特权等级（PL 0，1，2）的栈，并且 DPL 必须与 CPL 相等。TSS 中没有对应特权等级为3的栈，因为特权等级3的过程不能被其他任意低于其特权等级的过程调用。每个栈都必须有足够的空间去存储 ss:esp，返回地址，参数等。</p>
+<p>为了在不同特权等级之间调用过程，处理器必须将调用者的参数从旧的栈帧中拷贝到新特权等级的栈帧中去。call gate 描述符中的 count 字段代表多少双字（doublewords）需要拷贝，如果count为0，拷贝就不会发生。</p>
+<blockquote>
+<p>切换特权等级的栈切换：</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-9.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-9.gif, /images/operating-system/6.828/protection/fig6-9.gif 1.5x, /images/operating-system/6.828/protection/fig6-9.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-9.gif"
+        title="fig6-9.gif"></p>
+<ol>
+<li>新栈检查是否有足够的空间容纳参数等，否则产生一个栈错误，错误代码设置为0.</li>
+<li>将旧栈SS:ESP压入新栈（占用两个双字）</li>
+<li>复制剩下的参数</li>
+<li>调用者的call的下一条指令地址以 CS:EIP 压入新栈</li>
+<li>将新的 SS:ESP 指向新栈栈顶</li>
+</ol>
+<h3 id="从过程调用中返回ret" class="headerLink">
+    <a href="#%e4%bb%8e%e8%bf%87%e7%a8%8b%e8%b0%83%e7%94%a8%e4%b8%ad%e8%bf%94%e5%9b%9eret" class="header-mark"></a>从过程调用中返回（ret）</h3><p>和 call 指令类似，同一个代码段之间的 ret 只有界限检查。对于段间的 ret，首先会弹出由 call 压入的返回地址，通常情况下时合法的，但是也有可能由于调用过程替换掉了这个地址或者没有很好地维护栈，这个返回地址也是不可信的，所以权限检查还是会有的。</p>
+<p>段之间的 ret 只能返回到与其相等或者更高特权值的等级去，当栈上保存的 CS 中的 RPL 大于当前的 CPL 时，特权等级间的控制转移就会发生：</p>
+<ol>
+<li>检查下表中的内容，加载栈上的 CS:EIP 和 SS:ESP 到相应寄存器。</li>
+<li>原先的栈指针会被 ret 指令做相应的调整，此时 esp 的值不会进行界限检查，如果 esp 实在超出了界限，那么下次对栈的操作将会产生错误。</li>
+<li>基础段寄存器的特权值将会被检查，如果这些段寄存器引用了那些 DPL 大于新 CPL（栈上保存的CS得到） 的段，那么段寄存器就会加载 null selector，即 GDT 中的一个 null 描述符（INDEX = 0, TI = 0）。并且，此时不会产生异常，直到下次操作相应段内存时产生一般保护异常。</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">SF = Stack Fault
+GP = General Protection Exception
+NP = Segment-Not-Present Exception
+
+Type of Check                                  Exception   Error Code
+
+ESP is within current SS segment               SF          0
+ESP + 7 is within current SS segment           SF          0
+RPL of return CS is greater than CPL           GP          Return CS
+Return CS selector is not null                 GP          Return CS
+Return CS segment is within descriptor
+  table limit                                  GP          Return CS
+Return CS descriptor is a code segment         GP          Return CS
+Return CS segment is present                   NP          Return CS
+DPL of return nonconforming code
+  segment = RPL of return CS, or DPL of
+  return conforming code segment &lt;= RPL
+  of return CS                                 GP          Return CS
+ESP + N + 15 is within SS segment
+N   Immediate Operand of RET N Instruction     SF          Return SS
+SS selector at ESP + N + 12 is not null        GP          Return SS
+SS selector at ESP + N + 12 is within
+  descriptor table limit                       GP          Return SS
+SS descriptor is writable data segment         GP          Return SS
+SS segment is present                          SF          Return SS
+Saved SS segment DPL = RPL of saved
+  CS                                           GP          Return SS
+Saved SS selector RPL = Saved SS
+  segment DPL                                  GP          Return SS
+</code></pre></div><h2 id="指令集的限制" class="headerLink">
+    <a href="#%e6%8c%87%e4%bb%a4%e9%9b%86%e7%9a%84%e9%99%90%e5%88%b6" class="header-mark"></a>指令集的限制</h2><p>影响到保护机制的指令分为两类，特权指令，通常被用于系统控制；敏感指令，通常被用作 IO或者 IO相关的操作。</p>
+<p>特权指令如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">CLTS -- Clear Task-Switched Flag
+HLT -- Halt Processor
+LGDT -- Load GDL Register
+LIDT -- Load IDT Register
+LLDT -- Load LDT Register
+LMSW -- Load Machine Status Word
+LTR -- Load Task Register
+MOV to/from CRn -- Move to Control Register n
+MOV to /from DRn -- Move to Debug Register n
+MOV to/from TRn -- Move to Test Register n
+</code></pre></div><h1 id="页级别保护" class="headerLink">
+    <a href="#%e9%a1%b5%e7%ba%a7%e5%88%ab%e4%bf%9d%e6%8a%a4" class="header-mark"></a>页级别保护</h1><p>页级别的保护较为简单，分成有两种：</p>
+<ol>
+<li>对可寻址的内存进行限制</li>
+<li>类型检查</li>
+</ol>
+<h2 id="页机制中的寻址限制" class="headerLink">
+    <a href="#%e9%a1%b5%e6%9c%ba%e5%88%b6%e4%b8%ad%e7%9a%84%e5%af%bb%e5%9d%80%e9%99%90%e5%88%b6" class="header-mark"></a>页机制中的寻址限制</h2><blockquote>
+<p>PDE/PTE</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="/images/operating-system/6.828/protection/fig6-10.gif"
+        data-srcset="/images/operating-system/6.828/protection/fig6-10.gif, /images/operating-system/6.828/protection/fig6-10.gif 1.5x, /images/operating-system/6.828/protection/fig6-10.gif 2x"
+        data-sizes="auto"
+        alt="/images/operating-system/6.828/protection/fig6-10.gif"
+        title="fig6-10.gif"></p>
+<p>在页机制中，特权等级被分为了两级：</p>
+<ol>
+<li>Supervisor level (U/S=0) ：对应操作系统的软件和相关数据</li>
+<li>User level (U/S=1)：对于应用程序级别的过程和数据</li>
+</ol>
+<p>页机制中的特权等级和段机制中的 CPL 相关联，CPL 处于 ring 0,1,2 代表处理器执行在 supervisor level， CPL 处于 ring 3 代表执行在 user level。</p>
+<p>当处理器执行在 user level ，只能寻址那些属于用户级别的页，如果处于  supervisor level ，那么处理器能够寻址所有的页。</p>
+<h2 id="页机制中的类型检查" class="headerLink">
+    <a href="#%e9%a1%b5%e6%9c%ba%e5%88%b6%e4%b8%ad%e7%9a%84%e7%b1%bb%e5%9e%8b%e6%a3%80%e6%9f%a5" class="header-mark"></a>页机制中的类型检查</h2><p>对于所有的页，定义了两种类型页，分别为只读的和可读可写类型的。当处于supervisor并且CR0寄存器中的WP位没有置位，所有的页都是可读可写的。而处于 user 级别，就需要对应读写位分情况讨论。处于 user 级别时，对于supervisor 的所有的页都是不可读写的。</p>
+<p><strong>参考资料</strong>：</p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/ia32/IA32-1.pdf" target="_blank" rel="noopener noreffer">Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</a></p>
+<p><a href="https://pdos.csail.mit.edu/6.828/2018/readings/i386/c06.htm" target="_blank" rel="noopener noreffer">6.828 readings, Protection</a></p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2019-11-11</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/protection/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/hugo%E9%85%8D%E7%BD%AE/" class="prev" rel="prev" title="Hugo is comming !"><i class="fas fa-angle-left fa-fw"></i>Hugo is comming !</a>
+            <a href="/kv-server/" class="next" rel="next" title="6.824 Lab3 Fault-tolerant Key/Value Service">6.824 Lab3 Fault-tolerant Key/Value Service<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

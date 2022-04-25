@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">右值引用，移动语义，完美转发 - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="右值引用，移动语义，完美转发" />
+<meta property="og:description" content="名词解释 移动语义：用不那么昂贵的操作代替昂贵的复制操作，也使得只支持移动变得可能，比如 unique_ptr，将数据的所有权移交给别人而不是多" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/c-rvalue-reference/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-04-14T08:59:00+08:00" />
+<meta property="article:modified_time" content="2022-04-14T08:59:00+08:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="右值引用，移动语义，完美转发"/>
+<meta name="twitter:description" content="名词解释 移动语义：用不那么昂贵的操作代替昂贵的复制操作，也使得只支持移动变得可能，比如 unique_ptr，将数据的所有权移交给别人而不是多"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/c-rvalue-reference/" /><link rel="prev" href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%92%8C%E9%AB%98%E6%96%AF%E5%88%86%E5%B8%83/" /><link rel="next" href="/c-atomic-%E5%92%8C-memory-ordering/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "右值引用，移动语义，完美转发",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/c-rvalue-reference\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","wordcount":  3088 ,
+        "url": "\/c-rvalue-reference\/","datePublished": "2022-04-14T08:59:00+08:00","dateModified": "2022-04-14T08:59:00+08:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#名词解释">名词解释</a></li>
+    <li><a href="#移动语义">移动语义</a></li>
+    <li><a href="#完美转发">完美转发</a></li>
+    <li><a href="#万能引用和右值引用">万能引用和右值引用</a></li>
+    <li><a href="#右值引用的重载">右值引用的重载</a></li>
+    <li><a href="#万能引用的重载">万能引用的重载</a></li>
+    <li><a href="#引用折叠">引用折叠</a></li>
+    <li><a href="#返回值优化rvo">返回值优化(RVO)</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">右值引用，移动语义，完美转发</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-04-14">2022-04-14</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-04-14">2022-04-14</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3088 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 7 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#名词解释">名词解释</a></li>
+    <li><a href="#移动语义">移动语义</a></li>
+    <li><a href="#完美转发">完美转发</a></li>
+    <li><a href="#万能引用和右值引用">万能引用和右值引用</a></li>
+    <li><a href="#右值引用的重载">右值引用的重载</a></li>
+    <li><a href="#万能引用的重载">万能引用的重载</a></li>
+    <li><a href="#引用折叠">引用折叠</a></li>
+    <li><a href="#返回值优化rvo">返回值优化(RVO)</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="名词解释" class="headerLink">
+    <a href="#%e5%90%8d%e8%af%8d%e8%a7%a3%e9%87%8a" class="header-mark"></a>名词解释</h2><ul>
+<li>
+<p>移动语义：用不那么昂贵的操作代替昂贵的复制操作，也使得只支持移动变得可能，比如 unique_ptr，将数据的所有权移交给别人而不是多者同时引用。</p>
+</li>
+<li>
+<p>完美转发：目标函数会收到转发函数完全相同类似的实参。</p>
+</li>
+<li>
+<p>右值引用：是这两个机制的底层语言机制，形式是 Type&amp;&amp;，能够引用到“不再使用”的数据，直接用于对象的构造</p>
+</li>
+</ul>
+<p>要注意的是，形参一定是左值，即使类型是右值引用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span> <span class="n">w</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/* w 在作用域内就是一个左值。 */</span>
+<span class="p">}</span>
+</code></pre></div><p>实现移动语意和完美转发的重要工具就是<code>std::move</code> 和 <code>std::forward</code>，<code>std::move</code> 和 <code>std::forward</code> 其实都是强制类型转换函数，<code>std::move</code> 无条件将实参转换为右值，而 <code>std::forward</code> 根据实参的类型将参数类型转化为左值或者右值到目标函数。</p>
+<h2 id="移动语义" class="headerLink">
+    <a href="#%e7%a7%bb%e5%8a%a8%e8%af%ad%e4%b9%89" class="header-mark"></a>移动语义</h2><p><code>std::move(v)</code> 相当于 <code>static_cast&lt;T&amp;&amp;&gt;(v)</code>，强制将类型转化为需要类型的右值，move 的具体实现为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span>
+<span class="n">move</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">param</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">using</span> <span class="n">ReturnType</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&amp;&amp;</span><span class="p">;</span>
+    <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">ReturnType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">param</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><ol>
+<li>
+<p>其中 <code>typename remove_reference&lt;T&gt;::type&amp;&amp;</code> 作用就是为了解决是当入参数是 <code>reference to lvalue</code> 的时候，返回类型<code>ReturnType</code>会因为<code>引用折叠</code>被推导为 <code>T&amp;</code>，<code>remove_reference&lt;T&gt;::type</code> 就是为了去除推导出的模版参数 T 的引用，从到强制得到 <code>T&amp;&amp;</code>。</p>
+</li>
+<li>
+<p>如果没有<code>remove_reference&lt;T&gt;</code>，而是用 <code>T&amp;&amp;</code> 来代替函数返回值以及 <code>static_cast&lt;&gt;</code>，就会有下面的推导规则：</p>
+<ul>
+<li>如果入参是 <code>lvalue</code>，那么 <code>T</code> 就会被推导成为 <code>T&amp;</code>，参数 <code>param</code> 的类型就变成了 <code>T&amp; &amp;&amp;</code>，再通过<code>引用折叠</code>的规则，推导最终结果为 <code>T&amp;</code>，而根据表达式的 <a href="https://en.cppreference.com/w/cpp/language/value_category" target="_blank" rel="noopener noreffer">value category</a> 规则，如果一个函数的返回值类型是左值引用，那么返回值的类型为左值，那么 <code>std::move(v)</code> 就不能实现需要的功能，做到强制右值转换。</li>
+<li>如果入参是 <code>rvalue</code>，那么 <code>T</code> 会被直接推导成 <code>T&amp;</code>，参数 <code>param</code> 的类型也就变成了 <code>T&amp;&amp;</code>，函数返回的类型(type)也是 <code>T&amp;&amp;</code>，返回的值类别也是右值。</li>
+</ul>
+</li>
+<li>
+<p>此外，在 c++14 能直接将 <code>typename remove_reference&lt;T&gt;::type&amp;&amp;</code> 替换为 <code>remove_reference_t&lt;T&gt;&amp;&amp;</code>。</p>
+</li>
+</ol>
+<h2 id="完美转发" class="headerLink">
+    <a href="#%e5%ae%8c%e7%be%8e%e8%bd%ac%e5%8f%91" class="header-mark"></a>完美转发</h2><p><code>std::forward&lt;T&gt;(v)</code> 的使用场景用于函数需要转发不同左值或者右值的场景，假设有两个重载函数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">process</span><span class="p">(</span><span class="k">const</span> <span class="n">Widget</span><span class="o">&amp;</span> <span class="n">lvalArg</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">process</span><span class="p">(</span><span class="n">Widget</span><span class="o">&amp;&amp;</span> <span class="n">rvalArg</span><span class="p">);</span>
+</code></pre></div><p>有一个函数 <code>LogAndProcess</code> 会根据 <code>param</code> 左值或者右值的不同来区分调用不同函数签名的 <code>process</code> 函数：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">LogAndProcess</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">param</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// DoSomething
+</span><span class="c1"></span>    <span class="n">logging</span><span class="p">(</span><span class="n">param</span><span class="p">);</span>
+
+    <span class="n">process</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">param</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div><p>这样使用 <code>LogAndProcess</code> 的时候就能区分：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">Widget</span> <span class="n">w</span><span class="p">;</span>
+<span class="n">LogAndProcess</span><span class="p">(</span><span class="n">w</span><span class="p">);</span> <span class="c1">// call process(const Widget&amp;);
+</span><span class="c1"></span><span class="n">LogAndProcess</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">w</span><span class="p">));</span> <span class="c1">// call process(Widget&amp;&amp;);
+</span></code></pre></div><p>这里就有 emplace_back 一种常见的用错的情况，在代码中也经常看见，如果要将某个不用的对象<code>a</code>放到<code>vector</code>中：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+	<span class="n">A</span><span class="p">(</span><span class="n">A</span><span class="o">&amp;&amp;</span> <span class="n">a</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">};</span>
+
+<span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">vec</span><span class="p">;</span>
+<span class="n">vec</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+</code></pre></div><p>如果使用 <code>push_back</code> 就会造成一次拷贝，常见的错误做法是将其替换为 <code>vector::emplace_back()</code>：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">vec</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+</code></pre></div><p>但是 <code>emplace_back</code> 的实现有 <code>std::forward</code> 根据实参数做转发，实参 <code>a</code> 实际上是个 <code>lvaue</code>，转发到构造函数时得到的也是左值的 a，就相当于调用赋值拷贝构造：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">vec</span><span class="p">[</span><span class="n">back</span><span class="p">()]</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+</code></pre></div><p>解决方法其实只需要调用 <code>std::move</code> 做一次右值转换即可，就能完成数据的移动。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">vec</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">a</span><span class="p">));</span> 
+</code></pre></div><h2 id="万能引用和右值引用" class="headerLink">
+    <a href="#%e4%b8%87%e8%83%bd%e5%bc%95%e7%94%a8%e5%92%8c%e5%8f%b3%e5%80%bc%e5%bc%95%e7%94%a8" class="header-mark"></a>万能引用和右值引用</h2><p>万能引用和右值引用最大的区别在于万能引用会涉及模板的推导。但并不是说函数参数中有模板参数就是万能引用，例如 <code>std::vector::push_back()</code> 的函数签名是 <code>push_back(T&amp;&amp; x)</code>， 但是 <code>T</code> 的类型在 <code>std::vector&lt;T&gt; </code> 声明的时候就已经确定了，在调用<code>push_back</code> 的时候不会涉及类型推导，而 <code>std::vector</code> 的 <code>emplace_back</code> 是确实存在推导的。另外即使类型是 <code>T&amp;&amp;</code>，但是如果有 <code>const</code> 修饰得到 <code>const T&amp;&amp;</code>，那么也不是一个合格的万能引用。</p>
+<p>对于万能引用，如果是入参是右值引用，模版参数 <code>T</code> 的推导结果还是 <code>T</code>，而不是 <code>T&amp;&amp;</code>，这不是右值引用的特殊性，而是左值引用的特殊性，
+模板函数的函数参数列表中包含 <code>forwarding reference</code> 且相应的实参是一个 <code>lvalue</code> 的情况时，模版类型会被推导为左值引用。 <code>forwarding reference</code> 是 C++ 标准中的词，翻译叫转发引用；《<em>modern effective c++</em>》的作者 Scott Meyers 将这种引用称之为万能引用（universal reference）。</p>
+<h2 id="右值引用的重载" class="headerLink">
+    <a href="#%e5%8f%b3%e5%80%bc%e5%bc%95%e7%94%a8%e7%9a%84%e9%87%8d%e8%bd%bd" class="header-mark"></a>右值引用的重载</h2><p>有了右值引用后，就能通过 <code>std::move</code> 将左值转换为右值，完成目标对象的移动构造，省去大对象的拷贝，但是如果传递的参数是个左值，调用者不希望入参被移动，数据被移走，那就需要提供一个左值引用的版本，因为右值引用无法绑定左值。假设大对象是一个<code>string</code>，就会写出下面这种函数签名：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">s</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="n">string</span><span class="o">&amp;&amp;</span> <span class="n">s</span><span class="p">);</span>
+</code></pre></div><p>一个参数没问题，我们学会了左值和右值的区别并给出了不同的函数重载，但是如果参数是两个 string，情况就变得复杂的，针对不同的情况，就需要提供四种函数签名和实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">s1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">s2</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">s1</span><span class="p">,</span> <span class="n">string</span><span class="o">&amp;&amp;</span> <span class="n">s</span> <span class="n">s2</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="n">string</span><span class="o">&amp;&amp;</span> <span class="n">s</span> <span class="n">s1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">s2</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="n">string</span><span class="o">&amp;&amp;</span> <span class="n">s</span> <span class="n">s1</span><span class="p">,</span> <span class="n">string</span><span class="o">&amp;&amp;</span> <span class="n">s</span> <span class="n">s2</span><span class="p">);</span>
+</code></pre></div><p>如果参数进一步增加，编码就会越来越复杂，遇到这种情况就可以使用万能引用处理，在函数体内对string做<code>std::forward()</code>即可：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T1</span><span class="p">,</span> <span class="k">typename</span> <span class="n">T2</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">f</span><span class="p">(</span><span class="n">T1</span><span class="o">&amp;&amp;</span> <span class="n">s1</span><span class="p">,</span> <span class="n">T2</span><span class="o">&amp;&amp;</span> <span class="n">s2</span><span class="p">);</span>
+</code></pre></div><h2 id="万能引用的重载" class="headerLink">
+    <a href="#%e4%b8%87%e8%83%bd%e5%bc%95%e7%94%a8%e7%9a%84%e9%87%8d%e8%bd%bd" class="header-mark"></a>万能引用的重载</h2><p>万能引用存在一个问题，过于贪婪而导致调用的函数不一定是想要的那个，假设 <code>f()</code> 除了要处理左值和右值的 string 外，还有可能需要处理一个整形，例如<code>int</code>，就会有下面这种方式的重载。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="c1">// 万能引用版本的 f()，处理左值右值
+</span><span class="c1"></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">f</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;f(T&amp;&amp;)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// 整数类型版本的 f()，处理整形
+</span><span class="c1"></span><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span>  <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;f(int)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>如果用不同的整型去调用<code>f()</code>，就会发生问题：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">int</span> <span class="n">i1</span><span class="p">;</span>
+<span class="n">f</span><span class="p">(</span><span class="n">i1</span><span class="p">);</span> <span class="c1">// output: f(int)
+</span><span class="c1"></span>
+<span class="n">size_t</span> <span class="n">i2</span><span class="p">;</span>
+<span class="n">f</span><span class="p">(</span><span class="n">i2</span><span class="p">);</span> <span class="c1">// output: f(T&amp;&amp;)
+</span></code></pre></div><ul>
+<li>如果参数是一个 <code>int</code>，那么一切正常，调用<code>f(int)</code>的版本，因为c++规定，如果一个常规函数和一个模板函数具备相同的匹配性，优先使用常规函数。</li>
+<li>但是如果入参是个 <code>size_t</code>，那么就出现问题了，<code>size_t</code> 的类型和 <code>int</code> 并不相等，需要做一些转换才能变成<code>int</code>，那么就会调用到万能引用的版本。</li>
+</ul>
+<p>如何限制万能引用呢？</p>
+<p>1、标签分派：根据万能引用推导的类型，<code>f(T&amp;&amp;)</code> 新增一个形参变成<code>f(T&amp;&amp;, std::true_type)</code>和<code>f(T&amp;&amp;, std::false_type)</code>，调用<code>f(args, std::is_integral&lt;T&gt;())</code> 就能正确分发到不同的 <code>f()</code> 上。
+2、模板禁用：<code>std::enable_if</code> 能强制让编译器使得某种模板不存在一样，称之为禁用，底层机制是 <code>SFINAE</code></p>
+<p><code>std::_enable_if</code> 的正确使用方法为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span>
+        <span class="k">typename</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span><span class="n">condition</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">f</span><span class="p">(</span><span class="n">T</span> <span class="n">param</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="p">}</span>
+</code></pre></div><p>应用到前面的例子上，希望整型只调用<code>f(int)</code>而 string 会调用 <code>f(T&amp;&amp;)</code>，就会有：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;f(int)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span>
+         <span class="k">typename</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">is_same</span><span class="o">&lt;</span>
+                <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">remove_reference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">type</span><span class="p">,</span> 
+                <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">value</span>
+            <span class="o">&gt;::</span><span class="n">type</span>
+        <span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">f</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;f(T&amp;&amp;)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>模板的内容看上去比较长，其实只是在<code>std::enable_if</code>的<code>condition</code>内希望入参的类型为<code>string</code>，无论左值和右值，这样就完成了一个万能引用的正确重载。</p>
+<h2 id="引用折叠" class="headerLink">
+    <a href="#%e5%bc%95%e7%94%a8%e6%8a%98%e5%8f%a0" class="header-mark"></a>引用折叠</h2><p>在c++中，引用的引用是非法的，但是编译器可以推导出引用的引用的引用再进行折叠，通过这种机制实现移动语义和完美转发。</p>
+<p>模板参数<code>T</code>的推导规则有一点就是，如果传参是个左值，<code>T</code>的推导类型就是<code>T&amp;</code>，如果传参是个右值，那么<code>T</code>推导结果就是<code>T</code>（不变）。引用的折叠规则也很简单，当编译器出现引用的引用后，结果会变成单个引用，在两个引用中，任意一个的推导结果为左值引用，结果就是左值引用，否则就是右值引用。</p>
+<h2 id="返回值优化rvo" class="headerLink">
+    <a href="#%e8%bf%94%e5%9b%9e%e5%80%bc%e4%bc%98%e5%8c%96rvo" class="header-mark"></a>返回值优化(RVO)</h2><p>编译器如果要在一个按值返回的函数省略局部对象的复制和移动，需要满足两个条件：</p>
+<ol>
+<li>局部对象的类型和返回值类型相同</li>
+<li>返回的就是局部对象本身</li>
+</ol>
+<p>如果在<code>return</code>的时候对局部变量做<code>std::move()</code>，那么就会使得局部变量的类型和返回值类型不匹配，原本可以只构造一次的操作，变成了需要构造一次加移动一次，限制了编译器的发挥。</p>
+<p>另外，如果不满足上面的条件二，按值返回的局部对象是不确定的，编译器也会将返回值当作右值处理，所以对于按值返回局部变量这种情况，并不需要实施<code>std::move()</code>。</p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-04-14</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/c-rvalue-reference/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E5%92%8C%E9%AB%98%E6%96%AF%E5%88%86%E5%B8%83/" class="prev" rel="prev" title="机器学习整理（异常检测和高斯分布）"><i class="fas fa-angle-left fa-fw"></i>机器学习整理（异常检测和高斯分布）</a>
+            <a href="/c-atomic-%E5%92%8C-memory-ordering/" class="next" rel="next" title="C&#43;&#43; Atomic 和 Memory Ordering">C&#43;&#43; Atomic 和 Memory Ordering<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

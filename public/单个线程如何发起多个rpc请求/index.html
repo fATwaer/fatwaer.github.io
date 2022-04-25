@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">gRPC：复用CompletionQueue - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="gRPC：复用CompletionQueue" />
+<meta property="og:description" content="异步请求过程在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-10-19T22:56:03+08:00" />
+<meta property="article:modified_time" content="2020-10-19T22:56:03+08:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="gRPC：复用CompletionQueue"/>
+<meta name="twitter:description" content="异步请求过程在利用异步gRPC实现请求的时候，通常使用gRPC example中的greeter_async_client2.cc作为模板发起"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/" /><link rel="prev" href="/programatic2/" /><link rel="next" href="/leetcode_top100/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "gRPC：复用CompletionQueue",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","wordcount":  1889 ,
+        "url": "\/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82\/","datePublished": "2020-10-19T22:56:03+08:00","dateModified": "2020-10-19T22:56:03+08:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#异步请求过程">异步请求过程</a></li>
+    <li><a href="#为什么需要复用一个completionqueue">为什么需要复用一个CompletionQueue</a></li>
+    <li><a href="#简单例子">简单例子</a>
+      <ul>
+        <li><a href="#protobuffer-协议文件">Protobuffer 协议文件</a></li>
+        <li><a href="#servercc">server.cc</a></li>
+        <li><a href="#async_clientcc">async_client.cc</a></li>
+        <li><a href="#运行结果">运行结果</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">gRPC：复用CompletionQueue</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/sys/"><i class="far fa-folder fa-fw"></i>sys</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-10-19">2020-10-19</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2020-10-19">2020-10-19</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1889 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#异步请求过程">异步请求过程</a></li>
+    <li><a href="#为什么需要复用一个completionqueue">为什么需要复用一个CompletionQueue</a></li>
+    <li><a href="#简单例子">简单例子</a>
+      <ul>
+        <li><a href="#protobuffer-协议文件">Protobuffer 协议文件</a></li>
+        <li><a href="#servercc">server.cc</a></li>
+        <li><a href="#async_clientcc">async_client.cc</a></li>
+        <li><a href="#运行结果">运行结果</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="异步请求过程" class="headerLink">
+    <a href="#%e5%bc%82%e6%ad%a5%e8%af%b7%e6%b1%82%e8%bf%87%e7%a8%8b" class="header-mark"></a>异步请求过程</h2><p>在利用异步gRPC实现请求的时候，通常使用gRPC example中的<code>greeter_async_client2.cc</code>作为模板发起异步请求，并通过<code>CompletionQueue</code>中的Next()阻塞机制等待请求的完成。</p>
+<p>异步请求流程应该如下：</p>
+<p><img
+        class="lazyload"
+        data-src="/images/program/grpc.png"
+        data-srcset="/images/program/grpc.png, /images/program/grpc.png 1.5x, /images/program/grpc.png 2x"
+        data-sizes="auto"
+        alt="/images/program/grpc.png"
+        title="请求流程"></p>
+<p>在<code>greeter_async_client2.cc</code>中，每一个请求都会创建一个<code>AsyncClientCall</code>，并且根据这个new出来的对象地址，作为唯一标识，存储在CompletionQueue中，</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++">    <span class="c1">// struct for keeping state and data information
+</span><span class="c1"></span>    <span class="k">struct</span> <span class="nc">AsyncClientCall</span> <span class="p">{</span>
+        <span class="c1">// Container for the data we expect from the server.
+</span><span class="c1"></span>        <span class="n">HelloReply</span> <span class="n">reply</span><span class="p">;</span>
+
+        <span class="c1">// Context for the client. It could be used to convey extra information to
+</span><span class="c1"></span>        <span class="c1">// the server and/or tweak certain RPC behaviors.
+</span><span class="c1"></span>        <span class="n">ClientContext</span> <span class="n">context</span><span class="p">;</span>
+
+        <span class="c1">// Storage for the status of the RPC upon completion.
+</span><span class="c1"></span>        <span class="n">Status</span> <span class="n">status</span><span class="p">;</span>
+
+
+        <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">HelloReply</span><span class="o">&gt;&gt;</span> <span class="n">response_reader</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="kt">void</span> <span class="nf">SayHello</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Data we are sending to the server.
+</span><span class="c1"></span>        <span class="n">HelloRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+
+        <span class="c1">// Call object to store rpc data
+</span><span class="c1"></span>        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+
+        <span class="c1">// stub_-&gt;PrepareAsyncSayHello() creates an RPC object, returning
+</span><span class="c1"></span>        <span class="c1">// an instance to store in &#34;call&#34; but does not actually start the RPC
+</span><span class="c1"></span>        <span class="c1">// Because we are using the asynchronous API, we need to hold on to
+</span><span class="c1"></span>        <span class="c1">// the &#34;call&#34; instance in order to get updates on the ongoing RPC.
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span> <span class="o">=</span>
+            <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncSayHello</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">cq_</span><span class="p">);</span>
+
+        <span class="c1">// StartCall initiates the RPC call
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+
+        <span class="c1">// Request that, upon completion of the RPC, &#34;reply&#34; be updated with the
+</span><span class="c1"></span>        <span class="c1">// server&#39;s response; &#34;status&#34; with the indication of whether the operation
+</span><span class="c1"></span>        <span class="c1">// was successful. Tag the request with the memory address of the call object.
+</span><span class="c1"></span>        <span class="n">call</span><span class="o">-&gt;</span><span class="n">response_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+
+    <span class="p">}</span>
+</code></pre></div><p>在官方的例子中，客户端启动了一个线程专门去处理数据异步的接收，但是能同步完成，即在发送完后
+直接利用<code>cq.Next()</code>等待请求的完成。</p>
+<h2 id="为什么需要复用一个completionqueue" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e5%a4%8d%e7%94%a8%e4%b8%80%e4%b8%aacompletionqueue" class="header-mark"></a>为什么需要复用一个CompletionQueue</h2><p>假设目前有个线程正在执行一个操作，并且需要调用多个不同的gRPC服务获取数据，如果使用同步的调用，
+那么就需要经过多次调用的时间才能完成数据的获取。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">
+...
+↓
+call A  --&gt;t1--&gt; gRPC Server A
+↓
+call B  --&gt;t2--&gt; gRPC Server B
+↓
+call C  --&gt;t3--&gt; gRPC Server C
+↓
+...
+</code></pre></div><p>完成三次数据取的时间就是 t1 + t2 + t3，换成官方的example中的aync_client中的异步调用，收到请求需要CompletetionQueue的Next()调用来同步，处理收到的请求。因为要发起不同的RPC请求，容易惯性地开启多个CompletetionQueue来发起请求，最终等待的时候就会需要多个Next()进行同步，从而不得不开启另一个线程检查
+多个CompletetionQueue是否完成，或者单线调用多次Next()导致使用的时间和同步调用没有差别。</p>
+<p>如果使用同一个CompletetionQueue发送请求，那么就可以使用一个Next()等待多个请求同步，所使用的时间就是
+Max(t1, t2, t3)。使用同一个CompletetionQueue会产生一个问题，Next()等待收到响应后，如何分发到不同的
+响应处理中去就成了一个新的问题，最简单的方法之一就是在CompletetionQueue的tag值上想方法，类似于greeter_async_client2.cc中的AsyncClientCall，将结构体的地址写入CQ中，然后在Next()返回得到tag值时
+转型成AsyncClientCall类型。在这个结构体中，加入一个类似于type的字段，用于判断请求的类型，就能区分收到的响应是哪个gRPC请求对应的响应。</p>
+<h2 id="简单例子" class="headerLink">
+    <a href="#%e7%ae%80%e5%8d%95%e4%be%8b%e5%ad%90" class="header-mark"></a>简单例子</h2><h3 id="protobuffer-协议文件" class="headerLink">
+    <a href="#protobuffer-%e5%8d%8f%e8%ae%ae%e6%96%87%e4%bb%b6" class="header-mark"></a>Protobuffer 协议文件</h3><p><code>grpc/examples/protos/helloworld.proto</code></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="n">syntax</span> <span class="o">=</span> <span class="s">&#34;proto3&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_multiple_files</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_package</span> <span class="o">=</span> <span class="s">&#34;io.grpc.examples.helloworld&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">java_outer_classname</span> <span class="o">=</span> <span class="s">&#34;HelloWorldProto&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="k">option</span> <span class="n">objc_class_prefix</span> <span class="o">=</span> <span class="s">&#34;HLW&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kn">package</span> <span class="nn">helloworld</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The greeting service definition.
+</span><span class="c1"></span><span class="kd">service</span> <span class="n">Greeter</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="c1">// Sends a greeting
+</span><span class="c1"></span>  <span class="k">rpc</span> <span class="n">SayHello</span> <span class="p">(</span><span class="n">HelloRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">HelloReply</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The request message containing the user&#39;s name.
+</span><span class="c1"></span><span class="kd">message</span> <span class="nc">HelloRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="c1">// The response message containing the greetings
+</span><span class="c1"></span><span class="kd">message</span> <span class="nc">HelloReply</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="kd">message</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">service</span> <span class="n">PingPongService</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">PingPong</span> <span class="p">(</span><span class="n">PingRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">PongReply</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">PingRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">seq</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">PongReply</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">seq</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span></code></pre></div><h3 id="servercc" class="headerLink">
+    <a href="#servercc" class="header-mark"></a>server.cc</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;grpcpp/grpcpp.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpcpp/health_check_service_interface.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpcpp/ext/proto_server_reflection_plugin.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#ifdef BAZEL_BUILD
+</span><span class="cp">#include</span> <span class="cpf">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#else
+</span><span class="cp">#include</span> <span class="cpf">&#34;helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#endif
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Server</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ServerBuilder</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ServerContext</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Status</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">Greeter</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingPongService</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PongReply</span><span class="p">;</span>
+
+<span class="c1">// Logic and data behind the server&#39;s behavior.
+</span><span class="c1"></span><span class="k">class</span> <span class="nc">GreeterServiceImpl</span> <span class="k">final</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Greeter</span><span class="o">::</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="n">Status</span> <span class="nf">SayHello</span><span class="p">(</span><span class="n">ServerContext</span><span class="o">*</span> <span class="n">context</span><span class="p">,</span> <span class="k">const</span> <span class="n">HelloRequest</span><span class="o">*</span> <span class="n">request</span><span class="p">,</span>
+                  <span class="n">HelloReply</span><span class="o">*</span> <span class="n">reply</span><span class="p">)</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">request</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">reply</span><span class="o">-&gt;</span><span class="n">set_message</span><span class="p">(</span><span class="s">&#34;world&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Status</span><span class="o">::</span><span class="n">OK</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">PingPongServiceImpl</span> <span class="k">final</span> <span class="o">:</span> <span class="k">public</span> <span class="n">PingPongService</span><span class="o">::</span><span class="n">Service</span> <span class="p">{</span>
+  <span class="n">Status</span> <span class="nf">PingPong</span><span class="p">(</span><span class="n">ServerContext</span><span class="o">*</span> <span class="n">context</span><span class="p">,</span> <span class="k">const</span> <span class="n">PingRequest</span><span class="o">*</span> <span class="n">request</span><span class="p">,</span>
+                  <span class="n">PongReply</span><span class="o">*</span> <span class="n">reply</span><span class="p">)</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">request</span><span class="o">-&gt;</span><span class="n">seq</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">reply</span><span class="o">-&gt;</span><span class="n">set_seq</span><span class="p">(</span><span class="s">&#34;pong&#34;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Status</span><span class="o">::</span><span class="n">OK</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">RunServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">server_address</span><span class="p">(</span><span class="s">&#34;0.0.0.0:50051&#34;</span><span class="p">);</span>
+  <span class="n">GreeterServiceImpl</span> <span class="n">service</span><span class="p">;</span>
+
+  <span class="n">grpc</span><span class="o">::</span><span class="n">EnableDefaultHealthCheckService</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">grpc</span><span class="o">::</span><span class="n">reflection</span><span class="o">::</span><span class="n">InitProtoReflectionServerBuilderPlugin</span><span class="p">();</span>
+  <span class="n">ServerBuilder</span> <span class="n">builder</span><span class="p">;</span>
+  <span class="c1">// Listen on the given address without any authentication mechanism.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">AddListeningPort</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureServerCredentials</span><span class="p">());</span>
+  <span class="c1">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span class="c1"></span>  <span class="c1">// clients. In this case it corresponds to an *synchronous* service.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">RegisterService</span><span class="p">(</span><span class="o">&amp;</span><span class="n">service</span><span class="p">);</span>
+  <span class="c1">// Finally assemble the server.
+</span><span class="c1"></span>  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span> <span class="n">server</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">BuildAndStart</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Server listening on &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">server_address</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// Wait for the server to shutdown. Note that some other thread must be
+</span><span class="c1"></span>  <span class="c1">// responsible for shutting down the server for this call to ever return.
+</span><span class="c1"></span>  <span class="n">server</span><span class="o">-&gt;</span><span class="n">Wait</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">RunPingPongServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">server_address</span><span class="p">(</span><span class="s">&#34;0.0.0.0:50052&#34;</span><span class="p">);</span>
+  <span class="n">PingPongServiceImpl</span> <span class="n">service</span><span class="p">;</span>
+
+  <span class="n">grpc</span><span class="o">::</span><span class="n">EnableDefaultHealthCheckService</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">grpc</span><span class="o">::</span><span class="n">reflection</span><span class="o">::</span><span class="n">InitProtoReflectionServerBuilderPlugin</span><span class="p">();</span>
+  <span class="n">ServerBuilder</span> <span class="n">builder</span><span class="p">;</span>
+  <span class="c1">// Listen on the given address without any authentication mechanism.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">AddListeningPort</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureServerCredentials</span><span class="p">());</span>
+  <span class="c1">// Register &#34;service&#34; as the instance through which we&#39;ll communicate with
+</span><span class="c1"></span>  <span class="c1">// clients. In this case it corresponds to an *synchronous* service.
+</span><span class="c1"></span>  <span class="n">builder</span><span class="p">.</span><span class="n">RegisterService</span><span class="p">(</span><span class="o">&amp;</span><span class="n">service</span><span class="p">);</span>
+  <span class="c1">// Finally assemble the server.
+</span><span class="c1"></span>  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Server</span><span class="o">&gt;</span> <span class="n">server</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">BuildAndStart</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Server listening on &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">server_address</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">// Wait for the server to shutdown. Note that some other thread must be
+</span><span class="c1"></span>  <span class="c1">// responsible for shutting down the server for this call to ever return.
+</span><span class="c1"></span>  <span class="n">server</span><span class="o">-&gt;</span><span class="n">Wait</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">RunServer</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">(</span><span class="n">RunPingPongServer</span><span class="p">);</span>
+  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><h3 id="async_clientcc" class="headerLink">
+    <a href="#async_clientcc" class="header-mark"></a>async_client.cc</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;grpcpp/grpcpp.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;grpc/support/log.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#ifdef BAZEL_BUILD
+</span><span class="cp">#include</span> <span class="cpf">&#34;examples/protos/helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#else
+</span><span class="cp">#include</span> <span class="cpf">&#34;helloworld.grpc.pb.h&#34;</span><span class="cp">
+</span><span class="cp">#endif
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Channel</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ClientAsyncResponseReader</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">ClientContext</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">CompletionQueue</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">grpc</span><span class="o">::</span><span class="n">Status</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PongReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">PingPongService</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloRequest</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">HelloReply</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">helloworld</span><span class="o">::</span><span class="n">Greeter</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nc">AsyncClientCall</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">type</span><span class="p">;</span>
+    <span class="n">PongReply</span> <span class="n">pong_reply</span><span class="p">;</span>
+    <span class="n">HelloReply</span> <span class="n">hello_reply</span><span class="p">;</span>
+    <span class="n">ClientContext</span> <span class="n">context</span><span class="p">;</span>
+    <span class="n">Status</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">PongReply</span><span class="o">&gt;&gt;</span> <span class="n">pingpong_reader</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ClientAsyncResponseReader</span><span class="o">&lt;</span><span class="n">HelloReply</span><span class="o">&gt;&gt;</span> <span class="n">greeter_reader</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">PingPongClient</span> <span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="k">explicit</span> <span class="n">PingPongClient</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Channel</span><span class="o">&gt;</span> <span class="n">channel</span><span class="p">,</span> <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq</span><span class="p">)</span>
+            <span class="o">:</span> <span class="n">stub_</span><span class="p">(</span><span class="n">PingPongService</span><span class="o">::</span><span class="n">NewStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)),</span> <span class="n">cq_</span><span class="p">(</span><span class="n">cq</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="kt">void</span> <span class="nf">PingPong</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">seq</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">PingRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">);</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span> <span class="o">=</span> <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncPingPong</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">cq_</span><span class="p">);</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">pingpong_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">pong_reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;pingpong call struct address:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+    <span class="p">}</span>
+  <span class="k">private</span><span class="o">:</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">PingPongService</span><span class="o">::</span><span class="n">Stub</span><span class="o">&gt;</span> <span class="n">stub_</span><span class="p">;</span>
+    <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">GreeterClient</span> <span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="k">explicit</span> <span class="n">GreeterClient</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Channel</span><span class="o">&gt;</span> <span class="n">channel</span><span class="p">,</span> <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq</span><span class="p">)</span>
+            <span class="o">:</span> <span class="n">stub_</span><span class="p">(</span><span class="n">Greeter</span><span class="o">::</span><span class="n">NewStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)),</span> <span class="n">cq_</span><span class="p">(</span><span class="n">cq</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="kt">void</span> <span class="nf">SayHello</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">HelloRequest</span> <span class="n">request</span><span class="p">;</span>
+        <span class="n">request</span><span class="p">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AsyncClientCall</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span> <span class="o">=</span> <span class="n">stub_</span><span class="o">-&gt;</span><span class="n">PrepareAsyncSayHello</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">cq_</span><span class="p">);</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span><span class="o">-&gt;</span><span class="n">StartCall</span><span class="p">();</span>
+        <span class="n">call</span><span class="o">-&gt;</span><span class="n">greeter_reader</span><span class="o">-&gt;</span><span class="n">Finish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">hello_reply</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">call</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;greeter call struct address:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="k">private</span><span class="o">:</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Greeter</span><span class="o">::</span><span class="n">Stub</span><span class="o">&gt;</span> <span class="n">stub_</span><span class="p">;</span>
+    <span class="n">CompletionQueue</span> <span class="o">*</span><span class="n">cq_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">AsyncCompleteRpc</span><span class="p">(</span><span class="n">CompletionQueue</span><span class="o">&amp;</span> <span class="n">cq_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">got_tag</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">ok</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">cq_</span><span class="p">.</span><span class="n">Next</span><span class="p">(</span><span class="o">&amp;</span><span class="n">got_tag</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ok</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">AsyncClientCall</span><span class="o">*</span> <span class="n">call</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">AsyncClientCall</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">got_tag</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">call</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;address=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; received: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span><span class="o">-&gt;</span><span class="n">hello_reply</span><span class="p">.</span><span class="n">message</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;address=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; received: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">call</span><span class="o">-&gt;</span><span class="n">pong_reply</span><span class="p">.</span><span class="n">seq</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="k">else</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;RPC failed&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">delete</span> <span class="n">call</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">CompletionQueue</span> <span class="n">cq</span><span class="p">;</span>
+
+    <span class="n">GreeterClient</span> <span class="n">greeter</span><span class="p">(</span><span class="n">grpc</span><span class="o">::</span><span class="n">CreateChannel</span><span class="p">(</span>
+            <span class="s">&#34;localhost:50051&#34;</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureChannelCredentials</span><span class="p">()),</span> <span class="o">&amp;</span><span class="n">cq</span><span class="p">);</span>
+    <span class="n">PingPongClient</span> <span class="n">client</span><span class="p">(</span><span class="n">grpc</span><span class="o">::</span><span class="n">CreateChannel</span><span class="p">(</span>
+            <span class="s">&#34;localhost:50052&#34;</span><span class="p">,</span> <span class="n">grpc</span><span class="o">::</span><span class="n">InsecureChannelCredentials</span><span class="p">()),</span> <span class="o">&amp;</span><span class="n">cq</span><span class="p">);</span>
+
+    <span class="n">greeter</span><span class="p">.</span><span class="n">SayHello</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">);</span>
+    <span class="n">client</span><span class="p">.</span><span class="n">PingPong</span><span class="p">(</span><span class="s">&#34;ping&#34;</span><span class="p">);</span>
+    <span class="n">AsyncCompleteRpc</span><span class="p">(</span><span class="n">cq</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><h3 id="运行结果" class="headerLink">
+    <a href="#%e8%bf%90%e8%a1%8c%e7%bb%93%e6%9e%9c" class="header-mark"></a>运行结果</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">&gt;&gt; ./server
+Server listening on 0.0.0.0:50052
+Server listening on 0.0.0.0:50051
+
+----
+
+&gt;&gt; ./async_client
+greeter call struct address:0x1748eb0
+pingpong call struct address:0x174e410
+<span class="nv">address</span><span class="o">=</span>0x1748eb0 received: world
+<span class="nv">address</span><span class="o">=</span>0x174e410 received: pong
+</code></pre></div></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-10-19</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/%E5%8D%95%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%A6%82%E4%BD%95%E5%8F%91%E8%B5%B7%E5%A4%9A%E4%B8%AArpc%E8%AF%B7%E6%B1%82/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/programatic2/" class="prev" rel="prev" title="实效性软件构建的途径-下"><i class="fas fa-angle-left fa-fw"></i>实效性软件构建的途径-下</a>
+            <a href="/leetcode_top100/" class="next" rel="next" title="Leetcode: top100">Leetcode: top100<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

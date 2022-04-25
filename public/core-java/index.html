@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Java 核心技术卷1 笔记 - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="Java 核心技术卷1 笔记" />
+<meta property="og:description" content="前言最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/core-java/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-11-18T16:36:16+00:00" />
+<meta property="article:modified_time" content="2018-11-18T16:36:16+00:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="Java 核心技术卷1 笔记"/>
+<meta name="twitter:description" content="前言最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/core-java/" /><link rel="prev" href="/thread-synchronization/" /><link rel="next" href="/effective-go/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Java 核心技术卷1 笔记",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/core-java\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","keywords": "Java","wordcount":  2935 ,
+        "url": "\/core-java\/","datePublished": "2018-11-18T16:36:16+00:00","dateModified": "2018-11-18T16:36:16+00:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#字符串">字符串</a></li>
+    <li><a href="#作用域">作用域</a></li>
+    <li><a href="#数组">数组</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#final-关键字">final 关键字</a></li>
+    <li><a href="#static-关键字">static 关键字</a></li>
+    <li><a href="#main方法">main方法</a></li>
+    <li><a href="#初始化块">初始化块</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#强制转化">强制转化</a></li>
+    <li><a href="#抽象类">抽象类</a></li>
+    <li><a href="#受保护访问">受保护访问</a></li>
+    <li><a href="#继承的设计技巧">继承的设计技巧</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#接口">接口</a>
+      <ul>
+        <li><a href="#深拷贝和浅拷贝">深拷贝和浅拷贝</a></li>
+      </ul>
+    </li>
+    <li><a href="#lambda表达式">lambda表达式</a></li>
+    <li><a href="#内部类">内部类</a></li>
+    <li><a href="#匿名内部类">匿名内部类</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Java 核心技术卷1 笔记</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2018-11-18">2018-11-18</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2018-11-18">2018-11-18</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2935 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 6 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#字符串">字符串</a></li>
+    <li><a href="#作用域">作用域</a></li>
+    <li><a href="#数组">数组</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#final-关键字">final 关键字</a></li>
+    <li><a href="#static-关键字">static 关键字</a></li>
+    <li><a href="#main方法">main方法</a></li>
+    <li><a href="#初始化块">初始化块</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#强制转化">强制转化</a></li>
+    <li><a href="#抽象类">抽象类</a></li>
+    <li><a href="#受保护访问">受保护访问</a></li>
+    <li><a href="#继承的设计技巧">继承的设计技巧</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#接口">接口</a>
+      <ul>
+        <li><a href="#深拷贝和浅拷贝">深拷贝和浅拷贝</a></li>
+      </ul>
+    </li>
+    <li><a href="#lambda表达式">lambda表达式</a></li>
+    <li><a href="#内部类">内部类</a></li>
+    <li><a href="#匿名内部类">匿名内部类</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h1 id="前言" class="headerLink">
+    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>前言</h1><p>最近想深入下数据库原理，在知乎和Google发现有几门开源的好课值得去学习。我选择的是6.830，首先是之前有刷过6.828，相对来说比较熟悉，不过实现是选择的是java，这也就是我为什么写博客的理由。另外也被人推荐的CMU15445,这门课程稍微浏览了下主页，是使用C++来实现的，并且课件PPT和视频都非常良心。</p>
+<p>这是头一次认真接触JAVA，我使用的是《JAVA核心技术　卷１》,是一本相对来说比较方便C/C++程序员入坑的书，这篇博客也会根据这本书的目录作为大纲进行梳理。</p>
+<h1 id="基本结构" class="headerLink">
+    <a href="#%e5%9f%ba%e6%9c%ac%e7%bb%93%e6%9e%84" class="header-mark"></a>基本结构</h1><p>基本类型大多数语言其实差不了太多，不做太多废话，但是字符串的操作更加接近与python那一类的语言，自动拼接、垃圾回收之类的。</p>
+<h2 id="字符串" class="headerLink">
+    <a href="#%e5%ad%97%e7%ac%a6%e4%b8%b2" class="header-mark"></a>字符串</h2><p>字符串判断为空：</p>
+<pre><code>if (str.length() == 0)
+or 
+if (str.equals(&quot;&quot;))    
+</code></pre>
+<p>虽然可以进行字符串拼接，但是效率比较低，可以使用<code>StringBuilder</code>类:</p>
+<pre><code>StringBuilder builder = new StringBuilder();
+builder.append(ch);
+builder.append(str);
+builder.toString();
+</code></pre>
+<h2 id="作用域" class="headerLink">
+    <a href="#%e4%bd%9c%e7%94%a8%e5%9f%9f" class="header-mark"></a>作用域</h2><p>JAVA的作用域和C/C++不同，内部块中的同名变量名不会覆盖外部块的变量名，甚至无法通过编译。所以在内部块中需要取不同的变量名，但在class中，可以使用<code>this</code>指针来指定变量。</p>
+<h2 id="数组" class="headerLink">
+    <a href="#%e6%95%b0%e7%bb%84" class="header-mark"></a>数组</h2><p>JAVA的数组都是分配在堆上，这又是和C/C++不同的一点：</p>
+<p>JAVA中的:</p>
+<pre><code>int[] a = new int[100];
+</code></pre>
+<p>等同于C/C++中的:</p>
+<pre><code>int* a = new int[100];
+</code></pre>
+<p>不同于:</p>
+<pre><code>int a[100];
+</code></pre>
+<p>并且数组的完整拷贝通过方法<code>Arrays.copyOf()</code>:</p>
+<pre><code>newArr = Arrays.copyOf(oldArr, oldArr.lenght());
+</code></pre>
+<p>也可以通过这个方法来扩展数组：</p>
+<pre><code>Arr = Arrays.copyOf(Arr, 2 * Arr.lenght());
+</code></pre>
+<h1 id="对象与类" class="headerLink">
+    <a href="#%e5%af%b9%e8%b1%a1%e4%b8%8e%e7%b1%bb" class="header-mark"></a>对象与类</h1><p>OO应该是JAVA的重点，OOP三个特性：</p>
+<ul>
+<li>封装：用一个类将实现和使用分开，只保留接口与外部进行联系。</li>
+<li>继承：子类自动继承其父类的属性和方法，并且可以添加新的方法和属性。</li>
+<li>多态：虽然多个子类都有同一个方法，但是子类的子类实例化之后都可以获得完全不同的结果。</li>
+</ul>
+<p>通过下面的方法实例化一个类：</p>
+<pre><code>new Date();
+</code></pre>
+<p>如果想使用类中的一个方法：</p>
+<pre><code>System.out.println(new Date().toString());
+</code></pre>
+<h2 id="final-关键字" class="headerLink">
+    <a href="#final-%e5%85%b3%e9%94%ae%e5%ad%97" class="header-mark"></a>final 关键字</h2><p><code>const</code>关键字相当于<code>const</code>关键字即不可变的意思，并且在构造一个类的时候必须要被初始化。</p>
+<h2 id="static-关键字" class="headerLink">
+    <a href="#static-%e5%85%b3%e9%94%ae%e5%ad%97" class="header-mark"></a>static 关键字</h2><p><code>static</code>关键字其实也很类似，将<code>static</code>理解为类的方法和域即可而不是对象的方法和域。
+例如:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">currentId</span><span class="o">;</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getId</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">currentId</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>调用使用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java">    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">Employee</span><span class="o">.</span><span class="na">curremtID</span><span class="o">;</span>
+    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">Employee</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+</code></pre></div><h2 id="main方法" class="headerLink">
+    <a href="#main%e6%96%b9%e6%b3%95" class="header-mark"></a>main方法</h2><p>有意思的是java的每一个类里面都可以有main函数，这方便了java为每一个类做单元测试，自己在coding的时候也确实经常用到类的main函数进行测试。</p>
+<h2 id="初始化块" class="headerLink">
+    <a href="#%e5%88%9d%e5%a7%8b%e5%8c%96%e5%9d%97" class="header-mark"></a>初始化块</h2><p>初始化块也非常有意思，直接在类域里面输入大括号就能在调用构造器的时候执行。例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+
+    <span class="c1">// initializeation block
+</span><span class="c1"></span>    <span class="o">{</span>
+        <span class="n">id</span> <span class="o">=</span> <span class="n">1</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><h1 id="类继承" class="headerLink">
+    <a href="#%e7%b1%bb%e7%bb%a7%e6%89%bf" class="header-mark"></a>类继承</h1><p>java中继承的关键字是<code>extends</code>,并且注意子类中的方法不能直接访问超类中的<code>private</code>域，所以需要通过在超类中准备<code>访问器</code>，利用<code>super</code>关键字来获取<code>private</code>域，构造函数也是如此。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Manager</span> <span class="kd">extends</span> <span class="n">Employee</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">Manager</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="o">...</span> <span class="c1">// other initialization
+</span><span class="c1"></span>    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><h2 id="强制转化" class="headerLink">
+    <a href="#%e5%bc%ba%e5%88%b6%e8%bd%ac%e5%8c%96" class="header-mark"></a>强制转化</h2><p><code>强制转化</code>可以发生在类的子类和超类转化中，进行类型转化的唯一原因是：<strong>在暂时忽视对象的实际类型后，使用对象的全部功能</strong>。并且，将一个子类的引用赋值给超类的时候，编译器是允许的，但是将一个超类赋值给一个子类变量，必须进行类型转化。</p>
+<p>对于测试强制类型转化，可以使用下面的tricks:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="k">if</span> <span class="o">(</span><span class="n">staff</span> <span class="k">instanceof</span> <span class="n">Manager</span><span class="o">)</span>
+<span class="o">{</span>
+    <span class="n">boss</span> <span class="o">=</span> <span class="o">(</span><span class="n">Manager</span><span class="o">)</span> <span class="n">staff</span><span class="o">;</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>意思是，如果staff是<code>Manager</code>的一个实例，那么可以发生强制转化，当然必须是一个继承链才能成立。</p>
+<h2 id="抽象类" class="headerLink">
+    <a href="#%e6%8a%bd%e8%b1%a1%e7%b1%bb" class="header-mark"></a>抽象类</h2><p>抽象类的意义是提供一个较高层次的抽象，作为基类的存在，关键词是<code>abstract</code>。抽象类中的方法只是充当占位的角色，真正对方法的实现发生在子类中，并且抽象类不能被实例化。</p>
+<p>如果子类实现了全部的抽象方法，那么子类就不是抽象的。但若子类只定义了部分抽象类或不定义抽象类的方法，子类也必须标记为抽象类。</p>
+<h2 id="受保护访问" class="headerLink">
+    <a href="#%e5%8f%97%e4%bf%9d%e6%8a%a4%e8%ae%bf%e9%97%ae" class="header-mark"></a>受保护访问</h2><p><code>protected</code>关键词可以使得子类能够访问该域，但是外部代码不行，不过通常都是谨慎使用protected类，因为违背了OOP提倡的数据封装原则。</p>
+<h2 id="继承的设计技巧" class="headerLink">
+    <a href="#%e7%bb%a7%e6%89%bf%e7%9a%84%e8%ae%be%e8%ae%a1%e6%8a%80%e5%b7%a7" class="header-mark"></a>继承的设计技巧</h2><ol>
+<li>将公共操作和域放在超类中</li>
+<li>不使用<code>protected</code></li>
+<li>使用继承实现&quot;is-a&quot;关系</li>
+<li>除非所有的继承方法都有意义，否则不使用继承</li>
+<li>覆盖方法时，不要改变预期行为</li>
+<li>使用多态，而非类型信息</li>
+</ol>
+<h1 id="接口lambda内部类" class="headerLink">
+    <a href="#%e6%8e%a5%e5%8f%a3lambda%e5%86%85%e9%83%a8%e7%b1%bb" class="header-mark"></a>接口、lambda、内部类</h1><p>java提供的这三种机制是用来弥补类和类继承一些地方的不灵活性而创立的高级技术。</p>
+<h2 id="接口" class="headerLink">
+    <a href="#%e6%8e%a5%e5%8f%a3" class="header-mark"></a>接口</h2><p>书上给了一个很好的理解接口的解释：”如果类遵从某个特定的接口，那么就履行这项服务“。即如果要调用数组的排序服务，那么这个数组中的类需要提供一个不同对象之间进行比较的接口。</p>
+<p>比如，用<code>Employee</code>类提供接口,关键词是<code>implements</code>，之后跟随的是要提供的接口:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="kd">implements</span> <span class="n">Compareble</span><span class="o">&lt;</span><span class="n">Employee</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">Employee</span> <span class="n">other</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">...</span> <span class="c1">// implements
+</span><span class="c1"></span>    <span class="o">}</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div><p>当然，在某一处提供了接口的代码，类似于声明的作用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Comparable</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">compareTo</span><span class="o">&lt;</span><span class="n">Object</span> <span class="n">other</span><span class="o">&gt;</span>
+<span class="o">}</span>
+</code></pre></div><p>其中<code>Object</code>类是所有类的超类。</p>
+<p>接口不是类，所以不能被实例化，但是可以声明接口的变量：</p>
+<pre><code>Comparable x;
+</code></pre>
+<p>然后引用实现了接口的类对象：</p>
+<pre><code>x = new Employee(...);
+</code></pre>
+<p>接口不能包含实例域和静态方法，但是可以包含常量。</p>
+<p>接口概念对于抽象类来说是不同的，抽象类只能用在继承链之中，每个子类只能继承一个超类，但是接口可以实现多个，提高了代码复用。</p>
+<h3 id="深拷贝和浅拷贝" class="headerLink">
+    <a href="#%e6%b7%b1%e6%8b%b7%e8%b4%9d%e5%92%8c%e6%b5%85%e6%8b%b7%e8%b4%9d" class="header-mark"></a>深拷贝和浅拷贝</h3><p>java每个变量其实可以理解为一个指针或者引用，它们引用一个内存空间作为对象实例的存储位置，但是对象实例中也可能引用了其他的对象。</p>
+<p>浅拷贝就是单单拷贝该变量引用的内存部分，但是深拷贝会将该对象内部所引用的对象也拷一份。</p>
+<p>比如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Employee</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="kd">public</span> <span class="n">Employee</span> <span class="nf">clone</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Employee</span> <span class="n">cloned</span> <span class="o">=</span> <span class="o">(</span><span class="n">Employee</span><span class="o">)</span> <span class="kd">super</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+        <span class="n">cloned</span><span class="o">.</span><span class="na">hireDay</span> <span class="o">=</span> <span class="o">(</span><span class="n">Date</span><span class="o">)</span> <span class="n">hireDay</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div><p>这样就是深拷贝，在拷贝完本身的内容后还会递归拷贝所引用对象的内存。</p>
+<h2 id="lambda表达式" class="headerLink">
+    <a href="#lambda%e8%a1%a8%e8%be%be%e5%bc%8f" class="header-mark"></a>lambda表达式</h2><p>lambda就是一个代码块，表达形式为 (参数) -&gt; 表达式。
+例如:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">Comparator</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">comp</span> <span class="o">=</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">)</span>
+        <span class="o">-&gt;</span> <span class="n">first</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="n">second</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</code></pre></div><hr>
+<p>如果出现如下类似的lambda表达式:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">x</span><span class="o">-&gt;</span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">x</span><span class="o">)</span>
+</code></pre></div><p>那么可以简写为:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">::</span><span class="n">println</span>
+</code></pre></div><p>lambda表达式中的一些限制：</p>
+<ol>
+<li>只能引用不会改变的变量</li>
+<li>表达式捕获的变量必须是实际上的最终变量</li>
+<li>lambda中的局部变量不能与外部变量重名</li>
+</ol>
+<p>可以使用<code>Runable</code>来保存一个lambda,类似于回调：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">Runable</span> <span class="n">an</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span> <span class="n">a</span><span class="o">,</span> <span class="kt">int</span> <span class="n">b</span><span class="o">)-&gt;</span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="o">);</span>
+<span class="o">...</span>
+<span class="o">...</span>
+<span class="n">an</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+</code></pre></div><h2 id="内部类" class="headerLink">
+    <a href="#%e5%86%85%e9%83%a8%e7%b1%bb" class="header-mark"></a>内部类</h2><p>顾名思义，内部类就是定义在一个class内部的类，使用原因：</p>
+<ul>
+<li>内部类方法可以访问该类定义所在作用域中的数据，包括私有数据</li>
+<li>内部类可以对同一类中的其他类隐藏起来</li>
+<li>若想定义一个回调函数，使用匿名内部类会比较便捷</li>
+</ul>
+<p>内部类其实是相对于所在类的一个独立的类，当<code>new</code>操作符新建一个实体的时候，并不会实体化内部类，内部类需要独立进行实例化。不过，内部类和所在类建立了一定的联系使得内部类可以访问外围类的数据。</p>
+<p>内部类的初始化语法稍微有点复杂：</p>
+<pre><code>outerObject.new InnerClass(construction parmeter)
+</code></pre>
+<p>例如：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">TalkingClock</span> <span class="n">jabberer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TalkingClock</span><span class="o">(</span><span class="n">1000</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">TalkingClock</span><span class="o">.</span><span class="na">TimePrinter</span> <span class="n">listener</span> <span class="o">=</span> <span class="n">jabberer</span><span class="o">.</span><span class="na">new</span> <span class="nf">TimerPrinter</span><span class="o">();</span>
+</code></pre></div><p>内部类的一些限制：</p>
+<ul>
+<li>内部类声明所有的静态域必须要<code>final</code>，对于每一个外围类只需要有一个静态域的实例，若不是<code>final</code>，则分别会有单独的内部类实例。</li>
+<li>类似于lambda，访问外围局部变量也需要保证被引用的局部变量是事实上的<code>final</code>,内部类引用的时候，实际上创建了一份备份，防止外围类被垃圾回收的时候，引用出错，并且声明为<code>final</code>使得内部类和外围类引用的同一个实体。</li>
+</ul>
+<p>有一种方法来绕过这个限制，使用长度为1的数组：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kt">int</span><span class="o">[]</span> <span class="n">conuter</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+<span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">dates</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+    <span class="n">dates</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Date</span><span class="o">()</span>
+        <span class="o">{</span>
+            <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">Date</span> <span class="n">other</span><span class="o">);</span>
+            <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">other</span><span class="o">);</span>
+        <span class="o">};</span>
+</code></pre></div><h2 id="匿名内部类" class="headerLink">
+    <a href="#%e5%8c%bf%e5%90%8d%e5%86%85%e9%83%a8%e7%b1%bb" class="header-mark"></a>匿名内部类</h2><p>匿名内部类是一种很方便的工具来扩充某个接口，它的语法如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="k">new</span> <span class="n">SuperType</span><span class="o">(</span><span class="n">construction</span> <span class="n">parameters</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">inner</span> <span class="kd">class</span> <span class="nc">methods</span> <span class="n">and</span> <span class="n">data</span>
+    <span class="o">}</span>
+</code></pre></div><p>常用的使用方式为</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">Person</span> <span class="n">queen</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="o">(</span><span class="s">&#34;Mary&#34;</span><span class="o">);</span>
+    <span class="c1">// normal object
+</span><span class="c1"></span><span class="n">Person</span> <span class="n">count</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="o">(</span><span class="s">&#34;Dracula&#34;</span><span class="o">)</span> 
+    <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">};</span>
+    <span class="c1">// a object extending Person
+</span></code></pre></div></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2018-11-18</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/core-java/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/java/">Java</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/thread-synchronization/" class="prev" rel="prev" title="线程同步"><i class="fas fa-angle-left fa-fw"></i>线程同步</a>
+            <a href="/effective-go/" class="next" rel="next" title="Effective Go">Effective Go<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

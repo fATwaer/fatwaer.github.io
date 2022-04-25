@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Shell Tools and Scripting - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="Shell Tools and Scripting" />
+<meta property="og:description" content="前言这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/shell-tools-and-scripting/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-02-13T20:55:13+08:00" />
+<meta property="article:modified_time" content="2020-02-13T20:55:13+08:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="Shell Tools and Scripting"/>
+<meta name="twitter:description" content="前言这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/shell-tools-and-scripting/" /><link rel="prev" href="/kv-server/" /><link rel="next" href="/rpc-and-grpc/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Shell Tools and Scripting",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/shell-tools-and-scripting\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","keywords": "shell, globbing","wordcount":  2991 ,
+        "url": "\/shell-tools-and-scripting\/","datePublished": "2020-02-13T20:55:13+08:00","dateModified": "2020-02-13T20:55:13+08:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a>
+      <ul>
+        <li><a href="#基本变量">基本变量</a></li>
+        <li><a href="#函数">函数</a></li>
+        <li><a href="#加载函数">加载函数</a></li>
+        <li><a href="#条件截断">条件截断</a></li>
+        <li><a href="#命令替代">命令替代</a></li>
+        <li><a href="#shell-globbing">shell globbing</a></li>
+        <li><a href="#shebang">Shebang</a></li>
+        <li><a href="#函数与shell脚本的区别">函数与shell脚本的区别</a></li>
+      </ul>
+    </li>
+    <li><a href="#命令行工具">命令行工具</a>
+      <ul>
+        <li><a href="#shellcheck">shellcheck</a></li>
+        <li><a href="#tldr">TLDR</a></li>
+        <li><a href="#文件搜索-find使用">文件搜索: find使用</a></li>
+        <li><a href="#find后批量执行">find后批量执行</a></li>
+        <li><a href="#文件搜索-fd">文件搜索: fd</a></li>
+        <li><a href="#文件搜索-locate">文件搜索: locate</a></li>
+        <li><a href="#找代码-grep">找代码: grep</a></li>
+        <li><a href="#找指令">找指令</a></li>
+        <li><a href="#目录导航">目录导航</a></li>
+      </ul>
+    </li>
+    <li><a href="#练习">练习</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Shell Tools and Scripting</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/language/"><i class="far fa-folder fa-fw"></i>language</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2020-02-13">2020-02-13</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2020-02-13">2020-02-13</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2991 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 6 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a>
+      <ul>
+        <li><a href="#基本变量">基本变量</a></li>
+        <li><a href="#函数">函数</a></li>
+        <li><a href="#加载函数">加载函数</a></li>
+        <li><a href="#条件截断">条件截断</a></li>
+        <li><a href="#命令替代">命令替代</a></li>
+        <li><a href="#shell-globbing">shell globbing</a></li>
+        <li><a href="#shebang">Shebang</a></li>
+        <li><a href="#函数与shell脚本的区别">函数与shell脚本的区别</a></li>
+      </ul>
+    </li>
+    <li><a href="#命令行工具">命令行工具</a>
+      <ul>
+        <li><a href="#shellcheck">shellcheck</a></li>
+        <li><a href="#tldr">TLDR</a></li>
+        <li><a href="#文件搜索-find使用">文件搜索: find使用</a></li>
+        <li><a href="#find后批量执行">find后批量执行</a></li>
+        <li><a href="#文件搜索-fd">文件搜索: fd</a></li>
+        <li><a href="#文件搜索-locate">文件搜索: locate</a></li>
+        <li><a href="#找代码-grep">找代码: grep</a></li>
+        <li><a href="#找指令">找指令</a></li>
+        <li><a href="#目录导航">目录导航</a></li>
+      </ul>
+    </li>
+    <li><a href="#练习">练习</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="前言" class="headerLink">
+    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>前言</h2><p>这篇笔记主要是说明一些bash scripts中要注意的问题，比如变量的赋值，函数，Shebang，特殊变量，通配符等；以及介绍一些提高在shell环境下提高工作效率的工具，例如查看使用方法的时候，可以快速翻阅 TLDR 获取命令的用法，而不用使用 man 手册慢慢地找相关的参数等。</p>
+<h3 id="基本变量" class="headerLink">
+    <a href="#%e5%9f%ba%e6%9c%ac%e5%8f%98%e9%87%8f" class="header-mark"></a>基本变量</h3><p>赋值变量通过 <code>foo=bar</code> 来完成，并且带空格的 <code>foo = bar</code> 不会成功，因为相当于直接连续调用 <code>foo</code> 、 <code>=</code> 、 <code>bar</code> 三个命令，另外双引号 <code>&quot;</code> 会展开变量而单引号不会 <code>'</code> 。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">foo</span><span class="o">=</span>bar
+<span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$foo</span><span class="s2">&#34;</span>
+<span class="c1"># prints bar</span>
+<span class="nb">echo</span> <span class="s1">&#39;$foo&#39;</span>
+<span class="c1"># prints $foo</span>
+</code></pre></div><h3 id="函数" class="headerLink">
+    <a href="#%e5%87%bd%e6%95%b0" class="header-mark"></a>函数</h3><p>mcd.sh</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mcd <span class="o">()</span> <span class="o">{</span>
+    mkdir -p <span class="s2">&#34;</span><span class="nv">$1</span><span class="s2">&#34;</span>
+    <span class="nb">cd</span> <span class="s2">&#34;</span><span class="nv">$1</span><span class="s2">&#34;</span>
+<span class="o">}</span>
+</code></pre></div><p>Here $1 is the first argument to the script/function</p>
+<ul>
+<li><code>$0</code> - Name of the script</li>
+<li><code>$1</code> to <code>$9</code> - Arguments to the script. <code>$1</code> is the first argument and so on.</li>
+<li><code>$@</code> - All the arguments</li>
+<li><code>$#</code> - Number of arguments</li>
+<li><code>$?</code> - Return code of the previous command</li>
+<li><code>$$</code> - Process Identification number for the current script</li>
+<li><code>!!</code> - Entire last command, including arguments. A common pattern is to</li>
+</ul>
+<p>更多参数相关</p>
+<p><a href="https://www.tldp.org/LDP/abs/html/special-chars.html" target="_blank" rel="noopener noreffer">Special Characters</a></p>
+<h3 id="加载函数" class="headerLink">
+    <a href="#%e5%8a%a0%e8%bd%bd%e5%87%bd%e6%95%b0" class="header-mark"></a>加载函数</h3><pre><code>source mcd.sh
+mcd test
+</code></pre>
+<p>利用source读取函数后可以把.sh中的函数加载到shell环境中，于是可以直接使用函数名作为命令来执行，这里产生一个test文件并且进入到test目录中。</p>
+<hr>
+<h3 id="条件截断" class="headerLink">
+    <a href="#%e6%9d%a1%e4%bb%b6%e6%88%aa%e6%96%ad" class="header-mark"></a>条件截断</h3><p>类似于其他编程语言的函数截断，一般用于测试上一条命令的执行结果。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">false</span> <span class="o">||</span> <span class="nb">echo</span> <span class="s2">&#34;Oops, fail&#34;</span>
+<span class="c1"># Oops, fail</span>
+
+<span class="nb">true</span> <span class="o">||</span> <span class="nb">echo</span> <span class="s2">&#34;Will not be printed&#34;</span>
+<span class="c1">#</span>
+
+<span class="nb">true</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;Things went well&#34;</span>
+<span class="c1"># Things went well</span>
+
+<span class="nb">false</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;Will not be printed&#34;</span>
+<span class="c1">#</span>
+
+<span class="nb">false</span> <span class="p">;</span> <span class="nb">echo</span> <span class="s2">&#34;This will always run&#34;</span>
+<span class="c1"># This will always run</span>
+</code></pre></div><hr>
+<h3 id="命令替代" class="headerLink">
+    <a href="#%e5%91%bd%e4%bb%a4%e6%9b%bf%e4%bb%a3" class="header-mark"></a>命令替代</h3><p>当在shell使用 $(CMD) 后，CMD命令将会被执行，并且会将这条命令的输出给替换掉。例如 <code>for file in $(ls)</code>先会调用ls，然后变量所有ls所输出的文件名。</p>
+<p>另外一个很少被人知道的特性叫做 过程替代(<strong>process substitution),</strong> &lt;( CMD ) 将会执行CMD指令，并且把输出放到一个临时文件内，然后把&lt;()替换为这个临时文件的名字。例如 <code>diff &lt;(ls foo) &lt;(ls bar)</code> 将会显示 foo 和 bar 两个目录内的不同</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="cp">#!/bin/bash
+</span><span class="cp"></span>
+<span class="nb">echo</span> <span class="s2">&#34;Starting program at </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&#34;</span> <span class="c1"># Date will be substituted</span>
+
+<span class="nb">echo</span> <span class="s2">&#34;Running program </span><span class="nv">$0</span><span class="s2"> with </span><span class="nv">$#</span><span class="s2"> arguments with pid </span><span class="nv">$$</span><span class="s2">&#34;</span>
+
+<span class="k">for</span> file in <span class="nv">$@</span><span class="p">;</span> <span class="k">do</span>
+    grep foobar <span class="nv">$file</span> &gt; /dev/null 2&gt; /dev/null
+    <span class="c1"># When pattern is not found, grep has exit status 1</span>
+    <span class="c1"># We redirect STDOUT and STDERR to a null register since we do not care about them</span>
+    <span class="k">if</span> <span class="o">[[</span> <span class="nv">$?</span> -ne <span class="m">0</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">echo</span> <span class="s2">&#34;File </span><span class="nv">$file</span><span class="s2"> does not have any foobar, adding one&#34;</span>
+        <span class="nb">echo</span> <span class="s2">&#34;# foobar&#34;</span> &gt;&gt; <span class="s2">&#34;</span><span class="nv">$file</span><span class="s2">&#34;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</code></pre></div><p>这个脚本所完成的事情是：在所有参数文件中，如果没有文件内没有grep到foobar这个字符串，那么就会输出 <code>File $file does not have any foobar, adding one</code> 输出到标准输出，然后追加 <code># foobar&quot; &gt;&gt; &quot;$file</code> 到 $file 的结尾。</p>
+<p>其中：</p>
+<p><code>$#</code> 代表该脚本执行使用的PID，</p>
+<p><code>$@</code>  所有参数，不包括$0。</p>
+<p><code>$?</code> 代表grep指令的运行结果，如果没有匹配到会输出不等于0的值。</p>
+<p><code>&gt; /dev/null</code>  即 <code>1 &gt; /dev/null</code>将标准输出指向null，</p>
+<p><code>2 &gt; /dev/null</code> 将标准错误输出指向null。</p>
+<p><strong>if 判断</strong>中的逻辑词和其他编程语言有些区别，具体可以看
+<a href="http://man7.org/linux/man-pages/man1/test.1.html" target="_blank" rel="noopener noreffer">http://man7.org/linux/man-pages/man1/test.1.html</a></p>
+<p><strong><code>[]和[[]]</code> 的区别</strong>:</p>
+<p><a href="http://mywiki.wooledge.org/BashFAQ/031" target="_blank" rel="noopener noreffer">http://mywiki.wooledge.org/BashFAQ/031</a></p>
+<blockquote>
+<p>[ (&ldquo;test&rdquo; command) and [[ (&ldquo;new test&rdquo; command) are used to evaluate expressions. [[ works only in Bash, Zsh and the Korn shell, and is more powerful; [ and test are available in POSIX shells.</p>
+</blockquote>
+<p>一般来说使用 <code>[[]]</code> 这种形式犯错的机会更少。</p>
+<h3 id="shell-globbing" class="headerLink">
+    <a href="#shell-globbing" class="header-mark"></a>shell globbing</h3><p>一共分为两类：</p>
+<ul>
+<li>
+<p>通配符(Wildcards)： ? 和 *
+给定文件 foo, foo1, foo2, foo10, bar， <code>rm foo?</code> 会删除foo1和foo2， <code>rm foo*</code> 将会删除除了bar的所有文件。</p>
+</li>
+<li>
+<p>Curly braces <code>{}</code></p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">convert image.<span class="o">{</span>png,jpg<span class="o">}</span>
+<span class="c1"># Will expand to</span>
+convert image.png image.jpg
+
+cp /path/to/project/<span class="o">{</span>foo,bar,baz<span class="o">}</span>.sh /newpath
+<span class="c1"># Will expand to</span>
+cp /path/to/project/foo.sh /path/to/project/bar.sh /path/to/project/baz.sh /newpath
+
+<span class="c1"># Globbing techniques can also be combined</span>
+mv *<span class="o">{</span>.py,.sh<span class="o">}</span> folder
+<span class="c1"># Will move all *.py and *.sh files</span>
+
+
+mkdir foo bar
+<span class="c1"># This creates files foo/a, foo/b, ... foo/h, bar/a, bar/b, ... bar/h</span>
+touch <span class="o">{</span>foo,bar<span class="o">}</span>/<span class="o">{</span>a..j<span class="o">}</span>
+touch foo/x bar/y
+<span class="c1"># Show differences between files in foo and bar</span>
+diff &lt;<span class="o">(</span>ls foo<span class="o">)</span> &lt;<span class="o">(</span>ls bar<span class="o">)</span>
+<span class="c1"># Outputs</span>
+<span class="c1"># &lt; x</span>
+<span class="c1"># ---</span>
+<span class="c1"># &gt; y</span>
+
+</code></pre></div><hr>
+<h3 id="shebang" class="headerLink">
+    <a href="#shebang" class="header-mark"></a>Shebang</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ch">#!/usr/local/bin/python</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+</code></pre></div><p>shell 知道使用python解释器而不是shell是因为写了一行叫做shebang的在脚本顶部。</p>
+<p>但是由于不同机器的安装不一样，所以可以通过env来定位  <code>#!/usr/bin/env python</code></p>
+<hr>
+<h3 id="函数与shell脚本的区别" class="headerLink">
+    <a href="#%e5%87%bd%e6%95%b0%e4%b8%8eshell%e8%84%9a%e6%9c%ac%e7%9a%84%e5%8c%ba%e5%88%ab" class="header-mark"></a>函数与shell脚本的区别</h3><ol>
+<li>函数的语言需要和shell的语言相同，需要写shebang，所以前面mcd在不同的系统上不能使用，脚本倒是可以使用任意语言（废话</li>
+<li>函数会在定义式被读取的时候加载，脚本每次都会重新加载，函数比脚本稍微快点，但是每次修改都需要重新加载。</li>
+<li>函数是在shell环境下执行，能修改环境变量，而脚本在其进程中执行，所以执行脚本并不能改变文件路径，可以通过 <code>export</code> 来设置脚本的环境变量</li>
+<li>modularity, code reuse and clarity of shell code，shell 脚本里也会有自己的函数</li>
+</ol>
+<h2 id="命令行工具" class="headerLink">
+    <a href="#%e5%91%bd%e4%bb%a4%e8%a1%8c%e5%b7%a5%e5%85%b7" class="header-mark"></a>命令行工具</h2><h3 id="shellcheck" class="headerLink">
+    <a href="#shellcheck" class="header-mark"></a>shellcheck</h3><ul>
+<li>
+<p>安装
+<a href="https://github.com/koalaman/shellcheck#installing" target="_blank" rel="noopener noreffer">koalaman/shellcheck</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">yum -y install epel-release
+yum install ShellCheck
+</code></pre></div></li>
+<li>
+<p>使用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">iZbp1237a4x521y1gkpax4Z : /tmp/missing &gt; shellcheck random.sh
+
+
+<span class="nv">n</span><span class="o">=</span><span class="k">$((</span> RANDOM <span class="o">%</span> <span class="m">100</span> <span class="k">))</span>
+^-- SC2034: n appears unused. Verify it or <span class="nb">export</span> it.
+
+
+In random.sh line 5:
+<span class="k">if</span> <span class="o">[[</span> n -eq <span class="m">42</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+        ^-- SC2130: -eq is <span class="k">for</span> integer comparisons. <span class="nv">Use</span> <span class="o">=</span> instead.
+        ^-- SC2050: This expression is constant. Did you forget the $ on a variable?d
+</code></pre></div><p>相当于shell脚本编译器，然后根据产生的错误到 <a href="https://github.com/koalaman/shellcheck/wiki/SC2003" target="_blank" rel="noopener noreffer">shellcheck wiki</a>找原因。</p>
+</li>
+</ul>
+<h3 id="tldr" class="headerLink">
+    <a href="#tldr" class="header-mark"></a>TLDR</h3><p>出去敲 <code>-help</code> 或者 <code>man cmd</code> 的方式查询使用，当仅仅只想知道某个命令怎么使用的时候，可以使用TLDR查询用法。</p>
+<p>直接访问：<a href="https://tldr.ostera.io/xargs" target="_blank" rel="noopener noreffer">https://tldr.ostera.io/xargs</a></p>
+<p>或者去github下载相关客户端显示在命令行上：<a href="https://tldr.sh/" target="_blank" rel="noopener noreffer">https://tldr.sh/</a></p>
+<p><img
+        class="lazyload"
+        data-src="/images/shell/tldr.png"
+        data-srcset="/images/shell/tldr.png, /images/shell/tldr.png 1.5x, /images/shell/tldr.png 2x"
+        data-sizes="auto"
+        alt="/images/shell/tldr.png"
+        title="tldr"></p>
+<h3 id="文件搜索-find使用" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e6%90%9c%e7%b4%a2-find%e4%bd%bf%e7%94%a8" class="header-mark"></a>文件搜索: find使用</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Find all directories named src</span>
+find . -name src -type d
+<span class="c1"># Find all python files that have a folder named test in their path</span>
+find . -path <span class="s1">&#39;**/test/**/*.py&#39;</span> -type f
+<span class="c1"># Find all files modified in the last day</span>
+find . -mtime -1
+<span class="c1"># Find all zip files with size in range 500k to 10M</span>
+find . -size +500k -size -10M -name <span class="s1">&#39;*.tar.gz&#39;</span>
+</code></pre></div><h3 id="find后批量执行" class="headerLink">
+    <a href="#find%e5%90%8e%e6%89%b9%e9%87%8f%e6%89%a7%e8%a1%8c" class="header-mark"></a>find后批量执行</h3><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># Delete all files with .tmp extension</span>
+find . -name <span class="s1">&#39;*.tmp&#39;</span> -exec rm <span class="o">{}</span> <span class="se">\;</span>
+<span class="c1"># Find all PNG files and convert them to JPG</span>
+find . -name <span class="s1">&#39;*.png&#39;</span> -exec convert <span class="o">{}</span> <span class="o">{</span>.<span class="o">}</span>.jpg <span class="se">\;</span>
+</code></pre></div><h3 id="文件搜索-fd" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e6%90%9c%e7%b4%a2-fd" class="header-mark"></a>文件搜索: fd</h3><p>fd 是 find 的简化版本，人性化许多。</p>
+<ul>
+<li><a href="https://enting.org/how-to-install-fd-on-centos/" target="_blank" rel="noopener noreffer">How to install fd on CentOS</a></li>
+<li><a href="https://github.com/sharkdp/fd" target="_blank" rel="noopener noreffer">sharkdp/fd</a>
+<img
+        class="lazyload"
+        data-src="/images/shell/screencast.svg"
+        data-srcset="/images/shell/screencast.svg, /images/shell/screencast.svg 1.5x, /images/shell/screencast.svg 2x"
+        data-sizes="auto"
+        alt="/images/shell/screencast.svg"
+        title="fd"></li>
+</ul>
+<hr>
+<h3 id="文件搜索-locate" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e6%90%9c%e7%b4%a2-locate" class="header-mark"></a>文件搜索: locate</h3><p>locate也是一个用来找文件的命令，使用也比较简单。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">iZbp1237a4x521y1gkpax4Z : ~ &gt; locate run.sh
+/run.sh
+/root/run.sh
+/root/.vim/plugged/YouCompleteMe/third_party/requests_deps/urllib3/_travis/run.sh
+/root/.vim/plugged/YouCompleteMe/third_party/ycmd/third_party/requests_deps/urllib3/_travis/run.sh
+/root/mc/run.sh
+/root/minecraft/run.sh
+/root/openssl/openssl-OpenSSL_1_1_1-stable/demos/certs/ocsprun.sh
+/root/ssr/shadowsocksr/logrun.sh
+iZbp1237a4x521y1gkpax4Z : ~ &gt;
+</code></pre></div><p>但是locate有一些容易犯错的点，locate是通过unpdatedb来查询的，而updatedb通过crond进行更新，一般一天更新一次，所以有时候新下载下来的文件会出现找不到的情况，这时可以手动updatedb，即:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ updatedb
+$ locate file
+</code></pre></div><p>像我的centos上并没有自带locate，安装为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ yum -y install mlocate
+</code></pre></div><h3 id="找代码-grep" class="headerLink">
+    <a href="#%e6%89%be%e4%bb%a3%e7%a0%81-grep" class="header-mark"></a>找代码: grep</h3><p>常用的例子还是得看 TLDR：<a href="https://tldr.ostera.io/grep" target="_blank" rel="noopener noreffer">https://tldr.ostera.io/grep</a>，而自己最常用的还是 <code>grep -rn 'content' *</code> ， <code>-r</code> 用于递归， <code>-n</code> 用于打印行数。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/shell/grep.png"
+        data-srcset="/images/shell/grep.png, /images/shell/grep.png 1.5x, /images/shell/grep.png 2x"
+        data-sizes="auto"
+        alt="/images/shell/grep.png"
+        title="grep"></p>
+<p>另外还有ack, ag, rg等就不一一列举了。</p>
+<ul>
+<li>ack: <a href="https://beyondgrep.com/" target="_blank" rel="noopener noreffer">https://beyondgrep.com/</a></li>
+<li>ag: <a href="https://github.com/ggreer/the_silver_searcher" target="_blank" rel="noopener noreffer">https://github.com/ggreer/the_silver_searcher</a></li>
+<li>rg: <a href="https://github.com/BurntSushi/ripgrep" target="_blank" rel="noopener noreffer">https://github.com/BurntSushi/ripgrep</a></li>
+</ul>
+<h3 id="找指令" class="headerLink">
+    <a href="#%e6%89%be%e6%8c%87%e4%bb%a4" class="header-mark"></a>找指令</h3><p>这里倒是很简单，利用 <code>ctrl+r</code> 可以在历史里反向搜索，以及简单的利用管道进行grep： <code>history | grep cmd</code> 。另外 <code>fzf</code> 在这里推荐使用一下，在必要的时候可能比较有用。
+fzf：<a href="https://github.com/junegunn/fzf/wiki/Configuring-shell-key-bindings#ctrl-r" target="_blank" rel="noopener noreffer">https://github.com/junegunn/fzf/wiki/Configuring-shell-key-bindings#ctrl-r</a></p>
+<p>一些其他的shell，和bash不同，提供了<strong>基于历史的自动建议型shell</strong>，像 <code>zsh</code> 和 <code>fish</code> 内都提供有。如果在命令中敲入了一些以明文显示的敏感性文字的话，可以在.bash_history或者.zhistory中删除。</p>
+<p>Tips: 自己的机器可以使用一些便捷的的工具，但如果需要管理多台服务器甚至是集群，linux提供的最基础的find等命令还是记清楚的好。</p>
+<h3 id="目录导航" class="headerLink">
+    <a href="#%e7%9b%ae%e5%bd%95%e5%af%bc%e8%88%aa" class="header-mark"></a>目录导航</h3><p>命令行下查看目录确实没有那么直观，可以利用 <code>ln -s</code> 创建一个软连接快速选择，当然也有一些命令行下的工具：</p>
+<p><strong>Fasd ranks files and directories by frecency</strong></p>
+<ul>
+<li>fasd :<a href="https://github.com/clvv/fasd" target="_blank" rel="noopener noreffer">https://github.com/clvv/fasd</a></li>
+</ul>
+<p><strong>get an overview of a directory structure</strong>:</p>
+<ul>
+<li>tree: <a href="https://linux.die.net/man/1/tree" target="_blank" rel="noopener noreffer">https://linux.die.net/man/1/tree</a></li>
+<li>broot: <a href="https://github.com/jarun/nnn" target="_blank" rel="noopener noreffer">https://github.com/jarun/nnn</a></li>
+</ul>
+<p><strong>full fledged file managers</strong>:</p>
+<ul>
+<li>nnn: <a href="https://github.com/jarun/nnn" target="_blank" rel="noopener noreffer">https://github.com/jarun/nnn</a></li>
+<li>ranger: <a href="https://github.com/ranger/ranger" target="_blank" rel="noopener noreffer">https://github.com/ranger/ranger</a></li>
+</ul>
+<h2 id="练习" class="headerLink">
+    <a href="#%e7%bb%83%e4%b9%a0" class="header-mark"></a>练习</h2><ol>
+<li>
+<p>Read <code>[man ls](http://man7.org/linux/man-pages/man1/ls.1.html)</code> and write an <code>ls</code> command that lists files in the following manner</p>
+<ul>
+<li>Includes all files, including hidden files</li>
+<li>Sizes are listed in human readable format (e.g. 454M instead of 454279954)</li>
+<li>Files are ordered by recency</li>
+<li>Output is colorized</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ls -alth --color<span class="o">=</span>auto
+</code></pre></div></li>
+<li>
+<p>Write bash functions marco and polo that do the following. Whenever you execute marco the current working directory should be saved in some manner, then when you execute polo, no matter what directory you are in, polo should cd you back to the directory where you executed marco. For ease of debugging you can write the code in a file <a href="http://marco.sh/" target="_blank" rel="noopener noreffer">marco.sh</a> and (re)load the definitions to your shell by executing source <a href="http://marco.sh/" target="_blank" rel="noopener noreffer">marco.sh</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1"># marco.sh</span>
+
+
+    <span class="nv">path</span><span class="o">=</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>
+    <span class="nb">export</span> <span class="nv">MARCOPATH</span><span class="o">=</span><span class="nv">$path</span>
+<span class="o">}</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1"># polo.sh</span>
+
+
+    <span class="nb">cd</span> <span class="s2">&#34;</span><span class="nv">$MARCOPATH</span><span class="s2">&#34;</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;cd error&#34;</span>
+<span class="o">}</span>
+</code></pre></div><p>Marco Polo →（马可·波罗) :)</p>
+</li>
+<li>
+<p>Say you have a command that fails rarely. In order to debug it you need to capture its output but it can be time consuming to get a failure run. Write a bash script that runs the following script until it fails and captures its standard output and error streams to files and prints everything at the end. Bonus points if you can also report how many runs it took for the script to fail.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span>
+
+
+
+<span class="nv">return_code</span><span class="o">=</span><span class="m">0</span>
+<span class="k">while</span> <span class="o">[[</span> <span class="nv">$return_code</span> -eq <span class="m">0</span> <span class="o">]]</span>
+<span class="k">do</span>
+    <span class="nv">output</span><span class="o">=</span><span class="k">$(</span>sh <span class="s2">&#34;</span><span class="nv">$1</span><span class="s2">&#34;</span> 2&gt;<span class="p">&amp;</span>1<span class="k">)</span>
+    <span class="nv">return_code</span><span class="o">=</span><span class="nv">$?</span>
+    <span class="nv">cnt</span><span class="o">=</span><span class="k">$((</span>cnt+1<span class="k">))</span>
+<span class="k">done</span>
+<span class="nv">cnt</span><span class="o">=</span><span class="k">$((</span>cnt-1<span class="k">))</span>
+<span class="nb">echo</span> <span class="s2">&#34;failed after </span><span class="si">${</span><span class="nv">cnt</span><span class="si">}</span><span class="s2">th.&#34;</span>
+<span class="nb">echo</span> <span class="s2">&#34;output:&#34;</span>
+<span class="nb">echo</span> <span class="s2">&#34;</span><span class="nv">$output</span><span class="s2">&#34;</span>
+</code></pre></div><p><img
+        class="lazyload"
+        data-src="/images/shell/ex3.png"
+        data-srcset="/images/shell/ex3.png, /images/shell/ex3.png 1.5x, /images/shell/ex3.png 2x"
+        data-sizes="auto"
+        alt="/images/shell/ex3.png"
+        title="ex3"></p>
+</li>
+<li>
+<p>As we covered in lecture <code>find</code>’s <code>-exec</code> can be very powerful for performing operations over the files we are searching for. However, what if we want to do something with <strong>all</strong> the files, like creating a zip file? As you have seen so far commands will take input from both arguments and STDIN. When piping commands, we are connecting STDOUT to STDIN, but some commands like <code>tar</code> take inputs from arguments. To bridge this disconnect there’s the <code>[xargs](http://man7.org/linux/man-pages/man1/xargs.1.html)</code> command which will execute a command using STDIN as arguments. For example <code>ls | xargs rm</code> will delete the files in the current directory.</p>
+<p>Your task is to write a command that recursively finds all HTML files in the folder and makes a zip with them. Note that your command should work even if the files have spaces (hint: check <code>-d</code> flag for <code>xargs</code>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">find . -name *.html -type f <span class="p">|</span> xargs tar cf target.tar
+</code></pre></div></li>
+</ol>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2020-02-13</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/shell-tools-and-scripting/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/shell/">shell</a>,&nbsp;<a href="/tags/globbing/">globbing</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/kv-server/" class="prev" rel="prev" title="6.824 Lab3 Fault-tolerant Key/Value Service"><i class="fas fa-angle-left fa-fw"></i>6.824 Lab3 Fault-tolerant Key/Value Service</a>
+            <a href="/rpc-and-grpc/" class="next" rel="next" title="Golang原生RPC与gPRC">Golang原生RPC与gPRC<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

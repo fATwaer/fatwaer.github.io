@@ -1,40 +1,21 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>algorithm on Pok</title>
-    <link>/categories/algorithm/</link>
-    <description>Recent content in algorithm on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Wed, 18 Mar 2020 22:29:40 +0800</lastBuildDate><atom:link href="/categories/algorithm/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>B-tree和LSM-tree</title>
-      <link>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/</link>
-      <pubDate>Wed, 18 Mar 2020 22:29:40 +0800</pubDate>
-      
-      <guid>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/b-tree-and-lsm-tree/</guid>
-      <description>最初的数据库 LSM-tree得从最简单的数据库的shell实现说起，如：
-#! /bin/bash  db_set() { echo &amp;#34;$1,$2&amp;#34; &amp;gt;&amp;gt; database } db_get() { grep &amp;#34;^$1,&amp;#34; database | sed -e &amp;#34;s/^$1,//&amp;#34; | tail -n 1 } db_set将两个参数简单追加database文件，而db_get利用匹配出来的结果去掉key和逗号得到value，再利用tail获取到最set到database中去。
-读取优化 很明显，由于是追加写也是最简单的写操作，这种set方式通常足够高效，但是对于get，事件复杂度就需要上升到O(n)，所以最常见的想法是对数据追加索引，比如利用哈希表在内存中设置一个key，而key对应的value设置为该key/value在文件中的偏移。
-   key byte offset     abc 0   b 64   &amp;hellip; &amp;hellip;   aacb 3613    就有类似于这样一个哈希表存储在内存中，这也就是Bitcask的核心做法，只需要一次磁盘寻址就可以加载到这个value，适合每个键的值频繁更新的场景。
-存储优化 因为都会往同一个文件追加文件，所以设置键的写入，会造成磁盘空间用尽。解决办法是将日志分解成一定大小的段，文件到达一定大小就关闭，后续的写入写到新的段文件中，读请求仍旧使用旧段文件，当后台线程将后台文件合并/压缩后，读请求就能切换到新的合并段上，旧段文件安全删除。
-其他  文件格式：替换类似于CSV的字符格式为二进制格式。 删除记录：追加删除标记，当合并时检测到这个标记丢弃响应的key 崩溃恢复：这个主要针对存储在内存中的哈希表，当机器宕机后，哈希表将会丢失，重启恢复需要重新读取所有的段文件才能恢复，Bitcask的做法时将相应段的哈希表快照存储磁盘中。 记录写入：写入操作的过程中如果发送了崩溃，那么最新的值将是不完整的，可以在一条记录前追加校验，如果损毁就需要丢弃。 并发控制：写入需要按先后顺序写入，所以写线程通常只有一个，而读取是可以多个同时进行的。  SSTables SSTables全名为排序字符串表(Sort String Tables)，写入的记录会被排序。对key进行排序会有如下的有点：</description>
-    </item>
-    
-    <item>
-      <title>算法与数据结构总结</title>
-      <link>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</link>
-      <pubDate>Sun, 09 Sep 2018 18:41:48 +0000</pubDate>
-      
-      <guid>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</guid>
-      <description>CLRS快撸完一半了，所以趁开学前做下小总结，CLRS研究问题的方式和平时的感觉有那么些不太一样，但是接触久了就会慢慢习惯，主要注重算法的运行时间和算法可行性。初阶学习目标是掌握几种重要的排序算法和课堂中没有学到的数据结构。
-首先还要推荐一下usfca的这个算法可视化的网站：https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
-排序算法 排序算法在系统学习之前，只会冒泡排序，非常简单但是时间复杂度为O(n^2)的算法，是一种没有怎么优化过的想法。
-插入排序 插入排序(insert sort)是学习CLRS最先接触的算法，可以理解为将序列中的元素插入到一个已经排序好的队列中去。提供一个序列的起始位置(be)和长度(len)，循环从起始位置的下一个元素开始迭代，作为需要插入的数值(key)，将所有大于关键字元素后移一位，最后在放入对应的位置。期望运行时间(n^2)。
-for (int i = be + 1; i &amp;lt; len; i++) { int key = a[i]; int j = i - 1; while (j &amp;gt;= 0 &amp;amp;&amp;amp; a[j] &amp;gt; key) { a[j+1] = a[j]; j--; } a[j+1] = key; } 归并排序 归并排序(merge sort)是接触分治法接触到的算法，这种方法是将需要解决的问题细分为细小的问题，然后递归求解这些子问题，直接求解，最后将这些子问题的解合并成原问题的解。应用到排序算法中的话就是将待排序的元素分成n/2两个子序列，然后递归解决子序列的顺序问题，最后合并两个已排序的子序列，形成排序好的队列。期望运行时间(nlgn)。
-首先是归并过程的辅助函数:
-void SortAlgorithm::mergeArray(int p, int q, int r) { int n1 = q - p + 1; int n2 = r - q; int L[n1], R[n2]; int i1, i2; for (int i = 0; i &amp;lt; n1; i++) L[i] = a[p+i]; for (int i = 0; i &amp;lt; n2; i++) R[i] = a[q+i+1]; i1 = 0; i2 = 0; for (int k = p; k &amp;lt;= r; k++) { if ((L[i1] &amp;lt;= R[i2] &amp;amp;&amp;amp; i1 &amp;lt; n1 )|| i2 == n2) { a[k] = L[i1]; i1++; } else { a[k] = R[i2]; i2++; } } } 前面两个for循环是赋值递归过程已经排好的两个子数组left和right，然后根据i1和i2所指向的数组元素大小放入到原来的数组中去，完成两个子数组的归并。</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>algorithm - 分类 - pokpok的研究日志</title>
+        <link>/categories/algorithm/</link>
+        <description>algorithm - 分类 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Wed, 18 Mar 2020 22:29:40 &#43;0800</lastBuildDate><atom:link href="/categories/algorithm/" rel="self" type="application/rss+xml" /><item>
+    <title>B-tree和LSM-tree</title>
+    <link>/b-tree-and-lsm-tree/</link>
+    <pubDate>Wed, 18 Mar 2020 22:29:40 &#43;0800</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/b-tree-and-lsm-tree/</guid>
+    <description><![CDATA[最初的数据库LSM-tree得从最简单的数据库的shell实现说起，如： #! /bin/bash db_set() { echo &#34;$1,$2&#34; &gt;&gt; database } db_get() { grep &#34;^$1,&#34; database | sed -e &#34;s/^$1,//&#34; | tail -n 1 } db_set将两个参数]]></description>
+</item><item>
+    <title>算法与数据结构总结</title>
+    <link>/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</link>
+    <pubDate>Sun, 09 Sep 2018 18:41:48 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</guid>
+    <description><![CDATA[CLRS快撸完一半了，所以趁开学前做下小总结，CLRS研究问题的方式和平时的感觉有那么些不太一样，但是接触久了就会慢慢习惯，主要注重算法的运]]></description>
+</item></channel>
 </rss>

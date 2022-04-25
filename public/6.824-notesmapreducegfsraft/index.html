@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">6.824 Notes：MapReduce、GFS、Raft - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="6.824 Notes：MapReduce、GFS、Raft" />
+<meta property="og:description" content="最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。 分布" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/6.824-notesmapreducegfsraft/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-01-15T15:49:46+00:00" />
+<meta property="article:modified_time" content="2019-01-15T15:49:46+00:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="6.824 Notes：MapReduce、GFS、Raft"/>
+<meta name="twitter:description" content="最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。 分布"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/6.824-notesmapreducegfsraft/" /><link rel="prev" href="/effective-go/" /><link rel="next" href="/markdown-syntax-guide/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "6.824 Notes：MapReduce、GFS、Raft",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/6.824-notesmapreducegfsraft\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","keywords": "distributed system","wordcount":  5714 ,
+        "url": "\/6.824-notesmapreducegfsraft\/","datePublished": "2019-01-15T15:49:46+00:00","dateModified": "2019-01-15T15:49:46+00:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#mapreduce2004">MapReduce(2004)</a>
+      <ul>
+        <li><a href="#mapreduce-过程">MapReduce 过程</a></li>
+        <li><a href="#容错处理">容错处理</a></li>
+      </ul>
+    </li>
+    <li><a href="#rpc">RPC</a></li>
+    <li><a href="#gfs2003">GFS(2003)</a>
+      <ul>
+        <li><a href="#gfs的结构">GFS的结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#raft2014">Raft(2014)</a>
+      <ul>
+        <li><a href="#1leader-election">1.Leader election</a></li>
+        <li><a href="#2normal-operation">2.Normal operation</a></li>
+        <li><a href="#3leader-changes">3.leader changes</a></li>
+        <li><a href="#4neutralizing-old-leader">4.Neutralizing old leader</a></li>
+        <li><a href="#5clients-interaction">5.clients interaction</a></li>
+        <li><a href="#6configuration-changes">6.configuration changes</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">6.824 Notes：MapReduce、GFS、Raft</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/sys/"><i class="far fa-folder fa-fw"></i>sys</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2019-01-15">2019-01-15</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2019-01-15">2019-01-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 5714 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 12 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#mapreduce2004">MapReduce(2004)</a>
+      <ul>
+        <li><a href="#mapreduce-过程">MapReduce 过程</a></li>
+        <li><a href="#容错处理">容错处理</a></li>
+      </ul>
+    </li>
+    <li><a href="#rpc">RPC</a></li>
+    <li><a href="#gfs2003">GFS(2003)</a>
+      <ul>
+        <li><a href="#gfs的结构">GFS的结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#raft2014">Raft(2014)</a>
+      <ul>
+        <li><a href="#1leader-election">1.Leader election</a></li>
+        <li><a href="#2normal-operation">2.Normal operation</a></li>
+        <li><a href="#3leader-changes">3.leader changes</a></li>
+        <li><a href="#4neutralizing-old-leader">4.Neutralizing old leader</a></li>
+        <li><a href="#5clients-interaction">5.clients interaction</a></li>
+        <li><a href="#6configuration-changes">6.configuration changes</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>最近这段时间有一些空闲时间，可以开始做下6.824，目前是Spring 2018，最新的2019也快出了，提前刷下notes和paper。</p>
+<p>分布式系统是关于多个计算机系统共同合作并且进行存储大量的网站数据，执行mapreduce，端对端共享的一种系统，大量的关键基础设施都是分布式的。</p>
+<p>分布式系统的<code>优点</code>是能够组织物理上分离的实体，通过<code>isolation</code>取得系统安全，通过<code>replication</code>获取容错机制，通过并行<code>CPUs/mem/disk/net</code>来比例提升系统速度。</p>
+<p>当然也有些<code>缺点</code>，这些过程中必须需要处理大量的并发部件，必须应对部分组件失效，以及很难获取一些潜在的性能。</p>
+<h2 id="mapreduce2004" class="headerLink">
+    <a href="#mapreduce2004" class="header-mark"></a>MapReduce(2004)</h2><pre><code>input is divided into M files
+[diagram: maps generate rows of K-V pairs, reduces consume columns]
+Input1 -&gt; Map -&gt; a,1 b,1 c,1
+Input2 -&gt; Map -&gt;     b,1
+Input3 -&gt; Map -&gt; a,1     c,1
+                    |   |   |
+                    |   |   -&gt; Reduce -&gt; c,2
+                    |   -----&gt; Reduce -&gt; b,2
+                    ---------&gt; Reduce -&gt; a,2
+</code></pre>
+<p>对于输入的文件，首先将其分为 M 个文件，对于每一个文件调用一个 Map()作为一次作业，每一个Map()调用产生一组 &lt;k2, v2&gt;键值对(图中的一行)作为中间数据。</p>
+<p>MapReduce聚集键为 k2 的所有中间值，将其传输给Reduce()调用，并且以 &lt;k2, v3&gt; 的集合作为最终输出存入到Reduce的输出文件中。也就形成了最后的形式API形式：</p>
+<pre><code>map(k1, v1) -&gt; list(k2, v2)
+reduce(k2, list(v2) -&gt; list(k2, v3)]
+</code></pre>
+<p>MapReduce 隐藏了很多关键的细节，l如启动处于服务器上的软件，跟踪任务是否完成，数据的移动，从错误中恢复等。</p>
+<h3 id="mapreduce-过程" class="headerLink">
+    <a href="#mapreduce-%e8%bf%87%e7%a8%8b" class="header-mark"></a>MapReduce 过程</h3><p><a href="https://static.googleusercontent.com/media/research.google.com/zh-CN//archive/mapreduce-osdi04.pdf" target="_blank" rel="noopener noreffer">Paper</a>中共分为7个步骤：</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/mapreduce1.png"
+        data-srcset="/images/distributed-system/6.824/notes/mapreduce1.png, /images/distributed-system/6.824/notes/mapreduce1.png 1.5x, /images/distributed-system/6.824/notes/mapreduce1.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/mapreduce1.png"
+        title="mapreduce1.png"></p>
+<ol>
+<li>MapReduce将输入文件分成M份，并且开始在集群的机器上运行该程序的拷贝。</li>
+<li>其中有该程序拷贝的Master节点会为集群中剩下的workers分配任务，其中有M份map任务和R份reduce工作，并且master将会为处于闲置状态的worker分配map或者reduce任务</li>
+<li>worker被赋予了map任务将会从对应的input分片中读取内容，并且将从中解析出的k/v键值对传递到user-defined函数中。(这些由map()产生的k/v对被缓冲在内存中)</li>
+<li>这些中间值将会被周期性的写到worker的本地磁盘，并且被partitioning function分成R份区域。这些被写到磁盘的键值对的位置将会被传回给master，并且可靠地将这些定位推进到reduce worker</li>
+<li>当reduce worker被Master告知了这些键值对的定位，使用RPC读取这些在map worker本地磁盘缓冲的数据，当reduce worker读取到了所有的中间值，接下来会根据key值进行分组。</li>
+<li>reduce worker将会遍历这些排序好的中间值，并且将遇到的每一个独一无二的key值，传递到user的Reduce function中，该函数的输出最后会附加到最终输出中去。</li>
+<li>当所有map和reduce的任务完成后，master将会唤醒user program，此时 MapReduce调用已经返回到用户代码中。</li>
+</ol>
+<p>其中
+没有reduce worker会在map任务完成之前被调用。</p>
+<p>中间值将只会在网络中出现一次，map从分布式文件系统中进行本地复制，执行Map然后写本地磁盘，通知Master通知reduce worker从该位置远程读取数据，然后写到reduce worker的本地磁盘。</p>
+<p>根据以上的条件，有一种非常坏的情况就是N-1台服务器等待最后一台服务器完成任务，整个系统都在等待其完成任务。解决办法是使得任务数目要多余主机数，master需要递送新的任务给已经完成任务的workers,最后的结果是较快的servers会比较慢的servers完成更多的工作,但是绝对时间是相同的。</p>
+<h3 id="容错处理" class="headerLink">
+    <a href="#%e5%ae%b9%e9%94%99%e5%a4%84%e7%90%86" class="header-mark"></a>容错处理</h3><ol>
+<li>Map worker 崩溃
+master多次ping崩溃的主机仍没有回应，并且Map的输出已经丢失了，但是后面的每一个reduce任务都需要该结果。如果reduce worker已经完全拉取了中间值，并且在reduce的过程中又发生了crash，则会强制执行失效map。</li>
+<li>Reduce worker 崩溃
+如果在worker上的任务已经完成则没有关系，因为已经存储到了分布式文件系统中了，如果是在执行过程中发生了崩溃，则在新的worker上启动未完成的工作。</li>
+<li>Reduce 在输出结果集发生了崩溃
+在reduce工作完成前是不可见的，整个reduce到输出文件都是保持原子性的，这保证master重新在其他地方执行任务。</li>
+</ol>
+<h2 id="rpc" class="headerLink">
+    <a href="#rpc" class="header-mark"></a>RPC</h2><pre><code>Client:
+    z = fn(x, y)
+Server:
+    fn(x, y) {
+    compute
+    return z
+    }
+</code></pre>
+<p>RPC简单来说就是客户端通过tcp连接调用远程服务器中的函数并且获取值的一个过程，GoLang中自带了rpc库。如果rpc库调用失败，可能有几种情况，比如服务器根本没有收到这个请求，可能收到了请求并且执行了相关调用，但是崩溃在发送之前，或者在发送后该数据包迷失在了网络中。</p>
+<p>最简单的方法模式的“尽最大努力交付”：</p>
+<ol>
+<li>客户端调用rpc，并且等待</li>
+<li>如果没有响应，则重传</li>
+<li>重传多次无果，返回错误值</li>
+</ol>
+<p>尽最大努力交付这种模式只适合一些多次操作不会进行写操作的调用，比如读操作，检查db记录是否被插入等等。</p>
+<h2 id="gfs2003" class="headerLink">
+    <a href="#gfs2003" class="header-mark"></a>GFS(2003)</h2><p>GFS支持一些常见的文件操作，例如create, delete, open, close, read, write等，另外还有snapshot和record append的操作。</p>
+<h3 id="gfs的结构" class="headerLink">
+    <a href="#gfs%e7%9a%84%e7%bb%93%e6%9e%84" class="header-mark"></a>GFS的结构</h3><p>一个GFS集群由一个master节点和多个能被clients访问的chunkservers组成。通常是是一些商业linux机器运行着用户级别的服务器进程，并且可以让clients和chunkserver的进程运行在同一个机器上面。</p>
+<p>文件被分成固定大小的chunksize(一般为64MB), 并且每一个chunk都在创建期间被master一个全局不可变的chunk handle，并且默认情况下，每一个chunk都有三份备份。</p>
+<p>master负责维护整个系统的metadata，其中包括了命名空间，访问控制信息，文件到文件系统的映射信息，以及当前状态chunk服务器的位置，并且使用周期性的HeartBeat消息来给予指令或者收集chunk的状态。</p>
+<p>client不会从master节点读写数据，取而代之的是获取chunkserver的信息，并且缓冲这些信息在一段时间内，并且进行接下来的系列操作。</p>
+<p>GFS的读取操作:</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/gfs1.png"
+        data-srcset="/images/distributed-system/6.824/notes/gfs1.png, /images/distributed-system/6.824/notes/gfs1.png 1.5x, /images/distributed-system/6.824/notes/gfs1.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/gfs1.png"
+        title="gfs1.png"></p>
+<ol>
+<li>首先，client将文件名和字节偏移转化为chunk索引，然后发送给master一个包含文件名和该索引的请求。master回复对应的chunk handle和各个备份的位置。client缓冲这些信息，以文件名和chunk index作为key值</li>
+<li>然后，client发送请求到其中的一个备份去，一般选择最近的，这个请求中包含了chunk内偏移，然后chunk将数据回复给clients。</li>
+</ol>
+<p>GFS的写操作：</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/gfs2.png"
+        data-srcset="/images/distributed-system/6.824/notes/gfs2.png, /images/distributed-system/6.824/notes/gfs2.png 1.5x, /images/distributed-system/6.824/notes/gfs2.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/gfs2.png"
+        title="gfs2.png"></p>
+<ol>
+<li>客户端请求master获取一份持有lease的chunk server</li>
+<li>master回复主备份的节点id和其他备份的位置，client缓冲这些数据。并且在这些备份地址不可达的时候，重新请求master节点。</li>
+<li>client推送数据到到所有的拷贝，并且chunkserver将会缓冲这些数据到基于LRU的缓冲区直到数据被使用或者超时。</li>
+<li>一旦所欲的拷贝都回复确认收到了该数据，client将会发送写请求到主拷贝节点，主拷贝将会复制一串连续的数字给所接收到的数据变动，并且将这连续的数据变动应用到本地。</li>
+<li>主拷贝将会向前推送写请求到所有的第二级拷贝，并且所有的拷贝对数据的变动与拷贝相同</li>
+<li>第二级拷贝将会回复主拷贝已经完成了这个操作</li>
+<li>主拷贝将会回复client，在变动过程中发生了任何错误都会回复给client。</li>
+</ol>
+<h2 id="raft2014" class="headerLink">
+    <a href="#raft2014" class="header-mark"></a>Raft(2014)</h2><p>推荐下这个视频，结合那篇paper一起看比较容易理解
+<a href="https://www.youtube.com/watch?v=YbZ3zDzDnrw" target="_blank" rel="noopener noreffer">https://www.youtube.com/watch?v=YbZ3zDzDnrw</a></p>
+<p>raft 协议主要是可理解性，相对于paxos来说简单了很多，raft也是提供了在非拜占庭错误(<a href="http://www.itboth.com/d/Q32eua" target="_blank" rel="noopener noreffer">non-Byzantine fault</a>)下一种新的并发模型。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/raft1.png"
+        data-srcset="/images/distributed-system/6.824/notes/raft1.png, /images/distributed-system/6.824/notes/raft1.png 1.5x, /images/distributed-system/6.824/notes/raft1.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/raft1.png"
+        title="raft1.png"></p>
+<p>当clients向其中一个sever提交一个操作的时候，该操作首先会被放入log中，然后使其他的servers也记录该操作，当大多数的机器正确回复了请求后，那么该操作就会被提交到该服务器的状态机，从而完成一个完整的操作，当多个操作开始执行的时候，都会以相同的顺序进行执行。</p>
+<p>raft中所有的server在某一时刻会扮演三种角色中的一种：
+Leader：　处理client的交互，日志复制，并且同一时刻，只会有一个leader</p>
+<p>Follower：　完全处于被动状态，不会产生RPC，但是会回应即将到来的RPC</p>
+<p>Candidate：　将会被选举成一个新的leader</p>
+<p>在raft协议中，时间被分为以term为单位的时间片段，term有如下的性质：</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/raft2.png"
+        data-srcset="/images/distributed-system/6.824/notes/raft2.png, /images/distributed-system/6.824/notes/raft2.png 1.5x, /images/distributed-system/6.824/notes/raft2.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/raft2.png"
+        title="raft2.png"></p>
+<ol>
+<li>每一期被分为选举时间和普通操作时间。</li>
+<li>每一期最多有一个leader</li>
+<li>有些时期可能没有leader，之后提到的一些选举失败的情况中会出现。</li>
+<li>每一个server中都会维护一个<code>当前期数</code>的值，用于server发生crash或者unreachable的时候</li>
+</ol>
+<p>期数在raft中是个非常重要的概念，用于指示server中哪些数据已经过时了</p>
+<p>Raft　大体上可以分成６个部分</p>
+<h3 id="1leader-election" class="headerLink">
+    <a href="#1leader-election" class="header-mark"></a>1.Leader election</h3><ol>
+<li>最开始的时候，所有的服务器在raft中以follower的角色启动</li>
+<li>follower期待来自leader或者candidates的rpc</li>
+<li>leader必须发送心跳包(空的AppendEntries　RPC)来维护自己的权威性</li>
+<li>如果electionTimeout到了并且没有接收到rpc，那么
+<ul>
+<li>follower将会假定leader崩溃了</li>
+<li>follower开始新的选举</li>
+<li>timeout的时长通常为100-500ms</li>
+</ul>
+</li>
+</ol>
+<p>选举的过程：</p>
+<ul>
+<li>自增当前的期数</li>
+<li>从follower改变至candidate状态</li>
+<li>为自己投票</li>
+<li>发送RequestVote RPC到其他服务器，如果没有收到回复，那么一直重传至：
+<ol>
+<li>接受到大多数的服务器的投票，那么该服务器变成leader并且发送心跳包到其他服务器</li>
+<li>接收到来自合法leader的RPC，那么该服务器回到follower的状态</li>
+<li>没有任何一个服务器赢得该轮选举，那么自增期数，开始新的一轮选举(splite vote　term的产生)，新开始的一轮的时期通常选为electionTimeout T~2T之间</li>
+</ol>
+</li>
+</ul>
+<h3 id="2normal-operation" class="headerLink">
+    <a href="#2normal-operation" class="header-mark"></a>2.Normal operation</h3><p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/raft3.png"
+        data-srcset="/images/distributed-system/6.824/notes/raft3.png, /images/distributed-system/6.824/notes/raft3.png 1.5x, /images/distributed-system/6.824/notes/raft3.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/raft3.png"
+        title="raft3.png"></p>
+<p>每一个日志条目(log entry)由三个部分组成：index, term和command，并且都会存储在稳定的存储介质中，例如磁盘。</p>
+<p>log的并发处理:　1. 如果在不同的服务器上面日志条目有相同的index和term，那么表示这些条目存储了相同的命令并且之前的条目也是准确的。2.　如果一个条目是被committed的，那么之前的所有条目也是被committed的</p>
+<p>一个条目被称之为<code>committed</code>则说明这个条目已经被存储在了大多数的服务器上面，并且最终会在集群每个服务器的状态机上执行。</p>
+<p>正常运行过程：</p>
+<ol>
+<li>client发送一个命令到leader</li>
+<li>leader将会把这个命令附加到其log上</li>
+<li>leader发送AppendEntries RPC到follower</li>
+<li>一旦一个新的entry是committed，那么代表:
+<ul>
+<li>leader把这个命令应用到状态机上并且返回结果给client</li>
+<li>leader将会给已经提交该条目发送接下来的AppendEntries RPC</li>
+<li>follower把该命令提交到自己的状态机上面</li>
+</ul>
+</li>
+</ol>
+<p>每一个AppendEntries RPC会包含需要附加位置之前一个的index, term，如果不相符合，follower将会拒绝这个请求。</p>
+<h3 id="3leader-changes" class="headerLink">
+    <a href="#3leader-changes" class="header-mark"></a>3.leader changes</h3><p>leader发生改变最重要的一点是，leader的log总是对的，在follower中发生冲突的条目将会被删除。</p>
+<p>在选举期间，candidate最有可能是包含了的最多已经committed条目的服务器，在RequestVote RPC中，包含了candidate最后一个条目的index和term，收到该请求的服务器将会与自己的最后期数进行对比，如果自己的期数等于candidate的期数或者期数相等但是自己的最后的索引大于candidate的索引，那么将会否决投票，这样就保证leader拥有最完整的log。</p>
+<p>修复follower的log，新的leader必须使follower的log与自己的一致，删除那些不想管的条目并且填充缺少的条目，leader会为每一个follower保持一个nextIndex，初始值为(1 + leader&rsquo;s last index)，当一个一个AppendEntries RPC失败了，对应的nextIndex将会进行递减并且重新尝试。如果follower覆盖了不一致的条目，那么follower将会删除接下来所有的条目。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/raft4.png"
+        data-srcset="/images/distributed-system/6.824/notes/raft4.png, /images/distributed-system/6.824/notes/raft4.png 1.5x, /images/distributed-system/6.824/notes/raft4.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/raft4.png"
+        title="raft4.png"></p>
+<h3 id="4neutralizing-old-leader" class="headerLink">
+    <a href="#4neutralizing-old-leader" class="header-mark"></a>4.Neutralizing old leader</h3><p>假设出现这种情况，需要使得旧的leader无效：</p>
+<ul>
+<li>暂时性地从网络中断开</li>
+<li>剩下的其他服务器选举出一个新的leader</li>
+<li>旧的leader重新连接到集群网络并且尝试去提交日志条目</li>
+</ul>
+<p>terms用来检测过时的leader或者candidate，每个rpc中都包含有sender的期数，如果发送者的期数更低，那么rpc将会被接受者拒绝，并且发送方将会转变为follower并且更新其自己的期数。相反，如果接受者的期数更低，那么接收者变成follower，并且更新自己的期数然后正常处理rpc</p>
+<h3 id="5clients-interaction" class="headerLink">
+    <a href="#5clients-interaction" class="header-mark"></a>5.clients interaction</h3><ul>
+<li>client发送命令到leader，如果不知道leader的位置，联系任何一个已知的服务器，最终将会重定向到leader处。</li>
+<li>除非命令已经被状态机logged，committed，并且exectued，leader不会进行回复该请求。</li>
+<li>如果一个请求超时了，client需要重新发送命令到其他的服务器。</li>
+</ul>
+<p>但是多次重新发送同一个命令会引起多次执行，所以client必须嵌入一个独一无二的id到每一个指令中去，服务器也将会接受该id到日志条目中去，在接收新来的指令之前，leader会检查其日志的该id，如果找到了，将会无视新的指令，但是会返回原来执行过的结果。</p>
+<h3 id="6configuration-changes" class="headerLink">
+    <a href="#6configuration-changes" class="header-mark"></a>6.configuration changes</h3><p>配置发生改变是指，该集群中某些机器失效了或者需要新的机器来代替原来的机器等等更改集群物理配置的一些改变。集群配置变更不能直接发生变化，例如决策的处理等等。</p>
+<p>raft使用<code>2-phase</code>的途径来处理这种情况：</p>
+<p><img
+        class="lazyload"
+        data-src="/images/distributed-system/6.824/notes/raft5.png"
+        data-srcset="/images/distributed-system/6.824/notes/raft5.png, /images/distributed-system/6.824/notes/raft5.png 1.5x, /images/distributed-system/6.824/notes/raft5.png 2x"
+        data-sizes="auto"
+        alt="/images/distributed-system/6.824/notes/raft5.png"
+        title="raft5.png"></p>
+<p>C(old)表示需要在旧配置上的大多数服务器进行决策，而C(old)+C(new)代表需要在旧配置的大多数服务器上通过并且同时需要在新配置的大多数服务器上通过决策。</p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2019-01-15</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/6.824-notesmapreducegfsraft/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/distributed-system/">distributed system</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/effective-go/" class="prev" rel="prev" title="Effective Go"><i class="fas fa-angle-left fa-fw"></i>Effective Go</a>
+            <a href="/markdown-syntax-guide/" class="next" rel="next" title="Markdown Syntax Guide">Markdown Syntax Guide<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

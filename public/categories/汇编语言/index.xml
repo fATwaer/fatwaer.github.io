@@ -1,94 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>汇编语言 on Pok</title>
-    <link>/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/</link>
-    <description>Recent content in 汇编语言 on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Wed, 22 Nov 2017 22:39:56 +0000</lastBuildDate><atom:link href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>《汇编语言》 Lab11</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</link>
-      <pubDate>Wed, 22 Nov 2017 22:39:56 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab11/</guid>
-      <description>&lt;p&gt;为了循环方便，我们设置&lt;strong&gt;SI&lt;/strong&gt;为**-1**&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>《汇编语言》 Lab10</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</link>
-      <pubDate>Tue, 21 Nov 2017 22:41:02 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab10/</guid>
-      <description>&lt;p&gt;实验10 一共3个小实验，分别完成三个函数。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>《汇编语言》 Lab8</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</link>
-      <pubDate>Fri, 17 Nov 2017 12:15:41 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab8/</guid>
-      <description>assume cs:codesg codesg segment mov ax,4c00h int 21h start: mov ax,0 s: nop nop mov di,offset s mov si,offset s2 mov ax,cs:[si] mov cs:[di],ax s0: jmp short s s1: mov ax,0 int 21h mov ax,0 s2: jmp short s1 nop codesg ends end start 其中
-jmp short s 命令占用两个字节</description>
-    </item>
-    
-    <item>
-      <title>DOS实模式的搭建</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</link>
-      <pubDate>Fri, 17 Nov 2017 00:17:04 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</guid>
-      <description>前言 王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug调试，所以趁这次机会，把DOS环境搭建一下。
-安装 安装方法和普通ISO文件安装方法差不多，首先选择ISO文件、对应的操作系统，然后用vmware的默认硬件甚至一步一步确定就行。
-接下来，启动虚拟机，会弹出一个选择页面，等待一段时间后会自动跳转到安装界面。
-然后会提示重新启动，跟着提示来，会提示一个错误：
-这应该是DOS支持的磁盘格式为FAT32，而现在的windows支持的硬盘格式是NTFS，两者格式不兼容导致的。 我们关闭虚拟机重新启动下，在下面这个界面按F2进入BIOS设置首先启动项：
-修改启动项 跟着以下步骤操作： img [class names] 1. → 移动选项卡至 &amp;lsquo;boot&amp;rsquo; 2. ↓ 移动选项至 &amp;lsquo;CD-ROM Drive&amp;rsquo; 3. 按住 &amp;lsquo;shift&amp;rsquo; 和 &amp;lsquo;+&amp;rsquo; 将选中的CD-ROM Drive向上移动 4. 按F10保存退出
-此时该虚拟机会重新启动，然后重新进入安装界面。 根据提示，一步一步按确定，基本都是肯定选项。 [注意]直到提示关于 &amp;lsquo;Adds-On&amp;rsquo; 额外的软件安装，在这里我们选择 &amp;lsquo;Cancel&amp;rsquo; 取消，不进行额外的操作。
-如图可见，安装成功，重新启动。 重新启动后发现，还是进入的安装界面，这是因为之前在BIOS内设置过优先启动项的缘故。 和之前的操作一样，在vmware动画界面按F2进入BIOS，用组合键 shift 和 - 将CD-ROM Drive恢复到原来的位置(默认是第三个)。
-好了，到现在完成了DOS的安装了，但是还有个问题，就是VMware并没有给DOS提供vmtools，所以物理机和虚拟机之间传输文件并不方便。
-文件传输 首先，我们先关闭DOS虚拟机，然后在左侧硬件配置处点击硬盘。
-根据红色箭头提示，点击映射。
-然后把**&amp;ldquo;以只读文件模式打开文件&amp;rdquo;**前面的勾去掉，然后关闭警告，打开我的电脑，可以发现本地多出一个磁盘
-打开后可以看到DOS的实际文件，也就是说，我们可以直接对DOS的文件进行操作。 我们可以把自己的要编译的汇编代码放进去。(图中&amp;quot;lab8.asm&amp;quot;)
-再断开连接，否则DOS将无法启动。 最后，我们再验证一下。
-如图，纯DOS系统里已经有了自己放进去的文件。
- DOS 7.10.iso 云盘链接 : http://pan.baidu.com/s/1slPZQot 密码: x0ht
- </description>
-    </item>
-    
-    <item>
-      <title>《汇编语言》 Lab6</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</link>
-      <pubDate>Mon, 13 Nov 2017 23:11:53 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab6/</guid>
-      <description>datasg segment db &amp;#39;1. display &amp;#39; db &amp;#39;2. brows &amp;#39; db &amp;#39;3. replace &amp;#39; db &amp;#39;4. modify &amp;#39; datasg ends 将数据段前四个字母改为大写字母 &amp;amp;nbsp代码如下:
-assume cs:codesg,ss:stacksg,ds:datasg stacksg segment dw 0,0,0,0,0,0,0,0 stacksg ends datasg segment db &amp;#39;1. display &amp;#39; db &amp;#39;2. brows &amp;#39; db &amp;#39;3. replace &amp;#39; db &amp;#39;4. modify &amp;#39; datasg ends codesg segment start: mov ax,stacksg mov ss,ax mov sp,16 mov ax,datasg mov ds,ax mov cx,4h mov bx,0 s1:	push cx mov cx,4 mov si,0 s2:	mov al,[bx+3+si] and al,11011111b mov [bx+3+si],al inc si loop s2 add bx,16 pop cx loop s1 mov ax,4c00h int 21h codesg ends end start	</description>
-    </item>
-    
-    <item>
-      <title>《汇编语言》 Lab5</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</link>
-      <pubDate>Mon, 13 Nov 2017 22:49:40 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab5/</guid>
-      <description>根据程序编译连接并用Debug加载、跟踪，然后回答问题。
-(1) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h,0789h,0abch,0defh,0fedh,0cbah,0987h data ends stack segment dw 0,0,0,0,0,0,0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start CS=0B4A;SS=0B49;DS=0B4B
-(2) assume cs:code,ds:data,ss:stack data segment dw 0123h,0456h data ends stack segment dw 0,0 stack ends code segment start: mov ax,stack mov ss,ax mov sp,10h mov ax,data mov ds,ax push ds:[0] push ds:[2] pop ds:[2] pop	ds:[0] mov ax,4c00h int 21h code ends end start CS=0B4A;SS=0B49;DS=0B48</description>
-    </item>
-    
-    <item>
-      <title>《汇编语言》 Lab1</title>
-      <link>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</link>
-      <pubDate>Mon, 13 Nov 2017 22:05:05 +0000</pubDate>
-      
-      <guid>/posts/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/assemblylab1/</guid>
-      <description>assume cs:codesg codesg segment mov ax,2000 mov ss,ax mov sp,0 add sp,10 pop ax pop bx push ax push bx pop ax pop bx move ax,4c00 int 21 codesg ends end </description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>汇编语言 - 分类 - pokpok的研究日志</title>
+        <link>/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/</link>
+        <description>汇编语言 - 分类 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 17 Nov 2017 00:17:04 &#43;0000</lastBuildDate><atom:link href="/categories/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80/" rel="self" type="application/rss+xml" /><item>
+    <title>DOS实模式的搭建</title>
+    <link>/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</link>
+    <pubDate>Fri, 17 Nov 2017 00:17:04 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/dos%E5%AE%9E%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%90%AD%E5%BB%BA/</guid>
+    <description><![CDATA[前言王爽老师的《汇编语言》中练习习题8中，有要求在DOS实模式下操作汇编代码。 之前一直用的是windows 2003的CMD中自带的debug]]></description>
+</item></channel>
 </rss>

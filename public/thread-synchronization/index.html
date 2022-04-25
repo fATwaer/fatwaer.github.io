@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">线程同步 - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="线程同步" />
+<meta property="og:description" content="这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/thread-synchronization/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-10-15T08:36:39+00:00" />
+<meta property="article:modified_time" content="2018-10-15T08:36:39+00:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="线程同步"/>
+<meta name="twitter:description" content="这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/thread-synchronization/" /><link rel="prev" href="/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/" /><link rel="next" href="/core-java/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "线程同步",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/thread-synchronization\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","wordcount":  2325 ,
+        "url": "\/thread-synchronization\/","datePublished": "2018-10-15T08:36:39+00:00","dateModified": "2018-10-15T08:36:39+00:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents"></nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">线程同步</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/sys/"><i class="far fa-folder fa-fw"></i>sys</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2018-10-15">2018-10-15</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2018-10-15">2018-10-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2325 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents"></nav></div>
+            </div><div class="content" id="content"><p>这篇文章是针对APUE习题11-2的writeup，进程在开启线程后，不同线程需要完成不同的工作，然后在运行中可能引用同一个元素，举一个例子，当多个线程创建后，需要从消息队列中获取一个作业信息的结构体来部署作业工作，但是可能出现第一个线程获取到一个作业之后，在将此作业从作业队列中删除之前，另外一个线程获取了这个作业，然后同样从队列中删除这个作业的操作，那么这个作业就会被删除两次，在C中通常是用链表实现，往往这样做的结果就是指针访问不存在的对象，引发段错误，从而发生非同步性的修改。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/apue/c11/threadop.png"
+        data-srcset="/images/apue/c11/threadop.png, /images/apue/c11/threadop.png 1.5x, /images/apue/c11/threadop.png 2x"
+        data-sizes="auto"
+        alt="/images/apue/c11/threadop.png"
+        title="thread"></p>
+<p>在完成这道题目之前，先对结构体做一些简单的修改，新增两个元素，作业函数指针和要进行累加的数字。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">j_next</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">j_prev</span><span class="p">;</span>
+    <span class="n">pthread_t</span>   <span class="n">j_id</span><span class="p">;</span>
+    <span class="cm">/** job */</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">j_add</span><span class="p">)(</span><span class="kt">int</span><span class="p">);</span>
+    <span class="kt">int</span>         <span class="n">j_num</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><p>然后写一个简单的作业函数，完成<code>j_num</code>的累加工作，已经初始化结构体<code>job</code>的作业分配函数，并且将这个作业加入到作业队列中去：</p>
+<ul>
+<li>累加函数</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">sum</span><span class="p">;</span>
+
+    <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">sum</span> <span class="o">+=</span> <span class="n">i</span><span class="o">--</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">sum</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>作业分配</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span>
+<span class="nf">job_alloc</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">jp</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">job</span><span class="p">)))</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_add</span> <span class="o">=</span> <span class="n">add</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_num</span> <span class="o">=</span> <span class="n">num</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">=</span> <span class="n">pthread_self</span><span class="p">();</span>
+    <span class="n">job_insert</span><span class="p">(</span><span class="n">qp</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">jp</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p>然后可以创建一个线程去完成作业分配工作，生成一个待执行的作业队列，虽然在这里使用主线程来创建会更好。</p>
+<ul>
+<li>开启线程以及队列初始化</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C">    <span class="k">struct</span> <span class="n">queue</span> <span class="n">qn</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">;</span>
+
+    <span class="n">queue_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+
+    <span class="n">setbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</code></pre></div><ul>
+<li>线程例程</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span> <span class="o">*</span>
+<span class="nf">th_func1</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">9</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">8</span><span class="p">);</span>
+    <span class="n">job_alloc</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="mi">7</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p>题目中有提到，需要将线程挂起然后修改作业对应的线程ID，之后要继续执行进行验证，在这里先排除信号量，因为信号量是用在多进程同步，异常的一种机制；所以选择条件变量实现线程的唤醒操作，然后定义一个枚举量来判断多线程处于挂起还是运行状态，如果线程发现这个全局枚举量是处于运行状态，从作业队列中用<code>job_find</code>找到一个作业，并且使用<code>job_remove</code>从作业队列中移除。</p>
+<ul>
+<li>条件变量和枚举量</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="cm">/** thread suspend mutex*/</span>
+<span class="n">pthread_cond_t</span> <span class="n">jready</span> <span class="o">=</span> <span class="n">PTHREAD_COND_INITIALIZER</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">statmtx</span> <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">;</span>
+<span class="n">pthread_barrier_t</span> <span class="n">b</span><span class="p">;</span>
+<span class="k">enum</span> <span class="n">status</span> <span class="p">{</span>
+    <span class="n">STOP</span>    <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">};</span>
+<span class="k">static</span> <span class="k">enum</span> <span class="n">status</span> <span class="n">t1st</span> <span class="o">=</span> <span class="n">STOP</span><span class="p">;</span>
+</code></pre></div><ul>
+<li>作业线程例程</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span> <span class="o">*</span>
+<span class="nf">th_func2</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">sum</span><span class="p">;</span>
+
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">t1st</span> <span class="o">==</span> <span class="n">STOP</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu is waiting resource..</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+
+        <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jready</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+
+        <span class="cm">/** when the pthread recived the signal, it will test the while loop confidion fisrt*/</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu is going to run</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+
+
+
+    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="cm">/** processing job */</span>
+    <span class="n">sum</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_add</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_num</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread %lu caculate %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">(),</span> <span class="n">sum</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;return = %d, tid = %lu</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">),</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+
+</code></pre></div><p>全局枚举量已经将状态设置为了暂停状态，所以线程一进入例程，就将挂起等待条件变量发生改变，恢复函数应该将枚举量提前设置为运行状态，因为当<code>pthread_cond_wait()</code>函数在接收到条件变量发生变化时，只是唤醒线程，不能跳出while循环。</p>
+<ul>
+<li>修改线程ID</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">int</span>
+<span class="nf">modify_tid</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">tid2</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">jp</span> <span class="o">=</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">;</span> <span class="n">jp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">jp</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_equal</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="n">tid1</span><span class="p">))</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">=</span> <span class="n">tid2</span><span class="p">;</span>
+
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>在线程唤醒之前，将ID修改为tid2指定的数值，让新创建的线程能在工作队列中找到设置好的对应作业。</p>
+<ul>
+<li>线程恢复</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">th_resume</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">t1st</span> <span class="o">==</span> <span class="n">STOP</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+        <span class="n">t1st</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+        <span class="n">pthread_cond_broadcast</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jready</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;thread resume signal send..</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">statmtx</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>简单地把状态设置为运行，并且广播条件变量已经发生了改变。</p>
+<ul>
+<li>多线程创建和恢复运行线程</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C">    <span class="n">pthread_barrier_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+
+        <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+    <span class="n">pthread_barrier_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-preposition.c" target="_blank" rel="noopener noreffer">11-2-preposition.c</a></p>
+<p><img
+        class="lazyload"
+        data-src="/images/apue/c11/11-2-1.png"
+        data-srcset="/images/apue/c11/11-2-1.png, /images/apue/c11/11-2-1.png 1.5x, /images/apue/c11/11-2-1.png 2x"
+        data-sizes="auto"
+        alt="/images/apue/c11/11-2-1.png"
+        title="线程工作"></p>
+<p>多个线程按照想象中的情况从作业队列中取出不同的作业，然后从队列中删去通过<code>job_find()</code>找到的作业，并且调用登记在结构体中的函数进行累加，最后在<code>pthread_barrier_wait()</code>处进行同步。值得注意的是，虽然在这里一共开了4个线程，但是调用<code>pthread_barrier_init()</code>进行初始化的时候，将屏障需要等待的线程数设置为5，因为是把主线程也算了进去。还有一个有意思的地方是，总有一个线程在到达屏障的时候返回<code>-1</code>，是因为这个值实际上代表的是<code>PTHREAD_BARRIER_SERIAL_THREAD</code>宏，说明这个线程来执行多个线程的归并操作。</p>
+<p>通过书上给的代码，已经实现了一个多线程处理作业队列的操作，并且修改了暂停线程的ID，使得对应线程能从工作队列中得到作业。那么回到题目问到的问题上，这样会对<code>job_remove</code>产生什么影响？试想这样一种情况，当一个线程已经被唤醒了，然后去调用<code>job_find</code>函数寻找相应ID的作业，使得线程的工作指针<code>jp</code>指向改结构体，但是此时发生了调度或者系统拥塞事件，这时调用了修改之前修改线程id的函数<code>modify_tid</code>，使得描述该作业的结构体的线程ID被填写为另外一个线程的线程ID，现在的情况就变成两个线程的工作指针<code>jp</code>都指向了同一个结构体，并且准备执行<code>job_remove</code>，这时候任意一个线程先执行，后者都会产生段错误（一般是对NULL指针解引用）。现在修改之前代码来模拟这种情况:</p>
+<p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2-expt.c" target="_blank" rel="noopener noreffer">11-2-exception.c</a></p>
+<ul>
+<li>模拟拥塞或者调度</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C">    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+</code></pre></div><ul>
+<li>修改ID</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C">    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">pthread_join</span><span class="p">(</span><span class="n">tid1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+
+    <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid1</span><span class="p">,</span> <span class="n">tid2</span><span class="p">);</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>  <span class="cm">/** important here*/</span>
+    <span class="n">th_suspend</span><span class="p">();</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tid3</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">th_func2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qn</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">err</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">err_exit</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s">&#34;thread create error&#34;</span><span class="p">);</span>
+    <span class="n">modify_tid</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qn</span><span class="p">,</span> <span class="n">tid2</span><span class="p">,</span> <span class="n">tid3</span><span class="p">);</span>
+    <span class="n">th_resume</span><span class="p">();</span>
+
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+</code></pre></div><p>结果和前面所述的情况一样，两次<code>remove</code>引发了段错误。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/apue/c11/11-2-2.png"
+        data-srcset="/images/apue/c11/11-2-2.png, /images/apue/c11/11-2-2.png 1.5x, /images/apue/c11/11-2-2.png 2x"
+        data-sizes="auto"
+        alt="/images/apue/c11/11-2-2.png"
+        title="引发的段错误"></p>
+<p>根据提示，可以使用引用计数和一个嵌入结构体的互斥量来解决这个问题，在<code>job_find()</code>的时候对引用计数进行加一，在<code>job_remove</code>的时候检查引用计数，知道引用计数为0才实际从作业队列中移除。</p>
+<ul>
+<li>修改结构体</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span>     <span class="o">*</span><span class="n">j_next</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">job</span>     <span class="o">*</span><span class="n">j_prev</span><span class="p">;</span>
+    <span class="n">pthread_t</span>       <span class="n">j_id</span><span class="p">;</span>
+    <span class="cm">/**mutex and reference count*/</span>
+    <span class="n">pthread_mutex_t</span> <span class="n">j_mtx</span><span class="p">;</span>
+    <span class="kt">int</span>             <span class="n">j_count</span><span class="p">;</span>
+    <span class="cm">/** job */</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">j_add</span><span class="p">)(</span><span class="kt">int</span><span class="p">);</span>
+    <span class="kt">int</span>             <span class="n">j_num</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div><ul>
+<li>job_find</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">struct</span> <span class="n">job</span> <span class="o">*</span>
+<span class="nf">job_find</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">id</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pthread_rwlock_rdlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">jp</span> <span class="o">=</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">;</span> <span class="n">jp</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">jp</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;head %p now %p </span><span class="se">\n</span><span class="s">  |-job_id %lu cur_id %lu</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">,</span> <span class="n">jp</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span><span class="p">)</span><span class="n">id</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pthread_equal</span><span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">++</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+    <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">jp</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><ul>
+<li>job_remove</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="kt">void</span>
+<span class="nf">job_remove</span><span class="p">(</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="n">qp</span><span class="p">,</span> <span class="k">struct</span> <span class="n">job</span> <span class="o">*</span><span class="n">jp</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/** avoid deadlock*/</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+        <span class="n">pthread_rwlock_wrlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+            <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">jp</span> <span class="o">==</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_head</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">==</span> <span class="n">jp</span><span class="p">)</span>
+                <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+            <span class="k">else</span>
+                <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">jp</span> <span class="o">==</span> <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_tail</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="o">-&gt;</span><span class="n">j_next</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="p">;</span>
+            <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_next</span><span class="o">-&gt;</span><span class="n">j_prev</span> <span class="o">=</span> <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_prev</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+        <span class="n">pthread_rwlock_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">qp</span><span class="o">-&gt;</span><span class="n">q_lock</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_count</span><span class="o">--</span><span class="p">;</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_mtx</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>并且稍微修改下线程的例程，重新检测线程ID是否发生了改变：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">jp</span> <span class="o">=</span> <span class="n">job_find</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="n">job_remove</span><span class="p">((</span><span class="k">struct</span> <span class="n">queue</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">,</span> <span class="n">jp</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">jp</span><span class="o">-&gt;</span><span class="n">j_id</span> <span class="o">==</span> <span class="n">pthread_self</span><span class="p">())</span>
+        <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p><a href="https://github.com/fATwaer/APUE/blob/master/c11/ex/11-2.c" target="_blank" rel="noopener noreffer">11-2.c</a></p>
+<p>运行结果如下，现在两个线程可以正常的从作业队列中取作业页并且执行工作了，但是这并不是最好调度方式，如果发生了这样的问题，很大程度上是接口没有设计好，应对这样的问题书中也做了提醒，要为结构体的空间留下空位，以便以后进行拓展。</p>
+<p><img
+        class="lazyload"
+        data-src="/images/apue/c11/11-2-3.png"
+        data-srcset="/images/apue/c11/11-2-3.png, /images/apue/c11/11-2-3.png 1.5x, /images/apue/c11/11-2-3.png 2x"
+        data-sizes="auto"
+        alt="/images/apue/c11/11-2-3.png"
+        title="修复后的结果"></p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2018-10-15</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/thread-synchronization/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/" class="prev" rel="prev" title="算法与数据结构总结"><i class="fas fa-angle-left fa-fw"></i>算法与数据结构总结</a>
+            <a href="/core-java/" class="next" rel="next" title="Java 核心技术卷1 笔记">Java 核心技术卷1 笔记<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

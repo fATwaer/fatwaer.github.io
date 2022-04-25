@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">std::unorderd_map 物理结构详解 - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="std::unorderd_map 物理结构详解" />
+<meta property="og:description" content="拉链法的 unordered_map 和你想象中的不一样根据数组&#43;拉链法的描述，我们很快能想到下面这样的拉链法实现的哈希表，但真的是这样吗？一起看下源码里的实现是怎么样" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/stdunorderd_map-%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-02-05T11:59:46+08:00" />
+<meta property="article:modified_time" content="2022-02-05T11:59:46+08:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="std::unorderd_map 物理结构详解"/>
+<meta name="twitter:description" content="拉链法的 unordered_map 和你想象中的不一样根据数组&#43;拉链法的描述，我们很快能想到下面这样的拉链法实现的哈希表，但真的是这样吗？一起看下源码里的实现是怎么样"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/stdunorderd_map-%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/" /><link rel="prev" href="/leetcode_dp/" /><link rel="next" href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "std::unorderd_map 物理结构详解",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/stdunorderd_map-%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","wordcount":  2371 ,
+        "url": "\/stdunorderd_map-%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3\/","datePublished": "2022-02-05T11:59:46+08:00","dateModified": "2022-02-05T11:59:46+08:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#拉链法的-unordered_map-和你想象中的不一样">拉链法的 unordered_map 和你想象中的不一样</a></li>
+    <li><a href="#深入stl源码">深入STL源码</a>
+      <ul>
+        <li><a href="#插入第一个节点">插入第一个节点</a></li>
+        <li><a href="#插入同bucket的第二个节点">插入同bucket的第二个节点</a></li>
+        <li><a href="#在不同的bucket插入一个节点">在不同的bucket插入一个节点</a></li>
+        <li><a href="#最终结构">最终结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#验证">验证</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">std::unorderd_map 物理结构详解</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-02-05">2022-02-05</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-02-05">2022-02-05</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2371 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#拉链法的-unordered_map-和你想象中的不一样">拉链法的 unordered_map 和你想象中的不一样</a></li>
+    <li><a href="#深入stl源码">深入STL源码</a>
+      <ul>
+        <li><a href="#插入第一个节点">插入第一个节点</a></li>
+        <li><a href="#插入同bucket的第二个节点">插入同bucket的第二个节点</a></li>
+        <li><a href="#在不同的bucket插入一个节点">在不同的bucket插入一个节点</a></li>
+        <li><a href="#最终结构">最终结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#验证">验证</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="拉链法的-unordered_map-和你想象中的不一样" class="headerLink">
+    <a href="#%e6%8b%89%e9%93%be%e6%b3%95%e7%9a%84-unordered_map-%e5%92%8c%e4%bd%a0%e6%83%b3%e8%b1%a1%e4%b8%ad%e7%9a%84%e4%b8%8d%e4%b8%80%e6%a0%b7" class="header-mark"></a>拉链法的 unordered_map 和你想象中的不一样</h2><p>根据数组+拉链法的描述，我们很快能想到下面这样的拉链法实现的哈希表，但真的是这样吗？一起看下源码里的实现是怎么样的。</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129135006.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129135006.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129135006.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129135006.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129135006.png"
+        title="默认图"></p>
+<h2 id="深入stl源码" class="headerLink">
+    <a href="#%e6%b7%b1%e5%85%a5stl%e6%ba%90%e7%a0%81" class="header-mark"></a>深入STL源码</h2><p>代码不会骗人的，可以写一个简单的代码研究一下实现，然后通过gdb跟踪执行：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unordered_map&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">hashmap</span><span class="p">;</span>
+  <span class="n">hashmap</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span> <span class="o">=</span> <span class="mi">26</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>编译和打开gdbgui：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">g</span><span class="o">++</span> <span class="o">-</span><span class="n">g</span> <span class="n">hashmap</span><span class="p">.</span><span class="n">cc</span>  <span class="o">-</span><span class="n">std</span><span class="o">=</span><span class="n">c</span><span class="o">++</span><span class="mi">11</span> <span class="o">-</span><span class="n">o</span> <span class="n">hashmap_test</span>
+<span class="n">gdbgui</span> <span class="o">-</span><span class="n">r</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8000</span> <span class="p">.</span><span class="o">/</span><span class="n">hashmap_test</span>
+</code></pre></div><p>gdb 跟进发现代码会走到 hashtable_policy.h 的 <code>operator[]</code> 函数中，代码我做了一些简化，只提取了关键代码：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">auto</span> <span class="k">operator</span><span class="p">[](</span><span class="k">const</span> <span class="n">key_type</span><span class="o">&amp;</span> <span class="n">__k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mapped_type</span><span class="o">&amp;</span>
+<span class="p">{</span>
+	<span class="n">__hashtable</span><span class="o">*</span> <span class="n">__h</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">__hashtable</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+	
+	<span class="c1">// 根据 key 获得 hashcode
+</span><span class="c1"></span>	<span class="n">__hash_code</span> <span class="n">__code</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_hash_code</span><span class="p">(</span><span class="n">__k</span><span class="p">);</span>
+	<span class="c1">// 根据 key 和 hashcode 获得 bucket 的 index：n
+</span><span class="c1"></span>	<span class="n">std</span><span class="o">::</span><span class="n">size_t</span> <span class="n">__n</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__k</span><span class="p">,</span> <span class="n">__code</span><span class="p">);</span>
+	<span class="c1">// 在 bucket n 内尝试找到节点key为k的节点
+</span><span class="c1"></span>	<span class="n">__node_type</span><span class="o">*</span> <span class="n">__p</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_find_node</span><span class="p">(</span><span class="n">__n</span><span class="p">,</span> <span class="n">__k</span><span class="p">,</span> <span class="n">__code</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">__p</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="c1">// 如果找到的节点为 nullptr，那么就重新分配一个节点并且将新节点插入到 hash 表中。
+</span><span class="c1"></span>		<span class="n">__p</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_allocate_node</span><span class="p">(</span><span class="n">k</span><span class="p">);</span>
+		<span class="k">return</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_insert_unique_node</span><span class="p">(</span><span class="n">__n</span><span class="p">,</span> <span class="n">__code</span><span class="p">,</span> <span class="n">__p</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">__p</span><span class="o">-&gt;</span><span class="n">_M_v</span><span class="p">().</span><span class="n">second</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p><code>operator[]</code>函数的功能是计算key的hash值，再通过hash值找到对应的<code>bucket n</code>，最后在这个bucket内查找是不是有一个<code>key=k</code>的节点，
+如果没有找到需要的节点，就会新分配并且插入一个新的节点。</p>
+<p>那么这个节点如何插入的呢？跟进下插入函数 <code>_h-&gt;_M_insert_unique_node(__n, __code, __p)</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="k">auto</span> <span class="nf">_M_insert_unique_node</span><span class="p">(</span><span class="n">__bkt</span><span class="p">,</span> <span class="n">__code</span><span class="p">,</span> <span class="n">__node</span><span class="p">,</span> <span class="n">size_type</span> <span class="n">__n_elt</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">iterator</span>
+<span class="p">{</span>
+	  <span class="c1">// 判断是否需要 rehash
+</span><span class="c1"></span>	<span class="k">const</span> <span class="n">__rehash_state</span><span class="o">&amp;</span> <span class="n">__saved_state</span> <span class="o">=</span> <span class="n">_M_rehash_policy</span><span class="p">.</span><span class="n">_M_state</span><span class="p">();</span>
+	<span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="n">__do_rehash</span>
+	<span class="o">=</span> <span class="n">_M_rehash_policy</span><span class="p">.</span><span class="n">_M_need_rehash</span><span class="p">(</span><span class="n">_M_bucket_count</span><span class="p">,</span> <span class="n">_M_element_count</span><span class="p">,</span>
+					  <span class="n">__n_elt</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">__do_rehash</span><span class="p">.</span><span class="n">first</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">_M_rehash</span><span class="p">(</span><span class="n">__do_rehash</span><span class="p">.</span><span class="n">second</span><span class="p">,</span> <span class="n">__saved_state</span><span class="p">);</span>
+		<span class="n">__bkt</span> <span class="o">=</span> <span class="n">_M_bucket_index</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">_M_extract</span><span class="p">()(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_v</span><span class="p">()),</span> <span class="n">__code</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">_M_store_code</span><span class="p">(</span><span class="n">__node</span><span class="p">,</span> <span class="n">__code</span><span class="p">);</span>
+
+	<span class="c1">// Always insert at the beginning of the bucket.
+</span><span class="c1"></span>	<span class="c1">// 将节点插入到 bucket 的开始位置
+</span><span class="c1"></span>	<span class="n">_M_insert_bucket_begin</span><span class="p">(</span><span class="n">__bkt</span><span class="p">,</span> <span class="n">__node</span><span class="p">);</span>
+	<span class="o">++</span><span class="n">_M_element_count</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">iterator</span><span class="p">(</span><span class="n">__node</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><p><code>_M_insert_unique_node()</code> 这个插入函数主要作用是判断如果新插入节点，这个hash表的负载会不会过高？需不需要重新扩容，完成扩容后通过<code>_M_insert_bucket_begin()</code>再插入到 bucket 的 begin 的位置，这里 rehash 的过程我们暂时不关注，先看下<code>_M_insert_bucket_begin()</code> 这个函数是怎么实现的：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++">    <span class="n">_M_insert_bucket_begin</span><span class="p">(</span><span class="n">size_type</span> <span class="n">__bkt</span><span class="p">,</span> <span class="n">__node_type</span><span class="o">*</span> <span class="n">__node</span><span class="p">)</span>
+    <span class="p">{</span>
+	<span class="c1">// 判断bucket n 是否为空
+</span><span class="c1"></span>      <span class="k">if</span> <span class="p">(</span><span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">])</span>
+	<span class="p">{</span>
+		<span class="c1">// Bucket is not empty, we just need to insert the new node
+</span><span class="c1"></span>		<span class="c1">// after the bucket before begin.
+</span><span class="c1"></span>		<span class="c1">// 如果 bucket 不为空，用头插法将节点插入到开头
+</span><span class="c1"></span>		<span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">;</span>
+		<span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+	<span class="p">}</span>
+      <span class="k">else</span>
+	<span class="p">{</span>
+	  <span class="c1">// The bucket is empty, the new node is inserted at the
+</span><span class="c1"></span>	  <span class="c1">// beginning of the singly-linked list and the bucket will
+</span><span class="c1"></span>	  <span class="c1">// contain _M_before_begin pointer.
+</span><span class="c1"></span>	  <span class="c1">// 如果节点不为空，
+</span><span class="c1"></span>	  <span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span><span class="p">;</span>
+	  <span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+	  <span class="k">if</span> <span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">)</span>
+		<span class="c1">// 如果 __node-&gt;_M_nxt 也就是原来的 _M_before_begin._M_nxt 不为空，
+</span><span class="c1"></span>		<span class="c1">// 那么就要就要把 _M_before_begin._M_nxt 指向新的 node__。
+</span><span class="c1"></span>	    <span class="c1">// We must update former begin bucket that is pointing to
+</span><span class="c1"></span>	    <span class="c1">// _M_before_begin.
+</span><span class="c1"></span>	    <span class="n">_M_buckets</span><span class="p">[</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())]</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+	  <span class="c1">// 将 _M_before_begin 赋值给 bucket n。
+</span><span class="c1"></span>	  <span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">_M_before_begin</span><span class="p">;</span>
+	<span class="p">}</span>
+    <span class="p">}</span>
+</code></pre></div><p>现在就到了插入节点的精彩部分了，当前 bucket 是否为空将函数划分成了两个部分，接下来将用图例的方式来展示整个插入过程。</p>
+<h3 id="插入第一个节点" class="headerLink">
+    <a href="#%e6%8f%92%e5%85%a5%e7%ac%ac%e4%b8%80%e4%b8%aa%e8%8a%82%e7%82%b9" class="header-mark"></a>插入第一个节点</h3><p>首先先看为空的情况:</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129174319.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129174319.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129174319.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129174319.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129174319.png"
+        title="初始状态"></p>
+<p>在进入函数前，有：</p>
+<ul>
+<li>预先创建好的(hashmap 构造函数) buckets</li>
+<li>一个成员变量<code>_M_before_begin</code></li>
+<li>一个新分配出来的插入节点<code>__p</code></li>
+</ul>
+<p>当前插入的值为26，做完哈希计算<code>n = 26 % 7 = 5</code>，那么就会在<code>bucket[5]</code>做插入：</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129160922.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129160922.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129160922.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129160922.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129160922.png"
+        title="插入第一个节点"></p>
+<p>当 <code>bucket[5]</code> 为空的插入代码为：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span><span class="p">;</span> <span class="c1">// ①
+</span><span class="c1"></span><span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span> <span class="c1">// ②
+</span><span class="c1"></span><span class="k">if</span> <span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">)</span>
+	<span class="n">_M_buckets</span><span class="p">[</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())]</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+<span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">_M_before_begin</span><span class="p">;</span> <span class="c1">// ③
+</span></code></pre></div><ol>
+<li>①、②两步就是经典链表的头插法，插入到两个节点中间。</li>
+<li>因为这里 <code>__node-&gt;_M_nxt</code> 是指向<code>nullptr</code>的，具体的逻辑先跳过。</li>
+<li>然后第③步将<code>_M_before_begin</code>的地址赋值给<code>bucket[n]</code></li>
+</ol>
+<p>于是得到了一个头插法后的链表：</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161820.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161820.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161820.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161820.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161820.png"
+        title="插入第一个节点后"></p>
+<h3 id="插入同bucket的第二个节点" class="headerLink">
+    <a href="#%e6%8f%92%e5%85%a5%e5%90%8cbucket%e7%9a%84%e7%ac%ac%e4%ba%8c%e4%b8%aa%e8%8a%82%e7%82%b9" class="header-mark"></a>插入同bucket的第二个节点</h3><p>如果尝试在同一个 bucket 插入一个新的值，因为当前 bucket 有值，代码就会走到<code>_M_insert_bucket_begin()</code>这个函数的前半部分：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++">      <span class="k">if</span> <span class="p">(</span><span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">])</span>
+	<span class="p">{</span>
+		<span class="c1">// Bucket is not empty, we just need to insert the new node
+</span><span class="c1"></span>		<span class="c1">// after the bucket before begin.
+</span><span class="c1"></span>		<span class="c1">// 如果 bucket 不为空，用头插法将节点插入到开头
+</span><span class="c1"></span>		<span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">;</span>
+		<span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+	<span class="p">}</span>
+</code></pre></div><p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161857.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161857.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161857.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161857.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129161857.png"
+        title="同bucket插入第二个节点"></p>
+<p>简化得到：</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162842.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162842.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162842.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162842.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162842.png"
+        title="同bucket插入第二个节点后"></p>
+<p>到目前为止和想象中的哈希表还是差不多的，不断的插入到一个 bucket 中，并且用链表连在一起，现在尝试插入一个节点到别的 bucket 中：</p>
+<h3 id="在不同的bucket插入一个节点" class="headerLink">
+    <a href="#%e5%9c%a8%e4%b8%8d%e5%90%8c%e7%9a%84bucket%e6%8f%92%e5%85%a5%e4%b8%80%e4%b8%aa%e8%8a%82%e7%82%b9" class="header-mark"></a>在不同的bucket插入一个节点</h3><p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162943.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162943.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162943.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162943.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129162943.png"
+        title="不同bucket插入第一个节点"></p>
+<p>先会运行 bucket 为空的前两行，仍然是头插法后的结果：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span><span class="p">;</span>
+<span class="n">_M_before_begin</span><span class="p">.</span><span class="n">_M_nxt</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+</code></pre></div><p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163150.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163150.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163150.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163150.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163150.png"
+        title="不同bucket插入第一个节点后前两句"></p>
+<p>继续运行接下来的语句：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">if</span> <span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">)</span>
+	<span class="c1">// We must update former begin bucket that is pointing to
+</span><span class="c1"></span>	<span class="c1">// _M_before_begin.
+</span><span class="c1"></span>	<span class="n">_M_buckets</span><span class="p">[</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())]</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+<span class="n">_M_buckets</span><span class="p">[</span><span class="n">__bkt</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">_M_before_begin</span><span class="p">;</span>
+</code></pre></div><p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163345.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163345.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163345.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163345.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129163345.png"
+        title="不同bucket插入第一个节点后后几句"></p>
+<p>此时，因为 <code>_M_before_begin._M_nxt</code> 不为空，并且赋值到了新节点 <code>__node</code> 的 <code>_M_nxt</code> 上，此时就会执行逻辑：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">_M_buckets</span><span class="p">[</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__node</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())]</span> <span class="o">=</span> <span class="n">__node</span><span class="p">;</span>
+</code></pre></div><p><code>__node-&gt;_M_next()</code> 也就是 key 为 12 的那个节点，其<code>bucket_index</code> 应该是5，所以<code>bucket[5]</code>的指针将会指向新插入的这个节点。</p>
+<p>最后再将<code>bucket[1]</code> 指向 <code>_M_before_begin</code>，得到：</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129180329.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129180329.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129180329.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129180329.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129180329.png"
+        title="复杂的终极结构"></p>
+<p>继续简化一下，最终其实会形成一个<strong>带哨兵节点的单链表</strong>，而每个 bucket 只存有一个指向该链表相应位置的指针，其中<code>_M_before_begin</code>就是这个哨兵节点：</p>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164014.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164014.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164014.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164014.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164014.png"
+        title="最终结构"></p>
+<h3 id="最终结构" class="headerLink">
+    <a href="#%e6%9c%80%e7%bb%88%e7%bb%93%e6%9e%84" class="header-mark"></a>最终结构</h3><ul>
+<li>在bucket有值的时候，都是通过前一个指针和头插法插入到对应的 bucket 内。</li>
+<li>如果 bucket 没有值，就会把哨兵节点切换到新的 bucket 中。
+如:</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164510.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164510.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164510.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164510.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129164510.png"
+        title="最最最终结构"></p>
+<p>这么复杂，有什么好处呢？
+遍历的时间复杂度。</p>
+<p>假设在这种实现下，遍历整个 hashmap 只需要从 <code>head</code> 指针不断的像 <code>head-&gt;next</code> 移动至 <code>nullptr</code>，如果总共有 n 个元素，k个bucket，时间复杂度也只有 <code>O(n)</code>。</p>
+<p>如果是最开始那种实现呢？每个bucket一个链表，需要判断所有 bucket 是否为空，并且遍历每个 bucket 内的链表，时间复杂度会到达 <code>O(n + k)</code>，而且哈希表为了避免哈希冲突，通常会有一个比较大的数组，表达式中的 k 的影响还是挺大的。</p>
+<h2 id="验证" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81" class="header-mark"></a>验证</h2><p>插入的代码已经理解了，验证一下理解的结构是不是真的是这样，再看下<code>hashmap.find(key)</code>的代码，find 的过程其实在 <code>hashmap.operator[]</code> 中已经有了，插入前判断是不是已经有节点了：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">auto</span> <span class="k">operator</span><span class="p">[](</span><span class="k">const</span> <span class="n">key_type</span><span class="o">&amp;</span> <span class="n">__k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mapped_type</span><span class="o">&amp;</span>
+<span class="p">{</span>
+	<span class="n">__hashtable</span><span class="o">*</span> <span class="n">__h</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">__hashtable</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+	
+	<span class="c1">// 根据 key 获得 hashcode
+</span><span class="c1"></span>	<span class="n">__hash_code</span> <span class="n">__code</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_hash_code</span><span class="p">(</span><span class="n">__k</span><span class="p">);</span>
+	<span class="c1">// 根据 key 和 hashcode 获得 bucket 的 index：n
+</span><span class="c1"></span>	<span class="n">std</span><span class="o">::</span><span class="n">size_t</span> <span class="n">__n</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__k</span><span class="p">,</span> <span class="n">__code</span><span class="p">);</span>
+	<span class="c1">// 在 bucket n 内尝试找到节点key为k的节点
+</span><span class="c1"></span>	<span class="n">__node_type</span><span class="o">*</span> <span class="n">__p</span> <span class="o">=</span> <span class="n">__h</span><span class="o">-&gt;</span><span class="n">_M_find_node</span><span class="p">(</span><span class="n">__n</span><span class="p">,</span> <span class="n">__k</span><span class="p">,</span> <span class="n">__code</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">__p</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="c1">// ... Do allocate and insert
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">__p</span><span class="o">-&gt;</span><span class="n">_M_v</span><span class="p">().</span><span class="n">second</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>跟踪下函数 <code>__h-&gt;_M_find_node(__n, __k, __code)</code>，会调用 <code>_M_find_before_node(__n, __k, __code)</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="k">auto</span> <span class="nf">_M_find_before_node</span><span class="p">(</span><span class="n">size_type</span> <span class="n">__n</span><span class="p">,</span> <span class="k">const</span> <span class="n">key_type</span><span class="o">&amp;</span> <span class="n">__k</span><span class="p">,</span> <span class="n">__hash_code</span> <span class="n">__code</span><span class="p">)</span> <span class="k">const</span> <span class="o">-&gt;</span> <span class="n">__node_base</span><span class="o">*</span>
+<span class="p">{</span>
+	<span class="c1">// _M_buckets[__n] 存储了该 bucket 的 prev，如果不存在，那么这个 bucket 就是空的
+</span><span class="c1"></span>	<span class="n">__node_base</span><span class="o">*</span> <span class="n">__prev_p</span> <span class="o">=</span> <span class="n">_M_buckets</span><span class="p">[</span><span class="n">__n</span><span class="p">];</span>
+	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">__prev_p</span><span class="p">)</span>
+		<span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+	
+	<span class="c1">// 从 prev-&gt;next 开始，循环到 prev-&gt;next 为nullptr 或者 prev-&gt;next 的bucket号不是当前bucket 为止。
+</span><span class="c1"></span>	<span class="k">for</span> <span class="p">(</span><span class="n">__node_type</span><span class="o">*</span> <span class="n">__p</span> <span class="o">=</span> <span class="n">__prev_p</span><span class="o">-&gt;</span><span class="n">_M_nxt</span><span class="p">;</span>  <span class="p">;</span> <span class="n">__p</span> <span class="o">=</span> <span class="n">__p</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())</span>
+	<span class="p">{</span>
+	  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">_M_equals</span><span class="p">(</span><span class="n">__k</span><span class="p">,</span> <span class="n">__code</span><span class="p">,</span> <span class="n">__p</span><span class="p">))</span>
+	    <span class="k">return</span> <span class="n">__prev_p</span><span class="p">;</span>
+	  <span class="c1">// 循环结束判断
+</span><span class="c1"></span>	  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">__p</span><span class="o">-&gt;</span><span class="n">_M_nxt</span> <span class="o">||</span> <span class="n">_M_bucket_index</span><span class="p">(</span><span class="n">__p</span><span class="o">-&gt;</span><span class="n">_M_next</span><span class="p">())</span> <span class="o">!=</span> <span class="n">__n</span><span class="p">)</span>
+	    <span class="k">break</span><span class="p">;</span>
+	  <span class="n">__prev_p</span> <span class="o">=</span> <span class="n">__p</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>现在判断当前 <code>bucket[n]</code> 是否有值，如果有值，就开始从 <code>prev-&gt;next</code> 开始遍历到 nullptr，或者 bucket 号不是当前bucket的节点。</p>
+<p>比如，找一个<code>bucket[2]</code>内的节点的开始和结束：
+<img
+        class="lazyload"
+        data-src="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129171229.png"
+        data-srcset="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129171229.png, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129171229.png 1.5x, https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129171229.png 2x"
+        data-sizes="auto"
+        alt="https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/20220129171229.png"
+        title="查找"></p>
+<h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>标准库内的 STL 的实现还是非常 Amazing 的，它的实现关键词有三个，数组、单链表和哨兵节点，在支持分桶的情况下，还支持了<code>O(n)</code>的遍历复杂度。</p>
+<p>另外附上我的参考连接：</p>
+<ol>
+<li>帮助我理解了<code>_M_before_begin</code>节点的作用 <a href="https://szza.github.io/2021/03/01/C&#43;&#43;/2_/" target="_blank" rel="noopener noreffer">https://szza.github.io/2021/03/01/C++/2_/</a></li>
+</ol>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-02-05</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/stdunorderd_map-%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/leetcode_dp/" class="prev" rel="prev" title="Leetcode: dp 专题"><i class="fas fa-angle-left fa-fw"></i>Leetcode: dp 专题</a>
+            <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" class="next" rel="next" title="机器学习整理（线性回归）">机器学习整理（线性回归）<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

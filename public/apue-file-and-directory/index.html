@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">apue-file and directory - pokpok的研究日志</title><meta name="Description" content="pokpok的研究日志"><meta property="og:title" content="apue-file and directory" />
+<meta property="og:description" content="文件类型stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/apue-file-and-directory/" /><meta property="og:image" content="/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-08-14T10:42:10+00:00" />
+<meta property="article:modified_time" content="2018-08-14T10:42:10+00:00" /><meta property="og:site_name" content="PokPok的研究日志" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/logo.png"/>
+
+<meta name="twitter:title" content="apue-file and directory"/>
+<meta name="twitter:description" content="文件类型stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体struct stat来获取"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="/apue-file-and-directory/" /><link rel="prev" href="/apue-chapter3/" /><link rel="next" href="/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "apue-file and directory",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "\/apue-file-and-directory\/"
+        },"image": ["https:\/\/blog-1256435232.cos.ap-shanghai.myqcloud.com\/cnblog\/"],"genre": "posts","keywords": "unix, file, c\/c\u002b\u002b","wordcount":  2690 ,
+        "url": "\/apue-file-and-directory\/","datePublished": "2018-08-14T10:42:10+00:00","dateModified": "2018-08-14T10:42:10+00:00","publisher": {
+            "@type": "Organization",
+            "name": "北极乌布"},"author": {
+                "@type": "Person",
+                "name": "北极乌布"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('light' === 'light' || 'light' === 'dark' || 'light' === 'black') setTheme('light'), saveTheme('light'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="pokpok的研究日志"><span id="desktop-header-typeit" class="typeit"></span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 所有文章 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="pokpok的研究日志"><span id="mobile-header-typeit" class="typeit"></span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">所有文章</a><a class="menu-item" href="/categories/" title="">分类</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#文件类型">文件类型</a></li>
+    <li><a href="#文件访问权限">文件访问权限</a></li>
+    <li><a href="#文件系统">文件系统</a></li>
+    <li><a href="#unlink">unlink</a></li>
+    <li><a href="#符号链接">符号链接</a></li>
+    <li><a href="#文件的时间">文件的时间</a></li>
+    <li><a href="#读目录">读目录</a></li>
+    <li><a href="#设备特殊文件">设备特殊文件</a></li>
+    <li><a href="#writeup">writeup</a>
+      <ul>
+        <li><a href="#41">4.1</a></li>
+        <li><a href="#4６">4.６</a></li>
+      </ul>
+    </li>
+    <li><a href="#417">4.17</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">apue-file and directory</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">北极乌布</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/sys/"><i class="far fa-folder fa-fw"></i>sys</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2018-08-14">2018-08-14</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2018-08-14">2018-08-14</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2690 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 6 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#文件类型">文件类型</a></li>
+    <li><a href="#文件访问权限">文件访问权限</a></li>
+    <li><a href="#文件系统">文件系统</a></li>
+    <li><a href="#unlink">unlink</a></li>
+    <li><a href="#符号链接">符号链接</a></li>
+    <li><a href="#文件的时间">文件的时间</a></li>
+    <li><a href="#读目录">读目录</a></li>
+    <li><a href="#设备特殊文件">设备特殊文件</a></li>
+    <li><a href="#writeup">writeup</a>
+      <ul>
+        <li><a href="#41">4.1</a></li>
+        <li><a href="#4６">4.６</a></li>
+      </ul>
+    </li>
+    <li><a href="#417">4.17</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="文件类型" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e7%b1%bb%e5%9e%8b" class="header-mark"></a>文件类型</h2><p>stat函数簇(fstat,lstat, lstat, fstatat)是用来获取文件状态的函数，需要提前定义一个结构体<code>struct stat</code>来获取这些文件的特殊信息。
+文件类型包括<code>普通文件</code>，<code>目录文件</code>，<code>块特殊文件</code>,<code>字符特殊文件</code>，<code>ＦＩＦＯ</code>，<code>套接字</code>，<code>符号链接</code>。可以向函数(S_ISREG(), S_ISDIR()&hellip;)传入结构体中的st_stat获取文件类型。</p>
+<h2 id="文件访问权限" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e8%ae%bf%e9%97%ae%e6%9d%83%e9%99%90" class="header-mark"></a>文件访问权限</h2><ol>
+<li>读权限允许我们读取目录，获得在该目录下的文件名列表，但是当某个目录是　路径名　的一部分的时候，必须有该目录的可执行权限。</li>
+<li>在目录下创建一个文件，是需要对该目录有写权限和执行权限，删除一个文件也是一样，但是不需要对该文件有读写权限。</li>
+</ol>
+<p>书上有一个关于access的实例，虽然有些文件可以不能通过可读权限，但是open()函数仍然能打开但是不能用read()等方法进行读操作。</p>
+<h2 id="文件系统" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f" class="header-mark"></a>文件系统</h2><p>现代unix和以前学的有些不同，其中JOS不支持inode，但是还是有相似的地方。重新翻了下前面的<a href="1" rel="">文章</a>。文件系统都有一个boot块用来自启，紧接着的是叫做super块来描述文件系统的性质，例如目录地址，上次检错时间等。现代unix在之后的磁盘块中以<code>超级块副本</code>，<code>配置信息</code>，<code>Ｉ节点图</code>，<code>bitmap</code>，<code>ｉ节点</code>，数据块依次排开构成文件系统。JOS就要简化了一些，因为不存在ｉnode，所以数据和目录都是放在bitmap后的数据块中。</p>
+<p>硬链接是指inode的引用计数，当计数为０时才是真正从磁盘中擦去该目录项，保存在结构体stat的st_nlink中。</p>
+<p>inode节点包含了文件所有信息，文件类型，文件访问权限位，文件长度，指向文件数据块的指针（JOS中的FILE结构体）。</p>
+<pre><code>$ mkdir test
+</code></pre>
+<p>该命令执行后，会创建一个新的文件目录，任何新目录创建后的引用数都为２．该test目录在创建后，父目录中的<code>test</code>指向该目录，以及<code>test</code>目录中的 <code>.</code>　　也指向该目录，所以引用计数为２。</p>
+<p>以此类推，其父目录的引用计数应该为３，１是该目录的父目录的指向，２是该目录下<code>.</code>文件的指向，３是<code>test</code>文件中<code>..</code>的指向。所以没创建一个文件目录，该目录的引用计数都会增加１。</p>
+<h2 id="unlink" class="headerLink">
+    <a href="#unlink" class="header-mark"></a>unlink</h2><p>当文件的引用计数为０时，就会从磁盘中擦去，像vim打开一个文件，填入内容保存后，就会在该目录下引用了这个普通文件，引用计数为１，使用unlink可以解除即删去该文件。</p>
+<p>当一个程序用open()打开一个文件后，马上调用unlink()，那么只有当进程关闭改文件或者进程终止的时候，文件内容才被删除。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">if (open(&#34;tempfile&#34;, O_RDWR) &lt; 0)
+    err_sys(&#34;open error&#34;);
+if (unlink(&#34;tempfile&#34;) &lt; 0)
+    err_sys(&#34;unlink errorr&#34;);
+</code></pre></div><h2 id="符号链接" class="headerLink">
+    <a href="#%e7%ac%a6%e5%8f%b7%e9%93%be%e6%8e%a5" class="header-mark"></a>符号链接</h2><p>符号链接是一种与硬链接相比较限制宽松的链接方式，不用接触到文件系统底层。</p>
+<p>使用命令ln来创建一个符号链接</p>
+<pre><code>$ln -s ~/file file
+</code></pre>
+<p>然后使用 ls -l 查看文件</p>
+<pre><code>lrwxrwxrwx 1 moonlight users   26 Aug 14 16:07 sp -&gt; /home/moonlight/hotspot.py
+</code></pre>
+<p>可以看到对一个文件的链接，但是使用cat命令确并不存在。</p>
+<h2 id="文件的时间" class="headerLink">
+    <a href="#%e6%96%87%e4%bb%b6%e7%9a%84%e6%97%b6%e9%97%b4" class="header-mark"></a>文件的时间</h2><p>最后访问时间(st_atim) ： 文件数据最后被read操作的最后一次时间。</p>
+<p>最后修改时间(st_mtim) ： 文件数据内容最后被write操作修改的最后一次时间。</p>
+<p>状态修改时间(st_ctim) ： 文件inode中信息(权限等)被修改的最后一次时间。</p>
+<h2 id="读目录" class="headerLink">
+    <a href="#%e8%af%bb%e7%9b%ae%e5%bd%95" class="header-mark"></a>读目录</h2><p>这个两百多行的代码是当给定一个目录是，递归获取其目录下的所有文件，首先放在最前面的:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">typedef</span> <span class="kt">int</span> <span class="nf">Myfunc</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">stat</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+</code></pre></div><p>是定义了一个返回类型为int，参数是const char*,const struct stat和int的函数指针类型。
+然后声明:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">static</span> <span class="n">Myfunc</span> <span class="n">myfunc</span><span class="p">;</span>
+</code></pre></div><p>声明了一个类型为Myfunc，变量名为myfunc的函数指针，其中static关键词的作用是用于限定函数作用域。</p>
+<p>接下来函数myftw为路径分配一段内存空间来存取路径大小，其中path_alloc是一个第二章的一个实例程序，用于兼容性地分配路径长度。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">fullpath = path_alloc(&amp;pathlen);
+</code></pre></div><p>此语句的作用是分配一段路径名长度加1的内存空间，最后一个字节存取<code>/</code>目录符号，然后进行赋值等操作后执行这个程序的主体<code>dopath()</code>。</p>
+<p>这个函数的主要作用应该是分类文件，首先<code>lstat</code>获取文件信息，然后判断是否为目录文件，如果不是目录文件，直接跳转到<code>myfunc</code>进行更加细分的文件类型判断（如普通文件，符号文件，块文件，FIFO，字符文件，套接字等）。</p>
+<p>func()是一种回调函数，当调用者将函数指针在调用的时候填入实参的位置时，那么函数就已经被登记，等<code>func()</code>进行调用的时候就相当于调用被登记的函数。</p>
+<p>如果是目录文件，那么进行递归的准备工作，例如重新分配长度等。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="n">fullpath</span><span class="p">[</span><span class="n">n</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="err">`</span><span class="o">/</span><span class="err">`</span><span class="p">;</span>
+<span class="n">fullpath</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</code></pre></div><p>该语句的作用是将目录符号进行填充，然后用null截断文件路径。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="k">while</span> <span class="p">((</span><span class="n">dirp</span> <span class="o">=</span> <span class="n">readdir</span><span class="p">(</span><span class="n">dp</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">dirp</span><span class="o">-&gt;</span><span class="n">d_name</span><span class="p">,</span> <span class="s">&#34;.&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span>
+        <span class="n">strcmp</span><span class="p">(</span><span class="n">dirp</span><span class="o">-&gt;</span><span class="n">d_name</span><span class="p">,</span> <span class="s">&#34;..&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">continue</span><span class="p">;</span>
+    <span class="n">strcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fullpath</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">dirp</span><span class="o">-&gt;</span><span class="n">d_name</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">ret</span> <span class="o">=</span> <span class="n">dopath</span><span class="p">(</span><span class="n">func</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>循环体用于遍历整个文件目录，然后将文件名复制到准备好的目录路径上，在递归查询这个新的文件路径。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="n">fullpath</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</code></pre></div><p>这个语句的作用就是截断文件目录符号，返回查询上级目录的文件。</p>
+<h2 id="设备特殊文件" class="headerLink">
+    <a href="#%e8%ae%be%e5%a4%87%e7%89%b9%e6%ae%8a%e6%96%87%e4%bb%b6" class="header-mark"></a>设备特殊文件</h2><p>每个文件系统所在的存储设备由主次设备号表示，主设备号表示设备驱动程序，次设备号表示特定的子设备，数据类型是<code>dev_t</code>。通常使用<code>major</code>,<code>minor</code>两个宏来访问主次设备号。st_dev存储了文件系统的设备号，st_rdev是只有块设备和字符设备才拥有的属性。</p>
+<p>× minor和major宏是包含在文件<code>/usr/include/sys/sysmacros.h</code>中所以需要inlude &lt;sys/sysmacros.h&gt;。</p>
+<p><img
+        class="lazyload"
+        data-src="/uploads/apue/c4/stdev.png"
+        data-srcset="/uploads/apue/c4/stdev.png, /uploads/apue/c4/stdev.png 1.5x, /uploads/apue/c4/stdev.png 2x"
+        data-sizes="auto"
+        alt="/uploads/apue/c4/stdev.png"
+        title="pic">
+d</p>
+<h2 id="writeup" class="headerLink">
+    <a href="#writeup" class="header-mark"></a>writeup</h2><h3 id="41" class="headerLink">
+    <a href="#41" class="header-mark"></a>4.1</h3><p>stat会跟随符号链接所指向的文件</p>
+<h3 id="4６" class="headerLink">
+    <a href="#4%ef%bc%96" class="header-mark"></a>4.６</h3><p>首先用下面的程序创建一个空洞文件：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C">
+<span class="cp">#include</span> <span class="cpf">&#34;apue.h&#34;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">buf1</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;abcdefg&#34;</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">buf2</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&#34;ABCDEFG&#34;</span><span class="p">;</span>
+	<span class="n">off_t</span> <span class="n">off</span> <span class="o">=</span> <span class="mi">65536</span><span class="p">;</span>
+	<span class="n">size_t</span> <span class="n">memsz</span> <span class="o">=</span> <span class="n">off</span> <span class="o">+</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buf1</span><span class="p">)</span> <span class="o">+</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buf2</span><span class="p">);</span>
+	<span class="kt">char</span><span class="o">*</span> <span class="n">buf3</span> <span class="o">=</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="n">memsz</span><span class="p">);</span>
+
+	<span class="n">memset</span><span class="p">(</span><span class="n">buf3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">memsz</span><span class="p">);</span>
+
+	<span class="cm">/*hole file*/</span>
+	<span class="k">if</span> <span class="p">((</span><span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;file.hole&#34;</span><span class="p">,</span> <span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">O_RDWR</span><span class="p">,</span> <span class="n">S_IRUSR</span> <span class="o">|</span> <span class="n">S_IWUSR</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error open&#34;</span><span class="p">);</span>
+	<span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buf1</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error write buf1&#34;</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">off</span><span class="p">,</span> <span class="n">SEEK_CUR</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error seek&#34;</span><span class="p">);</span>
+	<span class="n">n</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buf2</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf2</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error write buf2&#34;</span><span class="p">);</span>
+	<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+	<span class="cm">/*nohole file*/</span>
+	<span class="k">if</span> <span class="p">((</span><span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="s">&#34;file.nohole&#34;</span><span class="p">,</span> <span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">O_RDWR</span><span class="p">,</span> <span class="n">S_IRUSR</span> <span class="o">|</span> <span class="n">S_IWUSR</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error open&#34;</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf3</span><span class="p">,</span> <span class="n">memsz</span><span class="p">)</span> <span class="o">!=</span> <span class="n">memsz</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;error write buf3&#34;</span><span class="p">);</span>
+	<span class="n">free</span><span class="p">(</span><span class="n">buf3</span><span class="p">);</span>
+	<span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+
+	<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="p">}</span>
+
+</code></pre></div><p>会创建一个file.hole和file.nohole的文件，使用<code>du</code>命令(disk usage)和<code>ls</code>来分别查看实际磁盘使用数，和在文件系统中使用的数量。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-s" data-lang="s">
+<span class="n">[moonlight</span><span class="o">@</span><span class="n">ArchLinux</span> <span class="n">c4]</span><span class="o">$</span> <span class="n">ll</span> <span class="n">file.</span><span class="o">*</span>
+<span class="o">-</span><span class="n">rw</span><span class="o">-------</span> <span class="m">1</span> <span class="n">moonlight</span> <span class="n">users</span> <span class="m">65550</span> <span class="n">Aug</span> <span class="m">23</span> <span class="m">16</span><span class="o">:</span><span class="m">46</span> <span class="n">file.hole</span>
+<span class="o">-</span><span class="n">rw</span><span class="o">-------</span> <span class="m">1</span> <span class="n">moonlight</span> <span class="n">users</span> <span class="m">65550</span> <span class="n">Aug</span> <span class="m">23</span> <span class="m">16</span><span class="o">:</span><span class="m">46</span> <span class="n">file.nohole</span>
+<span class="n">[moonlight</span><span class="o">@</span><span class="n">ArchLinux</span> <span class="n">c4]</span><span class="o">$</span> <span class="n">du</span> <span class="n">file.</span><span class="o">*</span>
+<span class="m">8</span>	<span class="n">file.hole</span>
+<span class="m">68</span>	<span class="n">file.nohole</span>
+</code></pre></div><p>现在可以做下前面那一章的实验，分别使用cp和cat重定向到一个文件。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">[moonlight@ArchLinux c4]$ cp  file.hole hole.cp
+[moonlight@ArchLinux c4]$ cat file.hole &gt; hole.cat
+[moonlight@ArchLinux c4]$ ll hole*
+-rw-r--r-- 1 moonlight users 65550 Aug 23 16:59 hole.cat
+-rw------- 1 moonlight users 65550 Aug 23 16:59 hole.cp
+[moonlight@ArchLinux c4]$ du hole.*
+68	hole.cat
+8	hole.cp
+</code></pre></div><p>cat遇到文件空洞会进行填０操作，而cp遇到文件空洞则是跳过，所以占用的实际磁盘块不同，文件系统的逻辑大小不会发生改变。Linux的read()遇见空洞也是跳过，所以可以完成一个类似程序。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="cp">#include</span> <span class="cpf">&#34;apue.h&#34;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span><span class="cp">#define BFSZ 4096
+</span><span class="cp"></span>
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">fd1</span><span class="p">,</span> <span class="n">fd2</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">BFSZ</span><span class="p">];</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;usage: cp file1 file2&#34;</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">((</span><span class="n">fd1</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">O_RDONLY</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;open file error :%s&#34;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+	<span class="k">if</span> <span class="p">((</span><span class="n">fd2</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">O_RDWR</span><span class="o">|</span><span class="n">O_TRUNC</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="n">S_IRUSR</span><span class="o">|</span><span class="n">S_IWUSR</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;open file error :%s&#34;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+
+	<span class="k">while</span> <span class="p">((</span><span class="n">n</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">fd1</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">BFSZ</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">write</span><span class="p">(</span><span class="n">fd2</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">)</span>
+			<span class="n">err_sys</span><span class="p">(</span><span class="s">&#34;write error&#34;</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><h2 id="417" class="headerLink">
+    <a href="#417" class="header-mark"></a>4.17</h2><p>注: 删除文件需要有该目录的可写权限和可执行权限。</p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2018-08-14</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/apue-file-and-directory/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/unix/">unix</a>,&nbsp;<a href="/tags/file/">file</a>,&nbsp;<a href="/tags/c/c&#43;&#43;/">c/c&#43;&#43;</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/apue-chapter3/" class="prev" rel="prev" title="apue-file I/O"><i class="fas fa-angle-left fa-fw"></i>apue-file I/O</a>
+            <a href="/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/" class="next" rel="next" title="算法与数据结构总结">算法与数据结构总结<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="disqus_thread" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://disqus.com/?ref_noscript">Disqus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2016 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer">北极乌布</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div id="cookieconsent-container"></div><div class="assets"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-LGMCE8D1GT', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-LGMCE8D1GT" async></script><script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?bf07771626af6858dadc890bb335c55a";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":500},"comment":{},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"desktop-header-typeit":"PokPok的研究日志","mobile-header-typeit":"PokPok的研究日志"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"table":{"sort":true},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"desktop-header-typeit":["desktop-header-typeit"],"mobile-header-typeit":["mobile-header-typeit"]},"duration":-1,"speed":100}};</script><script type="text/javascript" src="https://fatwaer.disqus.com/embed.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/typeit/typeit.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/cookieconsent.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

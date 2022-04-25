@@ -1,26 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>algorithm on Pok</title>
-    <link>/tags/algorithm/</link>
-    <description>Recent content in algorithm on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Sun, 09 Sep 2018 18:41:48 +0000</lastBuildDate><atom:link href="/tags/algorithm/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>算法与数据结构总结</title>
-      <link>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</link>
-      <pubDate>Sun, 09 Sep 2018 18:41:48 +0000</pubDate>
-      
-      <guid>/posts/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</guid>
-      <description>CLRS快撸完一半了，所以趁开学前做下小总结，CLRS研究问题的方式和平时的感觉有那么些不太一样，但是接触久了就会慢慢习惯，主要注重算法的运行时间和算法可行性。初阶学习目标是掌握几种重要的排序算法和课堂中没有学到的数据结构。
-首先还要推荐一下usfca的这个算法可视化的网站：https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
-排序算法 排序算法在系统学习之前，只会冒泡排序，非常简单但是时间复杂度为O(n^2)的算法，是一种没有怎么优化过的想法。
-插入排序 插入排序(insert sort)是学习CLRS最先接触的算法，可以理解为将序列中的元素插入到一个已经排序好的队列中去。提供一个序列的起始位置(be)和长度(len)，循环从起始位置的下一个元素开始迭代，作为需要插入的数值(key)，将所有大于关键字元素后移一位，最后在放入对应的位置。期望运行时间(n^2)。
-for (int i = be + 1; i &amp;lt; len; i++) { int key = a[i]; int j = i - 1; while (j &amp;gt;= 0 &amp;amp;&amp;amp; a[j] &amp;gt; key) { a[j+1] = a[j]; j--; } a[j+1] = key; } 归并排序 归并排序(merge sort)是接触分治法接触到的算法，这种方法是将需要解决的问题细分为细小的问题，然后递归求解这些子问题，直接求解，最后将这些子问题的解合并成原问题的解。应用到排序算法中的话就是将待排序的元素分成n/2两个子序列，然后递归解决子序列的顺序问题，最后合并两个已排序的子序列，形成排序好的队列。期望运行时间(nlgn)。
-首先是归并过程的辅助函数:
-void SortAlgorithm::mergeArray(int p, int q, int r) { int n1 = q - p + 1; int n2 = r - q; int L[n1], R[n2]; int i1, i2; for (int i = 0; i &amp;lt; n1; i++) L[i] = a[p+i]; for (int i = 0; i &amp;lt; n2; i++) R[i] = a[q+i+1]; i1 = 0; i2 = 0; for (int k = p; k &amp;lt;= r; k++) { if ((L[i1] &amp;lt;= R[i2] &amp;amp;&amp;amp; i1 &amp;lt; n1 )|| i2 == n2) { a[k] = L[i1]; i1++; } else { a[k] = R[i2]; i2++; } } } 前面两个for循环是赋值递归过程已经排好的两个子数组left和right，然后根据i1和i2所指向的数组元素大小放入到原来的数组中去，完成两个子数组的归并。</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>algorithm - 标签 - pokpok的研究日志</title>
+        <link>/tags/algorithm/</link>
+        <description>algorithm - 标签 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sun, 09 Sep 2018 18:41:48 &#43;0000</lastBuildDate><atom:link href="/tags/algorithm/" rel="self" type="application/rss+xml" /><item>
+    <title>算法与数据结构总结</title>
+    <link>/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</link>
+    <pubDate>Sun, 09 Sep 2018 18:41:48 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%80%BB%E7%BB%93/</guid>
+    <description><![CDATA[CLRS快撸完一半了，所以趁开学前做下小总结，CLRS研究问题的方式和平时的感觉有那么些不太一样，但是接触久了就会慢慢习惯，主要注重算法的运]]></description>
+</item></channel>
 </rss>

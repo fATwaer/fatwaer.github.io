@@ -1,40 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>I/O on Pok</title>
-    <link>/tags/i/o/</link>
-    <description>Recent content in I/O on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="/tags/i/o/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>apue-file I/O</title>
-      <link>/posts/sys/apue-chapter3/</link>
-      <pubDate>Sat, 11 Aug 2018 20:02:09 +0000</pubDate>
-      
-      <guid>/posts/sys/apue-chapter3/</guid>
-      <description>写在前面的话 暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言API的书籍，中间穿插了关于UNIX操作系统的知识，趁这个机会，利用6.828的知识，来提高下在linux下的编程水平，比完赛回来后，换成了arch linux，这是一款非常轻量级的操作系统，比较适合用来做自己的开发环境，另一方面也减少了游戏对自己的干扰。 本书第一章节主要讲的标准输入输出的一些基本操作，第二章提到了一些POSIX的标准，快速浏览一遍就好。
-学习笔记  文件描述符 文件描述符这个概念已经比较熟悉了，是一个 0~OPEN_MAX-1 的正整数，也是一个程序中方便操作的对象。一般来说，0代表的标准输入，1代表标准输出，2代表的是标准错误输出。
-open()标志位 O_RDONLY : 只读打开
-O_WRONLY : 只写打开，后面会发现如果尝试读取只写的文件会出现乱码
-O_RDWR : 读写打开
-O_EXEC : 只执行打开
-O_SEARCH : 用于搜索*
-以上是打开文件必须选择的标志
-O_APPEND : 附加
-O_CLOEXEC: 这个以前做过验证: 链接
-O_CREAT : 不存在就创建
-O_EXCL : 在创建文件时，如果指定了该标志位，文件存在，那么open返回失败值
-O_DIRECTORY: 目录判断
-O_NOFOLLOW: 需要是非链接文件
-O_NOBLOCK : 以非阻塞模式打开FIFO，块设备，字符特殊文件
-O_SYNC : 每次write都需要写入磁盘(同步写)，然后等待磁盘返回
-O_TRUNC: 打开已存在的文件，并且将长度截为0，也就是原来的文件内容不能再进行访问，文件变为新文件,需要有写权限。
-*O_TTY_INIT/O_DSYNC/O_RSYNC 还不清楚
-习题 writeup 3.3 在该题目中，fd1和fd2当然都指向同一个文件表，因为执行了dup操作，所以相关的文件描述符标志等信息都会被复制，对于fd3，我理解为这是打开的同一个文件，在自己尝试写出的代码中，可以反复打开同一个文件多次，但是不会指向同一个文件表项。
-首先打开两个相同的文件
-	fd1 = open(&amp;quot;file&amp;quot;, O_RDONLY); fd2 = open(&amp;quot;file&amp;quot;, O_RDONLY); 然后读取分别读取fd1，fd2几个字符，再用lseek()获取当前文件偏移。
-read(fd1, buf, 3); off1 = lseek(fd1, 0, SEEK_CUR); read(fd2, buf, 5); off2 = lseek(fd2, 0, SEEK_CUR); 结果显示这两个文件偏移off1和off2并没有相互叠加。</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>I/O - 标签 - pokpok的研究日志</title>
+        <link>/tags/i/o/</link>
+        <description>I/O - 标签 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><atom:link href="/tags/i/o/" rel="self" type="application/rss+xml" /><item>
+    <title>apue-file I/O</title>
+    <link>/apue-chapter3/</link>
+    <pubDate>Sat, 11 Aug 2018 20:02:09 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/apue-chapter3/</guid>
+    <description><![CDATA[写在前面的话暑期撸了一阵子算法导论，在红黑树的删除操作卡主了，暂时放下算法，稍微看看别的计算机知识，APUE是一本关于Linux下C语言AP]]></description>
+</item></channel>
 </rss>

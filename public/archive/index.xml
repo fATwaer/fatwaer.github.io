@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Archive on Pok</title>
+    <title>Archive on pokpok的研究日志</title>
     <link>/archive/</link>
-    <description>Recent content in Archive on Pok</description>
+    <description>Recent content in Archive on pokpok的研究日志</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
+    <language>zh-CN</language>
     <lastBuildDate>Thu, 30 Jan 2020 12:50:46 +0900</lastBuildDate><atom:link href="/archive/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

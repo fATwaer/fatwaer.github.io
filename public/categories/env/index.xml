@@ -1,58 +1,37 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>env on Pok</title>
-    <link>/categories/env/</link>
-    <description>Recent content in env on Pok</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Wed, 18 Sep 2019 14:11:14 +0800</lastBuildDate><atom:link href="/categories/env/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Hugo is comming !</title>
-      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</link>
-      <pubDate>Wed, 18 Sep 2019 14:11:14 +0800</pubDate>
-      
-      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hugo%E9%85%8D%E7%BD%AE/</guid>
-      <description>将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布出来，而 hugo 相反，随着golang热度的上涨，社区也很活跃，其主题的更新在官网可以看出来相对频繁。我目前使用的主题是由zzossig 提供的Zzo主题。
- Hugo 总览 看到比较合适的主题，有需要自己定制的话，可以简单过一遍Hugo的一个官方教程(大概3-4小时)：
- https://www.youtube.com/watch?v=qtIqKaDlqXo&amp;amp;list=PLLAZ4kZ9dFpOnyRlyS-liKL5ReHDcj4G3
- Hugo 的安装和环境配置 Hugo 提供了较为详细的官方教程，安装过程非常详细，如果是在windows上安装，可以下载二进制文件到任意目录下，并且将改目录添加到PATH环境变量即可。
-Hugo 的基本使用 将hugo的环境搭建完成后博客根目录进行初始化：
-hugo version mkdir Sites cd Sites hugo new site sitename 然后需要去主题页找一个合适的主题，并且下载到Sites/sitename/themes目录，或者在Sites/sitename目录下执行：
-git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke 然后将配置文件中的主题设置为下载到themes目录中的主题文件夹名字：
-echo &amp;#39;theme = &amp;#34;ananke&amp;#34;&amp;#39; &amp;gt;&amp;gt; config.toml 像hexo一样，hugo提供了本地预览的功能，在 Sites/sitename目录下运行，然后就可以访问localhost:1313来访问博客了：
-$ hugo server Building sites … | EN | KO -------------------+-----+------ Pages | 54 | 10 Paginator pages | 3 | 0 Non-page files | 0 | 0 Static files | 209 | 209 Processed images | 0 | 0 Aliases | 11 | 1 Sitemaps | 2 | 1 Cleaned | 0 | 0 Built in 5641 ms Environment: &amp;#34;development&amp;#34; Serving pages from memory Running in Fast Render Mode.</description>
-    </item>
-    
-    <item>
-      <title>Git 基础操作</title>
-      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/git-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C/</link>
-      <pubDate>Tue, 17 Apr 2018 23:27:42 +0000</pubDate>
-      
-      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/git-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C/</guid>
-      <description>远程到本地  $ git fetch $ git merge origin/master  本地到远程  关联
-git remote add origin git@github.com:haoxr/-faceDetection.git  提交到本地
-$ git add . $ git commit -m &amp;quot;commit infomation&amp;quot;  push
-$ git push -u origin master &amp;lt;- 第一次使用 $ git push origin master </description>
-    </item>
-    
-    <item>
-      <title>hexo 配置</title>
-      <link>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</link>
-      <pubDate>Thu, 05 Apr 2018 15:17:47 +0000</pubDate>
-      
-      <guid>/posts/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/hexo%E9%85%8D%E7%BD%AE/</guid>
-      <description>&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。&lt;/p&gt;
-&lt;h2 id=&#34;categories和tags&#34;&gt;categories和tags&lt;/h2&gt;
-&lt;p&gt;themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;type: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;categories&amp;#34;&lt;/span&gt;
-layout: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;categories&amp;#34;&lt;/span&gt;
-comments: false
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;type: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tags&amp;#34;&lt;/span&gt;
-layout: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tags&amp;#34;&lt;/span&gt;
-comments: false
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
-    </item>
-    
-  </channel>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>env - 分类 - pokpok的研究日志</title>
+        <link>/categories/env/</link>
+        <description>env - 分类 - pokpok的研究日志</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Wed, 18 Sep 2019 14:11:14 &#43;0800</lastBuildDate><atom:link href="/categories/env/" rel="self" type="application/rss+xml" /><item>
+    <title>Hugo is comming !</title>
+    <link>/hugo%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Wed, 18 Sep 2019 14:11:14 &#43;0800</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/hugo%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[将博客从 hexo 迁到了 hugo，主要原因是文章越来越多，hexo build速度就显得力不从心了，hexo 很多主题都不再维护，甚至很少有新的主题发布]]></description>
+</item><item>
+    <title>Git 基础操作</title>
+    <link>/git-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C/</link>
+    <pubDate>Tue, 17 Apr 2018 23:27:42 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/git-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C/</guid>
+    <description><![CDATA[远程到本地 $ git fetch $ git merge origin/master 本地到远程 关联 git remote add origin git@github.com:haoxr/-faceDetection.git 提交到本地 $ git add . $ git commit -m &quot;commit infomation&quot; push $ git push -u origin master &lt;- 第一次使用 $ git push origin master]]></description>
+</item><item>
+    <title>hexo 配置</title>
+    <link>/hexo%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Thu, 05 Apr 2018 15:17:47 &#43;0000</pubDate><author>
+        <name>北极乌布</name>
+    </author><guid>/hexo%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[<p><strong>注</strong>： 博客已经从hexo迁移到了hugo，部分格式已经不能渲染出来。</p>
+<h2 id="categories和tags" class="headerLink">
+    <a href="#categories%e5%92%8ctags" class="header-mark"></a>categories和tags</h2><p>themes文件夹下面的_config.yml有一个memu选项，hiker是默认有归档选项的。但是分类和标签是空页面，本地访问会提示 GET ERROR 的404错误。在md文件有表示的情况下，像如下配置即可。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">type: <span class="s2">&#34;categories&#34;</span>
+layout: <span class="s2">&#34;categories&#34;</span>
+comments: <span class="nb">false</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">type: <span class="s2">&#34;tags&#34;</span>
+layout: <span class="s2">&#34;tags&#34;</span>
+comments: <span class="nb">false</span>
+</code></pre></div>]]></description>
+</item></channel>
 </rss>
