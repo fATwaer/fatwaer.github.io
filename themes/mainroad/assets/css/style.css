@@ -51,8 +51,8 @@ html {
 body {
 	margin: 0;
 	font-family: {{ $fontFamilyPrimary }};
-	font-size: 14px;
-	font-size: .875rem;
+	/* font-size: 16px; */
+	/* font-size: .875rem; */
 	line-height: 1.6;
 	word-wrap: break-word;
 	background: #f7f7f7;

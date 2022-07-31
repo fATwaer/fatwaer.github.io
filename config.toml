@@ -57,7 +57,7 @@ summaryLength = 30
 
   # Override font-family sets
   # Take care of different quotes OR escaping symbols in these params if necessary
-  fontFamilyPrimary = "'Open Sans', Helvetica, Arial, sans-serif"
+  fontFamilyPrimary = "'Noto Serif SC', serif"
   # Secondary font-family set responsible for pre, code, kbd, and samp tags font
   fontFamilySecondary = "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
 
