@@ -5,7 +5,8 @@ paginate = "10" # Number of posts per page
 theme = "mainroad"
 disqusShortname = "fatwaer" # Enable Disqus comments by entering your Disqus shortname
 googleAnalytics = "G-LGMCE8D1GT" # Enable Google Analytics by entering your tracking id
-summaryLength = 30
+summaryLength = 100
+hasCJKLanguage = true
 
 [Author] # Used in authorbox
   name = "PokPok"
