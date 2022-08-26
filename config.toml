@@ -10,8 +10,10 @@ hasCJKLanguage = true
 
 [Author] # Used in authorbox
   name = "PokPok"
-  bio = "PokPok's true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it."
-  avatar = "img/avatar.png"
+  bio = """
+  connect me: fatwaer@gmail.com
+  """
+  avatar = "images/avatar.png"
 
 [markup]
   [markup.highlight]
