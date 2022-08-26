@@ -2,6 +2,7 @@
 title: "Python Gist"
 date: 2022-08-26T20:48:45+08:00
 draft: false
+summary: python 工具代码片段
 ---
 
 
@@ -63,7 +64,7 @@ shutil.move(src, dst)
 
 ## subprocess
 
-### 子进程实时输入输出
+### 子进程实时输出
 
 ``` python
 import subprocess
