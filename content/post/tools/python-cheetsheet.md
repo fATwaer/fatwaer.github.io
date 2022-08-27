@@ -69,9 +69,9 @@ shutil.move(src, dst)
 ``` python
 import subprocess
 
-cmd = f"vmstat 1 2"
+cmd = f"vmstat 1 20"
 with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
     for line in iter(proc.stdout.readline, b''):
-        logging.info(">>> " + str(line.rstrip()))
+        print(">>> " + line.rstrip().decode())
     proc.wait()
 ```
