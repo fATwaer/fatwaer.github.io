@@ -1,6 +1,6 @@
 ---
 title: "Python Gist"
-date: 2022-08-26T20:48:45+08:00
+date: 2020-08-26T20:48:45+08:00
 draft: false
 summary: python 工具代码片段
 ---
