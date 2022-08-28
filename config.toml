@@ -57,6 +57,7 @@ hasCJKLanguage = true
 
 [Params.style.vars]
   highlightColor = "#39cebb" # Override highlight color
+  # highlightColor = "#000000" # Override highlight color
 
   # Override font-family sets
   # Take care of different quotes OR escaping symbols in these params if necessary

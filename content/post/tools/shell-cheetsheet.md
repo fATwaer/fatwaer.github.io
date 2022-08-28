@@ -1,7 +1,8 @@
 ---
 title: "Shell Cheetsheet"
-date: 2022-08-26T20:48:52+08:00
-draft: true
+date: 2020-08-26T20:48:52+08:00
+draft: false
+thumbnail: "https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/hacker-typer.jpeg"
 ---
 
 
