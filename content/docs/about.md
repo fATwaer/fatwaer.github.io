@@ -1,5 +1,5 @@
 ---
-title: 关于我
+title: 关于
 date: 2020-01-30T12:50:46+09:00
 type: archive
 authorbox: false
@@ -23,3 +23,8 @@ menu: main
 Github: <https://github.com/fatwaer>
 
 Mail: fatwaer@gmail.com
+
+
+## 关于本博客
+
+- 博客的字体是 Noto Serif SC （思源衬线宋体）
