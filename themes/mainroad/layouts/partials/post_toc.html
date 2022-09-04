@@ -1,8 +1,9 @@
 {{- if .Param "toc" }}
 {{- if gt (len .TableOfContents) 32 }}<!-- Issue #247 -->
-<div class="post__toc toc">
-	<div class="toc__title">{{ T "toc_title" }}</div>
-	<div class="toc__menu">
+<!--  -->
+<div class="post__toc toc" style="position: fixed; top: 20px; margin-left: 1080px; margin-top: 100px;">
+	<div class="toc__title" >{{ T "toc_title" }}</div>
+	<div class="toc__menu" >
 		{{ .TableOfContents }}
 	</div>
 </div>

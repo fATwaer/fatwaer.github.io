@@ -800,6 +800,7 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 .toc__menu ul {
 	margin: 0;
 	list-style: none;
+	font-size: small;
 }
 
 .toc__menu li li a {
@@ -829,12 +830,13 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 .toc__menu a {
 	display: block;
 	padding: 5px 10px;
-	color: {{ $highlightColor }};
-	border-bottom: 1px solid #ebebeb;
+	color: black;
+	/* border-bottom: 1px solid #ebebeb; */
 }
 
 .toc__menu a:hover {
-	text-decoration: underline;
+	/* text-decoration: underline; */
+	color: {{ $highlightColor }};
 }
 
 /* Author Box */
