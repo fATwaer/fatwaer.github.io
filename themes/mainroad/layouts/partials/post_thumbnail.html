@@ -12,7 +12,7 @@
 	{{- if in $visibility $class }}
 	<figure class="{{ with $class }}{{ . }}__thumbnail {{ end }}thumbnail">
 		{{ if eq $class "list" }}<a class="thumbnail__link" href="{{ .page.RelPermalink }}">{{ end }}
-		<img class="thumbnail__image" src="{{ $thumbnail | relURL }}" alt="{{ .page.Title }}">
+		<img class="post_thumbnail__image" src="{{ $thumbnail | relURL }}" alt="{{ .page.Title }}">
 		{{ if eq $class "list" }}</a>{{ end }}
 	</figure>
 	{{- end }}

@@ -7,6 +7,10 @@
 	{{ $sidebar = (default .Site.Params.sidebar.list .Params.sidebar) }}
 {{ end }}
 
+{{- $sidebar := .Site.Params.sidebar.enable }}
+
+<!-- <h1>{{$sidebar}}</h1> -->
+
 {{- if $sidebar -}}
 <aside class="sidebar{{ if eq $sidebar "left" }} sidebar--left{{ end }}">
 {{- $root := . }}

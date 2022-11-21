@@ -23,3 +23,19 @@
 		menu.addEventListener('transitionend', removeMenuTransition, false);
 	}
 }(document, window));
+
+
+$(window).scroll(function(){
+    var scrollTop = $(document).scrollTop();
+    var h2s = $('body').find('h2');
+	var lis = $('#TableOfContents li')
+    for (var i = 0; i < h2s.length; i++){
+        if (scrollTop  + 200 > $(h2s[i]).offset().top) {
+            $(lis[i-1]).addClass('toc__done');
+			$(lis[i]).addClass('toc__activate');
+        } else {
+			$(lis[i-1]).removeClass('toc__done');
+            $(lis[i]).removeClass('toc__activate');
+        }
+    }
+});

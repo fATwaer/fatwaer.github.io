@@ -65,8 +65,8 @@ hasCJKLanguage = true
   highlightColor = "" # Deprecated in favor of .Site.Params.style.vars.highlightColor
 
 [Params.style.vars]
-  highlightColor = "#39cebb" # Override highlight color
-  # highlightColor = "#000000" # Override highlight color
+  # highlightColor = "#39cebb" # Override highlight color
+  highlightColor = "#123" # Override highlight color
 
   # Override font-family sets
   # Take care of different quotes OR escaping symbols in these params if necessary
@@ -82,11 +82,14 @@ hasCJKLanguage = true
 [Params.thumbnail]
   visibility = ["list", "post"] # Control thumbnail visibility
 
+
 [Params.sidebar]
+  enable = false
   home = "right" # Configure layout for home page
   list = "left"  # Configure layout for list pages
   single = false # Configure layout for single pages
   # Enable widgets in given order
+  # widgets = ["search", "recent", "categories", "taglist", "social", "languages"]
   widgets = ["search", "recent", "categories", "taglist", "social", "languages"]
   # alternatively "ddg-search" can be used, to search via DuckDuckGo
   # widgets = ["ddg-search", "recent", "categories", "taglist", "social", "languages"]
