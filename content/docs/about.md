@@ -8,16 +8,19 @@ menu: main
 ---
 
 
-这里是 PokPok 的博客，希望能借助博客来督促自己学习，完成信息的输入和知识输出，偶尔也会发布一些自己觉得有趣的照片，和一些踩过的坑。
-
-博客的字体是**思源宋体**，来自于 [这篇文章](https://bestzuo.cn/posts/notoserifsc.html#%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93) 的推荐。
+这里是 PokPok 的博客，希望能借助写博客来督促自己学习，完成信息的输入和知识输出，偶尔也会写一些，和一些踩过的坑。
 
 ## 编程语言
 
-主要使用的语言是 C/C++，另外也比较喜欢用 python，使用 C/C++ 的原因是因为我觉得它很快，而 python 是因为它很强大，在你想做的方向上，python
-基本都能给你一些库和解决方案。
+主要使用的语言是 C/C++，另外也比较喜欢用 python，使用 C/C++ 的原因是因为我觉得它很快，接近底层，没有太多抽象层屏蔽一些底层细节，而 python 相反，它很强大且上层，在你想研究的方向上，python
+基本都能给你一些库和解决方案，帮助你快速完成一些demo验证和工具。
 
 ## 哪些东西对我帮助很大？
+
+### 2022年
+
+- 还在吸收养分中 ...
+### 2021年及以前
 
 - 芒格在南加州大学毕业典礼上的演讲: 提到了 "Learning Machine" 这个词，终身学习的概念非常接近，只是会将目标聚焦到每天每日，
 让自己每天都会有新的收获。
@@ -29,9 +32,10 @@ menu: main
 
 Github: <https://github.com/fatwaer>
 
-Mail: fatwaer@gmail.com
+Mail: fatwaer+gmail.com
 
 
 ## 关于本博客
 
-- 博客的字体是 Noto Serif SC （思源衬线宋体）
+- 博客的字体是**Noto Serif SC （思源衬线宋体）**，来自于 [这篇文章](https://bestzuo.cn/posts/notoserifsc.html#%E6%80%9D%E6%BA%90%E5%AE%8B%E4%BD%93) 的推荐。
+- 博客使用的主题是基于 Hugo 的 [Mainroad](https://github.com/Vimux/Mainroad/)，有做一些魔改。
