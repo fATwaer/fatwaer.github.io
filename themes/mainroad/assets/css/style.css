@@ -73,7 +73,7 @@ body {
 }
 
 .wrapper {
-	padding: 25px;
+	/* padding: 25px; */
 	background: #fff;
 }
 
@@ -735,7 +735,7 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 }
 
 .post {
-
+	padding: 1.5rem;
 }
 
 .post hover {
@@ -893,18 +893,28 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 
 /* List content */
 .list__item {
-	padding-bottom: 20px;
-	padding-bottom: 1.25rem;
-	margin-bottom: 20px;
-	margin-bottom: 1.25rem;
+	/* padding-bottom: 20px;
+	padding-bottom: 1.25rem; */
+	/* margin-bottom: 20px;
+	margin-bottom: 1.25rem; */
 	border-bottom: 1px solid #ebebeb;
+	padding : 25px;
+	transition: all 0.4s ease-out;
 }
 
+article.list__item:hover   {
+	background-color: rgb(245, 242, 233);
+	padding-top: 30px;
+	padding-top: 30px;
+}
 
 
 .list__header {
 	margin-bottom: 10px;
 	margin-bottom: .625rem;
+}
+
+.list__header:hover {
 }
 
 .list__title {
