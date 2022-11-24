@@ -65,8 +65,8 @@ hasCJKLanguage = true
   highlightColor = "" # Deprecated in favor of .Site.Params.style.vars.highlightColor
 
 [Params.style.vars]
-  # highlightColor = "#39cebb" # Override highlight color
-  highlightColor = "#123" # Override highlight color
+  highlightColor = "#39cebb" # Override highlight color
+  # highlightColor = "#123" # Override highlight color
 
   # Override font-family sets
   # Take care of different quotes OR escaping symbols in these params if necessary
@@ -77,7 +77,7 @@ hasCJKLanguage = true
 [Params.logo]
   image = "images/avatar.png" # Logo image. Path relative to "static"
   title = "PokPok's Blog" # Logo title, otherwise will use site title
-  subtitle = "~" # Logo subtitle
+  subtitle = ":" # Logo subtitle
 
 [Params.thumbnail]
   visibility = ["list", "post"] # Control thumbnail visibility
