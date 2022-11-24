@@ -413,7 +413,7 @@ select {
 }
 
 #busuanzi_container_site_pv {
-	color: #c33;
+	color: rgb(255, 255, 255);
 	font-size: x-small;
 }
 
@@ -910,11 +910,11 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 	margin-bottom: 1.25rem; */
 	border-bottom: 1px solid #ebebeb;
 	padding : 25px;
-	transition: all 0.4s ease-out;
+	transition: all 0.3s ease-out;
 }
 
 article.list__item:hover   {
-	background-color: rgb(245, 242, 233);
+	background-color: rgb(241, 247, 246);
 	padding-top: 30px;
 	padding-top: 30px;
 }
