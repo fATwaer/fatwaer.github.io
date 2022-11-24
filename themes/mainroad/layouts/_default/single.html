@@ -3,6 +3,7 @@
 	<article class="post">
 		<header class="post__header">
 			<h1 class="post__title">{{ .Title }}</h1>
+			<!-- <a href="https://github.com/fATwaer/fatwaer.github.io/edit/master/content/"> Edit </a> -->
 			{{- with .Params.lead }}
 			<p class="post__lead">{{ . }}</p>
 			{{- end }}
@@ -22,7 +23,9 @@
 		{{- end }}
 	</article>
 </main>
+{{ partial "archive.html" .  }}
 {{ partial "authorbox.html" . }}
 {{ partial "pager.html" . }}
 {{ partial "comments.html" . }}
+
 {{ end }}

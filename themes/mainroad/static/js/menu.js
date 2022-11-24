@@ -24,7 +24,6 @@
 	}
 }(document, window));
 
-
 $(window).scroll(function(){
     var scrollTop = $(document).scrollTop();
     var h2s = $('body').find('h2');

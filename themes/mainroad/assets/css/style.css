@@ -220,6 +220,7 @@ b,
 strong {
 	font: inherit;
 	font-weight: 700;
+	text-decoration: underline dotted red ;
 }
 
 i,
@@ -430,6 +431,7 @@ select {
 	font-weight: 700;
 	line-height: 1;
 	color: #000;
+	text-transform: none;
 }
 
 .logo__tagline {
@@ -1006,7 +1008,11 @@ img {
 	width: auto\9; /* ie8 */
 	max-width: 100%;
 	height: auto;
-	vertical-align: bottom;
+	/* vertical-align: bottom; */
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	/* width: 50%; */
 }
 
 iframe,
@@ -1025,6 +1031,20 @@ table {
 	border-collapse: collapse;
 	border-top: 1px solid #ebebeb;
 	border-left: 1px solid #ebebeb;
+}
+
+table.all-posts {
+	border-bottom: 1px solid #ebebeb;
+
+}
+.all-posts .underline {
+	transition: all .5s ease-in-out;
+}
+.all-posts .underline:hover {
+
+	text-decoration: underline;
+	text-decoration-color: #c33;
+	font-size: larger;
 }
 
 td,
@@ -1233,6 +1253,10 @@ textarea {
 
 .footer a:hover {
 	text-decoration: underline;
+}
+
+.archive.title {
+	background-color: blue;
 }
 
 /* Media Queries */

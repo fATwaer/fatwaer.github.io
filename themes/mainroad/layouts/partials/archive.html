@@ -1,0 +1,26 @@
+{{ $PageType := .Type }}
+
+<!-- page type: {{ $PageType }} -->
+
+{{if eq $PageType "archive"}}
+<section>
+    {{ $prev := 3000}}
+    {{range .Site.RegularPages}}
+      {{if .Date}}
+      {{if gt $prev (.Date.Format "2006")}}
+      {{ if ne $prev 3000}}
+        </table>
+      {{ end }}
+      <h2 style="padding-left: 2rem;">{{ .Date.Format "2006" }}</h2>
+      <table class="all-posts">
+      {{end}}
+      <tr>
+        <td style="border-style:none" width="20%" align="center">{{.Date.Format "01-02"}}</td>
+        <td style="border-style:none"><a class="underline" href="{{.Permalink}}">{{.Title}}</a></td>
+      </tr>
+      {{ $prev = .Date.Format "2006"}}
+      {{end}}
+    {{end}}
+  </table>
+</section>
+{{end}}
