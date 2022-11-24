@@ -16,9 +16,13 @@
 			{{ with $logoTitle -}}
 				<div class="logo__item logo__text">
 					<div class="logo__title">{{ . }}</div>
-					{{ with $logoSubtitle }}<div class="logo__tagline">{{ . }}</div>{{ end }}
+					<!-- {{ with $logoSubtitle }}<div class="logo__tagline">{{ . }}</div>{{ end }} -->
+					<div>
+						<span id="busuanzi_container_site_pv">pv: [<span id="busuanzi_value_site_pv"></span>]</span>
+					</div>
 				</div>
 			{{- end }}
+
 		</a>
 	</div>
 {{- end }}
