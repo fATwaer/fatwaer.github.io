@@ -1023,6 +1023,12 @@ img {
 	margin-right: auto;
 	/* width: 50%; */
 }
+em {
+	display: block;
+    display: inherit;
+    text-align: center;
+    font-size: 0.75rem;
+}
 
 iframe,
 embed,

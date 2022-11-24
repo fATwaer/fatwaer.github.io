@@ -10,7 +10,8 @@ categories:
 
 coroutine 也是广义上的 routine，不同的是 coroutine 能够通过一些操作保持执行状态，显式地挂起和恢复，相对于 routine 的单控制流，coroutine 能提供一个加强版的控制流。
 
-![](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Untitled.png)
+![1](https://blog-1256435232.cos.ap-shanghai.myqcloud.com/cnblog/Untitled.png)
+*协程执行转移*
 
 如图中的处理流程，多个 coroutine 通过一些机制，首先执行 routine foo 上的 `std::cout << "a"` 然后切换到 routine bar 上执行 `std::cout << "b"`，再切换回 routine foo 直到两个 routine 都执行完成。
 
