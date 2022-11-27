@@ -39,16 +39,16 @@ $(window).scroll(function(){
     }
 });
 
- $(document).ready(function() {
-    $('body').hide().fadeIn(500);
-    $("a").click(function(e) {
-        e.preventDefault();
-        var $link = $(this).attr("href");
-		if ($link == window.location) {
-			return;
-		}
-        $("body").fadeOut(500,function(){
-          window.location = $link;
-        });
-    });
- });
+//  $(document).ready(function() {
+//     $('body').hide().fadeIn(500);
+//     $("a").click(function(e) {
+//         e.preventDefault();
+//         var $link = $(this).attr("href");
+// 		if ($link == window.location) {
+// 			return;
+// 		}
+//         $("body").fadeOut(500,function(){
+//           window.location = $link;
+//         });
+//     });
+//  });
